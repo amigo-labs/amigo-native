@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r run build",
+    "build:debug": "pnpm -r run build:debug",
+    "test": "pnpm -r run test",
+    "lint": "oxlint . && cargo fmt --check && cargo clippy --workspace -- -D warnings",
+    "format": "prettier --write . && cargo fmt && taplo format"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "oxlint": "^1.0.0",
+    "prettier": "^3.0.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

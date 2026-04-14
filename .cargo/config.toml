@@ -1,0 +1,2 @@
+# Cross-compile linker config
+# Populated by napi-rs for CI cross-compilation targets
