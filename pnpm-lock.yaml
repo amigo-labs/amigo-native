@@ -21,7 +21,43 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4
 
+  crates/argon2:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4
+
+  crates/csv:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4
+
+  crates/sanitize-html:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4
+
   crates/slugify:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4
+
+  crates/xxhash:
     devDependencies:
       '@napi-rs/cli':
         specifier: ^3.5.0

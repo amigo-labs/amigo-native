@@ -1,0 +1,16 @@
+{
+  "name": "@amigo-labs/argon2-linux-arm64-gnu",
+  "version": "0.1.0",
+  "os": ["linux"],
+  "cpu": ["arm64"],
+  "main": "argon2.linux-arm64-gnu.node",
+  "files": ["argon2.linux-arm64-gnu.node"],
+  "description": "Prebuilt binary for @amigo-labs/argon2 on linux-arm64-gnu",
+  "license": "MIT",
+  "engines": { "node": ">= 18" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/argon2"
+  }
+}

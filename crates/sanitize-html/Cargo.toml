@@ -1,0 +1,15 @@
+[package]
+name = "amigo-sanitize-html"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+ammonia = "4"
+
+[build-dependencies]
+napi-build = "2"

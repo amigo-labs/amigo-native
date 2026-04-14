@@ -1,0 +1,15 @@
+[package]
+name = "amigo-xxhash"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+xxhash-rust = { version = "0.8", features = ["xxh32", "xxh64", "xxh3"] }
+
+[build-dependencies]
+napi-build = "2"
