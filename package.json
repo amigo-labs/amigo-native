@@ -4,14 +4,28 @@
     "build": "pnpm -r run build",
     "build:debug": "pnpm -r run build:debug",
     "test": "pnpm -r run test",
+    "bench": "vitest bench",
+    "bench:size": "node scripts/measure-size.mjs",
+    "bench:report": "node scripts/measure-size.mjs && node scripts/generate-report.mjs",
     "lint": "oxlint . && cargo fmt --check && cargo clippy --workspace -- -D warnings",
     "format": "prettier --write . && cargo fmt && taplo format"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
+    "@types/papaparse": "^5.3.15",
+    "@types/sanitize-html": "^2.13.0",
+    "argon2": "^0.41.1",
+    "csv-parse": "^5.6.0",
+    "hash-wasm": "^4.11.0",
+    "isomorphic-dompurify": "^2.16.0",
     "oxlint": "^1.0.0",
+    "papaparse": "^5.4.1",
     "prettier": "^3.0.0",
-    "vitest": "^3.0.0"
+    "sanitize-html": "^2.13.0",
+    "slugify": "^1.6.6",
+    "vitest": "^3.0.0",
+    "xxhash-wasm": "^1.1.0",
+    "xxhashjs": "^0.2.2"
   },
   "engines": {
     "node": ">= 18"

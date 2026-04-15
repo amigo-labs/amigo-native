@@ -19,6 +19,10 @@ Thumbs.db
 *.swp
 *.swo
 
+# Benchmark artifacts
+bench-results.json
+size-results.json
+
 # Environment
 .env
 .env.*
