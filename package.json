@@ -27,6 +27,7 @@
     "xxhash-wasm": "^1.1.0",
     "xxhashjs": "^0.2.2"
   },
+  "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">= 18"
   }

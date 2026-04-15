@@ -18,8 +18,7 @@ pub fn xxh3_64(input: Buffer, seed: Option<i64>) -> i64 {
 
 #[napi(js_name = "xxh3_128")]
 pub fn xxh3_128(input: Buffer, seed: Option<i64>) -> String {
-    let hash =
-        xxhash_rust::xxh3::xxh3_128_with_seed(input.as_ref(), seed.unwrap_or(0) as u64);
+    let hash = xxhash_rust::xxh3::xxh3_128_with_seed(input.as_ref(), seed.unwrap_or(0) as u64);
     format!("{:032x}", hash)
 }
 

@@ -1,4 +1,4 @@
-import { bench, describe, beforeAll } from 'vitest'
+import { bench, describe } from 'vitest'
 import { sanitize as amigoSanitize } from '../index.js'
 import sanitizeHtml from 'sanitize-html'
 

@@ -1,8 +1,8 @@
 use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
-use password_hash::rand_core::OsRng;
-use password_hash::SaltString;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use password_hash::SaltString;
+use password_hash::rand_core::OsRng;
 
 #[napi(object)]
 #[derive(Default)]
@@ -38,8 +38,7 @@ pub fn hash_sync(password: String, options: Option<Argon2Options>) -> Result<Str
 
 #[napi]
 pub fn verify_sync(hash: String, password: String) -> Result<bool> {
-    let parsed =
-        PasswordHash::new(&hash).map_err(|e| Error::from_reason(e.to_string()))?;
+    let parsed = PasswordHash::new(&hash).map_err(|e| Error::from_reason(e.to_string()))?;
     Ok(Argon2::default()
         .verify_password(password.as_bytes(), &parsed)
         .is_ok())
