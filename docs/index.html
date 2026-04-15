@@ -263,7 +263,7 @@ a:hover { color: var(--text-primary); }
   background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
 }
 .size-row {
-  display: grid; grid-template-columns: 140px 120px 1fr 120px 140px; background: rgba(13,11,9,0.95);
+  display: grid; grid-template-columns: 130px 160px 1fr 200px 120px; background: rgba(13,11,9,0.95);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
 }
 .size-row:hover { background: rgba(20,18,14,0.95); }
@@ -271,7 +271,8 @@ a:hover { color: var(--text-primary); }
 .size-row.header:hover { background: rgba(13,11,9,0.98); }
 .size-cell {
   padding: 14px 16px; font-size: 0.85rem; color: var(--text-secondary);
-  display: flex; align-items: center; border-right: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px; border-right: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 .size-cell:last-child { border-right: none; }
 .size-cell.header-cell {
@@ -290,7 +291,7 @@ a:hover { color: var(--text-primary); }
 .size-result.neutral { color: var(--text-secondary); }
 .size-tag {
   display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
-  padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle;
+  padding: 2px 6px; border-radius: 3px; vertical-align: middle; white-space: nowrap;
 }
 .size-tag.native { background: var(--accent-dim); color: var(--accent); }
 .size-tag.js { background: rgba(138,126,106,0.15); color: var(--text-secondary); }
@@ -714,7 +715,7 @@ function renderSizes(data) {
               </div>
             </div>
           </div>
-          <div class="size-cell"><span class="size-cell-label">Competitor</span>${pkg}<br><span style="color:var(--text-tertiary)">${formatBytes(size)}</span><span class="size-tag js">${compTag}</span></div>
+          <div class="size-cell"><span class="size-cell-label">Competitor</span>${pkg} <span style="color:var(--text-tertiary)">${formatBytes(size)}</span> <span class="size-tag js">${compTag}</span></div>
           <div class="size-cell"><span class="size-result ${cls}">${result}</span></div>
         </div>`;
     }
