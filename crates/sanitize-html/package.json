@@ -4,7 +4,7 @@
   "description": "Blazing fast HTML sanitization powered by Rust (ammonia)",
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["index.js", "index.d.ts"],
+  "files": ["index.js", "index.d.ts", "README.md"],
   "napi": {
     "binaryName": "sanitize-html",
     "targets": [

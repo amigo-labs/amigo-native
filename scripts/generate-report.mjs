@@ -230,3 +230,18 @@ const md = lines.join('\n')
 const outPath = join(root, 'BENCHMARKS.md')
 writeFileSync(outPath, md)
 console.log(`Written to ${outPath}`)
+
+// --- Write docs/data.json for GitHub Pages ---
+
+const docsData = {
+  generatedAt: new Date().toISOString().split('T')[0],
+  nodeVersion: process.version,
+  platform: `${process.platform} ${process.arch}`,
+  benchmarks: benchData ?? null,
+  sizes: sizeData ?? null,
+}
+
+const docsDir = join(root, 'docs')
+const docsPath = join(docsDir, 'data.json')
+writeFileSync(docsPath, JSON.stringify(docsData, null, 2))
+console.log(`Written to ${docsPath}`)

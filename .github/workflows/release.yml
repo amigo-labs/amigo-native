@@ -4,13 +4,49 @@ on:
   push:
     tags:
       - '*@*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to release
+        required: true
+        type: choice
+        options:
+          - argon2
+          - csv
+          - sanitize-html
+          - slugify
+          - xxhash
+      version:
+        description: Version to publish (e.g. 0.1.0)
+        required: true
+        type: string
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      crate: ${{ steps.resolve.outputs.name }}
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Resolve package name and version
+        id: resolve
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.package }}" >> "$GITHUB_OUTPUT"
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            TAG="${{ github.ref_name }}"
+            echo "name=$(echo "$TAG" | sed 's/@.*//')" >> "$GITHUB_OUTPUT"
+            echo "version=$(echo "$TAG" | sed 's/.*@//')" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: resolve
     strategy:
       fail-fast: false
       matrix:
@@ -38,11 +74,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Determine crate from tag
-        id: crate
-        shell: bash
-        run: echo "name=$(echo '${{ github.ref_name }}' | sed 's/@.*//')" >> "$GITHUB_OUTPUT"
-
       - name: Install Rust target
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -62,21 +93,21 @@ jobs:
           options: '--user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build'
           run: |
             corepack enable
-            pnpm --filter @amigo-labs/${{ steps.crate.outputs.name }} run build --target ${{ matrix.target }}
+            pnpm --filter @amigo-labs/${{ needs.resolve.outputs.crate }} run build --target ${{ matrix.target }}
 
       - name: Build (Native)
         if: ${{ !matrix.docker }}
         shell: bash
-        run: pnpm --filter @amigo-labs/${{ steps.crate.outputs.name }} run build --target ${{ matrix.target }}
+        run: pnpm --filter @amigo-labs/${{ needs.resolve.outputs.crate }} run build --target ${{ matrix.target }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.target }}
-          path: crates/${{ steps.crate.outputs.name }}/*.node
+          path: crates/${{ needs.resolve.outputs.crate }}/*.node
           if-no-files-found: error
 
   publish:
-    needs: build
+    needs: [resolve, build]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -90,9 +121,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
-      - name: Determine crate from tag
-        id: crate
-        run: echo "name=$(echo '${{ github.ref_name }}' | sed 's/@.*//')" >> "$GITHUB_OUTPUT"
+      - name: Set version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cd crates/${{ needs.resolve.outputs.crate }}
+          npm version ${{ needs.resolve.outputs.version }} --no-git-tag-version
 
       - uses: actions/download-artifact@v4
         with:
@@ -100,15 +133,15 @@ jobs:
 
       - name: Move artifacts
         run: |
-          pnpm --filter @amigo-labs/${{ steps.crate.outputs.name }} run artifacts --output-dir artifacts
+          pnpm --filter @amigo-labs/${{ needs.resolve.outputs.crate }} run artifacts --output-dir artifacts
 
       - name: List packages
-        run: ls -R crates/${{ steps.crate.outputs.name }}/npm/
+        run: ls -R crates/${{ needs.resolve.outputs.crate }}/npm/
 
       - name: Publish platform packages
         shell: bash
         run: |
-          for dir in crates/${{ steps.crate.outputs.name }}/npm/*/; do
+          for dir in crates/${{ needs.resolve.outputs.crate }}/npm/*/; do
             if [ -f "$dir/package.json" ] && ls "$dir"/*.node 1>/dev/null 2>&1; then
               echo "Publishing $(basename $dir)..."
               cd "$dir"
@@ -121,7 +154,7 @@ jobs:
 
       - name: Publish main package
         run: |
-          cd crates/${{ steps.crate.outputs.name }}
+          cd crates/${{ needs.resolve.outputs.crate }}
           npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

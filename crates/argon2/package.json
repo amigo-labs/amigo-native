@@ -4,7 +4,7 @@
   "description": "Fast Argon2id password hashing powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["index.js", "index.d.ts"],
+  "files": ["index.js", "index.d.ts", "README.md"],
   "napi": {
     "binaryName": "argon2",
     "targets": [
