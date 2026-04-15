@@ -116,6 +116,68 @@ a:hover { color: var(--text-primary); }
 .cli-btn:hover { background: #D4883C; }
 .cli-btn:active { transform: scale(0.96); }
 
+/* CLI CURSOR */
+.cli-cursor {
+  display: inline-block; width: 2px; height: 1.1em; background: var(--accent);
+  vertical-align: text-bottom; margin-left: 1px; animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* STICKY NAV */
+.site-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  padding: 0 24px; display: flex; justify-content: center;
+  transform: translateY(-100%); transition: transform 0.3s ease;
+}
+.site-nav.visible { transform: translateY(0); }
+.site-nav-backdrop {
+  position: absolute; inset: 0; z-index: -1;
+  background: rgba(11, 10, 8, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.site-nav-inner {
+  max-width: 1040px; width: 100%; display: flex; align-items: center;
+  justify-content: space-between; padding: 12px 0;
+}
+.site-nav-brand {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  color: var(--text-secondary); letter-spacing: -0.02em;
+}
+.site-nav-links { display: flex; gap: 24px; list-style: none; }
+.site-nav-links a {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.2s;
+}
+.site-nav-links a:hover { color: var(--accent); }
+
+/* BACK TO TOP */
+.back-to-top {
+  position: fixed; bottom: 32px; right: 32px; z-index: 150;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--border); background: rgba(11, 10, 8, 0.7);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  color: var(--text-secondary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: translateY(20px); pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.2s, color 0.2s;
+}
+.back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.back-to-top:hover { border-color: var(--accent); color: var(--accent); }
+.back-to-top:active { transform: scale(0.92); }
+
+/* ACCESSIBILITY */
+.skip-link {
+  position: absolute; top: -100%; left: 16px; z-index: 999;
+  padding: 8px 16px; background: var(--accent); color: var(--bg);
+  font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+  border-radius: 4px; text-decoration: none;
+}
+.skip-link:focus { top: 16px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
 /* MARQUEE */
 .marquee { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.5rem 0; overflow: hidden; display: flex; background: rgba(11,10,8,0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
 .marquee-content { display: flex; gap: 4rem; animation: marquee 25s linear infinite; white-space: nowrap; }
@@ -125,17 +187,19 @@ a:hover { color: var(--text-primary); }
 
 /* BENTO GRID (packages) */
 .bento-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px;
   background: var(--border); border: 1px solid var(--border); border-radius: 8px;
   overflow: hidden; margin-top: 4rem;
 }
 .bento-box {
+  grid-column: span 2;
   background: rgba(13,11,9,0.95); padding: 40px; display: flex; flex-direction: column;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
 }
 .bento-box:hover { background: rgba(20,18,14,0.95); }
-.bento-large { grid-column: span 2; }
-@media (max-width: 800px) { .bento-grid { grid-template-columns: 1fr; } .bento-large { grid-column: span 1; } }
+/* Center the last 2 items in row 2 (5 packages total) */
+.bento-box:nth-child(4) { grid-column: 2 / span 2; }
+.bento-box:nth-child(5) { grid-column: 4 / span 2; }
 .bento-name {
   font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent);
   margin-bottom: 1rem; letter-spacing: 0.02em;
@@ -223,6 +287,21 @@ a:hover { color: var(--text-primary); }
 .size-result { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
 .size-result.winner { color: var(--green); }
 .size-result.loser { color: var(--text-tertiary); }
+.size-result.neutral { color: var(--text-secondary); }
+.size-tag {
+  display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+  padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle;
+}
+.size-tag.native { background: var(--accent-dim); color: var(--accent); }
+.size-tag.js { background: rgba(138,126,106,0.15); color: var(--text-secondary); }
+.size-note {
+  background: rgba(13,11,9,0.95); padding: 16px 20px; font-size: 0.8rem;
+  color: var(--text-tertiary); font-style: italic; line-height: 1.5;
+}
+.size-cell-label {
+  display: none; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;
+}
 
 /* GLASS INSTALL TERMINAL */
 .glass-terminal {
@@ -262,8 +341,23 @@ a:hover { color: var(--text-primary); }
 
 @media (max-width: 800px) {
   .viz-row { grid-template-columns: 160px 1fr 100px; }
-  .size-row { grid-template-columns: 1fr; }
-  .size-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  .bento-grid { grid-template-columns: 1fr; }
+  .bento-box, .bento-box:nth-child(4), .bento-box:nth-child(5) { grid-column: span 1; }
+  .size-row.header { display: none; }
+  .size-row {
+    grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto;
+    padding: 16px; gap: 8px;
+  }
+  .size-cell { border-right: none; border-bottom: none; padding: 8px 0; }
+  .size-cell.pkg-name {
+    grid-column: 1 / -1; font-size: 0.9rem;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  .size-cell:nth-child(3) { grid-column: 1 / -1; }
+  .size-cell:nth-child(5) { grid-column: 1 / -1; text-align: center; }
+  .size-cell-label { display: block; }
+  .site-nav-links { gap: 16px; }
+  .site-nav-brand { display: none; }
   .telemetry-widget { display: none; }
   .footer { flex-direction: column; gap: 1rem; }
   .hero-logo { width: 80px; height: 80px; }
@@ -271,6 +365,21 @@ a:hover { color: var(--text-primary); }
 </style>
 </head>
 <body>
+
+<a href="#packages" class="skip-link">Skip to content</a>
+
+<nav class="site-nav" id="siteNav" aria-label="Main navigation">
+  <div class="site-nav-backdrop"></div>
+  <div class="site-nav-inner">
+    <span class="site-nav-brand">amigo-native</span>
+    <ul class="site-nav-links">
+      <li><a href="#packages">Packages</a></li>
+      <li><a href="#benchmarks">Benchmarks</a></li>
+      <li><a href="#sizes">Sizes</a></li>
+      <li><a href="#install">Install</a></li>
+    </ul>
+  </div>
+</nav>
 
 <div class="bg-grid"></div>
 <div class="ambient-aura"></div>
@@ -282,6 +391,7 @@ a:hover { color: var(--text-primary); }
   <div>STATUS: <span class="telemetry-val" style="color:var(--green)">OPERATIONAL</span></div>
 </div>
 
+<main>
 <section class="hero container">
   <div class="reveal">
     <img src="logo.png" alt="amigo-native" class="hero-logo">
@@ -294,9 +404,10 @@ a:hover { color: var(--text-primary); }
 
     <div class="cli-install">
       <span class="cli-prefix">$</span>
-      <span class="cli-code">npm install @amigo-labs/slugify</span>
-      <button class="cli-btn" onclick="copyInstall(this)">Copy</button>
+      <span class="cli-code"><span id="cliTyped">npm install @amigo-labs/slugify</span><span class="cli-cursor" aria-hidden="true"></span></span>
+      <button class="cli-btn" onclick="copyInstall(this)" aria-label="Copy install command">Copy</button>
     </div>
+    <div id="cliAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   </div>
 </section>
 
@@ -326,7 +437,7 @@ a:hover { color: var(--text-primary); }
 <section class="section container reveal" id="sizes">
   <span class="section-badge">03 // Package Size</span>
   <h2 class="section-title">Install Footprint</h2>
-  <p class="section-desc">@amigo-labs ships a single compiled binary + JS shim per platform. Competitors pull full node_modules trees.</p>
+  <p class="section-desc">@amigo-labs packages ship a single prebuilt native binary per platform &mdash; no node_modules tree, no postinstall scripts. Packages with compiled Rust code may have a larger base binary than a pure-JS equivalent, but carry zero transitive dependencies.</p>
 
   <div class="size-viz-container" id="size-viz"></div>
 </section>
@@ -337,7 +448,7 @@ a:hover { color: var(--text-primary); }
   <h2 class="section-title">Install</h2>
 
   <div class="glass-terminal">
-    <div class="term-header">
+    <div class="term-header" aria-hidden="true">
       <div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div>
     </div>
     <div class="term-body">
@@ -352,6 +463,13 @@ a:hover { color: var(--text-primary); }
     </div>
   </div>
 </section>
+</main>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>
 
 <footer class="footer">
   <div><a href="https://github.com/amigo-labs/amigo-native" target="_blank">amigo-labs/amigo-native</a></div>
@@ -376,24 +494,73 @@ const mTrack = document.getElementById('marqueeTrack');
 mTrack.innerHTML = [...marqueeItems, ...marqueeItems, ...marqueeItems]
   .map(i => `<div class="marquee-item">${i.k}<span>${i.v}</span></div>`).join('');
 
-// --- Copy ---
+// --- Typewriter Install ---
+const CLI_PREFIX = 'npm install @amigo-labs/';
+const PKG_NAMES = ['slugify', 'argon2', 'xxhash', 'sanitize-html', 'csv'];
+let currentPkgIndex = 0;
+let currentFullCommand = CLI_PREFIX + PKG_NAMES[0];
+const cliTyped = document.getElementById('cliTyped');
+const cliAnnounce = document.getElementById('cliAnnounce');
+
+const TYPE_SPEED = 70;
+const DELETE_SPEED = 40;
+const PAUSE_AFTER_TYPE = 2000;
+const PAUSE_AFTER_DELETE = 400;
+
+function typewriterTick() {
+  const targetName = PKG_NAMES[currentPkgIndex];
+  const targetText = CLI_PREFIX + targetName;
+  const currentText = cliTyped.textContent;
+
+  if (currentText === targetText) {
+    // Fully typed - pause, then start deleting
+    currentFullCommand = targetText;
+    cliAnnounce.textContent = currentFullCommand;
+    setTimeout(() => {
+      deleteTick();
+    }, PAUSE_AFTER_TYPE);
+  } else {
+    // Type next character
+    const next = targetText.slice(0, currentText.length + 1);
+    cliTyped.textContent = next;
+    setTimeout(typewriterTick, TYPE_SPEED);
+  }
+}
+
+function deleteTick() {
+  const currentText = cliTyped.textContent;
+  if (currentText === CLI_PREFIX) {
+    // Done deleting - advance to next package
+    currentPkgIndex = (currentPkgIndex + 1) % PKG_NAMES.length;
+    setTimeout(typewriterTick, PAUSE_AFTER_DELETE);
+  } else {
+    cliTyped.textContent = currentText.slice(0, -1);
+    setTimeout(deleteTick, DELETE_SPEED);
+  }
+}
+
+// Start the cycle after initial pause
+setTimeout(() => {
+  deleteTick();
+}, PAUSE_AFTER_TYPE);
+
 function copyInstall(btn) {
-  navigator.clipboard.writeText('npm install @amigo-labs/slugify');
+  navigator.clipboard.writeText(currentFullCommand);
   btn.textContent = 'Copied';
   setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
 }
 
 // --- Packages ---
 const PACKAGES = [
-  { name: 'slugify', title: 'Slugify', desc: 'Unicode-aware slugification. Wraps deunicode + unicode-normalization.', speedup: '3-7x faster', large: true },
-  { name: 'argon2', title: 'Argon2', desc: 'Argon2id password hashing with sync + async API.', speedup: '1.4-2.5x faster', large: false },
-  { name: 'xxhash', title: 'XXHash', desc: 'XXH32, XXH64, and XXH3 with batch + streaming support.', speedup: '1.3-2.6x faster', large: false },
-  { name: 'sanitize-html', title: 'Sanitize HTML', desc: 'HTML sanitization via Mozilla\'s ammonia engine.', speedup: '1.6-2x faster', large: true },
-  { name: 'csv', title: 'CSV', desc: 'CSV parsing and serialization via BurntSushi\'s csv crate.', speedup: '1.4-3.5x faster', large: false },
+  { name: 'slugify', title: 'Slugify', desc: 'Unicode-aware slugification. Wraps deunicode + unicode-normalization.', speedup: '3-7x faster' },
+  { name: 'argon2', title: 'Argon2', desc: 'Argon2id password hashing with sync + async API.', speedup: '1.4-2.5x faster' },
+  { name: 'xxhash', title: 'XXHash', desc: 'XXH32, XXH64, and XXH3 with batch + streaming support.', speedup: '1.3-2.6x faster' },
+  { name: 'sanitize-html', title: 'Sanitize HTML', desc: 'HTML sanitization via Mozilla\'s ammonia engine.', speedup: '1.6-2x faster' },
+  { name: 'csv', title: 'CSV', desc: 'CSV parsing and serialization via BurntSushi\'s csv crate.', speedup: '1.4-3.5x faster' },
 ];
 
 document.getElementById('bento-grid').innerHTML = PACKAGES.map(pkg => `
-  <div class="bento-box${pkg.large ? ' bento-large' : ''}">
+  <div class="bento-box">
     <div class="bento-name">@amigo-labs/${pkg.name}</div>
     <div class="bento-title">${pkg.title}</div>
     <div class="bento-desc">${pkg.desc}</div>
@@ -490,6 +657,12 @@ function renderBenchmarks(data) {
 }
 
 // --- Sizes ---
+function competitorTag(pkg) {
+  if (pkg.includes('wasm') || pkg.includes('hash-wasm')) return 'wasm';
+  if (pkg === 'argon2') return 'C bindings';
+  return 'JS + deps';
+}
+
 function renderSizes(data) {
   if (!data?.sizes) return;
   const container = document.getElementById('size-viz');
@@ -500,7 +673,7 @@ function renderSizes(data) {
       <div class="size-cell header-cell">@amigo-labs</div>
       <div class="size-cell header-cell">Comparison</div>
       <div class="size-cell header-cell">Competitor</div>
-      <div class="size-cell header-cell">Result</div>
+      <div class="size-cell header-cell">Ratio</div>
     </div>`;
 
   for (const [crate, packages] of Object.entries(data.sizes)) {
@@ -519,17 +692,18 @@ function renderSizes(data) {
           cls = 'winner';
         } else {
           result = `${(amigoSize / size).toFixed(1)}x larger`;
-          cls = 'loser';
+          cls = 'neutral';
         }
       }
 
       const amigoPct = amigoSize ? (amigoSize / maxSize) * 100 : 0;
       const compPct = size ? (size / maxSize) * 100 : 0;
+      const compTag = competitorTag(pkg);
 
       html += `
         <div class="size-row">
           <div class="size-cell pkg-name">${crate}</div>
-          <div class="size-cell">${formatBytes(amigoSize)}</div>
+          <div class="size-cell"><span class="size-cell-label">@amigo-labs</span>${formatBytes(amigoSize)}<span class="size-tag native">native binary</span></div>
           <div class="size-cell">
             <div class="size-bar-container" style="width:100%">
               <div class="size-bar-track">
@@ -540,11 +714,14 @@ function renderSizes(data) {
               </div>
             </div>
           </div>
-          <div class="size-cell">${pkg}<br><span style="color:var(--text-tertiary)">${formatBytes(size)}</span></div>
+          <div class="size-cell"><span class="size-cell-label">Competitor</span>${pkg}<br><span style="color:var(--text-tertiary)">${formatBytes(size)}</span><span class="size-tag js">${compTag}</span></div>
           <div class="size-cell"><span class="size-result ${cls}">${result}</span></div>
         </div>`;
     }
   }
+
+  html += `<div class="size-note">Native packages include a precompiled Rust binary (~400KB&ndash;1MB) with zero transitive dependencies. Pure-JS packages are smaller on disk but may pull additional dependencies at install time.</div>`;
+
   container.innerHTML = html;
 }
 
@@ -566,6 +743,26 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// --- Sticky Nav + Back to Top ---
+const siteNav = document.getElementById('siteNav');
+const backToTop = document.getElementById('backToTop');
+const navThreshold = window.innerHeight * 0.5;
+
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  if (y > navThreshold) {
+    siteNav.classList.add('visible');
+    backToTop.classList.add('visible');
+  } else {
+    siteNav.classList.remove('visible');
+    backToTop.classList.remove('visible');
+  }
+}, { passive: true });
+
+backToTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 </script>
 </body>
 </html>
