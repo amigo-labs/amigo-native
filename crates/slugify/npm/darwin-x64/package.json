@@ -1,13 +1,21 @@
 {
   "name": "@amigo-labs/slugify-darwin-x64",
   "version": "0.1.0",
-  "os": ["darwin"],
-  "cpu": ["x64"],
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "main": "slugify.darwin-x64.node",
-  "files": ["slugify.darwin-x64.node"],
+  "files": [
+    "slugify.darwin-x64.node"
+  ],
   "description": "Prebuilt binary for @amigo-labs/slugify on darwin-x64",
   "license": "MIT",
-  "engines": { "node": ">= 18" },
+  "engines": {
+    "node": ">= 18"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/amigo-labs/amigo-native",

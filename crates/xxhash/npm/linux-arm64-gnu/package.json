@@ -1,13 +1,21 @@
 {
   "name": "@amigo-labs/xxhash-linux-arm64-gnu",
   "version": "0.1.0",
-  "os": ["linux"],
-  "cpu": ["arm64"],
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
   "main": "xxhash.linux-arm64-gnu.node",
-  "files": ["xxhash.linux-arm64-gnu.node"],
+  "files": [
+    "xxhash.linux-arm64-gnu.node"
+  ],
   "description": "Prebuilt binary for @amigo-labs/xxhash on linux-arm64-gnu",
   "license": "MIT",
-  "engines": { "node": ">= 18" },
+  "engines": {
+    "node": ">= 18"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/amigo-labs/amigo-native",
