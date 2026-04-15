@@ -1,397 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>amigo-native — Rust-powered Node.js packages</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>amigo-native | Rust-powered Node.js packages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --surface: #141414;
-    --surface-2: #1e1e1e;
-    --border: #2a2a2a;
-    --text: #e5e5e5;
-    --text-muted: #888;
-    --accent: #f97316;
-    --accent-dim: rgba(249, 115, 22, 0.15);
-    --green: #22c55e;
-    --green-dim: rgba(34, 197, 94, 0.15);
-    --red: #ef4444;
-    --red-dim: rgba(239, 68, 68, 0.15);
-    --blue: #3b82f6;
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+:root {
+  --bg: #000000;
+  --bg-elevated: #080808;
+  --border: #1A1A1A;
+  --border-hover: #333333;
+  --text-primary: #FFFFFF;
+  --text-secondary: #888888;
+  --text-tertiary: #444444;
+  --accent: #FF3300;
+  --accent-glow: rgba(255, 51, 0, 0.15);
+  --green: #4ade80;
+  --green-dim: rgba(74, 222, 128, 0.15);
+}
 
-  /* Hero */
-  .hero {
-    text-align: center;
-    padding: 80px 24px 60px;
-    background: linear-gradient(180deg, rgba(249,115,22,0.06) 0%, transparent 100%);
-  }
-  .hero h1 {
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    margin-bottom: 12px;
-  }
-  .hero h1 span { color: var(--accent); }
-  .hero p {
-    color: var(--text-muted);
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin: 0 auto 32px;
-  }
-  .hero-badges {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .hero-badges a {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-  }
-  .hero-badges a:hover { border-color: var(--accent); text-decoration: none; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
-  /* Container */
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+body {
+  background-color: var(--bg); color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden; -webkit-font-smoothing: antialiased; letter-spacing: -0.02em;
+}
 
-  /* Section */
-  .section { padding: 60px 0; }
-  .section h2 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 8px;
-  }
-  .section .subtitle {
-    color: var(--text-muted);
-    margin-bottom: 36px;
-    font-size: 1rem;
-  }
+::selection { background: var(--text-primary); color: var(--bg); }
+a { color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--text-primary); }
 
-  /* Package grid */
-  .pkg-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
-  }
-  .pkg-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    transition: border-color 0.2s;
-  }
-  .pkg-card:hover { border-color: var(--accent); }
-  .pkg-card h3 {
-    font-family: var(--mono);
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .pkg-card .desc {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 12px;
-  }
-  .pkg-card .speedup {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    background: var(--green-dim);
-    color: var(--green);
-  }
-  .pkg-card .links {
-    margin-top: 12px;
-    display: flex;
-    gap: 12px;
-    font-size: 0.85rem;
-  }
+/* --- DYNAMIC BACKGROUND --- */
+.bg-grid {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
 
-  /* Benchmark charts */
-  .bench-group {
-    margin-bottom: 48px;
-  }
-  .bench-group h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-  .bench-scenario {
-    margin-bottom: 24px;
-  }
-  .bench-scenario .scenario-name {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-  }
-  .bar-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 4px;
-    gap: 12px;
-  }
-  .bar-label {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    min-width: 220px;
-    text-align: right;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .bar-track {
-    flex: 1;
-    height: 28px;
-    background: var(--surface);
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
-  }
-  .bar-fill {
-    height: 100%;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    font-family: var(--mono);
-    white-space: nowrap;
-    min-width: fit-content;
-    transition: width 0.6s ease;
-  }
-  .bar-fill.competitor { background: var(--surface-2); color: var(--text-muted); }
-  .bar-fill.amigo { background: var(--accent-dim); color: var(--accent); }
-  .bar-fill.slower { background: var(--red-dim); color: var(--red); }
+.ambient-aura {
+  position: fixed; width: 80vw; height: 80vh; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 51, 0, 0.05) 0%, transparent 60%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  pointer-events: none; z-index: -3; filter: blur(80px);
+  animation: breatheAura 15s ease-in-out infinite alternate;
+}
+@keyframes breatheAura {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+  100% { transform: translate(-50%, -60%) scale(1.2); opacity: 1; }
+}
 
-  .bar-value {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    min-width: 80px;
-    color: var(--text-muted);
-  }
+.cursor-glow {
+  position: fixed; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  top: 0; left: 0; transform: translate(-50%, -50%);
+  pointer-events: none; z-index: -1; transition: opacity 0.3s ease;
+  mix-blend-mode: screen;
+}
 
-  /* Size table */
-  .size-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-  }
-  .size-table th {
-    text-align: left;
-    padding: 10px 16px;
-    border-bottom: 2px solid var(--border);
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .size-table td {
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .size-table tr:hover td { background: var(--surface); }
-  .size-winner {
-    color: var(--green);
-    font-weight: 600;
-  }
+/* LAYOUT */
+.container { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 8rem 0; position: relative; }
+.section-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; text-transform: uppercase;
+  color: var(--accent); letter-spacing: 0.1em; margin-bottom: 1.5rem; display: block;
+}
+.section-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; letter-spacing: -0.04em; margin-bottom: 1.5rem; line-height: 1.1; }
+.section-desc { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; line-height: 1.6; font-weight: 300; }
 
-  /* Install snippet */
-  .install {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-top: 36px;
-  }
-  .install h3 { margin-bottom: 12px; font-size: 1rem; }
-  .install code {
-    display: block;
-    font-family: var(--mono);
-    font-size: 0.9rem;
-    color: var(--accent);
-    line-height: 1.8;
-  }
+/* HERO */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding-top: 4rem; position: relative; }
+.hero-repo {
+  display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem; color: var(--text-secondary); text-decoration: none;
+  padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px;
+  margin-bottom: 3rem; transition: all 0.2s; background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+}
+.hero-repo:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+.hero h1 {
+  font-size: clamp(4rem, 10vw, 8rem); font-weight: 400; letter-spacing: -0.06em;
+  line-height: 0.9; margin-bottom: 2rem; text-transform: lowercase;
+}
+.hero h1 span { color: var(--accent); }
+.hero-subtitle { font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--text-secondary); max-width: 700px; font-weight: 300; line-height: 1.5; }
 
-  /* Footer */
-  footer {
-    text-align: center;
-    padding: 40px 24px;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    border-top: 1px solid var(--border);
-  }
+/* CLI INSTALL */
+.cli-install {
+  margin-top: 4rem; display: inline-flex; align-items: center; background: rgba(10,10,10,0.6);
+  border: 1px solid var(--border); border-radius: 8px; padding: 4px 4px 4px 20px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: border-color 0.3s;
+}
+.cli-install:hover { border-color: var(--border-hover); }
+.cli-prefix { color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; margin-right: 16px; }
+.cli-code { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-primary); padding-right: 24px; }
+.cli-btn {
+  background: var(--text-primary); color: var(--bg); border: none;
+  padding: 10px 20px; border-radius: 4px; font-weight: 500; font-size: 0.85rem;
+  cursor: pointer; transition: transform 0.2s;
+}
+.cli-btn:active { transform: scale(0.96); }
 
-  /* Nav */
-  nav {
-    display: flex;
-    gap: 24px;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  nav a {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    padding: 6px 0;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-  }
-  nav a:hover { color: var(--text); border-bottom-color: var(--accent); text-decoration: none; }
+/* MARQUEE */
+.marquee { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.5rem 0; overflow: hidden; display: flex; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.marquee-content { display: flex; gap: 4rem; animation: marquee 25s linear infinite; white-space: nowrap; }
+.marquee-item { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-tertiary); letter-spacing: 0.05em; }
+.marquee-item span { color: var(--text-primary); font-weight: 500; margin-left: 8px; }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-  /* Meta */
-  .meta {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin-bottom: 36px;
-    font-family: var(--mono);
-  }
+/* BENTO GRID (packages) */
+.bento-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden; margin-top: 4rem;
+}
+.bento-box {
+  background: rgba(5,5,5,0.9); padding: 40px; display: flex; flex-direction: column;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
+}
+.bento-box:hover { background: rgba(15,15,15,0.9); }
+.bento-large { grid-column: span 2; }
+@media (max-width: 800px) { .bento-grid { grid-template-columns: 1fr; } .bento-large { grid-column: span 1; } }
+.bento-name {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent);
+  margin-bottom: 1rem; letter-spacing: 0.02em;
+}
+.bento-title { font-size: 1.2rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-primary); }
+.bento-desc { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; flex: 1; }
+.bento-speedup {
+  display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;
+  font-family: 'JetBrains Mono', monospace; font-weight: 500;
+  background: var(--green-dim); color: var(--green); align-self: flex-start;
+}
+.bento-links { margin-top: 1rem; display: flex; gap: 16px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+.bento-links a { color: var(--text-tertiary); }
+.bento-links a:hover { color: var(--text-primary); }
 
-  @media (max-width: 640px) {
-    .hero h1 { font-size: 2rem; }
-    .bar-label { min-width: 120px; font-size: 0.7rem; }
-    .pkg-grid { grid-template-columns: 1fr; }
-  }
+/* DATA VIZ BENCHMARKS */
+.viz-container {
+  margin-top: 4rem; display: flex; flex-direction: column; gap: 2px;
+  background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+.viz-group-header {
+  background: rgba(5,5,5,0.9); padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.viz-scenario-label {
+  background: rgba(5,5,5,0.9); padding: 12px 20px;
+  font-size: 0.85rem; color: var(--text-secondary); font-weight: 300;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.viz-row {
+  display: grid; grid-template-columns: 240px 1fr 140px; background: rgba(5,5,5,0.9);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
+}
+.viz-row:hover { background: rgba(15,15,15,0.9); }
+.viz-label {
+  padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  color: var(--text-secondary); border-right: 1px solid var(--border); display: flex; align-items: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.viz-label.is-amigo { color: var(--text-primary); }
+.viz-track-container { padding: 14px 20px; display: flex; align-items: center; }
+.viz-track { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; position: relative; overflow: hidden; }
+.viz-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.viz-fill.competitor { background: var(--border-hover); }
+.viz-fill.winner { background: var(--accent); }
+.viz-fill.slower { background: var(--text-tertiary); }
+.viz-stats {
+  padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  border-left: 1px solid var(--border);
+}
+.viz-ops { color: var(--text-primary); }
+.viz-ratio { color: var(--text-tertiary); font-size: 0.7rem; }
+.viz-ratio.faster { color: var(--green); }
+
+/* SIZE VIZ */
+.size-viz-container {
+  margin-top: 4rem; display: flex; flex-direction: column; gap: 2px;
+  background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+.size-row {
+  display: grid; grid-template-columns: 140px 120px 1fr 120px 140px; background: rgba(5,5,5,0.9);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
+}
+.size-row:hover { background: rgba(15,15,15,0.9); }
+.size-row.header { background: rgba(5,5,5,0.95); }
+.size-cell {
+  padding: 14px 16px; font-size: 0.85rem; color: var(--text-secondary);
+  display: flex; align-items: center; border-right: 1px solid var(--border);
+}
+.size-cell:last-child { border-right: none; }
+.size-cell.header-cell {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.size-cell.pkg-name { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-primary); }
+.size-bar-container { display: flex; align-items: center; gap: 12px; }
+.size-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; position: relative; overflow: hidden; }
+.size-bar-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; }
+.size-bar-fill.amigo { background: var(--accent); }
+.size-bar-fill.comp { background: var(--border-hover); }
+.size-result { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+.size-result.winner { color: var(--green); }
+.size-result.loser { color: var(--text-tertiary); }
+
+/* GLASS INSTALL TERMINAL */
+.glass-terminal {
+  margin-top: 4rem; background: rgba(10, 10, 10, 0.4); border: 1px solid var(--border);
+  border-radius: 12px; backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05); overflow: hidden;
+}
+.term-header { padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; }
+.term-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--border-hover); }
+.term-body { padding: 32px 24px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-secondary); }
+.term-line { margin-bottom: 8px; line-height: 1.6; }
+.term-accent { color: var(--accent); }
+.term-comment { color: var(--text-tertiary); }
+
+/* TELEMETRY WIDGET */
+.telemetry-widget {
+  position: fixed; top: 24px; right: 24px; z-index: 100;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-tertiary);
+  pointer-events: none;
+}
+.telemetry-val { color: var(--text-primary); font-size: 0.85rem; }
+
+/* FOOTER */
+.footer {
+  border-top: 1px solid var(--border); padding: 4rem 24px; font-size: 0.85rem;
+  color: var(--text-tertiary); display: flex; justify-content: space-between;
+  max-width: 1040px; margin: 0 auto; position: relative; z-index: 10;
+}
+
+/* REVEAL */
+.reveal { opacity: 0; transform: translateY(30px); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 800px) {
+  .viz-row { grid-template-columns: 160px 1fr 100px; }
+  .size-row { grid-template-columns: 1fr; }
+  .size-cell { border-right: none; border-bottom: 1px solid var(--border); }
+  .telemetry-widget { display: none; }
+  .footer { flex-direction: column; gap: 1rem; }
+}
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <h1>amigo-<span>native</span></h1>
-  <p>Rust-powered Node.js packages. Drop-in replacements for popular npm packages, built with NAPI-RS.</p>
-  <div class="hero-badges">
-    <a href="https://github.com/amigo-labs/amigo-native">GitHub</a>
-    <a href="https://www.npmjs.com/org/amigo-labs">npm</a>
-    <a href="#benchmarks">Benchmarks</a>
-  </div>
+<div class="bg-grid"></div>
+<div class="ambient-aura"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<div class="telemetry-widget">
+  <div>PACKAGES: <span class="telemetry-val">5</span></div>
+  <div>PLATFORMS: <span class="telemetry-val">6</span></div>
+  <div>STATUS: <span class="telemetry-val" style="color:#4ade80">OPERATIONAL</span></div>
 </div>
 
-<div class="container">
-  <nav>
-    <a href="#packages">Packages</a>
-    <a href="#benchmarks">Benchmarks</a>
-    <a href="#sizes">Sizes</a>
-    <a href="#install">Install</a>
-  </nav>
+<section class="hero container">
+  <div class="reveal">
+    <a href="https://github.com/amigo-labs/amigo-native" target="_blank" class="hero-repo">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+      amigo-labs / amigo-native
+    </a>
+    <h1>amigo-<span>native</span></h1>
+    <p class="hero-subtitle">Rust-powered drop-in replacements for popular Node.js packages. Compiled to native addons via NAPI-RS. Prebuilt for every major platform.</p>
 
-  <!-- Packages -->
-  <section class="section" id="packages">
-    <h2>Packages</h2>
-    <p class="subtitle">Native Node.js addons compiled from Rust via NAPI-RS. Prebuilt for Linux, macOS, and Windows.</p>
-    <div class="pkg-grid" id="pkg-grid"></div>
-  </section>
-
-  <!-- Benchmarks -->
-  <section class="section" id="benchmarks">
-    <h2>Benchmarks</h2>
-    <p class="subtitle">Operations per second — higher is better. Auto-generated by CI.</p>
-    <div class="meta" id="bench-meta"></div>
-    <div id="bench-charts"></div>
-  </section>
-
-  <!-- Sizes -->
-  <section class="section" id="sizes">
-    <h2>Package Sizes</h2>
-    <p class="subtitle">@amigo-labs = compiled binary + JS shim (single platform). Competitors = full node_modules after npm install.</p>
-    <table class="size-table" id="size-table">
-      <thead>
-        <tr>
-          <th>Package</th>
-          <th>@amigo-labs</th>
-          <th>Competitor</th>
-          <th>Competitor size</th>
-          <th>Result</th>
-        </tr>
-      </thead>
-      <tbody id="size-tbody"></tbody>
-    </table>
-  </section>
-
-  <!-- Install -->
-  <section class="section" id="install">
-    <div class="install">
-      <h3>Quick install</h3>
-      <code>
-        npm install @amigo-labs/slugify<br>
-        npm install @amigo-labs/argon2<br>
-        npm install @amigo-labs/xxhash<br>
-        npm install @amigo-labs/sanitize-html<br>
-        npm install @amigo-labs/csv
-      </code>
+    <div class="cli-install">
+      <span class="cli-prefix">$</span>
+      <span class="cli-code">npm install @amigo-labs/slugify</span>
+      <button class="cli-btn" onclick="copyInstall(this)">Copy</button>
     </div>
-  </section>
+  </div>
+</section>
+
+<div class="marquee">
+  <div class="marquee-content" id="marqueeTrack"></div>
 </div>
 
-<footer>
-  MIT License &middot; <a href="https://github.com/amigo-labs/amigo-native">amigo-labs/amigo-native</a>
+<!-- Packages -->
+<section class="section container reveal" id="packages">
+  <span class="section-badge">01 // Packages</span>
+  <h2 class="section-title">The Collection</h2>
+  <p class="section-desc">Five native packages under the @amigo-labs scope. Each one wraps a battle-tested Rust crate and ships prebuilt binaries for 6 platform targets.</p>
+
+  <div class="bento-grid" id="bento-grid"></div>
+</section>
+
+<!-- Benchmarks -->
+<section class="section container reveal" id="benchmarks">
+  <span class="section-badge">02 // Performance</span>
+  <h2 class="section-title">Benchmark Data</h2>
+  <p class="section-desc">Operations per second, auto-generated by CI. Higher is better.</p>
+
+  <div class="viz-container" id="viz-container"></div>
+</section>
+
+<!-- Sizes -->
+<section class="section container reveal" id="sizes">
+  <span class="section-badge">03 // Package Size</span>
+  <h2 class="section-title">Install Footprint</h2>
+  <p class="section-desc">@amigo-labs ships a single compiled binary + JS shim per platform. Competitors pull full node_modules trees.</p>
+
+  <div class="size-viz-container" id="size-viz"></div>
+</section>
+
+<!-- Install -->
+<section class="section container reveal" id="install">
+  <span class="section-badge">04 // Get Started</span>
+  <h2 class="section-title">Install</h2>
+
+  <div class="glass-terminal">
+    <div class="term-header">
+      <div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div>
+    </div>
+    <div class="term-body">
+      <div class="term-line term-comment"># Pick what you need</div>
+      <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/slugify</div>
+      <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/argon2</div>
+      <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/xxhash</div>
+      <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/sanitize-html</div>
+      <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/csv</div>
+      <div class="term-line" style="margin-top: 24px;"><span class="term-comment"># That's it. No Rust toolchain needed.</span></div>
+      <div class="term-line"><span class="term-comment"># Prebuilt binaries for linux, macOS, and Windows.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div><a href="https://github.com/amigo-labs/amigo-native" target="_blank">amigo-labs/amigo-native</a></div>
+  <div>MIT License</div>
 </footer>
 
 <script>
+// --- Cursor Glow ---
+const glow = document.getElementById('cursorGlow');
+document.addEventListener('mousemove', (e) => {
+  glow.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
+});
+
+// --- Marquee ---
+const marqueeItems = [
+  { k: 'RUNTIME', v: 'NAPI-RS v3' }, { k: 'LANGUAGE', v: 'RUST' },
+  { k: 'PLATFORMS', v: '6' }, { k: 'PACKAGES', v: '5' },
+  { k: 'NODE', v: '>= 18' }, { k: 'LICENSE', v: 'MIT' },
+  { k: 'PROVENANCE', v: 'ENABLED' }, { k: 'DEPENDENCIES', v: 'ZERO' },
+];
+const mTrack = document.getElementById('marqueeTrack');
+mTrack.innerHTML = [...marqueeItems, ...marqueeItems, ...marqueeItems]
+  .map(i => `<div class="marquee-item">${i.k}<span>${i.v}</span></div>`).join('');
+
+// --- Copy ---
+function copyInstall(btn) {
+  navigator.clipboard.writeText('npm install @amigo-labs/slugify');
+  btn.textContent = 'Copied';
+  btn.style.background = 'var(--accent)';
+  btn.style.color = '#000';
+  setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = 'var(--text-primary)'; }, 2000);
+}
+
+// --- Packages ---
 const PACKAGES = [
-  { name: 'slugify', desc: 'Unicode-aware slugification via deunicode', speedup: '3-7x faster' },
-  { name: 'argon2', desc: 'Argon2id password hashing (sync + async)', speedup: '1.4-2.5x faster' },
-  { name: 'xxhash', desc: 'XXH32/64/XXH3 hashing with batch + streaming', speedup: '1.3-2.6x faster' },
-  { name: 'sanitize-html', desc: 'HTML sanitization via Mozilla\'s ammonia', speedup: '1.6-2x faster' },
-  { name: 'csv', desc: 'CSV parsing/serialization via BurntSushi\'s csv', speedup: '1.4-3.5x faster' },
+  { name: 'slugify', title: 'Slugify', desc: 'Unicode-aware slugification. Wraps deunicode + unicode-normalization.', speedup: '3-7x faster', large: true },
+  { name: 'argon2', title: 'Argon2', desc: 'Argon2id password hashing with sync + async API.', speedup: '1.4-2.5x faster', large: false },
+  { name: 'xxhash', title: 'XXHash', desc: 'XXH32, XXH64, and XXH3 with batch + streaming support.', speedup: '1.3-2.6x faster', large: false },
+  { name: 'sanitize-html', title: 'Sanitize HTML', desc: 'HTML sanitization via Mozilla\'s ammonia engine.', speedup: '1.6-2x faster', large: true },
+  { name: 'csv', title: 'CSV', desc: 'CSV parsing and serialization via BurntSushi\'s csv crate.', speedup: '1.4-3.5x faster', large: false },
 ];
 
-function renderPackages() {
-  const grid = document.getElementById('pkg-grid');
-  grid.innerHTML = PACKAGES.map(pkg => `
-    <div class="pkg-card">
-      <h3>@amigo-labs/${pkg.name}</h3>
-      <div class="desc">${pkg.desc}</div>
-      <span class="speedup">${pkg.speedup}</span>
-      <div class="links">
-        <a href="https://www.npmjs.com/package/@amigo-labs/${pkg.name}">npm</a>
-        <a href="https://github.com/amigo-labs/amigo-native/tree/main/crates/${pkg.name}">source</a>
-      </div>
+document.getElementById('bento-grid').innerHTML = PACKAGES.map(pkg => `
+  <div class="bento-box${pkg.large ? ' bento-large' : ''}">
+    <div class="bento-name">@amigo-labs/${pkg.name}</div>
+    <div class="bento-title">${pkg.title}</div>
+    <div class="bento-desc">${pkg.desc}</div>
+    <span class="bento-speedup">${pkg.speedup}</span>
+    <div class="bento-links">
+      <a href="https://www.npmjs.com/package/@amigo-labs/${pkg.name}">npm</a>
+      <a href="https://github.com/amigo-labs/amigo-native/tree/main/crates/${pkg.name}">source</a>
     </div>
-  `).join('');
-}
+  </div>
+`).join('');
 
+// --- Helpers ---
 function formatOps(hz) {
-  if (hz >= 1e6) return (hz / 1e6).toFixed(2) + 'M ops/s';
-  if (hz >= 1e3) return (hz / 1e3).toFixed(1) + 'K ops/s';
-  if (hz >= 1) return hz.toFixed(1) + ' ops/s';
-  return hz.toFixed(2) + ' ops/s';
+  if (hz >= 1e6) return (hz / 1e6).toFixed(2) + 'M';
+  if (hz >= 1e3) return (hz / 1e3).toFixed(1) + 'K';
+  if (hz >= 1) return hz.toFixed(1);
+  return hz.toFixed(2);
 }
-
 function formatBytes(bytes) {
   if (!bytes) return 'N/A';
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
-
 function detectCrate(name) {
   const l = name.toLowerCase();
   if (l.includes('slugify')) return 'slugify';
@@ -402,13 +416,10 @@ function detectCrate(name) {
   return 'other';
 }
 
+// --- Benchmarks ---
 function renderBenchmarks(data) {
   if (!data?.benchmarks?.suites) return;
-
-  const meta = document.getElementById('bench-meta');
-  meta.textContent = `${data.generatedAt} · Node.js ${data.nodeVersion} · ${data.platform}`;
-
-  const container = document.getElementById('bench-charts');
+  const container = document.getElementById('viz-container');
   const crateOrder = ['slugify', 'argon2', 'xxhash', 'sanitize-html', 'csv'];
   const crateMap = new Map();
 
@@ -418,51 +429,67 @@ function renderBenchmarks(data) {
     crateMap.get(crate).push(suite);
   }
 
+  let html = '';
   for (const crate of crateOrder) {
     const suites = crateMap.get(crate);
     if (!suites) continue;
 
-    let html = `<div class="bench-group"><h3>${crate}</h3>`;
+    html += `<div class="viz-group-header">${crate}</div>`;
 
     for (const suite of suites) {
       const entries = suite.entries.filter(e => e.hz > 0);
       if (!entries.length) continue;
       const maxHz = Math.max(...entries.map(e => e.hz));
 
-      html += `<div class="bench-scenario"><div class="scenario-name">${suite.name}</div>`;
+      html += `<div class="viz-scenario-label">${suite.name}</div>`;
 
-      // Sort: amigo entries last
-      const sorted = [...entries].sort((a, b) => {
-        const aIsAmigo = a.name.includes('@amigo') ? 1 : 0;
-        const bIsAmigo = b.name.includes('@amigo') ? 1 : 0;
-        if (aIsAmigo !== bIsAmigo) return aIsAmigo - bIsAmigo;
-        return b.hz - a.hz;
-      });
+      const sorted = [...entries].sort((a, b) => b.hz - a.hz);
 
       for (const entry of sorted) {
         const pct = Math.max((entry.hz / maxHz) * 100, 2);
         const isAmigo = entry.name.includes('@amigo');
         const isFastest = entry.hz === maxHz;
-        const cls = isAmigo ? (isFastest ? 'amigo' : 'slower') : 'competitor';
+        const fillCls = isAmigo ? (isFastest ? 'winner' : 'slower') : 'competitor';
+        const labelCls = isAmigo ? ' is-amigo' : '';
+
+        let ratioHtml = '';
+        if (isAmigo && !isFastest) {
+          ratioHtml = `<span class="viz-ratio">${(entry.hz / maxHz).toFixed(1)}x</span>`;
+        } else if (isAmigo && isFastest && sorted.length > 1) {
+          const second = sorted.find(e => !e.name.includes('@amigo'));
+          if (second) ratioHtml = `<span class="viz-ratio faster">${(entry.hz / second.hz).toFixed(1)}x</span>`;
+        }
 
         html += `
-          <div class="bar-row">
-            <div class="bar-label">${entry.name}</div>
-            <div class="bar-track">
-              <div class="bar-fill ${cls}" style="width:${pct}%">${formatOps(entry.hz)}</div>
+          <div class="viz-row">
+            <div class="viz-label${labelCls}">${entry.name}</div>
+            <div class="viz-track-container">
+              <div class="viz-track"><div class="viz-fill ${fillCls}" style="width:${pct}%"></div></div>
+            </div>
+            <div class="viz-stats">
+              ${ratioHtml}
+              <span class="viz-ops">${formatOps(entry.hz)} ops/s</span>
             </div>
           </div>`;
       }
-      html += '</div>';
     }
-    html += '</div>';
-    container.innerHTML += html;
   }
+  container.innerHTML = html;
 }
 
+// --- Sizes ---
 function renderSizes(data) {
   if (!data?.sizes) return;
-  const tbody = document.getElementById('size-tbody');
+  const container = document.getElementById('size-viz');
+
+  let html = `
+    <div class="size-row header">
+      <div class="size-cell header-cell">Package</div>
+      <div class="size-cell header-cell">@amigo-labs</div>
+      <div class="size-cell header-cell">Comparison</div>
+      <div class="size-cell header-cell">Competitor</div>
+      <div class="size-cell header-cell">Result</div>
+    </div>`;
 
   for (const [crate, packages] of Object.entries(data.sizes)) {
     const amigoKey = `@amigo-labs/${crate}`;
@@ -471,30 +498,46 @@ function renderSizes(data) {
     for (const [pkg, info] of Object.entries(packages)) {
       if (pkg === amigoKey) continue;
       const size = info.installSize;
-      let result = '';
-      let cls = '';
+      const maxSize = Math.max(amigoSize || 0, size || 0);
+
+      let result = '', cls = '';
       if (size && amigoSize) {
         if (size > amigoSize) {
-          result = `amigo ${(size / amigoSize).toFixed(1)}x smaller`;
-          cls = 'size-winner';
+          result = `${(size / amigoSize).toFixed(1)}x smaller`;
+          cls = 'winner';
         } else {
-          result = `competitor ${(amigoSize / size).toFixed(1)}x smaller`;
+          result = `${(amigoSize / size).toFixed(1)}x larger`;
+          cls = 'loser';
         }
       }
-      tbody.innerHTML += `
-        <tr>
-          <td>${crate}</td>
-          <td>${formatBytes(amigoSize)}</td>
-          <td>${pkg}</td>
-          <td>${formatBytes(size)}</td>
-          <td class="${cls}">${result}</td>
-        </tr>`;
+
+      const amigoPct = amigoSize ? (amigoSize / maxSize) * 100 : 0;
+      const compPct = size ? (size / maxSize) * 100 : 0;
+
+      html += `
+        <div class="size-row">
+          <div class="size-cell pkg-name">${crate}</div>
+          <div class="size-cell">${formatBytes(amigoSize)}</div>
+          <div class="size-cell">
+            <div class="size-bar-container" style="width:100%">
+              <div class="size-bar-track">
+                <div class="size-bar-fill amigo" style="width:${amigoPct}%"></div>
+              </div>
+              <div class="size-bar-track">
+                <div class="size-bar-fill comp" style="width:${compPct}%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="size-cell">${pkg}<br><span style="color:var(--text-tertiary)">${formatBytes(size)}</span></div>
+          <div class="size-cell"><span class="size-result ${cls}">${result}</span></div>
+        </div>`;
     }
   }
+  container.innerHTML = html;
 }
 
+// --- Init ---
 async function init() {
-  renderPackages();
   try {
     const res = await fetch('data.json');
     if (res.ok) {
@@ -502,12 +545,15 @@ async function init() {
       renderBenchmarks(data);
       renderSizes(data);
     }
-  } catch (e) {
-    // data.json not available yet - show static content only
-  }
+  } catch (e) {}
 }
-
 init();
+
+// --- Scroll Reveals ---
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
 </body>
 </html>
