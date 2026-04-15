@@ -9,17 +9,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #000000;
-  --bg-elevated: #080808;
-  --border: #1A1A1A;
-  --border-hover: #333333;
-  --text-primary: #FFFFFF;
-  --text-secondary: #888888;
-  --text-tertiary: #444444;
-  --accent: #FF3300;
-  --accent-glow: rgba(255, 51, 0, 0.15);
-  --green: #4ade80;
-  --green-dim: rgba(74, 222, 128, 0.15);
+  --bg: #0B0A08;
+  --bg-elevated: #13110E;
+  --border: #2A2418;
+  --border-hover: #3D3528;
+  --text-primary: #E8DFD0;
+  --text-secondary: #8A7E6A;
+  --text-tertiary: #4A4230;
+  --accent: #C47832;
+  --accent-glow: rgba(196, 120, 50, 0.12);
+  --accent-dim: rgba(196, 120, 50, 0.2);
+  --green: #7CA84E;
+  --green-dim: rgba(124, 168, 78, 0.15);
+  --teal: #5A8A6A;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,15 +33,15 @@ body {
   overflow-x: hidden; -webkit-font-smoothing: antialiased; letter-spacing: -0.02em;
 }
 
-::selection { background: var(--text-primary); color: var(--bg); }
+::selection { background: var(--accent); color: var(--bg); }
 a { color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--text-primary); }
 
 /* --- DYNAMIC BACKGROUND --- */
 .bg-grid {
   position: fixed; inset: 0; z-index: -2; pointer-events: none;
-  background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-image: linear-gradient(to right, rgba(196,120,50,0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(196,120,50,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
   -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
@@ -47,7 +49,7 @@ a:hover { color: var(--text-primary); }
 
 .ambient-aura {
   position: fixed; width: 80vw; height: 80vh; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 51, 0, 0.05) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(196, 120, 50, 0.04) 0%, rgba(90, 138, 106, 0.02) 40%, transparent 60%);
   top: 50%; left: 50%; transform: translate(-50%, -50%);
   pointer-events: none; z-index: -3; filter: blur(80px);
   animation: breatheAura 15s ease-in-out infinite alternate;
@@ -77,11 +79,16 @@ a:hover { color: var(--text-primary); }
 
 /* HERO */
 .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding-top: 4rem; position: relative; }
+.hero-logo {
+  width: 120px; height: 120px; border-radius: 16px; margin-bottom: 2.5rem;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 80px rgba(196, 120, 50, 0.08);
+  border: 1px solid var(--border);
+}
 .hero-repo {
   display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem; color: var(--text-secondary); text-decoration: none;
   padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px;
-  margin-bottom: 3rem; transition: all 0.2s; background: rgba(0,0,0,0.5);
+  margin-bottom: 3rem; transition: all 0.2s; background: rgba(11,10,8,0.5);
   backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
 }
 .hero-repo:hover { border-color: var(--text-secondary); color: var(--text-primary); }
@@ -94,7 +101,7 @@ a:hover { color: var(--text-primary); }
 
 /* CLI INSTALL */
 .cli-install {
-  margin-top: 4rem; display: inline-flex; align-items: center; background: rgba(10,10,10,0.6);
+  margin-top: 4rem; display: inline-flex; align-items: center; background: rgba(11,10,8,0.6);
   border: 1px solid var(--border); border-radius: 8px; padding: 4px 4px 4px 20px;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: border-color 0.3s;
 }
@@ -102,17 +109,18 @@ a:hover { color: var(--text-primary); }
 .cli-prefix { color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; margin-right: 16px; }
 .cli-code { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-primary); padding-right: 24px; }
 .cli-btn {
-  background: var(--text-primary); color: var(--bg); border: none;
-  padding: 10px 20px; border-radius: 4px; font-weight: 500; font-size: 0.85rem;
-  cursor: pointer; transition: transform 0.2s;
+  background: var(--accent); color: var(--bg); border: none;
+  padding: 10px 20px; border-radius: 4px; font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; transition: all 0.2s;
 }
+.cli-btn:hover { background: #D4883C; }
 .cli-btn:active { transform: scale(0.96); }
 
 /* MARQUEE */
-.marquee { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.5rem 0; overflow: hidden; display: flex; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.marquee { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.5rem 0; overflow: hidden; display: flex; background: rgba(11,10,8,0.3); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
 .marquee-content { display: flex; gap: 4rem; animation: marquee 25s linear infinite; white-space: nowrap; }
 .marquee-item { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-tertiary); letter-spacing: 0.05em; }
-.marquee-item span { color: var(--text-primary); font-weight: 500; margin-left: 8px; }
+.marquee-item span { color: var(--accent); font-weight: 500; margin-left: 8px; }
 @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
 /* BENTO GRID (packages) */
@@ -122,10 +130,10 @@ a:hover { color: var(--text-primary); }
   overflow: hidden; margin-top: 4rem;
 }
 .bento-box {
-  background: rgba(5,5,5,0.9); padding: 40px; display: flex; flex-direction: column;
+  background: rgba(13,11,9,0.95); padding: 40px; display: flex; flex-direction: column;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
 }
-.bento-box:hover { background: rgba(15,15,15,0.9); }
+.bento-box:hover { background: rgba(20,18,14,0.95); }
 .bento-large { grid-column: span 2; }
 @media (max-width: 800px) { .bento-grid { grid-template-columns: 1fr; } .bento-large { grid-column: span 1; } }
 .bento-name {
@@ -141,7 +149,7 @@ a:hover { color: var(--text-primary); }
 }
 .bento-links { margin-top: 1rem; display: flex; gap: 16px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
 .bento-links a { color: var(--text-tertiary); }
-.bento-links a:hover { color: var(--text-primary); }
+.bento-links a:hover { color: var(--accent); }
 
 /* DATA VIZ BENCHMARKS */
 .viz-container {
@@ -149,21 +157,21 @@ a:hover { color: var(--text-primary); }
   background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
 }
 .viz-group-header {
-  background: rgba(5,5,5,0.9); padding: 16px 20px;
+  background: rgba(13,11,9,0.95); padding: 16px 20px;
   font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent);
   letter-spacing: 0.1em; text-transform: uppercase;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
 .viz-scenario-label {
-  background: rgba(5,5,5,0.9); padding: 12px 20px;
+  background: rgba(13,11,9,0.95); padding: 12px 20px;
   font-size: 0.85rem; color: var(--text-secondary); font-weight: 300;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
 .viz-row {
-  display: grid; grid-template-columns: 240px 1fr 140px; background: rgba(5,5,5,0.9);
+  display: grid; grid-template-columns: 240px 1fr 140px; background: rgba(13,11,9,0.95);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
 }
-.viz-row:hover { background: rgba(15,15,15,0.9); }
+.viz-row:hover { background: rgba(20,18,14,0.95); }
 .viz-label {
   padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
   color: var(--text-secondary); border-right: 1px solid var(--border); display: flex; align-items: center;
@@ -171,7 +179,7 @@ a:hover { color: var(--text-primary); }
 }
 .viz-label.is-amigo { color: var(--text-primary); }
 .viz-track-container { padding: 14px 20px; display: flex; align-items: center; }
-.viz-track { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; position: relative; overflow: hidden; }
+.viz-track { width: 100%; height: 6px; background: rgba(232,223,208,0.05); border-radius: 3px; position: relative; overflow: hidden; }
 .viz-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
 .viz-fill.competitor { background: var(--border-hover); }
 .viz-fill.winner { background: var(--accent); }
@@ -191,11 +199,12 @@ a:hover { color: var(--text-primary); }
   background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
 }
 .size-row {
-  display: grid; grid-template-columns: 140px 120px 1fr 120px 140px; background: rgba(5,5,5,0.9);
+  display: grid; grid-template-columns: 140px 120px 1fr 120px 140px; background: rgba(13,11,9,0.95);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: background 0.2s;
 }
-.size-row:hover { background: rgba(15,15,15,0.9); }
-.size-row.header { background: rgba(5,5,5,0.95); }
+.size-row:hover { background: rgba(20,18,14,0.95); }
+.size-row.header { background: rgba(13,11,9,0.98); }
+.size-row.header:hover { background: rgba(13,11,9,0.98); }
 .size-cell {
   padding: 14px 16px; font-size: 0.85rem; color: var(--text-secondary);
   display: flex; align-items: center; border-right: 1px solid var(--border);
@@ -207,7 +216,7 @@ a:hover { color: var(--text-primary); }
 }
 .size-cell.pkg-name { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-primary); }
 .size-bar-container { display: flex; align-items: center; gap: 12px; }
-.size-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; position: relative; overflow: hidden; }
+.size-bar-track { flex: 1; height: 6px; background: rgba(232,223,208,0.05); border-radius: 3px; position: relative; overflow: hidden; }
 .size-bar-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; }
 .size-bar-fill.amigo { background: var(--accent); }
 .size-bar-fill.comp { background: var(--border-hover); }
@@ -217,12 +226,15 @@ a:hover { color: var(--text-primary); }
 
 /* GLASS INSTALL TERMINAL */
 .glass-terminal {
-  margin-top: 4rem; background: rgba(10, 10, 10, 0.4); border: 1px solid var(--border);
+  margin-top: 4rem; background: rgba(13, 11, 9, 0.4); border: 1px solid var(--border);
   border-radius: 12px; backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-  box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05); overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(232,223,208,0.03); overflow: hidden;
 }
-.term-header { padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; }
-.term-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--border-hover); }
+.term-header { padding: 16px 24px; border-bottom: 1px solid rgba(232,223,208,0.05); display: flex; gap: 8px; }
+.term-dot { width: 12px; height: 12px; border-radius: 50%; }
+.term-dot:nth-child(1) { background: #6B4430; }
+.term-dot:nth-child(2) { background: #7CA84E; }
+.term-dot:nth-child(3) { background: #C47832; }
 .term-body { padding: 32px 24px; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-secondary); }
 .term-line { margin-bottom: 8px; line-height: 1.6; }
 .term-accent { color: var(--accent); }
@@ -254,6 +266,7 @@ a:hover { color: var(--text-primary); }
   .size-cell { border-right: none; border-bottom: 1px solid var(--border); }
   .telemetry-widget { display: none; }
   .footer { flex-direction: column; gap: 1rem; }
+  .hero-logo { width: 80px; height: 80px; }
 }
 </style>
 </head>
@@ -266,11 +279,12 @@ a:hover { color: var(--text-primary); }
 <div class="telemetry-widget">
   <div>PACKAGES: <span class="telemetry-val">5</span></div>
   <div>PLATFORMS: <span class="telemetry-val">6</span></div>
-  <div>STATUS: <span class="telemetry-val" style="color:#4ade80">OPERATIONAL</span></div>
+  <div>STATUS: <span class="telemetry-val" style="color:var(--green)">OPERATIONAL</span></div>
 </div>
 
 <section class="hero container">
   <div class="reveal">
+    <img src="logo.png" alt="amigo-native" class="hero-logo">
     <a href="https://github.com/amigo-labs/amigo-native" target="_blank" class="hero-repo">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
       amigo-labs / amigo-native
@@ -333,8 +347,8 @@ a:hover { color: var(--text-primary); }
       <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/xxhash</div>
       <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/sanitize-html</div>
       <div class="term-line"><span class="term-accent">$</span> npm install @amigo-labs/csv</div>
-      <div class="term-line" style="margin-top: 24px;"><span class="term-comment"># That's it. No Rust toolchain needed.</span></div>
-      <div class="term-line"><span class="term-comment"># Prebuilt binaries for linux, macOS, and Windows.</span></div>
+      <div class="term-line" style="margin-top: 24px;"><span class="term-comment"># No Rust toolchain needed.</span></div>
+      <div class="term-line"><span class="term-comment"># Prebuilt binaries for Linux, macOS, and Windows.</span></div>
     </div>
   </div>
 </section>
@@ -366,9 +380,7 @@ mTrack.innerHTML = [...marqueeItems, ...marqueeItems, ...marqueeItems]
 function copyInstall(btn) {
   navigator.clipboard.writeText('npm install @amigo-labs/slugify');
   btn.textContent = 'Copied';
-  btn.style.background = 'var(--accent)';
-  btn.style.color = '#000';
-  setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = 'var(--text-primary)'; }, 2000);
+  setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
 }
 
 // --- Packages ---
