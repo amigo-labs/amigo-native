@@ -1,5 +1,9 @@
 # @amigo-labs/csv
 
+[![npm version](https://img.shields.io/npm/v/@amigo-labs/csv)](https://www.npmjs.com/package/@amigo-labs/csv)
+[![npm downloads](https://img.shields.io/npm/dm/@amigo-labs/csv)](https://www.npmjs.com/package/@amigo-labs/csv)
+[![license](https://img.shields.io/npm/l/@amigo-labs/csv)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
+
 Blazing fast CSV parsing and serialization powered by Rust via [NAPI-RS](https://napi.rs). A native Node.js binding to the [csv](https://crates.io/crates/csv) crate.
 
 ## Installation

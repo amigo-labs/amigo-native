@@ -1,5 +1,9 @@
 # @amigo-labs/slugify
 
+[![npm version](https://img.shields.io/npm/v/@amigo-labs/slugify)](https://www.npmjs.com/package/@amigo-labs/slugify)
+[![npm downloads](https://img.shields.io/npm/dm/@amigo-labs/slugify)](https://www.npmjs.com/package/@amigo-labs/slugify)
+[![license](https://img.shields.io/npm/l/@amigo-labs/slugify)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
+
 Blazing fast slugify powered by Rust via [NAPI-RS](https://napi.rs). Converts any string into a URL-friendly slug with Unicode support.
 
 ## Installation

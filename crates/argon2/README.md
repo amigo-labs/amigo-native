@@ -1,5 +1,9 @@
 # @amigo-labs/argon2
 
+[![npm version](https://img.shields.io/npm/v/@amigo-labs/argon2)](https://www.npmjs.com/package/@amigo-labs/argon2)
+[![npm downloads](https://img.shields.io/npm/dm/@amigo-labs/argon2)](https://www.npmjs.com/package/@amigo-labs/argon2)
+[![license](https://img.shields.io/npm/l/@amigo-labs/argon2)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
+
 Fast Argon2id password hashing powered by Rust via [NAPI-RS](https://napi.rs). A native Node.js binding to the [argon2](https://crates.io/crates/argon2) crate.
 
 ## Installation

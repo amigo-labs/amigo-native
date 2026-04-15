@@ -1,5 +1,9 @@
 # @amigo-labs/xxhash
 
+[![npm version](https://img.shields.io/npm/v/@amigo-labs/xxhash)](https://www.npmjs.com/package/@amigo-labs/xxhash)
+[![npm downloads](https://img.shields.io/npm/dm/@amigo-labs/xxhash)](https://www.npmjs.com/package/@amigo-labs/xxhash)
+[![license](https://img.shields.io/npm/l/@amigo-labs/xxhash)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
+
 Blazing fast non-cryptographic hashing (XXHash) powered by Rust via [NAPI-RS](https://napi.rs). A native Node.js binding to the [xxhash-rust](https://crates.io/crates/xxhash-rust) crate.
 
 ## Installation

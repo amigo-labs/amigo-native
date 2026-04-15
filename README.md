@@ -1,5 +1,8 @@
 # amigo-native
 
+[![CI](https://github.com/amigo-labs/amigo-native/actions/workflows/ci.yml/badge.svg)](https://github.com/amigo-labs/amigo-native/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
+
 Rust-powered npm packages under the `@amigo-labs` scope.
 
 Monorepo using [napi-rs](https://napi.rs) for native Node.js addons, cross-compile CI, and independent npm packages per crate.
