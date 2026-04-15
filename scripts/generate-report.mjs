@@ -124,11 +124,11 @@ if (benchData?.suites?.length) {
 // --- Size section ---
 
 if (sizeData) {
-  lines.push('## Install Size')
+  lines.push('## Package Size')
   lines.push('')
-  lines.push('Single-platform install footprint (`node_modules`).')
+  lines.push('@amigo-labs = built binary + JS shim (single platform). Competitors = full `node_modules` after `npm install`.')
   lines.push('')
-  lines.push('| Package | @amigo-labs | Competitor | Competitor Size | Difference |')
+  lines.push('| Package | @amigo-labs (binary) | Competitor | Competitor (node_modules) | Difference |')
   lines.push('|:---|---:|:---|---:|:---|')
 
   for (const [crate, packages] of Object.entries(sizeData)) {

@@ -19,7 +19,7 @@
  * }
  */
 
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -27,22 +27,26 @@ const root = process.cwd()
 
 console.log('Running vitest bench (this may take a few minutes)...\n')
 
-let output
-try {
-  output = execSync('npx vitest bench --no-color 2>&1', {
-    cwd: root,
-    encoding: 'utf-8',
-    timeout: 600_000, // 10 minutes
-    env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' },
-  })
-} catch (err) {
-  // vitest bench may exit non-zero if some benches fail, but we still want the output
-  output = err.stdout || err.output?.join('') || ''
+const result = spawnSync('pnpm', ['exec', 'vitest', 'bench', '--no-color'], {
+  cwd: root,
+  encoding: 'utf-8',
+  timeout: 600_000, // 10 minutes
+  env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' },
+  stdio: ['ignore', 'pipe', 'pipe'],
+})
+
+const output = `${result.stdout || ''}${result.stderr || ''}`
+
+if (result.error) {
   if (!output.includes('·')) {
     console.error('vitest bench produced no results')
-    console.error(err.message)
+    console.error(result.error.message)
     process.exit(1)
   }
+} else if (result.status !== 0 && !output.includes('·')) {
+  console.error('vitest bench produced no results')
+  console.error(output || `vitest bench exited with status ${result.status}`)
+  process.exit(1)
 }
 
 console.log(output)
@@ -64,7 +68,7 @@ for (const line of output.split('\n')) {
     continue
   }
 
-  // Entry line: "   · @amigo-labs/slugify  1,304,735.29  0.0006  0.3809  0.0008  0.0007  0.0014  0.0015  0.0065  ±0.20%   652368"
+  // Entry line: "   · @amigo-labs/slugify  1,304,735.29  0.0006  0.3809  0.0008  ..."
   const entryMatch = line.match(
     /·\s+(.+?)\s{2,}([\d,]+(?:\.\d+)?)\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+±([\d.]+)%\s+(\d+)/,
   )
@@ -78,9 +82,9 @@ for (const line of output.split('\n')) {
   }
 }
 
-const result = { suites }
+const data = { suites }
 const outPath = join(root, 'bench-results.json')
-writeFileSync(outPath, JSON.stringify(result, null, 2))
+writeFileSync(outPath, JSON.stringify(data, null, 2))
 
 console.log(`\nParsed ${suites.length} benchmark suites`)
 console.log(`Written to ${outPath}`)
