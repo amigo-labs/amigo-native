@@ -4,7 +4,11 @@
   "description": "Fast Argon2id password hashing powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["index.js", "index.d.ts", "README.md"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
   "napi": {
     "binaryName": "argon2",
     "targets": [
@@ -20,7 +24,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi prepublish --skip-gh-release",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish",
     "test": "vitest run",
     "bench": "vitest bench"
   },
@@ -34,6 +38,24 @@
     "url": "https://github.com/amigo-labs/amigo-native",
     "directory": "crates/argon2"
   },
-  "keywords": ["argon2", "argon2id", "password", "hashing", "native", "rust", "napi"],
-  "engines": { "node": ">= 18" }
+  "keywords": [
+    "argon2",
+    "argon2id",
+    "password",
+    "hashing",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "optionalDependencies": {
+    "@amigo-labs/argon2-linux-x64-gnu": "0.1.0",
+    "@amigo-labs/argon2-linux-x64-musl": "0.1.0",
+    "@amigo-labs/argon2-linux-arm64-gnu": "0.1.0",
+    "@amigo-labs/argon2-darwin-x64": "0.1.0",
+    "@amigo-labs/argon2-darwin-arm64": "0.1.0",
+    "@amigo-labs/argon2-win32-x64-msvc": "0.1.0"
+  }
 }

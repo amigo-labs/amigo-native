@@ -4,7 +4,11 @@
   "description": "Blazing fast CSV parsing and serialization powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["index.js", "index.d.ts", "README.md"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
   "napi": {
     "binaryName": "csv",
     "targets": [
@@ -20,7 +24,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi prepublish --skip-gh-release",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish",
     "test": "vitest run",
     "bench": "vitest bench"
   },
@@ -34,6 +38,23 @@
     "url": "https://github.com/amigo-labs/amigo-native",
     "directory": "crates/csv"
   },
-  "keywords": ["csv", "parser", "serialize", "native", "rust", "napi"],
-  "engines": { "node": ">= 18" }
+  "keywords": [
+    "csv",
+    "parser",
+    "serialize",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "optionalDependencies": {
+    "@amigo-labs/csv-linux-x64-gnu": "0.1.0",
+    "@amigo-labs/csv-linux-x64-musl": "0.1.0",
+    "@amigo-labs/csv-linux-arm64-gnu": "0.1.0",
+    "@amigo-labs/csv-darwin-x64": "0.1.0",
+    "@amigo-labs/csv-darwin-arm64": "0.1.0",
+    "@amigo-labs/csv-win32-x64-msvc": "0.1.0"
+  }
 }

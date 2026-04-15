@@ -4,7 +4,11 @@
   "description": "Blazing fast non-cryptographic hashing (XXHash) powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["index.js", "index.d.ts", "README.md"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
   "napi": {
     "binaryName": "xxhash",
     "targets": [
@@ -20,7 +24,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi prepublish --skip-gh-release",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish",
     "test": "vitest run",
     "bench": "vitest bench"
   },
@@ -34,6 +38,24 @@
     "url": "https://github.com/amigo-labs/amigo-native",
     "directory": "crates/xxhash"
   },
-  "keywords": ["xxhash", "hash", "xxh3", "checksum", "native", "rust", "napi"],
-  "engines": { "node": ">= 18" }
+  "keywords": [
+    "xxhash",
+    "hash",
+    "xxh3",
+    "checksum",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "optionalDependencies": {
+    "@amigo-labs/xxhash-linux-x64-gnu": "0.1.0",
+    "@amigo-labs/xxhash-linux-x64-musl": "0.1.0",
+    "@amigo-labs/xxhash-linux-arm64-gnu": "0.1.0",
+    "@amigo-labs/xxhash-darwin-x64": "0.1.0",
+    "@amigo-labs/xxhash-darwin-arm64": "0.1.0",
+    "@amigo-labs/xxhash-win32-x64-msvc": "0.1.0"
+  }
 }

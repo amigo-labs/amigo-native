@@ -120,10 +120,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Set version
-        if: github.event_name == 'workflow_dispatch'
         run: |
           cd crates/${{ needs.resolve.outputs.crate }}
           npm version ${{ needs.resolve.outputs.version }} --no-git-tag-version --allow-same-version
+          for dir in npm/*/; do
+            if [ -f "$dir/package.json" ]; then
+              (cd "$dir" && npm version ${{ needs.resolve.outputs.version }} --no-git-tag-version --allow-same-version)
+            fi
+          done
 
       - uses: actions/download-artifact@v8
         with:
@@ -143,7 +147,7 @@ jobs:
             if [ -f "$dir/package.json" ] && ls "$dir"/*.node 1>/dev/null 2>&1; then
               echo "Publishing $(basename $dir)..."
               cd "$dir"
-              npm publish --provenance --access public
+              npm publish --provenance --access public || echo "Already published, skipping $(basename $dir)"
               cd -
             fi
           done
