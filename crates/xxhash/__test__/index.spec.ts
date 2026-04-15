@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { xxh32, xxh64, xxh3_64, xxh3_128, Xxh3Hasher } from '../index.js'
+import { xxh32, xxh64, xxh3_64, xxh3_128, xxh32Batch, xxh64Batch, xxh3_64Batch, Xxh3Hasher } from '../index.js'
 
 describe('xxhash', () => {
   it('xxh32 deterministic', () => {
@@ -52,5 +52,23 @@ describe('xxhash', () => {
     const hasher = new Xxh3Hasher()
     hasher.update(Buffer.from('test'))
     expect(hasher.digestHex()).toMatch(/^[0-9a-f]{16}$/)
+  })
+
+  it('xxh32Batch matches individual calls', () => {
+    const inputs = [Buffer.from('hello'), Buffer.from('world'), Buffer.from('test')]
+    const batch = xxh32Batch(inputs)
+    expect(batch).toEqual(inputs.map((b) => xxh32(b)))
+  })
+
+  it('xxh64Batch matches individual calls', () => {
+    const inputs = [Buffer.from('hello'), Buffer.from('world')]
+    const batch = xxh64Batch(inputs)
+    expect(batch).toEqual(inputs.map((b) => xxh64(b)))
+  })
+
+  it('xxh3_64Batch matches individual calls', () => {
+    const inputs = [Buffer.from('a'), Buffer.from('b'), Buffer.from('c')]
+    const batch = xxh3_64Batch(inputs)
+    expect(batch).toEqual(inputs.map((b) => xxh3_64(b)))
   })
 })

@@ -18,9 +18,37 @@ pub fn xxh3_64(input: Buffer, seed: Option<i64>) -> i64 {
 
 #[napi(js_name = "xxh3_128")]
 pub fn xxh3_128(input: Buffer, seed: Option<i64>) -> String {
-    let hash =
-        xxhash_rust::xxh3::xxh3_128_with_seed(input.as_ref(), seed.unwrap_or(0) as u64);
+    let hash = xxhash_rust::xxh3::xxh3_128_with_seed(input.as_ref(), seed.unwrap_or(0) as u64);
     format!("{:032x}", hash)
+}
+
+// --- Batch API: one FFI call for many inputs ---
+
+#[napi(js_name = "xxh32Batch")]
+pub fn xxh32_batch(inputs: Vec<Buffer>, seed: Option<u32>) -> Vec<u32> {
+    let s = seed.unwrap_or(0);
+    inputs
+        .iter()
+        .map(|buf| xxhash_rust::xxh32::xxh32(buf.as_ref(), s))
+        .collect()
+}
+
+#[napi(js_name = "xxh64Batch")]
+pub fn xxh64_batch(inputs: Vec<Buffer>, seed: Option<i64>) -> Vec<i64> {
+    let s = seed.unwrap_or(0) as u64;
+    inputs
+        .iter()
+        .map(|buf| xxhash_rust::xxh64::xxh64(buf.as_ref(), s) as i64)
+        .collect()
+}
+
+#[napi(js_name = "xxh3_64Batch")]
+pub fn xxh3_64_batch(inputs: Vec<Buffer>, seed: Option<i64>) -> Vec<i64> {
+    let s = seed.unwrap_or(0) as u64;
+    inputs
+        .iter()
+        .map(|buf| xxhash_rust::xxh3::xxh3_64_with_seed(buf.as_ref(), s) as i64)
+        .collect()
 }
 
 #[napi]

@@ -49,3 +49,32 @@ jobs:
         run: pnpm -r run build
       - name: Test all crates
         run: pnpm -r run test
+
+  benchmark:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, test-rust, test-node]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build all crates
+        run: pnpm -r run build
+      - name: Run benchmarks and generate report
+        run: pnpm bench:report
+      - name: Commit BENCHMARKS.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add BENCHMARKS.md
+          git diff --cached --quiet || git commit -m "docs: update BENCHMARKS.md [skip ci]"
+          git push

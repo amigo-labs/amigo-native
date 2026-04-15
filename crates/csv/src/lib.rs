@@ -138,3 +138,58 @@ pub fn stringify_objects(
         .map_err(|e| Error::from_reason(e.to_string()))?;
     String::from_utf8(bytes).map_err(|e| Error::from_reason(e.to_string()))
 }
+
+/// Count rows without building JS arrays — pure Rust speed, zero FFI-per-row overhead.
+#[napi(js_name = "countRows")]
+pub fn count_rows(input: Buffer, options: Option<CsvOptions>) -> Result<u32> {
+    let opts = options.unwrap_or_default();
+    let mut reader = make_reader(&opts).from_reader(input.as_ref());
+    let mut count = 0u32;
+    for result in reader.records() {
+        result.map_err(|e| Error::from_reason(e.to_string()))?;
+        count += 1;
+    }
+    Ok(count)
+}
+
+/// Parse CSV and return rows as a flat JSON string.
+/// Avoids per-row FFI overhead — one large string transfer instead of N×M small ones.
+/// Use JSON.parse() on the JS side.
+#[napi(js_name = "parseToJson")]
+pub fn parse_to_json(input: Buffer, options: Option<CsvOptions>) -> Result<String> {
+    let opts = options.unwrap_or_default();
+    let mut reader = make_reader(&opts).from_reader(input.as_ref());
+
+    let mut out = String::from("[");
+    let mut first_row = true;
+    for result in reader.records() {
+        let record = result.map_err(|e| Error::from_reason(e.to_string()))?;
+        if !first_row {
+            out.push(',');
+        }
+        first_row = false;
+        out.push('[');
+        let mut first_field = true;
+        for field in record.iter() {
+            if !first_field {
+                out.push(',');
+            }
+            first_field = false;
+            out.push('"');
+            for ch in field.chars() {
+                match ch {
+                    '"' => out.push_str("\\\""),
+                    '\\' => out.push_str("\\\\"),
+                    '\n' => out.push_str("\\n"),
+                    '\r' => out.push_str("\\r"),
+                    '\t' => out.push_str("\\t"),
+                    c => out.push(c),
+                }
+            }
+            out.push('"');
+        }
+        out.push(']');
+    }
+    out.push(']');
+    Ok(out)
+}

@@ -24,7 +24,8 @@
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi prepublish --skip-gh-release",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bench": "vitest bench"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",

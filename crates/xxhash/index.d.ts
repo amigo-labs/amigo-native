@@ -12,6 +12,12 @@ export declare function xxh3_128(input: Buffer, seed?: number | undefined | null
 
 export declare function xxh3_64(input: Buffer, seed?: number | undefined | null): number
 
+export declare function xxh3_64Batch(inputs: Array<Buffer>, seed?: number | undefined | null): Array<number>
+
 export declare function xxh32(input: Buffer, seed?: number | undefined | null): number
 
+export declare function xxh32Batch(inputs: Array<Buffer>, seed?: number | undefined | null): Array<number>
+
 export declare function xxh64(input: Buffer, seed?: number | undefined | null): number
+
+export declare function xxh64Batch(inputs: Array<Buffer>, seed?: number | undefined | null): Array<number>
