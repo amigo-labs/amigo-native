@@ -7,153 +7,45 @@
 
 ### slugify
 
-**slugify - short ASCII (20 chars)**
-
-| Implementation | ops/sec | vs slugify (npm) |
-|:---|---:|:---|
-| slugify (npm) | 425.9K | baseline |
-| **@amigo-labs/slugify** | **1.30M** | **3.0x faster** |
-
-**slugify - long ASCII (500 chars)**
-
-| Implementation | ops/sec | vs slugify (npm) |
-|:---|---:|:---|
-| slugify (npm) | 19.6K | baseline |
-| **@amigo-labs/slugify** | **110.6K** | **5.6x faster** |
-
-**slugify - unicode heavy**
-
-| Implementation | ops/sec | vs slugify (npm) |
-|:---|---:|:---|
-| slugify (npm) | 86.3K | baseline |
-| **@amigo-labs/slugify** | **278.6K** | **3.2x faster** |
+| Scenario | slugify (npm) | @amigo-labs/slugify |
+|:---|---:|---:|
+| slugify - short ASCII (20 chars) | 519.0K | **1.59M** (**3.1x faster**) |
+| slugify - long ASCII (500 chars) | 22.3K | **146.9K** (**6.6x faster**) |
+| slugify - unicode heavy | 101.0K | **342.1K** (**3.4x faster**) |
 
 ### argon2
 
-**argon2 - hash (low-cost)**
-
-| Implementation | ops/sec | vs argon2 (npm, C-bindings) | vs hash-wasm (WASM) |
-|:---|---:|:---|:---|
-| argon2 (npm, C-bindings) | 189.1 | baseline |  |
-| hash-wasm (WASM) | 114.5 |  | baseline |
-| **@amigo-labs/argon2** | **260.1** | **1.4x faster** | **2.3x faster** |
+| Scenario | argon2 (npm, C-bindings) | hash-wasm (WASM) | @amigo-labs/argon2 |
+|:---|---:|---:|---:|
+| argon2 - hash (low-cost) | 199.4 | 109.5 | **270.6** (**1.4x faster**) |
+| argon2 - verify | — | — | 284.6 |
 
 ### xxhash
 
-**xxh32 - 64 bytes**
-
-| Implementation | ops/sec | vs xxhash-wasm | vs xxhashjs |
-|:---|---:|:---|:---|
-| xxhash-wasm | 6.99M | baseline |  |
-| xxhashjs | 1.00M |  | baseline |
-| **@amigo-labs/xxhash** | **3.98M** | 1.8x slower | **4.0x faster** |
-
-**xxh32 - 1 KB**
-
-| Implementation | ops/sec | vs xxhash-wasm | vs xxhashjs |
-|:---|---:|:---|:---|
-| xxhash-wasm | 2.94M | baseline |  |
-| xxhashjs | 239.3K |  | baseline |
-| **@amigo-labs/xxhash** | **2.35M** | 1.3x slower | **9.8x faster** |
-
-**xxh32 - 1 MB**
-
-| Implementation | ops/sec | vs xxhash-wasm | vs xxhashjs |
-|:---|---:|:---|:---|
-| xxhash-wasm | 4.3K | baseline |  |
-| xxhashjs | 292.6 |  | baseline |
-| **@amigo-labs/xxhash** | **5.3K** | **1.2x faster** | **18.2x faster** |
-
-**xxh64 - 64 bytes**
-
-| Implementation | ops/sec | vs xxhash-wasm | vs xxhashjs |
-|:---|---:|:---|:---|
-| xxhash-wasm | 7.16M | baseline |  |
-| xxhashjs | 16.2K |  | baseline |
-| **@amigo-labs/xxhash** | **3.66M** | 2.0x slower | **225.8x faster** |
-
-**xxh64 - 1 KB**
-
-| Implementation | ops/sec | vs xxhash-wasm | vs xxhashjs |
-|:---|---:|:---|:---|
-| xxhash-wasm | 4.02M | baseline |  |
-| xxhashjs | 9.1K |  | baseline |
-| **@amigo-labs/xxhash** | **2.92M** | 1.4x slower | **320.2x faster** |
-
-**xxh64 - 1 MB**
-
-| Implementation | ops/sec | vs xxhash-wasm | vs xxhashjs |
-|:---|---:|:---|:---|
-| xxhash-wasm | 7.6K | baseline |  |
-| xxhashjs | 21.2 |  | baseline |
-| **@amigo-labs/xxhash** | **10.5K** | **1.4x faster** | **496.3x faster** |
-
-**xxh3_64 - 1 MB**
-
-| Implementation | ops/sec | vs xxhash-wasm (h64) |
-|:---|---:|:---|
-| xxhash-wasm (h64) | 7.5K | baseline |
-| **@amigo-labs/xxhash (xxh3)** | **19.1K** | **2.6x faster** |
+| Scenario | xxhash-wasm | xxhashjs | xxhash-wasm (h64) | xxhash-wasm (loop) | xxhashjs (loop) | @amigo-labs/xxhash | @amigo-labs/xxhash (xxh3) | @amigo-labs/xxhash (batch) | @amigo-labs/xxhash (loop) |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| xxh32 - 64 bytes | 7.59M | 1.25M | — | — | — | **4.59M** (1.7x slower) | — | — | — |
+| xxh32 - 1 MB | 4.6K | 342.9 | — | — | — | **6.0K** (**1.3x faster**) | — | — | — |
+| xxh64 - 1 MB | 8.1K | 23.0 | — | — | — | **11.9K** (**1.5x faster**) | — | — | — |
+| xxh3_64 - 1 MB | — | — | 7.8K | — | — | — | **20.4K** (**2.6x faster**) | — | — |
+| xxh32 batch - 1000 × 64 bytes | — | — | — | 24.8K | 1.4K | — | — | **4.4K** (5.6x slower) | **7.6K** (3.3x slower) |
+| xxh3_64 batch - 1000 × 64 bytes | — | — | — | 22.3K | — | — | — | **4.6K** (4.9x slower) | — |
 
 ### sanitize-html
 
-**sanitize - small safe HTML (~200 chars)**
-
-| Implementation | ops/sec | vs sanitize-html (npm) | vs isomorphic-dompurify |
-|:---|---:|:---|:---|
-| sanitize-html (npm) | 27.9K | baseline |  |
-| isomorphic-dompurify | 916.0 |  | baseline |
-| **@amigo-labs/sanitize-html** | **53.0K** | **1.9x faster** | **57.9x faster** |
-
-**sanitize - medium with XSS (~2 KB)**
-
-| Implementation | ops/sec | vs sanitize-html (npm) | vs isomorphic-dompurify |
-|:---|---:|:---|:---|
-| sanitize-html (npm) | 3.8K | baseline |  |
-| isomorphic-dompurify | 172.5 |  | baseline |
-| **@amigo-labs/sanitize-html** | **5.8K** | **1.5x faster** | **33.9x faster** |
-
-**sanitize - large document (~100 KB)**
-
-| Implementation | ops/sec | vs sanitize-html (npm) | vs isomorphic-dompurify |
-|:---|---:|:---|:---|
-| sanitize-html (npm) | 79.2 | baseline |  |
-| isomorphic-dompurify | 8.6 |  | baseline |
-| **@amigo-labs/sanitize-html** | **150.0** | **1.9x faster** | **17.5x faster** |
+| Scenario | sanitize-html (npm) | isomorphic-dompurify | @amigo-labs/sanitize-html |
+|:---|---:|---:|---:|
+| sanitize - small safe HTML (~200 chars) | 30.7K | 853.7 | **60.9K** (**2.0x faster**) |
+| sanitize - medium with XSS (~2 KB) | 4.4K | 177.2 | **6.9K** (**1.6x faster**) |
+| sanitize - large document (~100 KB) | 85.6 | 8.2 | **173.3** (**2.0x faster**) |
 
 ### csv
 
-**csv parse - 100 rows, 5 cols**
-
-| Implementation | ops/sec | vs csv-parse (sync) | vs papaparse |
-|:---|---:|:---|:---|
-| csv-parse (sync) | 3.9K | baseline |  |
-| papaparse | 7.2K |  | baseline |
-| **@amigo-labs/csv** | **7.0K** | **1.8x faster** | ~equal |
-
-**csv parse - 10,000 rows, 5 cols**
-
-| Implementation | ops/sec | vs csv-parse (sync) | vs papaparse |
-|:---|---:|:---|:---|
-| csv-parse (sync) | 38.6 | baseline |  |
-| papaparse | 99.0 |  | baseline |
-| **@amigo-labs/csv** | **68.0** | **1.8x faster** | 1.5x slower |
-
-**csv parse - 100,000 rows, 10 cols**
-
-| Implementation | ops/sec | vs csv-parse (sync) | vs papaparse |
-|:---|---:|:---|:---|
-| csv-parse (sync) | 1.8 | baseline |  |
-| papaparse | 4.8 |  | baseline |
-| **@amigo-labs/csv** | **3.4** | **1.9x faster** | 1.4x slower |
-
-**csv parseWithHeaders - 10,000 rows**
-
-| Implementation | ops/sec | vs csv-parse (sync, columns) | vs papaparse (header) |
-|:---|---:|:---|:---|
-| csv-parse (sync, columns) | 38.4 | baseline |  |
-| papaparse (header) | 95.1 |  | baseline |
-| **@amigo-labs/csv** | **39.0** | ~equal | 2.4x slower |
+| Scenario | csv-parse (sync) | papaparse | @amigo-labs/csv | @amigo-labs/csv (parseToJson) |
+|:---|---:|---:|---:|---:|
+| csv parse - 100 rows, 5 cols | 5.1K | 8.3K | **8.5K** (**1.7x faster**) | **12.8K** (**2.5x faster**) |
+| csv parse - 10,000 rows, 5 cols | 47.5 | 106.5 | **73.5** (**1.5x faster**) | **155.6** (**3.3x faster**) |
+| csv parse - 100,000 rows, 10 cols | 2.0 | 4.8 | **3.7** (**1.8x faster**) | **7.2** (**3.5x faster**) |
 
 ## Package Size
 
@@ -161,20 +53,20 @@
 
 | Package | @amigo-labs (binary) | Competitor | Competitor (node_modules) | Difference |
 |:---|---:|:---|---:|:---|
-| slugify | 967 KB | slugify | 16 KB | competitor 59.4x smaller |
-| argon2 | 466 KB | argon2 | 1.5 MB | **amigo 3.3x smaller** |
+| slugify | 967 KB | slugify | 21 KB | competitor 46.5x smaller |
+| argon2 | 466 KB | argon2 | 1.3 MB | **amigo 2.7x smaller** |
 | argon2 | 466 KB | hash-wasm | 1.7 MB | **amigo 3.8x smaller** |
-| xxhash | 393 KB | xxhash-wasm | 136 KB | competitor 2.9x smaller |
-| xxhash | 393 KB | xxhashjs | 301 KB | competitor 1.3x smaller |
-| sanitize-html | 1.6 MB | sanitize-html | 1.9 MB | **amigo 1.2x smaller** |
-| sanitize-html | 1.6 MB | isomorphic-dompurify | 21.2 MB | **amigo 13.6x smaller** |
-| csv | 458 KB | csv-parse | 1.4 MB | **amigo 3.1x smaller** |
-| csv | 458 KB | papaparse | 258 KB | competitor 1.8x smaller |
+| xxhash | 402 KB | xxhash-wasm | 136 KB | competitor 3.0x smaller |
+| xxhash | 402 KB | xxhashjs | 301 KB | competitor 1.3x smaller |
+| sanitize-html | 1.6 MB | sanitize-html | 1.5 MB | competitor 1.0x smaller |
+| sanitize-html | 1.6 MB | isomorphic-dompurify | 14.1 MB | **amigo 9.0x smaller** |
+| csv | 466 KB | csv-parse | 1.4 MB | **amigo 3.0x smaller** |
+| csv | 466 KB | papaparse | 254 KB | competitor 1.8x smaller |
 
 ## Summary
 
-- **slugify**: **3.0-5.6x faster** than slugify (npm)
-- **argon2**: **1.4x faster** than argon2 (npm, C-bindings); **2.3x faster** than hash-wasm (WASM)
-- **xxhash**: up to **1.4x faster**, up to 2.0x slower vs xxhash-wasm; **4.0-496.3x faster** than xxhashjs; **2.6x faster** than xxhash-wasm (h64)
-- **sanitize-html**: **1.5-1.9x faster** than sanitize-html (npm); **17.5-57.9x faster** than isomorphic-dompurify
-- **csv**: **1.8-1.9x faster** than csv-parse (sync); ~equal to papaparse; ~equal to csv-parse (sync, columns); 2.4-2.4x slower than papaparse (header)
+- **slugify**: **3.1-6.6x faster** than slugify (npm)
+- **argon2**: **1.4x faster** than argon2 (npm, C-bindings); **2.5x faster** than hash-wasm (WASM)
+- **xxhash**: up to **1.5x faster**, up to 1.7x slower vs xxhash-wasm; **3.7-519.5x faster** than xxhashjs; **2.6x faster** than xxhash-wasm (h64); 4.9-5.6x slower than xxhash-wasm (loop); **3.1x faster** than xxhashjs (loop)
+- **sanitize-html**: **1.6-2.0x faster** than sanitize-html (npm); **21.0-71.3x faster** than isomorphic-dompurify
+- **csv**: **1.5-1.8x faster** than csv-parse (sync); ~equal to papaparse

@@ -576,7 +576,9 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
+module.exports.countRows = nativeBinding.countRows
 module.exports.parse = nativeBinding.parse
+module.exports.parseToJson = nativeBinding.parseToJson
 module.exports.parseWithHeaders = nativeBinding.parseWithHeaders
 module.exports.stringify = nativeBinding.stringify
 module.exports.stringifyObjects = nativeBinding.stringifyObjects

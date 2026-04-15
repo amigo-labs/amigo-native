@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parse, parseWithHeaders, stringify, stringifyObjects } from '../index.js'
+import { parse, parseWithHeaders, parseToJson, countRows, stringify, stringifyObjects } from '../index.js'
 
 describe('csv', () => {
   it('parse basic CSV', () => {
@@ -58,6 +58,24 @@ describe('csv', () => {
       trimFields: true,
     })
     expect(result[0]).toEqual(['1', '2'])
+  })
+
+  it('countRows', () => {
+    const count = countRows(Buffer.from('a,b\n1,2\n3,4\n5,6'))
+    expect(count).toBe(3)
+  })
+
+  it('parseToJson matches parse', () => {
+    const input = Buffer.from('a,b,c\n1,2,3\n4,5,6')
+    const fromParse = parse(input)
+    const fromJson = JSON.parse(parseToJson(input))
+    expect(fromJson).toEqual(fromParse)
+  })
+
+  it('parseToJson handles quotes and escapes', () => {
+    const input = Buffer.from('a,b\n"hello, ""world""",test')
+    const result = JSON.parse(parseToJson(input))
+    expect(result[0][0]).toBe('hello, "world"')
   })
 
   it('large file performance', () => {

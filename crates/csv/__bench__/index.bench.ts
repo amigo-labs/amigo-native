@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest'
-import { parse as amigoParse, parseWithHeaders as amigoParseHeaders } from '../index.js'
+import { parse as amigoParse, parseToJson as amigoParseJson } from '../index.js'
 import { parse as csvParseSyncFn } from 'csv-parse/sync'
 import Papa from 'papaparse'
 
@@ -25,67 +25,26 @@ const buf100k = Buffer.from(csv100k)
 // --- parse (100 rows) ---
 
 describe('csv parse - 100 rows, 5 cols', () => {
-  bench('@amigo-labs/csv', () => {
-    amigoParse(buf100)
-  })
-  bench('csv-parse (sync)', () => {
-    csvParseSyncFn(csv100, { columns: true })
-  })
-  bench('papaparse', () => {
-    Papa.parse(csv100, { header: true })
-  })
+  bench('@amigo-labs/csv', () => { amigoParse(buf100) })
+  bench('@amigo-labs/csv (parseToJson)', () => { JSON.parse(amigoParseJson(buf100)) })
+  bench('csv-parse (sync)', () => { csvParseSyncFn(csv100, { columns: true }) })
+  bench('papaparse', () => { Papa.parse(csv100, { header: true }) })
 })
 
 // --- parse (10k rows) ---
 
 describe('csv parse - 10,000 rows, 5 cols', () => {
-  bench('@amigo-labs/csv', () => {
-    amigoParse(buf10k)
-  })
-  bench('csv-parse (sync)', () => {
-    csvParseSyncFn(csv10k, { columns: true })
-  })
-  bench('papaparse', () => {
-    Papa.parse(csv10k, { header: true })
-  })
+  bench('@amigo-labs/csv', () => { amigoParse(buf10k) })
+  bench('@amigo-labs/csv (parseToJson)', () => { JSON.parse(amigoParseJson(buf10k)) })
+  bench('csv-parse (sync)', () => { csvParseSyncFn(csv10k, { columns: true }) })
+  bench('papaparse', () => { Papa.parse(csv10k, { header: true }) })
 })
 
 // --- parse (100k rows) ---
 
 describe('csv parse - 100,000 rows, 10 cols', () => {
-  bench(
-    '@amigo-labs/csv',
-    () => {
-      amigoParse(buf100k)
-    },
-    { time: 10000, iterations: 3, warmupIterations: 1 },
-  )
-  bench(
-    'csv-parse (sync)',
-    () => {
-      csvParseSyncFn(csv100k, { columns: true })
-    },
-    { time: 10000, iterations: 3, warmupIterations: 1 },
-  )
-  bench(
-    'papaparse',
-    () => {
-      Papa.parse(csv100k, { header: true })
-    },
-    { time: 10000, iterations: 3, warmupIterations: 1 },
-  )
-})
-
-// --- parseWithHeaders (10k rows) ---
-
-describe('csv parseWithHeaders - 10,000 rows', () => {
-  bench('@amigo-labs/csv', () => {
-    amigoParseHeaders(buf10k)
-  })
-  bench('csv-parse (sync, columns)', () => {
-    csvParseSyncFn(csv10k, { columns: true })
-  })
-  bench('papaparse (header)', () => {
-    Papa.parse(csv10k, { header: true })
-  })
+  bench('@amigo-labs/csv', () => { amigoParse(buf100k) }, { time: 10000, iterations: 3, warmupIterations: 1 })
+  bench('@amigo-labs/csv (parseToJson)', () => { JSON.parse(amigoParseJson(buf100k)) }, { time: 10000, iterations: 3, warmupIterations: 1 })
+  bench('csv-parse (sync)', () => { csvParseSyncFn(csv100k, { columns: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 })
+  bench('papaparse', () => { Papa.parse(csv100k, { header: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 })
 })

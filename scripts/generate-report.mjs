@@ -97,32 +97,45 @@ if (benchData?.suites?.length) {
     const suiteList = crateMap.get(crate)
     if (!suiteList) continue
 
+    // Collect all unique implementation names across all suites for this crate
+    const allNames = new Set()
+    for (const suite of suiteList) {
+      for (const entry of suite.entries) allNames.add(entry.name)
+    }
+
+    // Separate amigo entries from competitors
+    const amigoNames = [...allNames].filter((n) => n.includes('@amigo'))
+    const competitorNames = [...allNames].filter((n) => !n.includes('@amigo'))
+    const colOrder = [...competitorNames, ...amigoNames]
+
     lines.push(`### ${crate}`)
     lines.push('')
+    lines.push(`| Scenario | ${colOrder.join(' | ')} |`)
+    lines.push(`|:---|${colOrder.map(() => '---:|').join('')}`)
 
     for (const suite of suiteList) {
-      const amigoEntry = suite.entries.find((e) => e.name.includes('@amigo'))
-      const competitors = suite.entries.filter((e) => !e.name.includes('@amigo'))
+      const entryMap = new Map()
+      for (const entry of suite.entries) entryMap.set(entry.name, entry)
 
-      if (!amigoEntry || !competitors.length) continue
+      // Find the primary competitor baseline for speedup display
+      const primaryComp = competitorNames.find((n) => entryMap.has(n))
+      const baselineHz = primaryComp ? entryMap.get(primaryComp).hz : null
 
-      const compHeaders = competitors.map((c) => `vs ${c.name}`)
+      const cells = colOrder.map((name) => {
+        const entry = entryMap.get(name)
+        if (!entry) return '—'
+        const opsStr = formatOps(entry.hz)
+        if (name.includes('@amigo') && baselineHz) {
+          const cmp = compareToBaseline(entry.hz, baselineHz)
+          return `**${opsStr}** (${cmp})`
+        }
+        return opsStr
+      })
 
-      lines.push(`**${suite.name}**`)
-      lines.push('')
-      lines.push(`| Implementation | ops/sec | ${compHeaders.join(' | ')} |`)
-      lines.push(`|:---|---:|${competitors.map(() => ':---|').join('')}`)
-
-      for (const comp of competitors) {
-        const cols = competitors.map((c) => (c === comp ? 'baseline' : ''))
-        lines.push(`| ${comp.name} | ${formatOps(comp.hz)} | ${cols.join(' | ')} |`)
-      }
-
-      const amigoCols = competitors.map((c) => compareToBaseline(amigoEntry.hz, c.hz))
-      lines.push(`| **${amigoEntry.name}** | **${formatOps(amigoEntry.hz)}** | ${amigoCols.join(' | ')} |`)
-
-      lines.push('')
+      lines.push(`| ${suite.name} | ${cells.join(' | ')} |`)
     }
+
+    lines.push('')
   }
 }
 
