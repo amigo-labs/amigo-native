@@ -26,9 +26,9 @@ function formatBytes(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function speedup(amigoHz, otherHz) {
-  if (!amigoHz || !otherHz) return '—'
-  const ratio = amigoHz / otherHz
+function compareToBaseline(amigoHz, baselineHz) {
+  if (!amigoHz || !baselineHz) return '—'
+  const ratio = amigoHz / baselineHz
   if (ratio >= 1.05) return `**${ratio.toFixed(1)}x faster**`
   if (ratio <= 0.95) return `${(1 / ratio).toFixed(1)}x slower`
   return '~equal'
@@ -106,15 +106,20 @@ if (benchData?.suites?.length) {
 
       if (!amigoEntry || !competitors.length) continue
 
+      const compHeaders = competitors.map((c) => `vs ${c.name}`)
+
       lines.push(`**${suite.name}**`)
       lines.push('')
-      lines.push('| Implementation | ops/sec | Comparison |')
-      lines.push('|:---|---:|:---|')
-      lines.push(`| ${amigoEntry.name} | ${formatOps(amigoEntry.hz)} | baseline |`)
+      lines.push(`| Implementation | ops/sec | ${compHeaders.join(' | ')} |`)
+      lines.push(`|:---|---:|${competitors.map(() => ':---|').join('')}`)
 
       for (const comp of competitors) {
-        lines.push(`| ${comp.name} | ${formatOps(comp.hz)} | ${speedup(amigoEntry.hz, comp.hz)} |`)
+        const cols = competitors.map((c) => (c === comp ? 'baseline' : ''))
+        lines.push(`| ${comp.name} | ${formatOps(comp.hz)} | ${cols.join(' | ')} |`)
       }
+
+      const amigoCols = competitors.map((c) => compareToBaseline(amigoEntry.hz, c.hz))
+      lines.push(`| **${amigoEntry.name}** | **${formatOps(amigoEntry.hz)}** | ${amigoCols.join(' | ')} |`)
 
       lines.push('')
     }
