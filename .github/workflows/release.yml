@@ -89,6 +89,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y musl-tools
+          # Rust explicitly passes -lgcc_s when linking cdylib targets, but the
+          # musl toolchain only ships the static libgcc.a. Create a linker script
+          # that redirects -lgcc_s to the static archive.
+          sudo sh -c 'echo "GROUP ( libgcc.a )" > /usr/lib/x86_64-linux-musl/libgcc_s.so'
 
       - name: Build
         shell: bash
@@ -119,7 +123,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           cd crates/${{ needs.resolve.outputs.crate }}
-          npm version ${{ needs.resolve.outputs.version }} --no-git-tag-version
+          npm version ${{ needs.resolve.outputs.version }} --no-git-tag-version --allow-same-version
 
       - uses: actions/download-artifact@v8
         with:
