@@ -131,7 +131,7 @@ jobs:
 
       - name: Move artifacts
         run: |
-          pnpm --filter @amigo-labs/${{ needs.resolve.outputs.crate }} run artifacts --output-dir artifacts
+          pnpm --filter @amigo-labs/${{ needs.resolve.outputs.crate }} run artifacts --output-dir ../../artifacts
 
       - name: List packages
         run: ls -R crates/${{ needs.resolve.outputs.crate }}/npm/
