@@ -140,6 +140,9 @@ jobs:
       - name: List packages
         run: ls -R crates/${{ needs.resolve.outputs.crate }}/npm/
 
+      # After configuring trusted publishing for all packages, you can remove
+      # NODE_AUTH_TOKEN and add "npm install -g npm@latest" to switch to OIDC.
+      # See: scripts/setup-trusted-publishing.sh
       - name: Publish platform packages
         shell: bash
         run: |
