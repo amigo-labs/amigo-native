@@ -18,6 +18,10 @@ pub fn sanitize(html: String, options: Option<SanitizeOptions>) -> String {
     if let Some(opts) = &options {
         if let Some(tags) = &opts.allowed_tags {
             let tag_set: HashSet<&str> = tags.iter().map(|s| s.as_str()).collect();
+            // Ammonia panics if a tag is in both `tags` and `clean_content_tags`
+            // (e.g. default `script`/`style`). If the caller explicitly allows
+            // such a tag, remove it from `clean_content_tags` first.
+            builder.rm_clean_content_tags(tag_set.iter().copied());
             builder.tags(tag_set);
         }
         if let Some(attrs) = &opts.allowed_attributes {

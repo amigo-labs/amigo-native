@@ -13,8 +13,8 @@ describe('xxhash', () => {
   })
 
   it('xxh64 with seed', () => {
-    const a = xxh64(Buffer.from('test'), 0)
-    const b = xxh64(Buffer.from('test'), 42)
+    const a = xxh64(Buffer.from('test'), 0n)
+    const b = xxh64(Buffer.from('test'), 42n)
     expect(a).not.toBe(b)
   })
 
