@@ -1,0 +1,76 @@
+{
+  "brand": {
+    "name": "amigo-native",
+    "tagline": "Rust-powered drop-in replacements for popular Node.js packages.",
+    "subline": "Compiled to native addons via NAPI-RS. Prebuilt for every major platform.",
+    "repo": "amigo-labs/amigo-native",
+    "repoUrl": "https://github.com/amigo-labs/amigo-native",
+    "license": "MIT"
+  },
+  "heroTaglines": [
+    "drop-in for slugify",
+    "drop-in for argon2",
+    "drop-in for xxhash",
+    "drop-in for sanitize-html",
+    "drop-in for csv",
+    "zero transitive dependencies",
+    "prebuilt native binaries"
+  ],
+  "marquee": [
+    { "k": "RUNTIME",      "v": "NAPI-RS v3" },
+    { "k": "LANGUAGE",     "v": "RUST" },
+    { "k": "PLATFORMS",    "v": "6" },
+    { "k": "PACKAGES",     "v": "5" },
+    { "k": "NODE",         "v": ">= 18" },
+    { "k": "LICENSE",      "v": "MIT" },
+    { "k": "PROVENANCE",   "v": "ENABLED" },
+    { "k": "DEPENDENCIES", "v": "ZERO" }
+  ],
+  "packages": [
+    {
+      "name": "slugify",
+      "title": "Slugify",
+      "description": "Unicode-aware slugification. Wraps deunicode + unicode-normalization.",
+      "speedup": "3–7× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/slugify",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/slugify",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/slugify/README.md"
+    },
+    {
+      "name": "argon2",
+      "title": "Argon2",
+      "description": "Argon2id password hashing with sync + async API.",
+      "speedup": "1.4–2.5× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/argon2",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/argon2",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/argon2/README.md"
+    },
+    {
+      "name": "xxhash",
+      "title": "XXHash",
+      "description": "XXH32, XXH64, and XXH3 with batch + streaming support.",
+      "speedup": "1.3–2.6× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xxhash",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xxhash",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xxhash/README.md"
+    },
+    {
+      "name": "sanitize-html",
+      "title": "Sanitize HTML",
+      "description": "HTML sanitization via Mozilla's ammonia engine.",
+      "speedup": "1.6–2× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sanitize-html",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sanitize-html",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sanitize-html/README.md"
+    },
+    {
+      "name": "csv",
+      "title": "CSV",
+      "description": "CSV parsing and serialization via BurntSushi's csv crate.",
+      "speedup": "1.4–3.5× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/csv",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/csv",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/csv/README.md"
+    }
+  ]
+}

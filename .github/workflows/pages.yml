@@ -2,17 +2,21 @@ name: Deploy Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'claude/**'
     paths:
       - 'docs/**'
+      - '.github/workflows/pages.yml'
 
 permissions:
+  contents: read
   pages: write
   id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -22,10 +26,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Build site (main + all preview branches)
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+
+          # 1. Use main's docs as the site root
+          git worktree add /tmp/main-docs origin/main
+          cp -r /tmp/main-docs/docs/. _site/
+
+          # 2. For every remote claude/** branch, add preview/<slug>/
+          git for-each-ref --format='%(refname:short)' refs/remotes/origin/claude/ | while read -r remote_ref; do
+            branch="${remote_ref#origin/}"
+            slug=$(echo "$branch" | sed 's|/|-|g')
+            wt="/tmp/preview-$slug"
+            echo "Adding preview for $branch -> preview/$slug/"
+            git worktree add "$wt" "$remote_ref"
+            if [ -d "$wt/docs" ]; then
+              mkdir -p "_site/preview/$slug"
+              cp -r "$wt/docs/." "_site/preview/$slug/"
+            fi
+          done
+
+          # 3. Write a small preview index (so /preview/ lists active branches)
+          if [ -d _site/preview ]; then
+            {
+              echo '<!DOCTYPE html><meta charset="utf-8"><title>Previews</title>'
+              echo '<style>body{font-family:monospace;background:#0A0B0D;color:#E8E6E2;padding:32px}a{color:#FF6B2B;display:block;padding:6px 0}</style>'
+              echo '<h1>Preview branches</h1>'
+              for d in _site/preview/*/; do
+                slug=$(basename "$d")
+                echo "<a href=\"./$slug/\">$slug</a>"
+              done
+            } > _site/preview/index.html
+          fi
+
+          echo "Built _site:"
+          ls -la _site
+          [ -d _site/preview ] && ls -la _site/preview || true
+
       - uses: actions/configure-pages@v6
+
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: docs
+          path: _site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
