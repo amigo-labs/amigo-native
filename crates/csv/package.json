@@ -48,13 +48,5 @@
   ],
   "engines": {
     "node": ">= 18"
-  },
-  "optionalDependencies": {
-    "@amigo-labs/csv-linux-x64-gnu": "0.1.0",
-    "@amigo-labs/csv-linux-x64-musl": "0.1.0",
-    "@amigo-labs/csv-linux-arm64-gnu": "0.1.0",
-    "@amigo-labs/csv-darwin-x64": "0.1.0",
-    "@amigo-labs/csv-darwin-arm64": "0.1.0",
-    "@amigo-labs/csv-win32-x64-msvc": "0.1.0"
   }
 }

@@ -49,13 +49,5 @@
   ],
   "engines": {
     "node": ">= 18"
-  },
-  "optionalDependencies": {
-    "@amigo-labs/xxhash-linux-x64-gnu": "0.1.0",
-    "@amigo-labs/xxhash-linux-x64-musl": "0.1.0",
-    "@amigo-labs/xxhash-linux-arm64-gnu": "0.1.0",
-    "@amigo-labs/xxhash-darwin-x64": "0.1.0",
-    "@amigo-labs/xxhash-darwin-arm64": "0.1.0",
-    "@amigo-labs/xxhash-win32-x64-msvc": "0.1.0"
   }
 }
