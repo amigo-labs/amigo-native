@@ -62,6 +62,25 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+    optionalDependencies:
+      '@amigo-labs/argon2-darwin-arm64':
+        specifier: 0.1.0
+        version: 0.1.0
+      '@amigo-labs/argon2-darwin-x64':
+        specifier: 0.1.0
+        version: 0.1.0
+      '@amigo-labs/argon2-linux-arm64-gnu':
+        specifier: 0.1.0
+        version: 0.1.0
+      '@amigo-labs/argon2-linux-x64-gnu':
+        specifier: 0.1.0
+        version: 0.1.0
+      '@amigo-labs/argon2-linux-x64-musl':
+        specifier: 0.1.0
+        version: 0.1.0
+      '@amigo-labs/argon2-win32-x64-msvc':
+        specifier: 0.1.0
+        version: 0.1.0
 
   crates/csv:
     devDependencies:
@@ -71,6 +90,10 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+    optionalDependencies:
+      '@amigo-labs/csv-win32-x64-msvc':
+        specifier: 0.1.0
+        version: 0.1.0
 
   crates/sanitize-html:
     devDependencies:
@@ -80,6 +103,10 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+    optionalDependencies:
+      '@amigo-labs/sanitize-html-win32-x64-msvc':
+        specifier: 0.1.0
+        version: 0.1.0
 
   crates/slugify:
     devDependencies:
@@ -89,6 +116,10 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+    optionalDependencies:
+      '@amigo-labs/slugify-win32-x64-msvc':
+        specifier: 0.1.0
+        version: 0.1.0
 
   crates/xxhash:
     devDependencies:
@@ -98,11 +129,75 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+    optionalDependencies:
+      '@amigo-labs/xxhash-win32-x64-msvc':
+        specifier: 0.1.0
+        version: 0.1.0
 
 packages:
 
   '@acemir/cssom@0.9.31':
     resolution: {integrity: sha512-ZnR3GSaH+/vJ0YlHau21FjfLYjMpYVIzTD8M8vIEQvIGxeOXyXdzCI140rrCY862p/C/BbzWsjc1dgnM9mkoTA==}
+
+  '@amigo-labs/argon2-darwin-arm64@0.1.0':
+    resolution: {integrity: sha512-KX19ITL+0xWbJ3nK/CS1oeYvH//W0BercEEZCDqFx0kbT92w3xV7eUEtpbk6UxA/wR8/Y5+LZY+z3zfWMzusBw==}
+    engines: {node: '>= 18'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@amigo-labs/argon2-darwin-x64@0.1.0':
+    resolution: {integrity: sha512-p5j3/bp7Y7e2kyoe5APrtou9Q1OpXbX/O9flS4NRU3YyzvgFB2lFM3rNCymcbT4RwjWVqaDMz9rd3ABdnU6uxQ==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@amigo-labs/argon2-linux-arm64-gnu@0.1.0':
+    resolution: {integrity: sha512-3DJBZHLIwq5iahKtTcBtuv7pXNKXfAztUAFpdFSsEZ69BbU3d3UlahTtEoUUBlAwzv0brPVMX8yW57Nye73lDg==}
+    engines: {node: '>= 18'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@amigo-labs/argon2-linux-x64-gnu@0.1.0':
+    resolution: {integrity: sha512-POKvgHBs2PGNYoesB4C/sAb34tQLBZ7sUk9mpfcKYoZaqFeyIKlGPOWKaoIPyX8pv3DiLVpBecnlsUDqAszX8w==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [linux]
+
+  '@amigo-labs/argon2-linux-x64-musl@0.1.0':
+    resolution: {integrity: sha512-BMVQVkSw5ut6cPM7/Rl7InONbbcYov2pxF1rAtUNuAykmZDq3IDU+yHlhlhy5J9P8+7IY7Lmu3lWfjBdRbFn4w==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [linux]
+
+  '@amigo-labs/argon2-win32-x64-msvc@0.1.0':
+    resolution: {integrity: sha512-QGzj5f5YlhkCGeZVv5J5+zho3b2a5L10k6br773ZhUAyQ6KV5Ub4X/qpM1yfYtyEfeeW1rVzbsB3xpt4LoWQ3g==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [win32]
+
+  '@amigo-labs/csv-win32-x64-msvc@0.1.0':
+    resolution: {integrity: sha512-Hxgo9mZQ1U1UH6Qdc2vVQdLbgMlpu0ops5RXCF55sCc0Kd3yg+FVoaRmZFE9xy1eSctr3enR8aPhizC1PQSNmA==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [win32]
+
+  '@amigo-labs/sanitize-html-win32-x64-msvc@0.1.0':
+    resolution: {integrity: sha512-5cdD+neZLPnwyrWHDYUHH1Gqfnt2wdG+vgEGQeIk+pWNsuZTfuu28VkO7Y/ZiyOCktGwfzZ/meLZwj0QH1ufPg==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [win32]
+
+  '@amigo-labs/slugify-win32-x64-msvc@0.1.0':
+    resolution: {integrity: sha512-HXHyYwSOfYMxK8RnDbBR5XbBoR4ahvxro1XQh5h37NGw2uYo8scn+sNtM7PKDDMMuT35t3zf1CnDBdOr90dCnw==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [win32]
+
+  '@amigo-labs/xxhash-win32-x64-msvc@0.1.0':
+    resolution: {integrity: sha512-oFUeTe/1V0bom51f3+lFUxA5TAv2Mq6+WbEojHGrYfoMaMBhRba0+k7U2GbhQr6zUD97rk2Csk2Hn1dye2H2uA==}
+    engines: {node: '>= 18'}
+    cpu: [x64]
+    os: [win32]
 
   '@asamuzakjp/css-color@5.1.10':
     resolution: {integrity: sha512-02OhhkKtgNRuicQ/nF3TRnGsxL9wp0r3Y7VlKWyOHHGmGyvXv03y+PnymU8FKFJMTjIr1Bk8U2g1HWSLrpAHww==}
@@ -1705,6 +1800,36 @@ packages:
 snapshots:
 
   '@acemir/cssom@0.9.31': {}
+
+  '@amigo-labs/argon2-darwin-arm64@0.1.0':
+    optional: true
+
+  '@amigo-labs/argon2-darwin-x64@0.1.0':
+    optional: true
+
+  '@amigo-labs/argon2-linux-arm64-gnu@0.1.0':
+    optional: true
+
+  '@amigo-labs/argon2-linux-x64-gnu@0.1.0':
+    optional: true
+
+  '@amigo-labs/argon2-linux-x64-musl@0.1.0':
+    optional: true
+
+  '@amigo-labs/argon2-win32-x64-msvc@0.1.0':
+    optional: true
+
+  '@amigo-labs/csv-win32-x64-msvc@0.1.0':
+    optional: true
+
+  '@amigo-labs/sanitize-html-win32-x64-msvc@0.1.0':
+    optional: true
+
+  '@amigo-labs/slugify-win32-x64-msvc@0.1.0':
+    optional: true
+
+  '@amigo-labs/xxhash-win32-x64-msvc@0.1.0':
+    optional: true
 
   '@asamuzakjp/css-color@5.1.10':
     dependencies:
