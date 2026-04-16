@@ -13,6 +13,18 @@ set -euo pipefail
 #   ./scripts/setup-trusted-publishing.sh              # all packages
 #   ./scripts/setup-trusted-publishing.sh --dry-run     # preview only
 #   ./scripts/setup-trusted-publishing.sh --package csv  # single crate
+#
+# Migration workflow:
+#   1. Publish all packages the traditional way (NPM_TOKEN in CI)
+#   2. npm install -g npm@latest  (need >= 11.10.0)
+#   3. npm login
+#   4. ./scripts/setup-trusted-publishing.sh
+#      - Skips packages not yet on npm — re-run after first publish
+#      - For a single new crate: ./scripts/setup-trusted-publishing.sh --package <name>
+#   5. Once all packages are configured, update .github/workflows/release.yml:
+#      - Remove all NODE_AUTH_TOKEN env vars
+#      - Add step: npm install -g npm@latest  (before publish steps)
+#      - The --provenance flag and id-token: write permission stay as-is
 
 REPO="amigo-labs/amigo-native"
 WORKFLOW="release.yml"
