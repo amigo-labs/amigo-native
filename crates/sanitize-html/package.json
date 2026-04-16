@@ -24,7 +24,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run",
     "bench": "vitest bench"
   },
