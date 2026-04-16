@@ -141,12 +141,38 @@ a:hover { color: var(--text-primary); }
 .picker-wrap {
   position: relative; display: flex;
   flex-direction: column; min-height: 0;
+  align-self: start;
+  max-height: clamp(280px, 50vh, 440px);
+}
+.picker-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
 }
 .picker-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: 0.1em;
-  margin-bottom: 10px;
+}
+.sort-chips {
+  display: flex; gap: 4px;
+}
+.chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+}
+.chip:hover { color: var(--text-secondary); border-color: var(--border-hover); }
+.chip[aria-selected="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-dim);
 }
 .picker {
   list-style: none; flex: 1;

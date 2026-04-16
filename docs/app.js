@@ -4,8 +4,51 @@ const state = {
   pkgs: null,
   data: null,
   activeIdx: 0,
+  activeName: null,
+  sortMode: 'speedup', // 'speedup' | 'alpha' | 'size'
+  sortedList: [],
   typingTimers: [],
 };
+
+// --- sort helpers ---
+// parses strings like "3-7x faster", "1.4-2.5× faster", returns max value
+function parseMaxSpeedup(s) {
+  if (!s) return 0;
+  const matches = s.match(/(\d+(?:\.\d+)?)/g);
+  if (!matches) return 0;
+  const nums = matches.map(Number);
+  return Math.max(...nums);
+}
+
+// returns how much smaller amigo is vs. the largest competitor for this pkg
+// e.g. 4.8 MB competitor / 2.1 MB amigo = 2.28
+function sizeAdvantage(pkgName, sizesData) {
+  const sizes = sizesData?.[pkgName];
+  if (!sizes) return 0;
+  const amigoKey = '@amigo-labs/' + pkgName;
+  const amigoSize = sizes[amigoKey]?.installSize;
+  if (!amigoSize) return 0;
+  let maxCompetitor = 0;
+  for (const [name, info] of Object.entries(sizes)) {
+    if (name === amigoKey) continue;
+    if ((info.installSize || 0) > maxCompetitor) maxCompetitor = info.installSize;
+  }
+  return maxCompetitor > amigoSize ? maxCompetitor / amigoSize : 0;
+}
+
+function computeSortedList() {
+  const list = [...state.pkgs.packages];
+  const mode = state.sortMode;
+  if (mode === 'alpha') {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (mode === 'speedup') {
+    list.sort((a, b) => parseMaxSpeedup(b.speedup) - parseMaxSpeedup(a.speedup));
+  } else if (mode === 'size') {
+    const sizes = state.data?.sizes;
+    list.sort((a, b) => sizeAdvantage(b.name, sizes) - sizeAdvantage(a.name, sizes));
+  }
+  state.sortedList = list;
+}
 
 // --- helpers ---
 function $(sel) { return document.querySelector(sel); }
@@ -73,18 +116,22 @@ async function boot() {
   state.pkgs = await pkgsRes.json();
   state.data = dataRes && dataRes.ok ? await dataRes.json() : null;
 
+  computeSortedList();
+
   renderBrand();
   renderMarquee();
   renderFooter();
   renderPicker();
+  wireSortChips();
   cycleHeroTagline();
   wireCursorGlow();
   wireKeyboard();
 
-  // initial active from hash
+  // initial active from hash (name-based so it survives sort changes)
   const hash = (location.hash || '').replace('#', '');
-  const initialIdx = Math.max(0, state.pkgs.packages.findIndex(p => p.name === hash));
-  state.activeIdx = initialIdx === -1 ? 0 : initialIdx;
+  const hashIdx = state.sortedList.findIndex(p => p.name === hash);
+  state.activeIdx = hashIdx >= 0 ? hashIdx : 0;
+  state.activeName = state.sortedList[state.activeIdx].name;
 
   // scroll picker to initial item after layout is ready
   requestAnimationFrame(() => {
@@ -164,8 +211,8 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 // --- picker ---
 function renderPicker() {
   const picker = $('#picker');
-  picker.innerHTML = state.pkgs.packages.map((p, i) => `
-    <li role="option" data-idx="${i}" aria-selected="false">
+  picker.innerHTML = state.sortedList.map((p, i) => `
+    <li role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false">
       <span>${p.name}</span>
       <span class="arrow">&larr;</span>
     </li>
@@ -244,6 +291,7 @@ function snapTo(idx, smooth) {
   const li = picker.querySelectorAll('li')[idx];
   if (!li) return;
   state.activeIdx = idx;
+  state.activeName = state.sortedList[idx]?.name || null;
   const isMobile = window.innerWidth <= 900;
   if (isMobile) {
     const target = li.offsetLeft - (picker.clientWidth - li.offsetWidth) / 2;
@@ -267,13 +315,13 @@ function updateActiveClass() {
 }
 
 function updateHash() {
-  const p = state.pkgs.packages[state.activeIdx];
+  const p = state.sortedList[state.activeIdx];
   if (p) history.replaceState(null, '', '#' + p.name);
 }
 
 // --- slab ---
 function renderSlab() {
-  const p = state.pkgs.packages[state.activeIdx];
+  const p = state.sortedList[state.activeIdx];
   if (!p) return;
   const slab = $('#slab');
   clearTimers();
@@ -448,9 +496,27 @@ function wireCursorGlow() {
 }
 
 // --- keyboard ---
+function wireSortChips() {
+  document.querySelectorAll('.sort-chips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const mode = chip.dataset.sort;
+      if (mode === state.sortMode) return;
+      state.sortMode = mode;
+      document.querySelectorAll('.sort-chips .chip').forEach(c => {
+        c.setAttribute('aria-selected', c.dataset.sort === mode ? 'true' : 'false');
+      });
+      const keepName = state.activeName;
+      computeSortedList();
+      renderPicker();
+      const newIdx = Math.max(0, state.sortedList.findIndex(p => p.name === keepName));
+      requestAnimationFrame(() => snapTo(newIdx, true));
+    });
+  });
+}
+
 function wireKeyboard() {
   document.addEventListener('keydown', e => {
-    const n = state.pkgs.packages.length;
+    const n = state.sortedList.length;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j') {
       snapTo((state.activeIdx + 1) % n, true);
       e.preventDefault();

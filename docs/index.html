@@ -33,7 +33,14 @@
 
   <main class="dashboard">
     <div class="picker-wrap">
-      <div class="picker-label">Packages</div>
+      <div class="picker-head">
+        <div class="picker-label">Packages</div>
+        <div class="sort-chips" role="tablist" aria-label="Sort packages">
+          <button class="chip" role="tab" data-sort="speedup" aria-selected="true">Speedup</button>
+          <button class="chip" role="tab" data-sort="alpha" aria-selected="false">A&ndash;Z</button>
+          <button class="chip" role="tab" data-sort="size" aria-selected="false">Size</button>
+        </div>
+      </div>
       <ul class="picker" id="picker" role="listbox" aria-label="Select a package"></ul>
       <div class="picker-center-indicator" aria-hidden="true"></div>
     </div>
