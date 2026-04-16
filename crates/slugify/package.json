@@ -24,7 +24,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run",
     "bench": "vitest bench"
   },
@@ -47,13 +47,5 @@
   ],
   "engines": {
     "node": ">= 18"
-  },
-  "optionalDependencies": {
-    "@amigo-labs/slugify-linux-x64-gnu": "0.1.0",
-    "@amigo-labs/slugify-linux-x64-musl": "0.1.0",
-    "@amigo-labs/slugify-linux-arm64-gnu": "0.1.0",
-    "@amigo-labs/slugify-darwin-x64": "0.1.0",
-    "@amigo-labs/slugify-darwin-arm64": "0.1.0",
-    "@amigo-labs/slugify-win32-x64-msvc": "0.1.0"
   }
 }
