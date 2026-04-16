@@ -212,7 +212,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 function renderPicker() {
   const picker = $('#picker');
   picker.innerHTML = state.sortedList.map((p, i) => `
-    <li role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false">
+    <li id="pkg-opt-${p.name}" role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false">
       <span>${p.name}</span>
       <span class="arrow">&larr;</span>
     </li>
@@ -252,14 +252,16 @@ function renderPicker() {
     });
   });
 
-  // scroll-based active detection
+  // scroll-based active detection (suppressed while programmatic snap is running)
   let scrollTimer = null;
   picker.addEventListener('scroll', () => {
+    if (state.isSnapping) return;
     if (scrollTimer) cancelAnimationFrame(scrollTimer);
     scrollTimer = requestAnimationFrame(() => {
       const idx = nearestCenterIdx();
       if (idx !== state.activeIdx) {
         state.activeIdx = idx;
+        state.activeName = state.sortedList[idx]?.name || null;
         updateActiveClass();
         renderSlab();
         updateHash();
@@ -293,6 +295,11 @@ function snapTo(idx, smooth) {
   state.activeIdx = idx;
   state.activeName = state.sortedList[idx]?.name || null;
   const isMobile = window.innerWidth <= 900;
+
+  // suppress scroll-driven updates while the programmatic smooth scroll runs
+  state.isSnapping = true;
+  clearTimeout(state.snapTimer);
+
   if (isMobile) {
     const target = li.offsetLeft - (picker.clientWidth - li.offsetWidth) / 2;
     picker.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
@@ -300,18 +307,26 @@ function snapTo(idx, smooth) {
     const target = li.offsetTop - (picker.clientHeight - li.offsetHeight) / 2;
     picker.scrollTo({ top: target, behavior: smooth ? 'smooth' : 'auto' });
   }
+
+  // release the flag once scroll has settled (smooth ~500ms worst case)
+  state.snapTimer = setTimeout(() => { state.isSnapping = false; }, smooth ? 500 : 0);
+
   updateActiveClass();
   renderSlab();
   updateHash();
 }
 
 function updateActiveClass() {
-  const items = $('#picker').querySelectorAll('li');
+  const picker = $('#picker');
+  const items = picker.querySelectorAll('li');
+  let activeId = '';
   items.forEach((li, i) => {
     const isActive = i === state.activeIdx;
     li.classList.toggle('active', isActive);
     li.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    if (isActive) activeId = li.id;
   });
+  picker.setAttribute('aria-activedescendant', activeId);
 }
 
 function updateHash() {
@@ -462,9 +477,13 @@ function renderSizes(pkg) {
     const fillCls = isAmigo ? 'winner' : 'competitor';
     const labelCls = isAmigo ? ' is-amigo' : '';
     let ratio = '';
-    if (isAmigo && size < maxSize && entries.length > 1) {
-      const other = entries.find(([n]) => n !== amigoKey)?.[1]?.installSize;
-      if (other && other > size) ratio = `<span class="ratio">${(other / size).toFixed(1)}&times;</span>`;
+    if (isAmigo && size > 0 && entries.length > 1) {
+      const largestCompetitor = entries
+        .filter(([n]) => n !== amigoKey)
+        .reduce((max, [, info]) => Math.max(max, info.installSize || 0), 0);
+      if (largestCompetitor > size) {
+        ratio = `<span class="ratio">${(largestCompetitor / size).toFixed(1)}&times;</span>`;
+      }
     }
     html += `
       <div class="bar-row">
@@ -515,7 +534,17 @@ function wireSortChips() {
 }
 
 function wireKeyboard() {
+  const isInteractiveTarget = t => {
+    if (!(t instanceof Element)) return false;
+    if (t.isContentEditable) return true;
+    return !!t.closest('input, textarea, select, button, a, [contenteditable=""], [contenteditable="true"], [role="button"], [role="link"]');
+  };
+
   document.addEventListener('keydown', e => {
+    if (!state.sortedList.length) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if (isInteractiveTarget(e.target)) return;
+
     const n = state.sortedList.length;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j') {
       snapTo((state.activeIdx + 1) % n, true);
