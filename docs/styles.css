@@ -365,11 +365,30 @@ a:hover { color: var(--text-primary); }
 
 @media (max-width: 900px) {
   body { overflow: auto; }
-  .app { height: auto; min-height: 100vh; }
+  .app { height: auto; min-height: 100vh; padding: 0 16px; }
+
+  .hero { flex-wrap: wrap; gap: 12px; padding: 16px 0 12px; }
+  .hero-text { flex: 1 1 auto; min-width: 0; }
+  .hero h1 { font-size: clamp(1.2rem, 5vw, 1.6rem); }
+  .hero-tagline { font-size: 0.72rem; }
+  .hero-repo { flex: 0 0 auto; font-size: 0.68rem; padding: 5px 10px; }
+  .hero-repo span { display: none; }
+  .hero-logo { width: 36px; height: 36px; border-radius: 8px; }
+
+  .marquee { padding: 8px 0; }
+  .marquee-item { font-size: 0.65rem; }
+
   .dashboard {
     grid-template-columns: 1fr;
     overflow: visible; padding: 16px 0;
+    gap: 16px;
   }
+
+  .picker-head { flex-wrap: wrap; gap: 8px; }
+  .picker-label { flex: 1 0 100%; margin-bottom: 2px; }
+  .sort-chips { width: 100%; }
+  .chip { flex: 1; text-align: center; padding: 6px 4px; }
+
   .picker-wrap { max-height: none; }
   .picker {
     display: flex; flex-direction: row;
@@ -388,10 +407,33 @@ a:hover { color: var(--text-primary); }
   }
   .picker li.active { font-size: 0.95rem; border-bottom-color: var(--accent); }
   .picker-center-indicator { display: none; }
-  .slab { padding: 20px; overflow: visible; }
-  .slab-grid { grid-template-columns: 1fr; }
+
+  .slab { padding: 18px; overflow: visible; border-radius: 12px; }
+  .slab-head { gap: 10px; }
+  .slab-name { font-size: 1.1rem; word-break: break-word; min-width: 0; }
+  .slab-speedup { font-size: 0.7rem; padding: 4px 9px; }
+  .slab-desc { font-size: 0.95rem; margin: 12px 0 18px; }
+
+  .slab-install {
+    gap: 8px; padding: 12px 14px;
+    font-size: 0.8rem; margin-bottom: 20px;
+  }
+  .slab-install .cmd {
+    flex: 1 1 100%; min-width: 0;
+    overflow-wrap: anywhere; word-break: break-all;
+  }
+  .slab-install .copy-btn {
+    margin-left: auto; padding: 6px 12px; font-size: 0.7rem;
+  }
+
+  .slab-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+  .slab-col { padding: 14px; }
+
+  .bar-row { font-size: 0.7rem; gap: 6px; }
+
   .kbd-hint { display: none; }
-  .hero { flex-wrap: wrap; }
+
+  .footer { flex-direction: column; gap: 6px; padding: 10px 0; font-size: 0.65rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
