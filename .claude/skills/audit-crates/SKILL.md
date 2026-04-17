@@ -44,16 +44,13 @@ The plan is grouped into sections:
 3. **`docs/packages.json` entries** — JSON skeletons with TODO placeholders for `description` and `speedup`
 4. **`fuzz.spec.ts` skeleton** — a `fast-check` property-test starting point
 
-### Step 4 — Present a concise summary and ask the user
+### Step 4 — Ask the user, tersely
 
-Summarize what's in each section (counts and which crates are affected), then ask explicitly how to proceed. Offer three choices:
+One line summary (e.g. "10 gaps: 10 READMEs, 10 docs entries, 10 fuzz skeletons"), then three options, nothing more:
 
-> Found N gaps. How should I proceed?
-> - **A** — Apply section 1 only (mechanical fixes). I'll list the content gaps for you to handle.
-> - **B** — Full pass: apply mechanical fixes and fill in the content templates (READMEs, docs entries, fuzz skeletons — I'll derive sensible defaults from each crate's API and measured benchmarks).
-> - **C** — Report only, I'll fix it myself.
+> **A** mechanical only · **B** full pass · **C** report only
 
-Wait for the answer before touching anything. The user may want to split differently (e.g. "only the READMEs for now") — honour that.
+Wait for the answer. Honour custom splits ("just READMEs"). No preamble, no recap.
 
 ### Step 5 — Execute according to the answer
 
