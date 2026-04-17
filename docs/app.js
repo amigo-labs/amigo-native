@@ -126,6 +126,7 @@ async function boot() {
   cycleHeroTagline();
   wireCursorGlow();
   wireKeyboard();
+  wireWheel();
 
   // initial active from hash (name-based so it survives sort changes)
   const hash = (location.hash || '').replace('#', '');
@@ -561,6 +562,53 @@ function wireKeyboard() {
       snapTo(n - 1, true); e.preventDefault();
     }
   });
+}
+
+// --- wheel: let mouse-wheel anywhere on the page drive the picker ---
+function wireWheel() {
+  let accum = 0;
+  let lastTime = 0;
+  let cooldownUntil = 0;
+  const THRESHOLD = 40;
+  const COOLDOWN_MS = 220;
+
+  window.addEventListener('wheel', e => {
+    if (window.innerWidth <= 900) return; // mobile uses its own swipes
+    if (!state.sortedList.length) return;
+
+    const picker = document.getElementById('picker');
+    const slab = document.getElementById('slab');
+
+    // allow native scroll inside the slab while it still has room
+    if (slab && slab.contains(e.target)) {
+      const canScrollDown = slab.scrollTop + slab.clientHeight < slab.scrollHeight - 1;
+      const canScrollUp = slab.scrollTop > 0;
+      if (e.deltaY > 0 && canScrollDown) return;
+      if (e.deltaY < 0 && canScrollUp) return;
+    }
+
+    // let the picker handle its own wheel natively (scroll-snap)
+    if (picker && picker.contains(e.target)) return;
+
+    e.preventDefault();
+
+    const now = performance.now();
+    if (now < cooldownUntil) return;
+    if (now - lastTime > 300) accum = 0;
+    accum += e.deltaY;
+    lastTime = now;
+
+    if (Math.abs(accum) >= THRESHOLD) {
+      const n = state.sortedList.length;
+      if (accum > 0) {
+        snapTo(Math.min(state.activeIdx + 1, n - 1), true);
+      } else {
+        snapTo(Math.max(state.activeIdx - 1, 0), true);
+      }
+      accum = 0;
+      cooldownUntil = now + COOLDOWN_MS;
+    }
+  }, { passive: false });
 }
 
 // --- go ---
