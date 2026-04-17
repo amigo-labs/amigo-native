@@ -25,11 +25,16 @@
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
-    "test": "vitest run",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
     "bench": "vitest bench"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
+    "argon2": "^0.41.1",
+    "fast-check": "^3.23.0",
+    "hash-wasm": "^4.11.0",
     "vitest": "^3.0.0"
   },
   "license": "MIT",

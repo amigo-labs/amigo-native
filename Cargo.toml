@@ -4,7 +4,7 @@ exclude = ["crates/_template"]
 resolver = "2"
 
 [workspace.dependencies]
-napi = { version = "3", default-features = false, features = ["napi4", "serde-json"] }
+napi = { version = "3", default-features = false, features = ["napi4", "napi6", "serde-json"] }
 napi-derive = "3"
 
 [profile.release]

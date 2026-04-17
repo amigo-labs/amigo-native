@@ -5,10 +5,11 @@
     "build:debug": "pnpm -r run build:debug",
     "test": "pnpm -r run test",
     "test:parity": "node scripts/parity-report.mjs",
+    "test:conformance": "pnpm -r run test:conformance",
     "bench": "vitest bench",
     "bench:size": "node scripts/measure-size.mjs",
     "bench:report": "node scripts/run-benchmarks.mjs && node scripts/measure-size.mjs && node scripts/parity-report.mjs && node scripts/generate-report.mjs",
-    "lint": "oxlint . && cargo fmt --check && cargo clippy --workspace -- -D warnings",
+    "lint": "oxlint --ignore-pattern 'crates/sanitize-html/__conformance__/upstream/**' . && cargo fmt --check && cargo clippy --workspace -- -D warnings",
     "format": "prettier --write . && cargo fmt && taplo format"
   },
   "devDependencies": {
