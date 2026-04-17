@@ -1,0 +1,17 @@
+[package]
+name = "amigo-jwt"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+jsonwebtoken = "9"
+serde_json = "1"
+base64 = "0.22"
+
+[build-dependencies]
+napi-build = "2"

@@ -1,0 +1,55 @@
+{
+  "name": "@amigo-labs/encoding",
+  "version": "0.1.0",
+  "description": "Rust-powered character-encoding conversion via encoding_rs",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "encoding",
+    "iconv",
+    "iconv-lite",
+    "charset",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "napi": {
+    "binaryName": "encoding",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:parity": "vitest run __parity__",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "iconv-lite": "^0.6.3",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/encoding"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

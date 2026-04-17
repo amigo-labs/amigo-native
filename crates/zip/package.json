@@ -1,0 +1,57 @@
+{
+  "name": "@amigo-labs/zip",
+  "version": "0.1.0",
+  "description": "Rust-powered ZIP archive read/write via the zip crate",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "zip",
+    "archive",
+    "deflate",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "napi": {
+    "binaryName": "zip",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:parity": "vitest run __parity__",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "@types/adm-zip": "^0.5.7",
+    "@types/yauzl": "^2.10.3",
+    "adm-zip": "^0.5.16",
+    "vitest": "^3.0.0",
+    "yauzl": "^3.2.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/zip"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

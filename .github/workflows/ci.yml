@@ -49,6 +49,8 @@ jobs:
         run: pnpm -r run build
       - name: Test all crates
         run: pnpm -r run test
+      - name: Parity tests
+        run: pnpm test:parity
 
   benchmark:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

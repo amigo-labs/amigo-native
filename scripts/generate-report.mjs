@@ -11,6 +11,25 @@ import { join } from 'node:path'
 const root = process.cwd()
 const benchPath = join(root, 'bench-results.json')
 const sizePath = join(root, 'size-results.json')
+const parityPath = join(root, 'parity-results.json')
+
+const CRATE_ORDER = [
+  'slugify',
+  'argon2',
+  'xxhash',
+  'sanitize-html',
+  'csv',
+  'file-type',
+  'inflate',
+  'levenshtein',
+  'nanoid',
+  'encoding',
+  'xml',
+  'deep-equal',
+  'deepmerge',
+  'jwt',
+  'zip',
+]
 
 function formatOps(hz) {
   if (hz >= 1_000_000) return `${(hz / 1_000_000).toFixed(2)}M`
@@ -41,6 +60,16 @@ function detectCrate(name) {
   if (lower.includes('xxh')) return 'xxhash'
   if (lower.includes('sanitize')) return 'sanitize-html'
   if (lower.includes('csv')) return 'csv'
+  if (lower.includes('file-type') || lower.includes('filetype')) return 'file-type'
+  if (lower.includes('inflate') || lower.includes('deflate') || lower.includes('gzip')) return 'inflate'
+  if (lower.includes('levenshtein')) return 'levenshtein'
+  if (lower.includes('nanoid')) return 'nanoid'
+  if (lower.includes('encoding')) return 'encoding'
+  if (lower.includes('xml')) return 'xml'
+  if (lower.includes('deep-equal') || lower.includes('deepequal')) return 'deep-equal'
+  if (lower.includes('deepmerge')) return 'deepmerge'
+  if (lower.includes('jwt')) return 'jwt'
+  if (lower.includes('zip')) return 'zip'
   return 'other'
 }
 
@@ -64,6 +93,15 @@ if (existsSync(sizePath)) {
   }
 }
 
+let parityData = null
+if (existsSync(parityPath)) {
+  try {
+    parityData = JSON.parse(readFileSync(parityPath, 'utf-8'))
+  } catch (err) {
+    console.warn(`Failed to parse ${parityPath}: ${err.message}`)
+  }
+}
+
 if (!benchData && !sizeData) {
   console.error('No data found. Run `node scripts/run-benchmarks.mjs` and `node scripts/measure-size.mjs` first.')
   process.exit(1)
@@ -81,7 +119,7 @@ lines.push('')
 // --- Performance section ---
 
 if (benchData?.suites?.length) {
-  const crateOrder = ['slugify', 'argon2', 'xxhash', 'sanitize-html', 'csv']
+  const crateOrder = CRATE_ORDER
   const crateMap = new Map()
 
   for (const suite of benchData.suites) {
@@ -171,13 +209,46 @@ if (sizeData) {
   lines.push('')
 }
 
+// --- Parity section ---
+
+if (parityData?.packages?.length) {
+  lines.push('## Parity')
+  lines.push('')
+  lines.push(
+    'Pass rate of each package against the upstream npm test suite (cloned into `__parity__/upstream.spec.ts`).',
+  )
+  lines.push('')
+  lines.push('| Package | Passed | Total | Parity |')
+  lines.push('|:---|---:|---:|---:|')
+
+  const sortedPkgs = [...parityData.packages].sort((a, b) => {
+    const ai = CRATE_ORDER.indexOf(a.name)
+    const bi = CRATE_ORDER.indexOf(b.name)
+    return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi)
+  })
+
+  for (const p of sortedPkgs) {
+    const pct = p.total > 0 ? `${(p.parity * 100).toFixed(1)}%` : '—'
+    lines.push(`| ${p.name} | ${p.passed} | ${p.total} | ${pct} |`)
+  }
+
+  if (parityData.aggregate?.total) {
+    const aggPct = `${(parityData.aggregate.parity * 100).toFixed(1)}%`
+    lines.push(
+      `| **Aggregate** | **${parityData.aggregate.passed}** | **${parityData.aggregate.total}** | **${aggPct}** |`,
+    )
+  }
+
+  lines.push('')
+}
+
 // --- Summary ---
 
 if (benchData?.suites?.length) {
   lines.push('## Summary')
   lines.push('')
 
-  const crateOrder = ['slugify', 'argon2', 'xxhash', 'sanitize-html', 'csv']
+  const crateOrder = CRATE_ORDER
   for (const crate of crateOrder) {
     const suites = benchData.suites.filter((s) => detectCrate(s.name) === crate)
     if (!suites.length) continue
@@ -239,6 +310,7 @@ const docsData = {
   platform: `${process.platform} ${process.arch}`,
   benchmarks: benchData ?? null,
   sizes: sizeData ?? null,
+  parity: parityData ?? null,
 }
 
 const docsDir = join(root, 'docs')
