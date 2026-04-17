@@ -31,6 +31,14 @@ For JSON output (machine-readable):
 node .claude/skills/audit-crates/scripts/audit.mjs --json
 ```
 
+For an **executable fix plan** (bash commands for mechanical fixes, plus templates for content gaps like README, `docs/packages.json` entries, and `fuzz.spec.ts` skeletons):
+
+```bash
+node .claude/skills/audit-crates/scripts/audit.mjs --plan
+```
+
+The plan is organized by automation level — section 1 can be pasted into a shell unchanged; sections 2+ need human judgment (names, speedups, API shape).
+
 ## What it checks
 
 For each crate (excluding `_template`):

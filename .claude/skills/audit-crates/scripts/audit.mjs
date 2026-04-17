@@ -25,6 +25,7 @@ const PLATFORMS = [
 const REGISTRY_FIELDS = ['title', 'description', 'speedup', 'npmUrl', 'sourceUrl', 'readmeUrl']
 
 const asJson = process.argv.includes('--json')
+const asPlan = process.argv.includes('--plan')
 
 function die(msg) {
   console.error(`[audit-crates] ${msg}`)
@@ -63,11 +64,19 @@ function auditCrate(name) {
   const npmDir = join(dir, 'npm')
   const missingPlatforms = PLATFORMS.filter((p) => !isDir(join(npmDir, p)))
 
+  // parity.spec.ts (cross-verify our impl vs upstream) and upstream.spec.ts
+  // (run upstream's own test suite against our impl) are both valid patterns
+  // for conformance — either counts as parity coverage.
+  const hasParitySpec = existsSync(join(dir, '__conformance__', 'parity.spec.ts'))
+  const hasUpstreamSpec = existsSync(join(dir, '__conformance__', 'upstream.spec.ts'))
+
   return {
     name,
     // modern convention
     conformanceDir: isDir(join(dir, '__conformance__')),
-    parityFile: existsSync(join(dir, '__conformance__', 'parity.spec.ts')),
+    parityFile: hasParitySpec,
+    upstreamFile: hasUpstreamSpec,
+    parityCoverage: hasParitySpec || hasUpstreamSpec,
     fuzzFile: existsSync(join(dir, '__conformance__', 'fuzz.spec.ts')),
     testConformanceScript: typeof scripts['test:conformance'] === 'string',
     testAllScript: typeof scripts['test:all'] === 'string',
@@ -126,16 +135,20 @@ const docs = auditDocs(crateNames)
 // --- Priority buckets for the checklist ---
 
 const legacyCrates = crates.filter((r) => r.legacyParityDir || r.legacyTestParityScript)
-const missingConformance = crates.filter((r) => !r.parityFile || !r.fuzzFile)
-const missingScriptsOrDeps = crates.filter((r) => !r.testConformanceScript || !r.testAllScript || !r.fastCheck)
+const missingParityCoverage = crates.filter((r) => !r.parityCoverage)
+const missingFuzz = crates.filter((r) => !r.fuzzFile)
+const missingScriptsOrDeps = crates.filter((r) => !r.testConformanceScript || !r.testAllScript)
+const missingFastCheck = crates.filter((r) => !r.fastCheck)
 const missingReadme = crates.filter((r) => !r.readme)
 const missingNpm = crates.filter((r) => !r.npmDir || r.missingPlatforms.length > 0)
 const missingBench = crates.filter((r) => !r.benchFile)
 
 const clean =
   legacyCrates.length === 0 &&
-  missingConformance.length === 0 &&
+  missingParityCoverage.length === 0 &&
+  missingFuzz.length === 0 &&
   missingScriptsOrDeps.length === 0 &&
+  missingFastCheck.length === 0 &&
   missingReadme.length === 0 &&
   missingNpm.length === 0 &&
   missingBench.length === 0 &&
@@ -145,6 +158,150 @@ const clean =
 
 // --- JSON mode: dump everything and exit ---
 
+// --- Plan mode: emit an executable fix plan ---
+
+if (asPlan) {
+  const plan = []
+  plan.push('# Fix Plan')
+  plan.push('')
+  if (clean) {
+    plan.push('_All checks pass — no plan needed._')
+    console.log(plan.join('\n'))
+    process.exit(0)
+  }
+  plan.push('_Run from monorepo root. Steps grouped by automation level._')
+  plan.push('')
+
+  // Automatable: shell commands that can run unattended
+  const autoSteps = []
+
+  for (const r of legacyCrates) {
+    if (r.legacyParityDir) {
+      autoSteps.push(`git mv crates/${r.name}/__parity__ crates/${r.name}/__conformance__`)
+    }
+  }
+  if (legacyCrates.some((r) => r.legacyTestParityScript) || missingScriptsOrDeps.length) {
+    const targets = new Set([
+      ...legacyCrates.filter((r) => r.legacyTestParityScript).map((r) => r.name),
+      ...missingScriptsOrDeps.map((r) => r.name),
+    ])
+    autoSteps.push(
+      `# Rewrite scripts (test:parity → test:conformance, add test:all):\nnode -e "const fs=require('node:fs');for (const c of ${JSON.stringify([...targets])}){const p='crates/'+c+'/package.json';const raw=fs.readFileSync(p,'utf-8');const nl=raw.endsWith('\\n');const pkg=JSON.parse(raw);pkg.scripts??={};if(pkg.scripts['test:parity']){pkg.scripts['test:conformance']=pkg.scripts['test:parity'].replace('__parity__','__conformance__');delete pkg.scripts['test:parity'];}else if(!pkg.scripts['test:conformance']){pkg.scripts['test:conformance']='vitest run __conformance__';}pkg.scripts['test:all']??='vitest run';fs.writeFileSync(p,JSON.stringify(pkg,null,2)+(nl?'\\n':''));}"`,
+    )
+  }
+  if (!docs.marqueeOk) {
+    autoSteps.push(
+      `# Update marquee PACKAGES:\nnode -e "const fs=require('node:fs');const p='docs/packages.json';const raw=fs.readFileSync(p,'utf-8');const nl=raw.endsWith('\\n');const j=JSON.parse(raw);const m=j.marquee.find(e=>e.k==='PACKAGES');if(m)m.v=String(${docs.marqueeExpected});fs.writeFileSync(p,JSON.stringify(j,null,2)+(nl?'\\n':''));"`,
+    )
+  }
+  for (const r of missingNpm) {
+    if (!r.npmDir) {
+      autoSteps.push(`# Generate npm platform stubs for ${r.name}:\n(cd crates/${r.name} && pnpm exec napi create-npm-dirs)`)
+    }
+  }
+  for (const r of missingFastCheck) {
+    autoSteps.push(`(cd crates/${r.name} && pnpm add -D fast-check)`)
+  }
+
+  if (autoSteps.length) {
+    plan.push('## 1. Automatable (run unattended)')
+    plan.push('')
+    plan.push('```bash')
+    plan.push(autoSteps.join('\n\n'))
+    plan.push('```')
+    plan.push('')
+  }
+
+  // Content fixes: templates the human/AI must fill
+  if (missingReadme.length) {
+    plan.push('## 2. Per-crate README templates')
+    plan.push('')
+    plan.push('For each crate listed below, create `crates/<name>/README.md` using this template (adjust description, drop-in status, and API surface):')
+    plan.push('')
+    plan.push('```markdown')
+    plan.push('# @amigo-labs/<name>')
+    plan.push('')
+    plan.push('> Rust-powered drop-in for [`<npm-name>`](https://www.npmjs.com/package/<npm-name>). Compiled via NAPI-RS.')
+    plan.push('')
+    plan.push('## Install')
+    plan.push('')
+    plan.push('```bash')
+    plan.push('npm install @amigo-labs/<name>')
+    plan.push('```')
+    plan.push('')
+    plan.push('## Usage')
+    plan.push('')
+    plan.push('```ts')
+    plan.push("import { ... } from '@amigo-labs/<name>'")
+    plan.push('```')
+    plan.push('')
+    plan.push('## Parity')
+    plan.push('')
+    plan.push('See [`__conformance__/`](./__conformance__) and [`divergences.md`](./__conformance__/divergences.md).')
+    plan.push('```')
+    plan.push('')
+    plan.push(`Crates needing README: ${missingReadme.map((r) => '`' + r.name + '`').join(', ')}`)
+    plan.push('')
+  }
+
+  if (docs.missingInPackagesJson.length) {
+    plan.push('## 3. `docs/packages.json` entries')
+    plan.push('')
+    plan.push('Append to the `packages` array. Use measured `speedup` from `BENCHMARKS.md` if available:')
+    plan.push('')
+    plan.push('```json')
+    for (const name of docs.missingInPackagesJson) {
+      plan.push(JSON.stringify({
+        name,
+        title: name.charAt(0).toUpperCase() + name.slice(1),
+        description: `TODO: one-line description of @amigo-labs/${name}`,
+        speedup: 'TODO: e.g. "1.5–3× faster"',
+        npmUrl: `https://www.npmjs.com/package/@amigo-labs/${name}`,
+        sourceUrl: `https://github.com/amigo-labs/amigo-native/tree/main/crates/${name}`,
+        readmeUrl: `https://github.com/amigo-labs/amigo-native/blob/main/crates/${name}/README.md`,
+      }, null, 2) + ',')
+    }
+    plan.push('```')
+    plan.push('')
+  }
+
+  if (missingFuzz.length) {
+    plan.push('## 4. `fuzz.spec.ts` skeleton')
+    plan.push('')
+    plan.push('For each crate, create `crates/<name>/__conformance__/fuzz.spec.ts`. Example shape (adapt to the crate\'s API):')
+    plan.push('')
+    plan.push('```ts')
+    plan.push("import { describe, it } from 'vitest'")
+    plan.push("import fc from 'fast-check'")
+    plan.push("import { someFn } from '../index.js'")
+    plan.push('')
+    plan.push("describe('<name> fuzzing', () => {")
+    plan.push("  it('holds invariant under random input', () => {")
+    plan.push('    fc.assert(')
+    plan.push('      fc.property(fc.string(), (input) => {')
+    plan.push('        const out = someFn(input)')
+    plan.push('        return /* invariant check */ true')
+    plan.push('      }),')
+    plan.push('      { numRuns: 200, seed: 42 },')
+    plan.push('    )')
+    plan.push('  })')
+    plan.push('})')
+    plan.push('```')
+    plan.push('')
+    plan.push(`Crates needing fuzz: ${missingFuzz.map((r) => '`' + r.name + '`').join(', ')}`)
+    plan.push('')
+  }
+
+  plan.push('## Verify')
+  plan.push('')
+  plan.push('```bash')
+  plan.push('node .claude/skills/audit-crates/scripts/audit.mjs')
+  plan.push('```')
+
+  console.log(plan.join('\n'))
+  process.exit(clean ? 0 : 1)
+}
+
 if (asJson) {
   const out = {
     root: ROOT,
@@ -153,8 +310,10 @@ if (asJson) {
     summary: {
       clean,
       legacy: legacyCrates.map((r) => r.name),
-      missingConformance: missingConformance.map((r) => r.name),
+      missingParityCoverage: missingParityCoverage.map((r) => r.name),
+      missingFuzz: missingFuzz.map((r) => r.name),
       missingScriptsOrDeps: missingScriptsOrDeps.map((r) => r.name),
+      missingFastCheck: missingFastCheck.map((r) => r.name),
       missingReadme: missingReadme.map((r) => r.name),
       missingNpm: missingNpm.map((r) => r.name),
       missingBench: missingBench.map((r) => r.name),
@@ -177,6 +336,8 @@ lines.push('')
 
 lines.push('## Per-Crate Status')
 lines.push('')
+lines.push('_parity column: ✓ = `parity.spec.ts` or `upstream.spec.ts` present (either satisfies conformance coverage)_')
+lines.push('')
 lines.push('| Crate | `__conf__` | parity | fuzz | `test:conf` | `test:all` | fast-check | README | `npm/` | bench | legacy |')
 lines.push('|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|')
 for (const r of crates) {
@@ -187,7 +348,7 @@ for (const r of crates) {
       : `✗ (−${r.missingPlatforms.length})`
     : '✗'
   lines.push(
-    `| ${r.name} | ${mark(r.conformanceDir)} | ${mark(r.parityFile)} | ${mark(r.fuzzFile)} | ${mark(r.testConformanceScript)} | ${mark(r.testAllScript)} | ${mark(r.fastCheck)} | ${mark(r.readme)} | ${npmCell} | ${mark(r.benchFile)} | ${legacy} |`,
+    `| ${r.name} | ${mark(r.conformanceDir)} | ${mark(r.parityCoverage)} | ${mark(r.fuzzFile)} | ${mark(r.testConformanceScript)} | ${mark(r.testAllScript)} | ${mark(r.fastCheck)} | ${mark(r.readme)} | ${npmCell} | ${mark(r.benchFile)} | ${legacy} |`,
   )
 }
 lines.push('')
@@ -227,25 +388,38 @@ if (legacyCrates.length) {
   lines.push('')
 }
 
-if (missingConformance.length) {
-  lines.push('### 🟠 Missing conformance spec files')
-  for (const r of missingConformance) {
-    const bits = []
-    if (!r.parityFile) bits.push('`parity.spec.ts`')
-    if (!r.fuzzFile) bits.push('`fuzz.spec.ts`')
-    lines.push(`- [ ] **${r.name}** — add ${bits.join(' + ')} under \`__conformance__/\``)
+if (missingParityCoverage.length) {
+  lines.push('### 🟠 Missing parity coverage')
+  for (const r of missingParityCoverage) {
+    lines.push(`- [ ] **${r.name}** — add \`__conformance__/parity.spec.ts\` or \`__conformance__/upstream.spec.ts\``)
+  }
+  lines.push('')
+}
+
+if (missingFuzz.length) {
+  lines.push('### 🟡 Missing fuzz coverage (property-based)')
+  for (const r of missingFuzz) {
+    lines.push(`- [ ] **${r.name}** — add \`__conformance__/fuzz.spec.ts\` using \`fast-check\``)
   }
   lines.push('')
 }
 
 if (missingScriptsOrDeps.length) {
-  lines.push('### 🟠 Missing package.json entries')
+  lines.push('### 🟠 Missing package.json scripts')
   for (const r of missingScriptsOrDeps) {
     const bits = []
     if (!r.testConformanceScript) bits.push('`test:conformance` script')
     if (!r.testAllScript) bits.push('`test:all` script')
-    if (!r.fastCheck) bits.push('`fast-check` devDependency')
     lines.push(`- [ ] **${r.name}** — add ${bits.join(', ')}`)
+  }
+  lines.push('')
+}
+
+if (missingFastCheck.length) {
+  lines.push('### 🟡 Missing `fast-check` devDependency')
+  lines.push('_Only required if the crate has a `fuzz.spec.ts`._')
+  for (const r of missingFastCheck) {
+    lines.push(`- [ ] **${r.name}** — add \`fast-check\` to \`devDependencies\``)
   }
   lines.push('')
 }
@@ -309,7 +483,9 @@ if (clean) {
 } else {
   const gapCount =
     legacyCrates.length +
-    missingConformance.length +
+    missingParityCoverage.length +
+    missingFuzz.length +
+    missingFastCheck.length +
     missingScriptsOrDeps.length +
     missingReadme.length +
     missingNpm.length +
