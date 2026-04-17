@@ -60,6 +60,7 @@ a:hover { color: var(--text-primary); }
 .app {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
   height: 100vh;
   max-width: 1200px;
   margin: 0 auto;
@@ -132,7 +133,7 @@ a:hover { color: var(--text-primary); }
 
 /* DASHBOARD */
 .dashboard {
-  display: grid; grid-template-columns: 260px 1fr;
+  display: grid; grid-template-columns: 260px minmax(0, 1fr);
   gap: 24px; padding: 24px 0;
   overflow: hidden; min-height: 0;
 }
@@ -255,6 +256,8 @@ a:hover { color: var(--text-primary); }
   padding: 6px 12px; border-radius: 6px;
   background: var(--accent-dim); color: var(--accent);
   white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .slab-desc {
   color: var(--text-secondary);
@@ -382,7 +385,7 @@ a:hover { color: var(--text-primary); }
 }
 
 @media (max-width: 900px) {
-  body { overflow: auto; }
+  body { overflow-x: hidden; overflow-y: auto; }
   .app { height: auto; min-height: 100vh; padding: 0 16px; }
 
   .hero { flex-wrap: wrap; gap: 12px; padding: 16px 0 12px; }
@@ -397,7 +400,7 @@ a:hover { color: var(--text-primary); }
   .marquee-item { font-size: 0.65rem; }
 
   .dashboard {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     overflow: visible; padding: 16px 0;
     gap: 16px;
   }
@@ -429,7 +432,7 @@ a:hover { color: var(--text-primary); }
   .slab { padding: 18px; overflow-x: hidden; overflow-y: visible; border-radius: 12px; min-width: 0; max-width: 100%; }
   .slab-head { gap: 10px; flex-wrap: wrap; max-width: 100%; }
   .slab-name { font-size: 1.05rem; overflow-wrap: anywhere; word-break: break-all; min-width: 0; flex: 1 1 auto; }
-  .slab-speedup { font-size: 0.68rem; padding: 4px 8px; flex: 0 0 auto; }
+  .slab-speedup { font-size: 0.68rem; padding: 4px 8px; flex: 0 1 auto; white-space: normal; }
   .slab-desc { font-size: 0.95rem; margin: 12px 0 18px; }
 
   .slab-install {

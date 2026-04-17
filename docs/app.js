@@ -14,10 +14,17 @@ const state = {
 // parses strings like "3-7x faster", "1.4-2.5× faster", returns max value
 function parseMaxSpeedup(s) {
   if (!s) return 0;
-  const matches = s.match(/(\d+(?:\.\d+)?)/g);
-  if (!matches) return 0;
-  const nums = matches.map(Number);
-  return Math.max(...nums);
+  let best = -Infinity;
+  for (const part of s.split('/')) {
+    const nums = part.match(/(\d+(?:\.\d+)?)/g);
+    if (!nums) continue;
+    const n = Math.max(...nums.map(Number));
+    const dir = /slower/i.test(part) ? -1 : /faster/i.test(part) ? 1 : 0;
+    if (dir === 0) continue;
+    const v = dir * n;
+    if (v > best) best = v;
+  }
+  return best === -Infinity ? 0 : best;
 }
 
 // returns how much smaller amigo is vs. the largest competitor for this pkg
@@ -97,14 +104,9 @@ function formatBytes(bytes) {
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
-function detectCrate(name) {
-  const l = name.toLowerCase();
-  if (l.includes('slugify')) return 'slugify';
-  if (l.includes('argon2')) return 'argon2';
-  if (l.includes('xxh')) return 'xxhash';
-  if (l.includes('sanitize')) return 'sanitize-html';
-  if (l.includes('csv')) return 'csv';
-  return 'other';
+function suiteCrate(suite) {
+  const m = suite.file?.match(/^crates\/([^/]+)\//);
+  return m ? m[1] : null;
 }
 
 // --- boot ---
@@ -431,7 +433,7 @@ function renderBench(pkg) {
     host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No benchmark data available.</div>';
     return;
   }
-  const suites = state.data.benchmarks.suites.filter(s => detectCrate(s.name) === pkg.name);
+  const suites = state.data.benchmarks.suites.filter(s => suiteCrate(s) === pkg.name);
   if (!suites.length) {
     host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No benchmarks for this package yet.</div>';
     return;
@@ -441,7 +443,7 @@ function renderBench(pkg) {
     const entries = suite.entries.filter(e => e.hz > 0);
     if (!entries.length) continue;
     const maxHz = Math.max(...entries.map(e => e.hz));
-    const scenario = suite.name.split(' - ').slice(1).join(' - ') || suite.name;
+    const scenario = suite.name.replace(/^[^\s]+\s+[-—]\s+/, '') || suite.name;
     html += `<div class="slab-col-sub">${scenario}</div>`;
     const sorted = [...entries].sort((a, b) => b.hz - a.hz);
     for (const entry of sorted) {
