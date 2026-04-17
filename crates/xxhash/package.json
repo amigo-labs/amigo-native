@@ -25,12 +25,17 @@
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
-    "test": "vitest run",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
     "bench": "vitest bench"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
-    "vitest": "^3.0.0"
+    "fast-check": "^3.23.0",
+    "vitest": "^3.0.0",
+    "xxhash-wasm": "^1.1.0",
+    "xxhashjs": "^0.2.2"
   },
   "license": "MIT",
   "repository": {
