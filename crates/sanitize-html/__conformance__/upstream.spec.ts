@@ -97,7 +97,6 @@ new vm.Script(source, { filename: 'upstream/test.js' }).runInContext(ctx);
 const KNOWN_DIVERGENCES = new Set<string>([
   // -- Unsupported options / features --
   'should escape self closing tags',
-  'should handle numbers as strings',
   'should not pass through any text outside html tag boundary since html tag is found and option is ON',
   'should pass through text outside html tag boundary since option is OFF',
   'should pass through text outside html tag boundary since option is ON but html tag is not found',
@@ -152,9 +151,6 @@ const KNOWN_DIVERGENCES = new Set<string>([
   'should allow protocol relative links by default',
   // -- Output shape / tree-builder differences --
   'should pass through simple, well-formed markup',
-  'should return an empty string when input is explicit "undefined"',
-  'should return an empty string when input is explicit "null"',
-  'should return an empty string when input is not provided',
   'should reject markup not allowlisted without destroying its text',
   'should accept a custom list of allowed tags',
   'should accept a custom list of allowed attributes per element',

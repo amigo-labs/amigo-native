@@ -1,4 +1,5 @@
 use ammonia::Builder;
+use napi::bindgen_prelude::Either;
 use napi_derive::napi;
 use std::collections::{HashMap, HashSet};
 
@@ -11,8 +12,36 @@ pub struct SanitizeOptions {
     pub link_rel: Option<String>,
 }
 
+fn number_to_string(n: f64) -> String {
+    // Match JS Number.prototype.toString(): integers print without decimals,
+    // NaN/Infinity use their JS names.
+    if n.is_nan() {
+        return "NaN".to_string();
+    }
+    if n.is_infinite() {
+        return if n < 0.0 {
+            "-Infinity".into()
+        } else {
+            "Infinity".into()
+        };
+    }
+    if n == n.trunc() && n.abs() < 1e21 {
+        return format!("{}", n as i64);
+    }
+    format!("{n}")
+}
+
+fn coerce_input(html: Option<Either<String, f64>>) -> String {
+    match html {
+        None => String::new(),
+        Some(Either::A(s)) => s,
+        Some(Either::B(n)) => number_to_string(n),
+    }
+}
+
 #[napi]
-pub fn sanitize(html: String, options: Option<SanitizeOptions>) -> String {
+pub fn sanitize(html: Option<Either<String, f64>>, options: Option<SanitizeOptions>) -> String {
+    let html = coerce_input(html);
     let mut builder = Builder::default();
 
     if let Some(opts) = &options {
@@ -54,6 +83,7 @@ pub fn sanitize(html: String, options: Option<SanitizeOptions>) -> String {
 }
 
 #[napi(js_name = "isClean")]
-pub fn is_clean(html: String, options: Option<SanitizeOptions>) -> bool {
-    sanitize(html.clone(), options) == html
+pub fn is_clean(html: Option<Either<String, f64>>, options: Option<SanitizeOptions>) -> bool {
+    let coerced = coerce_input(html);
+    sanitize(Some(Either::A(coerced.clone())), options) == coerced
 }
