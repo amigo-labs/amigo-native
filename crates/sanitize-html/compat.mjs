@@ -56,8 +56,8 @@ const HTML_BOOLEAN_ATTRIBUTES = new Set([
   'allowfullscreen', 'async', 'autofocus', 'autoplay', 'checked', 'controls',
   'default', 'defer', 'disabled', 'formnovalidate', 'hidden', 'inert', 'ismap',
   'itemscope', 'loop', 'multiple', 'muted', 'nomodule', 'novalidate', 'open',
-  'playsinline', 'readonly', 'required', 'reversed', 'scoped', 'selected',
-  'truespeed',
+  'playsinline', 'readonly', 'required', 'reversed', 'sandbox', 'scoped',
+  'selected', 'truespeed',
 ])
 
 // sanitize-html's default `allowedEmptyAttributes`.
@@ -397,6 +397,80 @@ function filterUrlAttribs(attribs, tagName, allowedSchemes, allowedSchemesByTag)
   return out
 }
 
+// Match an attribute name against a list of sanitize-html-style patterns
+// (exact string, `data-*` glob with an embedded `*`, or bare `'*'` wildcard).
+function attrNameMatches(attrName, patterns) {
+  const lower = attrName.toLowerCase()
+  for (const p of patterns) {
+    if (typeof p !== 'string') continue
+    const pl = p.toLowerCase()
+    if (pl === lower || pl === '*') return true
+    if (pl.includes('*')) {
+      const re = new RegExp(
+        '^' + pl.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$',
+      )
+      if (re.test(lower)) return true
+    }
+  }
+  return false
+}
+
+// Filter attribs by `allowedAttributes` rules — honours globs like `data-*`
+// and per-tag overrides alongside the `'*'` any-tag bucket. Supports the
+// object-value form `{ attr: [values] }` for attribute-value allowlists.
+function filterAttribsByAllowlist(attribs, tagName, allowedAttributes) {
+  if (!allowedAttributes) return attribs
+  const tagRule = allowedAttributes[tagName]
+  const starRule = allowedAttributes['*']
+
+  // Build flat pattern list from string entries plus the *keys* of
+  // object entries (so `{ sandbox: ['allow-popups'] }` still matches the
+  // `sandbox` attribute name).
+  const nameOf = (entry) => (typeof entry === 'string' ? entry : entry && typeof entry === 'object' ? null : null)
+  const stringPatterns = (list) =>
+    Array.isArray(list) ? list.map(nameOf).filter((x) => typeof x === 'string') : []
+  const objectRules = (list) => {
+    if (!Array.isArray(list)) return {}
+    const out = {}
+    for (const e of list) {
+      if (!e || typeof e !== 'object' || Array.isArray(e) || isRegExp(e)) continue
+      // sanitize-html value-rule shape:
+      //   { name: 'sandbox', multiple: true, values: ['allow-popups', ...] }
+      if (typeof e.name === 'string' && Array.isArray(e.values)) {
+        out[e.name.toLowerCase()] = { multiple: e.multiple === true, values: e.values }
+      }
+    }
+    return out
+  }
+
+  const patterns = [...stringPatterns(tagRule), ...stringPatterns(starRule)]
+  const valueRules = { ...objectRules(starRule), ...objectRules(tagRule) }
+  const hasAnyRule = patterns.length > 0 || Object.keys(valueRules).length > 0
+
+  if (!hasAnyRule) return {}
+
+  const out = {}
+  for (const [k, v] of Object.entries(attribs)) {
+    const lk = k.toLowerCase()
+    const vr = valueRules[lk]
+    if (vr) {
+      const allowed = vr.values
+      if (vr.multiple) {
+        const kept = v.split(/\s+/).filter((t) => t && allowed.includes(t))
+        if (kept.length) out[k] = kept.join(' ')
+        else out[k] = '' // bare attribute
+      } else if (allowed.includes(v)) {
+        out[k] = v
+      } else {
+        out[k] = '' // no exact match → emit bare
+      }
+      continue
+    }
+    if (attrNameMatches(k, patterns)) out[k] = v
+  }
+  return out
+}
+
 function isAttrNonBoolean(name, nonBoolOpt) {
   const lower = name.toLowerCase()
   if (nonBoolOpt === undefined) return !HTML_BOOLEAN_ATTRIBUTES.has(lower)
@@ -507,6 +581,10 @@ function tokenizerTransform(
     nestingLimit,
     allowedSchemes,
     allowedSchemesByTag,
+    allowedAttributes,
+    observedAttribs,
+    allowedScriptHostnames,
+    allowedScriptDomains,
   },
 ) {
   const root = { children: [], rawText: '', mediaChildren: [] }
@@ -611,10 +689,44 @@ function tokenizerTransform(
         const schemes = Array.isArray(allowedSchemes) ? allowedSchemes : DEFAULT_ALLOWED_SCHEMES
         nextAttribs = filterUrlAttribs(nextAttribs, tagName, schemes, allowedSchemesByTag)
 
+        // allowedScriptHostnames / allowedScriptDomains: narrow <script src>
+        // to the allowed hostname / domain. When either option is provided,
+        // script content is always suppressed too (matches sanitize-html).
+        let suppressContent = false
+        if (
+          tagName.toLowerCase() === 'script' &&
+          (Array.isArray(allowedScriptHostnames) || Array.isArray(allowedScriptDomains))
+        ) {
+          if (nextAttribs.src !== undefined) {
+            const host = extractHost(nextAttribs.src)
+            const ok =
+              host !== null &&
+              (hostMatches(host, allowedScriptHostnames, allowedScriptDomains))
+            if (!ok) {
+              const { src: _s, ...rest } = nextAttribs
+              nextAttribs = rest
+            }
+          }
+          suppressContent = true
+        }
+
         // Drop empty non-boolean attributes (href="", target="", etc.) while
         // preserving empty booleans (`<input checked>`) and any attr listed in
         // allowedEmptyAttributes.
         nextAttribs = filterEmptyAttribs(nextAttribs, nonBooleanAttributes, allowedEmptyAttributes)
+
+        // Apply attribute-name glob and attribute-value allowlists. Native
+        // sanitize only supports exact name matches so the tokenizer must
+        // resolve them here; whatever survives is tracked in
+        // `observedAttribs` so the later native call can be told to keep it.
+        if (allowedAttributes) {
+          nextAttribs = filterAttribsByAllowlist(nextAttribs, tagName, allowedAttributes)
+        }
+        if (observedAttribs) {
+          const bucket = observedAttribs.get(tagName) ?? new Set()
+          for (const k of Object.keys(nextAttribs)) bucket.add(k)
+          observedAttribs.set(tagName, bucket)
+        }
 
         // Determine this frame's escape mode given allowedTags + ancestors.
         const lowerEmitted = tagName.toLowerCase()
@@ -657,6 +769,7 @@ function tokenizerTransform(
           rawText: '',
           mediaChildren: [],
           escapeMode: frameEscape,
+          suppressContent,
         })
       },
       ontext(text) {
@@ -668,6 +781,9 @@ function tokenizerTransform(
         // completelyDiscard: top-level text (not inside any allowed tag) is
         // also dropped.
         if (completelyDiscard && frame === root) return
+        // allowedScriptHostnames/Domains: drop the script's text body while
+        // keeping the wrapper.
+        if (frame.suppressContent) return
         frame.rawText += text
         // Text inside raw-text elements (script/style/textarea) is already
         // delivered undecoded by htmlparser2 — escaping it here would
@@ -961,6 +1077,25 @@ export function sanitize(html, options) {
       ? rawOpts.allowedStyles
       : null
 
+  // Detect glob / object-value patterns in allowedAttributes. If present,
+  // the tokenizer must resolve them (ammonia only supports exact names).
+  function hasAdvancedAttrRule(rule) {
+    if (!rule || typeof rule !== 'object') return false
+    for (const list of Object.values(rule)) {
+      if (!Array.isArray(list)) continue
+      for (const e of list) {
+        if (typeof e === 'string' && e.includes('*')) return true
+        if (e && typeof e === 'object' && !Array.isArray(e) && !isRegExp(e)) return true
+      }
+    }
+    return false
+  }
+  const attrRuleNeedsTokenizer = hasAdvancedAttrRule(rawOpts.allowedAttributes)
+  // `allowedAttributes: false` (allow-all) also needs the tokenizer to
+  // collect every attribute it sees so we can whitelist them in native.
+  const needAttrsCollect = attrRuleNeedsTokenizer || allowAllAttributes
+  const observedAttribs = needAttrsCollect ? new Map() : null
+
   // Always run the tokenizer when the input could contain a disallowed
   // nonTextTag whose content must be dropped — otherwise rely on the
   // cheaper regex pre-pass (or skip outright).
@@ -977,6 +1112,10 @@ export function sanitize(html, options) {
     rawOpts.parseStyleAttributes === false ||
     Array.isArray(rawOpts.nonBooleanAttributes) ||
     Array.isArray(rawOpts.allowedEmptyAttributes) ||
+    attrRuleNeedsTokenizer ||
+    needAttrsCollect ||
+    Array.isArray(rawOpts.allowedScriptHostnames) ||
+    Array.isArray(rawOpts.allowedScriptDomains) ||
     rawOpts.preserveEscapedAttributes === false ||
     typeof rawOpts.onOpenTag === 'function' ||
     typeof rawOpts.onCloseTag === 'function' ||
@@ -1013,6 +1152,10 @@ export function sanitize(html, options) {
       nestingLimit: rawOpts.nestingLimit,
       allowedSchemes: rawOpts.allowedSchemes,
       allowedSchemesByTag: rawOpts.allowedSchemesByTag,
+      allowedAttributes: attrRuleNeedsTokenizer ? rawOpts.allowedAttributes : undefined,
+      observedAttribs,
+      allowedScriptHostnames: rawOpts.allowedScriptHostnames,
+      allowedScriptDomains: rawOpts.allowedScriptDomains,
     })
   } else if (rawOpts.transformTags) {
     pre = regexTransform(pre, rawOpts.transformTags)
@@ -1044,6 +1187,18 @@ export function sanitize(html, options) {
       }
       forNative.allowedSchemes = [...union]
     }
+    // Extend allowedAttributes with attribute names the glob-/value-rule
+    // tokenizer pass already validated. Native ammonia has no pattern
+    // matching, so without this extension it would strip the filtered attrs.
+    if (observedAttribs && observedAttribs.size > 0) {
+      const aa = (forNative.allowedAttributes = forNative.allowedAttributes ?? {})
+      for (const [tag, set] of observedAttribs) {
+        const existing = Array.isArray(aa[tag]) ? aa[tag] : []
+        const merged = new Set([...existing, ...set])
+        aa[tag] = [...merged]
+      }
+    }
+
     // allowedClasses was already resolved by the tokenizer (including any
     // regex / glob patterns). Pass `class` through as a plain attribute for
     // each tag with a rule so native sanitize keeps the filtered value.

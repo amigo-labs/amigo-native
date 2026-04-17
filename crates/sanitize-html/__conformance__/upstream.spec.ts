@@ -118,25 +118,14 @@ new vm.Script(source, { filename: 'upstream/test.js' }).runInContext(ctx);
 // explanation of each category.
 const KNOWN_DIVERGENCES = new Set<string>([
   // -- Unsupported options / features --
-  'should allow attributes to be specified as globs',
-  'should quote regex chars in attributes specified as globs',
   // -- Output shape / tree-builder differences --
   'should allow only approved attributes, when they contain colon characters, for approved tags',
+  'should allow only approved attributes, but to any tags, if tag is declared as  "*"',
+  'should support SVG tags',
   // -- Additional divergences detected by running the suite --
   'Should not double encode ampersands on HTML entities if decodeEntities is false (TODO more tests, this is too loose to rely upon)',
-  'Should not pass through &0; unescaped if decodeEntities is true (the default)',
-  'should allow only approved attributes, but to any tags, if tag is declared as  "*"',
-  'should delete the script tag',
-  'should delete the script tag content',
-  'should delete the script tag content from script tags with no src when allowedScriptDomains is present',
-  'should delete the script tag content from script tags with no src when allowedScriptHostnames is present',
-  'should delete the script tag since src is not a valid URL',
   'should not pass through any text outside html tag boundary since html tag is found and option is ON',
   'should not be faked out by double <',
-  'Should only allow attributes to have any combination of specific values',
-  'Should only allow attributes that match a specific value',
-  'should not process style sourceMappingURL with postCSS',
-  'should support SVG tags',
 ]);
 
 describe('upstream sanitize-html tests (adapted)', () => {
