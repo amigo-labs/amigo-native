@@ -15,23 +15,23 @@ Monorepo using [napi-rs](https://napi.rs) for native Node.js addons, cross-compi
 
 ## Packages
 
-| Package | Description | Replaces | vs JS | Parity | Status |
-|:--------|:------------|:---------|:------|:-------|:-------|
-| [`@amigo-labs/slugify`](./crates/slugify) | Unicode-aware slugification via `deunicode` | `slugify` | **3-7x** | — | Alternative |
-| [`@amigo-labs/argon2`](./crates/argon2) | Argon2id password hashing (sync + async) | `argon2`/`hash-wasm` | **1.4-2x** | — | Drop-in |
-| [`@amigo-labs/xxhash`](./crates/xxhash) | XXH32/64/XXH3 hashing with batch + streaming API | `xxhash-wasm`/`xxhashjs` | **1.3-2.6x** | — | Drop-in |
-| [`@amigo-labs/sanitize-html`](./crates/sanitize-html) | HTML sanitization via Mozilla's `ammonia` | `sanitize-html` | **1.6-2x** | — | Compatible |
-| [`@amigo-labs/csv`](./crates/csv) | CSV parsing/serialization via BurntSushi's `csv` | `csv-parse`/`papaparse` | **1.4-3.5x** | — | Drop-in |
-| [`@amigo-labs/file-type`](./crates/file-type) | Magic-byte file detection via `infer` | `file-type` | TBD | 89% | Alternative |
-| [`@amigo-labs/inflate`](./crates/inflate) | zlib deflate/inflate/gzip via `flate2` (zlib-rs) | `pako` | TBD | 100% | Compatible |
-| [`@amigo-labs/levenshtein`](./crates/levenshtein) | Edit distance via `triple_accel` (SIMD) + `strsim` | `fast-levenshtein`/`leven` | TBD | 100% | Drop-in |
-| [`@amigo-labs/nanoid`](./crates/nanoid) | Crypto-safe URL-safe IDs via `nanoid` crate | `nanoid` | TBD | 100% | Drop-in |
-| [`@amigo-labs/encoding`](./crates/encoding) | Character encoding via `encoding_rs` | `iconv-lite` | TBD | 66% | Alternative |
-| [`@amigo-labs/xml`](./crates/xml) | SAX-style XML parser via `quick-xml` | `sax` | TBD | 100% | Compatible |
-| [`@amigo-labs/deep-equal`](./crates/deep-equal) | Deep structural equality | `fast-deep-equal` | TBD | 100% | Drop-in |
-| [`@amigo-labs/deepmerge`](./crates/deepmerge) | Recursive object merge | `deepmerge` | TBD | 100% | Compatible |
-| [`@amigo-labs/jwt`](./crates/jwt) | JWT sign/verify via `jsonwebtoken` crate | `jsonwebtoken` | TBD | 86% | Drop-in |
-| [`@amigo-labs/zip`](./crates/zip) | ZIP read/write via `zip` crate | `yauzl`/`adm-zip`/`jszip` | TBD | 100% | Alternative |
+| Package                                               | Description                                        | Replaces                   | vs JS        | Parity | Status      |
+| :---------------------------------------------------- | :------------------------------------------------- | :------------------------- | :----------- | :----- | :---------- |
+| [`@amigo-labs/slugify`](./crates/slugify)             | Unicode-aware slugification via `deunicode`        | `slugify`                  | **3-7x**     | —      | Alternative |
+| [`@amigo-labs/argon2`](./crates/argon2)               | Argon2id password hashing (sync + async)           | `argon2`/`hash-wasm`       | **1.4-2x**   | —      | Drop-in     |
+| [`@amigo-labs/xxhash`](./crates/xxhash)               | XXH32/64/XXH3 hashing with batch + streaming API   | `xxhash-wasm`/`xxhashjs`   | **1.3-2.6x** | —      | Drop-in     |
+| [`@amigo-labs/sanitize-html`](./crates/sanitize-html) | HTML sanitization via Mozilla's `ammonia`          | `sanitize-html`            | **1.6-2x**   | —      | Compatible  |
+| [`@amigo-labs/csv`](./crates/csv)                     | CSV parsing/serialization via BurntSushi's `csv`   | `csv-parse`/`papaparse`    | **1.4-3.5x** | —      | Drop-in     |
+| [`@amigo-labs/file-type`](./crates/file-type)         | Magic-byte file detection via `infer`              | `file-type`                | TBD          | 89%    | Alternative |
+| [`@amigo-labs/inflate`](./crates/inflate)             | zlib deflate/inflate/gzip via `flate2` (zlib-rs)   | `pako`                     | TBD          | 100%   | Compatible  |
+| [`@amigo-labs/levenshtein`](./crates/levenshtein)     | Edit distance via `triple_accel` (SIMD) + `strsim` | `fast-levenshtein`/`leven` | TBD          | 100%   | Drop-in     |
+| [`@amigo-labs/nanoid`](./crates/nanoid)               | Crypto-safe URL-safe IDs via `nanoid` crate        | `nanoid`                   | TBD          | 100%   | Drop-in     |
+| [`@amigo-labs/encoding`](./crates/encoding)           | Character encoding via `encoding_rs`               | `iconv-lite`               | TBD          | 66%    | Alternative |
+| [`@amigo-labs/xml`](./crates/xml)                     | SAX-style XML parser via `quick-xml`               | `sax`                      | TBD          | 100%   | Compatible  |
+| [`@amigo-labs/deep-equal`](./crates/deep-equal)       | Deep structural equality                           | `fast-deep-equal`          | TBD          | 100%   | Drop-in     |
+| [`@amigo-labs/deepmerge`](./crates/deepmerge)         | Recursive object merge                             | `deepmerge`                | TBD          | 100%   | Compatible  |
+| [`@amigo-labs/jwt`](./crates/jwt)                     | JWT sign/verify via `jsonwebtoken` crate           | `jsonwebtoken`             | TBD          | 86%    | Drop-in     |
+| [`@amigo-labs/zip`](./crates/zip)                     | ZIP read/write via `zip` crate                     | `yauzl`/`adm-zip`/`jszip`  | TBD          | 100%   | Alternative |
 
 Full benchmark data: [BENCHMARKS.md](./BENCHMARKS.md) (auto-generated by CI).
 Parity scores populated once each package's `__parity__/upstream.spec.ts` is filled from the upstream test suite.
@@ -112,6 +112,7 @@ amigo-native/
 ```
 
 Each crate is a standalone npm package with:
+
 - Rust source in `src/lib.rs`
 - napi-rs bindings (`#[napi]` macros)
 - Platform-specific npm packages in `npm/` (6 targets)
@@ -122,14 +123,14 @@ Each crate is a standalone npm package with:
 
 Tag with `<crate-name>@<version>` (e.g. `slugify@0.1.0`) to trigger the release workflow. It cross-compiles for 6 targets and publishes to npm with provenance.
 
-| Target | OS | Arch |
-|:-------|:---|:-----|
-| `x86_64-unknown-linux-gnu` | Linux | x64 |
-| `x86_64-unknown-linux-musl` | Linux (Alpine) | x64 |
-| `aarch64-unknown-linux-gnu` | Linux | ARM64 |
-| `x86_64-apple-darwin` | macOS | x64 |
-| `aarch64-apple-darwin` | macOS | ARM64 |
-| `x86_64-pc-windows-msvc` | Windows | x64 |
+| Target                      | OS             | Arch  |
+| :-------------------------- | :------------- | :---- |
+| `x86_64-unknown-linux-gnu`  | Linux          | x64   |
+| `x86_64-unknown-linux-musl` | Linux (Alpine) | x64   |
+| `aarch64-unknown-linux-gnu` | Linux          | ARM64 |
+| `x86_64-apple-darwin`       | macOS          | x64   |
+| `aarch64-apple-darwin`      | macOS          | ARM64 |
+| `x86_64-pc-windows-msvc`    | Windows        | x64   |
 
 ## License
 
