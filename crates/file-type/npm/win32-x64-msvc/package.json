@@ -1,0 +1,32 @@
+{
+  "name": "@amigo-labs/file-type-win32-x64-msvc",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "file-type.win32-x64-msvc.node",
+  "files": [
+    "file-type.win32-x64-msvc.node"
+  ],
+  "description": "Rust-powered magic-byte file type detection via infer",
+  "keywords": [
+    "file-type",
+    "mime",
+    "magic-bytes",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/file-type"
+  },
+  "os": [
+    "win32"
+  ]
+}

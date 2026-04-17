@@ -1,0 +1,36 @@
+{
+  "name": "@amigo-labs/levenshtein-linux-x64-musl",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "levenshtein.linux-x64-musl.node",
+  "files": [
+    "levenshtein.linux-x64-musl.node"
+  ],
+  "description": "Rust-powered Levenshtein edit distance (SIMD via triple_accel)",
+  "keywords": [
+    "levenshtein",
+    "edit-distance",
+    "string-distance",
+    "native",
+    "rust",
+    "napi",
+    "simd"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/levenshtein"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "musl"
+  ]
+}

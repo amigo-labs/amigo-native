@@ -1,0 +1,15 @@
+[package]
+name = "amigo-encoding"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+encoding_rs = "0.8"
+
+[build-dependencies]
+napi-build = "2"

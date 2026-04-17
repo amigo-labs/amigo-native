@@ -1,0 +1,32 @@
+{
+  "name": "@amigo-labs/xml-darwin-arm64",
+  "version": "0.1.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "xml.darwin-arm64.node",
+  "files": [
+    "xml.darwin-arm64.node"
+  ],
+  "description": "Rust-powered SAX-style XML parser via quick-xml",
+  "keywords": [
+    "xml",
+    "sax",
+    "parser",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/xml"
+  },
+  "os": [
+    "darwin"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@amigo-labs/file-type-linux-arm64-gnu",
+  "version": "0.1.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "file-type.linux-arm64-gnu.node",
+  "files": [
+    "file-type.linux-arm64-gnu.node"
+  ],
+  "description": "Rust-powered magic-byte file type detection via infer",
+  "keywords": [
+    "file-type",
+    "mime",
+    "magic-bytes",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/file-type"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ]
+}

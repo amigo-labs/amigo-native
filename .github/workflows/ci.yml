@@ -47,6 +47,8 @@ jobs:
         run: pnpm -r run build
       - name: Test all crates
         run: pnpm -r run test
+      - name: Parity tests
+        run: pnpm test:parity
 
   test-conformance:
     runs-on: ubuntu-latest

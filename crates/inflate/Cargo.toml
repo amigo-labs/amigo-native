@@ -1,0 +1,15 @@
+[package]
+name = "amigo-inflate"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+flate2 = { version = "1", default-features = false, features = ["zlib-rs"] }
+
+[build-dependencies]
+napi-build = "2"

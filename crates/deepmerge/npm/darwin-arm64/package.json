@@ -1,0 +1,31 @@
+{
+  "name": "@amigo-labs/deepmerge-darwin-arm64",
+  "version": "0.1.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "deepmerge.darwin-arm64.node",
+  "files": [
+    "deepmerge.darwin-arm64.node"
+  ],
+  "description": "Semantic drop-in for deepmerge with a Rust fast-path for plain JSON",
+  "keywords": [
+    "deepmerge",
+    "merge",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/deepmerge"
+  },
+  "os": [
+    "darwin"
+  ]
+}

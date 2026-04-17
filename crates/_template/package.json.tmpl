@@ -24,8 +24,10 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish",
-    "test": "vitest run"
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:parity": "vitest run __parity__",
+    "bench": "vitest bench"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",

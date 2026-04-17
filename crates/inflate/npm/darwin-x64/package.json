@@ -1,0 +1,34 @@
+{
+  "name": "@amigo-labs/inflate-darwin-x64",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "inflate.darwin-x64.node",
+  "files": [
+    "inflate.darwin-x64.node"
+  ],
+  "description": "Rust-powered zlib / deflate / gzip via flate2 (zlib-rs backend)",
+  "keywords": [
+    "inflate",
+    "deflate",
+    "gzip",
+    "zlib",
+    "compression",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/inflate"
+  },
+  "os": [
+    "darwin"
+  ]
+}

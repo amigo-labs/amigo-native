@@ -1,0 +1,36 @@
+{
+  "name": "@amigo-labs/nanoid-linux-x64-gnu",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "nanoid.linux-x64-gnu.node",
+  "files": [
+    "nanoid.linux-x64-gnu.node"
+  ],
+  "description": "Rust-powered crypto-safe URL-friendly ID generator",
+  "keywords": [
+    "nanoid",
+    "uuid",
+    "id",
+    "random",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/nanoid"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ]
+}

@@ -10,22 +10,20 @@ fi
 
 cp -r crates/_template "crates/$NAME"
 
-# Rename template files
-for f in crates/$NAME/*.tmpl; do
+# Rename template files (recursively across all sub-dirs)
+while IFS= read -r -d '' f; do
   mv "$f" "${f%.tmpl}"
-done
+done < <(find "crates/$NAME" -type f -name "*.tmpl" -print0)
 
-for f in crates/$NAME/__test__/*.tmpl; do
-  mv "$f" "${f%.tmpl}"
-done
-
-# Replace template variables
-sed -i "s/{{NAME}}/$NAME/g" "crates/$NAME/Cargo.toml"
-sed -i "s/{{NAME}}/$NAME/g" "crates/$NAME/package.json"
-sed -i "s/{{NAME}}/$NAME/g" "crates/$NAME/src/lib.rs"
-sed -i "s/{{NAME}}/$NAME/g" "crates/$NAME/__test__/index.spec.ts"
+# Replace template variables in every non-binary file
+while IFS= read -r -d '' f; do
+  sed -i "s/{{NAME}}/$NAME/g" "$f"
+done < <(find "crates/$NAME" -type f \( -name "*.toml" -o -name "*.json" -o -name "*.rs" -o -name "*.ts" -o -name "*.md" \) -print0)
 
 echo "Created crates/$NAME"
 echo "  -> Edit crates/$NAME/src/lib.rs"
 echo "  -> Edit crates/$NAME/Cargo.toml (add dependencies)"
+echo "  -> Edit crates/$NAME/__parity__/upstream.spec.ts (clone upstream tests)"
+echo "  -> Edit crates/$NAME/__bench__/index.bench.ts (add benchmarks)"
+echo "  -> Delete crates/$NAME/MIGRATION.md if fully drop-in"
 echo "  -> Run: cd crates/$NAME && pnpm run build"

@@ -1,0 +1,35 @@
+{
+  "name": "@amigo-labs/xml-linux-x64-musl",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "xml.linux-x64-musl.node",
+  "files": [
+    "xml.linux-x64-musl.node"
+  ],
+  "description": "Rust-powered SAX-style XML parser via quick-xml",
+  "keywords": [
+    "xml",
+    "sax",
+    "parser",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/xml"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "musl"
+  ]
+}

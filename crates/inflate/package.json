@@ -1,0 +1,59 @@
+{
+  "name": "@amigo-labs/inflate",
+  "version": "0.1.0",
+  "description": "Rust-powered zlib / deflate / gzip via flate2 (zlib-rs backend)",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "inflate",
+    "deflate",
+    "gzip",
+    "zlib",
+    "compression",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "napi": {
+    "binaryName": "inflate",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "bench": "vitest bench",
+    "test:conformance": "vitest run __conformance__/fuzz.spec.ts",
+    "test:all": "vitest run",
+    "test:upstream": "vitest run __conformance__/upstream.spec.ts"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "pako": "^2.1.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/inflate"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

@@ -17,14 +17,38 @@
     "prebuilt native binaries"
   ],
   "marquee": [
-    { "k": "RUNTIME",      "v": "NAPI-RS v3" },
-    { "k": "LANGUAGE",     "v": "RUST" },
-    { "k": "PLATFORMS",    "v": "6" },
-    { "k": "PACKAGES",     "v": "5" },
-    { "k": "NODE",         "v": ">= 18" },
-    { "k": "LICENSE",      "v": "MIT" },
-    { "k": "PROVENANCE",   "v": "ENABLED" },
-    { "k": "DEPENDENCIES", "v": "ZERO" }
+    {
+      "k": "RUNTIME",
+      "v": "NAPI-RS v3"
+    },
+    {
+      "k": "LANGUAGE",
+      "v": "RUST"
+    },
+    {
+      "k": "PLATFORMS",
+      "v": "6"
+    },
+    {
+      "k": "PACKAGES",
+      "v": "15"
+    },
+    {
+      "k": "NODE",
+      "v": ">= 18"
+    },
+    {
+      "k": "LICENSE",
+      "v": "MIT"
+    },
+    {
+      "k": "PROVENANCE",
+      "v": "ENABLED"
+    },
+    {
+      "k": "DEPENDENCIES",
+      "v": "ZERO"
+    }
   ],
   "packages": [
     {
@@ -71,6 +95,96 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/csv",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/csv",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/csv/README.md"
+    },
+    {
+      "name": "file-type",
+      "title": "File Type",
+      "description": "Magic-byte file-type detection via the Rust infer crate.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/file-type",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/file-type",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/file-type/README.md"
+    },
+    {
+      "name": "inflate",
+      "title": "Inflate",
+      "description": "zlib deflate/inflate/gzip powered by flate2 + zlib-rs.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/inflate",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/inflate",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/inflate/README.md"
+    },
+    {
+      "name": "levenshtein",
+      "title": "Levenshtein",
+      "description": "Edit distance via triple_accel (SIMD) with a strsim fallback.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/levenshtein",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/levenshtein",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/levenshtein/README.md"
+    },
+    {
+      "name": "nanoid",
+      "title": "NanoID",
+      "description": "Crypto-safe URL-friendly ID generator via the nanoid Rust crate.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/nanoid",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/nanoid",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/nanoid/README.md"
+    },
+    {
+      "name": "encoding",
+      "title": "Encoding",
+      "description": "Character encoding conversion powered by Mozilla's encoding_rs.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/encoding",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/encoding",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/encoding/README.md"
+    },
+    {
+      "name": "xml",
+      "title": "XML",
+      "description": "SAX-style XML parser via quick-xml.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xml",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xml",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xml/README.md"
+    },
+    {
+      "name": "deep-equal",
+      "title": "Deep Equal",
+      "description": "Deep structural equality for JSON-safe values.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/deep-equal",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/deep-equal",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deep-equal/README.md"
+    },
+    {
+      "name": "deepmerge",
+      "title": "Deepmerge",
+      "description": "Recursive object merge for JSON-safe values.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/deepmerge",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/deepmerge",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deepmerge/README.md"
+    },
+    {
+      "name": "jwt",
+      "title": "JWT",
+      "description": "JWT sign, verify, and decode via the jsonwebtoken Rust crate.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jwt",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jwt",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jwt/README.md"
+    },
+    {
+      "name": "zip",
+      "title": "ZIP",
+      "description": "ZIP archive read/write via the zip Rust crate.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/zip",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/zip",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md"
     }
   ]
 }

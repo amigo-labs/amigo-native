@@ -1,0 +1,60 @@
+{
+  "name": "@amigo-labs/jwt",
+  "version": "0.1.0",
+  "description": "Rust-powered JWT sign/verify via the jsonwebtoken crate",
+  "main": "wrapper.js",
+  "types": "wrapper.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "wrapper.js",
+    "wrapper.d.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "jwt",
+    "jsonwebtoken",
+    "auth",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "napi": {
+    "binaryName": "jwt",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "bench": "vitest bench",
+    "test:conformance": "vitest run __conformance__/fuzz.spec.ts",
+    "test:all": "vitest run",
+    "test:upstream": "vitest run __conformance__/upstream.spec.ts"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "fast-check": "^3.23.0",
+    "jsonwebtoken": "^9.0.2",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/jwt"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}
