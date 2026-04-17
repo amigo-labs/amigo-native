@@ -4,9 +4,21 @@
   "description": "Blazing fast HTML sanitization powered by Rust (ammonia)",
   "main": "index.js",
   "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./compat": {
+      "types": "./compat.d.ts",
+      "default": "./compat.mjs"
+    }
+  },
   "files": [
     "index.js",
     "index.d.ts",
+    "compat.mjs",
+    "compat.d.ts",
     "README.md"
   ],
   "napi": {
@@ -29,6 +41,9 @@
     "test:conformance": "vitest run __conformance__",
     "test:all": "vitest run",
     "bench": "vitest bench"
+  },
+  "dependencies": {
+    "htmlparser2": "^10.0.0"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
