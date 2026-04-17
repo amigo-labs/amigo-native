@@ -1,0 +1,33 @@
+{
+  "name": "@amigo-labs/encoding-darwin-arm64",
+  "version": "0.1.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "encoding.darwin-arm64.node",
+  "files": [
+    "encoding.darwin-arm64.node"
+  ],
+  "description": "Rust-powered character-encoding conversion via encoding_rs",
+  "keywords": [
+    "encoding",
+    "iconv",
+    "iconv-lite",
+    "charset",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/encoding"
+  },
+  "os": [
+    "darwin"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@amigo-labs/deepmerge-win32-x64-msvc",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "deepmerge.win32-x64-msvc.node",
+  "files": [
+    "deepmerge.win32-x64-msvc.node"
+  ],
+  "description": "Semantic drop-in for deepmerge with a Rust fast-path for plain JSON",
+  "keywords": [
+    "deepmerge",
+    "merge",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/deepmerge"
+  },
+  "os": [
+    "win32"
+  ]
+}

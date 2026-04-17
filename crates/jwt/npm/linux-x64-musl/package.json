@@ -1,0 +1,35 @@
+{
+  "name": "@amigo-labs/jwt-linux-x64-musl",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "jwt.linux-x64-musl.node",
+  "files": [
+    "jwt.linux-x64-musl.node"
+  ],
+  "description": "Rust-powered JWT sign/verify via the jsonwebtoken crate",
+  "keywords": [
+    "jwt",
+    "jsonwebtoken",
+    "auth",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/jwt"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "musl"
+  ]
+}

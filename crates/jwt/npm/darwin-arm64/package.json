@@ -1,0 +1,32 @@
+{
+  "name": "@amigo-labs/jwt-darwin-arm64",
+  "version": "0.1.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "jwt.darwin-arm64.node",
+  "files": [
+    "jwt.darwin-arm64.node"
+  ],
+  "description": "Rust-powered JWT sign/verify via the jsonwebtoken crate",
+  "keywords": [
+    "jwt",
+    "jsonwebtoken",
+    "auth",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/jwt"
+  },
+  "os": [
+    "darwin"
+  ]
+}
