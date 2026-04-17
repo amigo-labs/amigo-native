@@ -122,7 +122,6 @@ async function boot() {
   renderMarquee();
   renderFooter();
   renderPicker();
-  renderAllSlabs();
   wireSortChips();
   cycleHeroTagline();
   wireCursorGlow();
@@ -134,12 +133,10 @@ async function boot() {
   state.activeIdx = hashIdx >= 0 ? hashIdx : 0;
   state.activeName = state.sortedList[state.activeIdx].name;
 
-  // initial render: mark active slab, scroll only if deep-linked
+  // scroll picker to initial item after layout is ready
   requestAnimationFrame(() => {
-    updateActiveClass();
-    updateInView();
-    if (hashIdx > 0) snapTo(state.activeIdx, false);
-    playSlabAnimations(state.activeName);
+    snapTo(state.activeIdx, false);
+    renderSlab();
   });
 }
 
@@ -221,19 +218,31 @@ function renderPicker() {
     </li>
   `).join('');
 
-  // mobile-only: pad left/right so first/last chip can center-snap
+  // pad top/bottom so first/last can center-snap (desktop only; mobile uses horizontal layout)
   const updatePadding = () => {
     const isMobile = window.innerWidth <= 900;
     if (isMobile) {
+      picker.style.paddingTop = '';
+      picker.style.paddingBottom = '';
       picker.style.paddingLeft = '50%';
       picker.style.paddingRight = '50%';
     } else {
       picker.style.paddingLeft = '';
       picker.style.paddingRight = '';
+      const firstItem = picker.querySelector('li');
+      if (firstItem) {
+        const itemH = firstItem.offsetHeight;
+        const pad = Math.max((picker.clientHeight - itemH) / 2, 0);
+        picker.style.paddingTop = pad + 'px';
+        picker.style.paddingBottom = pad + 'px';
+      }
     }
   };
   updatePadding();
-  window.addEventListener('resize', updatePadding);
+  window.addEventListener('resize', () => {
+    updatePadding();
+    snapTo(state.activeIdx, false);
+  });
 
   // click to select
   picker.querySelectorAll('li').forEach(li => {
@@ -243,16 +252,21 @@ function renderPicker() {
     });
   });
 
-  // mobile horizontal swipe -> page-scroll to the matching slab
+  // scroll-based active detection (suppressed while programmatic snap is running)
   let scrollTimer = null;
   picker.addEventListener('scroll', () => {
     if (state.isSnapping) return;
-    if (window.innerWidth > 900) return; // only mobile picker scrolls
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => {
+    if (scrollTimer) cancelAnimationFrame(scrollTimer);
+    scrollTimer = requestAnimationFrame(() => {
       const idx = nearestCenterIdx();
-      if (idx !== state.activeIdx) snapTo(idx, true);
-    }, 80);
+      if (idx !== state.activeIdx) {
+        state.activeIdx = idx;
+        state.activeName = state.sortedList[idx]?.name || null;
+        updateActiveClass();
+        renderSlab();
+        updateHash();
+      }
+    });
   }, { passive: true });
 }
 
@@ -275,35 +289,31 @@ function nearestCenterIdx() {
 }
 
 function snapTo(idx, smooth) {
-  const p = state.sortedList[idx];
-  if (!p) return;
+  const picker = $('#picker');
+  const li = picker.querySelectorAll('li')[idx];
+  if (!li) return;
   state.activeIdx = idx;
-  state.activeName = p.name;
-
-  const slab = document.getElementById('slab-' + p.name);
-  if (!slab) return;
-
-  // horizontal center on mobile picker strip
+  state.activeName = state.sortedList[idx]?.name || null;
   const isMobile = window.innerWidth <= 900;
-  if (isMobile) {
-    const picker = $('#picker');
-    const li = picker.querySelectorAll('li')[idx];
-    if (li) {
-      const target = li.offsetLeft - (picker.clientWidth - li.offsetWidth) / 2;
-      picker.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
-    }
-  }
 
-  // suppress observer-driven updates during programmatic page scroll
+  // suppress scroll-driven updates while the programmatic smooth scroll runs
   state.isSnapping = true;
   clearTimeout(state.snapTimer);
-  slab.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
-  state.snapTimer = setTimeout(() => { state.isSnapping = false; }, smooth ? 700 : 0);
+
+  if (isMobile) {
+    const target = li.offsetLeft - (picker.clientWidth - li.offsetWidth) / 2;
+    picker.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+  } else {
+    const target = li.offsetTop - (picker.clientHeight - li.offsetHeight) / 2;
+    picker.scrollTo({ top: target, behavior: smooth ? 'smooth' : 'auto' });
+  }
+
+  // release the flag once scroll has settled (smooth ~500ms worst case)
+  state.snapTimer = setTimeout(() => { state.isSnapping = false; }, smooth ? 500 : 0);
 
   updateActiveClass();
-  updateInView();
+  renderSlab();
   updateHash();
-  playSlabAnimations(p.name);
 }
 
 function updateActiveClass() {
@@ -324,147 +334,79 @@ function updateHash() {
   if (p) history.replaceState(null, '', '#' + p.name);
 }
 
-// --- slabs (all rendered vertically) ---
-function renderAllSlabs() {
-  const host = $('#slabs');
-  host.innerHTML = state.sortedList.map(p => buildSlabHTML(p)).join('');
-  state.sortedList.forEach(p => animateSlab(p));
-  observeSlabs();
+// --- slab ---
+function renderSlab() {
+  const p = state.sortedList[state.activeIdx];
+  if (!p) return;
+  const slab = $('#slab');
+  clearTimers();
+
+  slab.classList.add('fading');
+  setTimeout(() => {
+    slab.innerHTML = buildSlabHTML(p);
+    slab.classList.remove('fading');
+    animateSlab(p);
+  }, reducedMotion() ? 0 : 120);
 }
 
 function buildSlabHTML(p) {
-  const cmdText = 'npm install @amigo-labs/' + p.name;
   return `
-    <article class="slab" id="slab-${p.name}" data-name="${p.name}" aria-labelledby="slab-name-${p.name}">
-      <div class="slab-head">
-        <div class="slab-name" id="slab-name-${p.name}"><span class="scope">@amigo-labs/</span>${p.name}</div>
-        <div class="slab-speedup" data-speedup="${p.speedup}"></div>
+    <div class="slab-head">
+      <div class="slab-name"><span class="scope">@amigo-labs/</span><span id="slabName">${p.name}</span></div>
+      <div class="slab-speedup" id="slabSpeedup"></div>
+    </div>
+    <p class="slab-desc" id="slabDesc"></p>
+
+    <div class="slab-install">
+      <div class="dots" aria-hidden="true">
+        <span class="dot"></span><span class="dot"></span><span class="dot hot"></span>
       </div>
-      <p class="slab-desc" data-desc="${escapeAttr(p.description)}"></p>
-      <div class="slab-install">
-        <div class="dots" aria-hidden="true">
-          <span class="dot"></span><span class="dot"></span><span class="dot hot"></span>
-        </div>
-        <span class="prefix">$</span>
-        <span class="cmd" data-cmd="${cmdText}"></span><span class="caret" aria-hidden="true"></span>
-        <button class="copy-btn" type="button" data-copy="${cmdText}">Copy</button>
+      <span class="prefix">$</span>
+      <span class="cmd" id="slabCmd"></span><span class="caret" aria-hidden="true"></span>
+      <button class="copy-btn" type="button" id="slabCopy">Copy</button>
+    </div>
+
+    <div class="slab-grid">
+      <div class="slab-col">
+        <div class="slab-col-head">Benchmarks (ops/s)</div>
+        <div id="slabBench"></div>
       </div>
-      <div class="slab-grid">
-        <div class="slab-col">
-          <div class="slab-col-head">Benchmarks (ops/s)</div>
-          <div class="slab-bench"></div>
-        </div>
-        <div class="slab-col">
-          <div class="slab-col-head">Install footprint</div>
-          <div class="slab-sizes"></div>
-        </div>
+      <div class="slab-col">
+        <div class="slab-col-head">Install footprint</div>
+        <div id="slabSizes"></div>
       </div>
-      <div class="slab-links">
-        <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
-        <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
-        <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
-      </div>
-    </article>
+    </div>
+
+    <div class="slab-links">
+      <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
+      <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
+      <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
+    </div>
   `;
 }
 
-function escapeAttr(s) {
-  return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;');
-}
-
 function animateSlab(p) {
-  const slab = document.getElementById('slab-' + p.name);
-  if (!slab) return;
+  const cmd = '$ npm install @amigo-labs/' + p.name;
+  const cmdText = 'npm install @amigo-labs/' + p.name;
 
-  const speedupEl = slab.querySelector('.slab-speedup');
-  const descEl = slab.querySelector('.slab-desc');
-  const cmdEl = slab.querySelector('.cmd');
-  speedupEl.textContent = speedupEl.dataset.speedup;
-  descEl.textContent = descEl.dataset.desc;
-  cmdEl.textContent = cmdEl.dataset.cmd;
+  typeInto($('#slabSpeedup'), p.speedup, 18);
+  typeInto($('#slabDesc'), p.description, 8);
+  typeInto($('#slabCmd'), cmdText, 20);
 
-  const copyBtn = slab.querySelector('.copy-btn');
-  copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(copyBtn.dataset.copy);
-    const prev = copyBtn.textContent;
-    copyBtn.textContent = 'Copied';
-    setTimeout(() => { copyBtn.textContent = prev; }, 1500);
+  $('#slabCopy').addEventListener('click', () => {
+    navigator.clipboard.writeText(cmdText);
+    const btn = $('#slabCopy');
+    const prev = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = prev; }, 1500);
   });
 
-  renderBench(p, slab.querySelector('.slab-bench'));
-  renderSizes(p, slab.querySelector('.slab-sizes'));
+  renderBench(p);
+  renderSizes(p);
 }
 
-function playSlabAnimations(name) {
-  const slab = document.getElementById('slab-' + name);
-  if (!slab || slab.dataset.animated === '1') return;
-  slab.dataset.animated = '1';
-  const p = state.sortedList.find(x => x.name === name) || state.pkgs.packages.find(x => x.name === name);
-  if (!p) return;
-
-  if (reducedMotion()) return; // values are already written
-
-  const speedupEl = slab.querySelector('.slab-speedup');
-  const descEl = slab.querySelector('.slab-desc');
-  const cmdEl = slab.querySelector('.cmd');
-  typeInto(speedupEl, p.speedup, 18);
-  typeInto(descEl, p.description, 6);
-  typeInto(cmdEl, 'npm install @amigo-labs/' + p.name, 18);
-
-  slab.querySelectorAll('.slab-bench .fill, .slab-sizes .fill').forEach(el => {
-    const pct = el.dataset.pct;
-    el.style.width = '0%';
-    requestAnimationFrame(() => { el.style.width = pct + '%'; });
-  });
-  slab.querySelectorAll('.slab-bench .val[data-hz]').forEach(el => {
-    countUp(el, 0, parseFloat(el.dataset.hz), 500, v => formatOps(v));
-  });
-  slab.querySelectorAll('.slab-sizes .val[data-bytes]').forEach(el => {
-    countUp(el, 0, parseFloat(el.dataset.bytes), 500, v => formatBytes(v));
-  });
-}
-
-// --- IntersectionObserver: sync active state with page scroll ---
-let slabObserver = null;
-function observeSlabs() {
-  if (slabObserver) slabObserver.disconnect();
-  slabObserver = new IntersectionObserver((entries) => {
-    if (state.isSnapping) return;
-    // choose the entry closest to the viewport center
-    const vh = window.innerHeight;
-    const center = vh / 2;
-    let best = null, bestDist = Infinity;
-    entries.forEach(e => {
-      if (!e.isIntersecting) return;
-      const r = e.target.getBoundingClientRect();
-      const itemCenter = r.top + r.height / 2;
-      const dist = Math.abs(itemCenter - center);
-      if (dist < bestDist) { bestDist = dist; best = e.target; }
-    });
-    if (!best) return;
-    const name = best.dataset.name;
-    if (name === state.activeName) return;
-    const idx = state.sortedList.findIndex(p => p.name === name);
-    if (idx < 0) return;
-    state.activeIdx = idx;
-    state.activeName = name;
-    updateActiveClass();
-    updateInView();
-    updateHash();
-    playSlabAnimations(name);
-  }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
-
-  document.querySelectorAll('.slab').forEach(el => slabObserver.observe(el));
-}
-
-function updateInView() {
-  document.querySelectorAll('.slab').forEach(el => {
-    el.classList.toggle('in-view', el.dataset.name === state.activeName);
-  });
-}
-
-function renderBench(pkg, host) {
-  if (!host) return;
+function renderBench(pkg) {
+  const host = $('#slabBench');
   if (!state.data?.benchmarks?.suites) {
     host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No benchmark data available.</div>';
     return;
@@ -502,15 +444,21 @@ function renderBench(pkg, host) {
     }
   }
   host.innerHTML = html;
-  // if reduced-motion, fill immediately; otherwise wait for playSlabAnimations
-  if (reducedMotion()) {
-    host.querySelectorAll('.fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
-    host.querySelectorAll('.val[data-hz]').forEach(el => { el.textContent = formatOps(parseFloat(el.dataset.hz)); });
-  }
+
+  // animate
+  requestAnimationFrame(() => {
+    host.querySelectorAll('.fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+    host.querySelectorAll('.val').forEach(el => {
+      const to = parseFloat(el.dataset.hz);
+      countUp(el, 0, to, 500, v => formatOps(v));
+    });
+  });
 }
 
-function renderSizes(pkg, host) {
-  if (!host) return;
+function renderSizes(pkg) {
+  const host = $('#slabSizes');
   const sizes = state.data?.sizes?.[pkg.name];
   if (!sizes) {
     host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No size data.</div>';
@@ -545,10 +493,16 @@ function renderSizes(pkg, host) {
       </div>`;
   }
   host.innerHTML = html;
-  if (reducedMotion()) {
-    host.querySelectorAll('.fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
-    host.querySelectorAll('.val[data-bytes]').forEach(el => { el.textContent = formatBytes(parseFloat(el.dataset.bytes)); });
-  }
+
+  requestAnimationFrame(() => {
+    host.querySelectorAll('.fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+    host.querySelectorAll('.val').forEach(el => {
+      const to = parseFloat(el.dataset.bytes);
+      countUp(el, 0, to, 500, v => formatBytes(v));
+    });
+  });
 }
 
 // --- cursor glow ---
@@ -573,15 +527,8 @@ function wireSortChips() {
       const keepName = state.activeName;
       computeSortedList();
       renderPicker();
-      renderAllSlabs();
       const newIdx = Math.max(0, state.sortedList.findIndex(p => p.name === keepName));
-      state.activeIdx = newIdx;
-      state.activeName = state.sortedList[newIdx].name;
-      requestAnimationFrame(() => {
-        updateActiveClass();
-        updateInView();
-        snapTo(newIdx, false);
-      });
+      requestAnimationFrame(() => snapTo(newIdx, true));
     });
   });
 }
@@ -606,8 +553,7 @@ function wireKeyboard() {
       snapTo((state.activeIdx - 1 + n) % n, true);
       e.preventDefault();
     } else if (e.key === 'c') {
-      const activeSlab = document.getElementById('slab-' + state.activeName);
-      const btn = activeSlab?.querySelector('.copy-btn');
+      const btn = document.getElementById('slabCopy');
       if (btn) btn.click();
     } else if (e.key === 'Home') {
       snapTo(0, true); e.preventDefault();
