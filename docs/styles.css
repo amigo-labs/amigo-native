@@ -16,7 +16,7 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { height: 100%; overflow-x: hidden; max-width: 100%; }
 body {
   background: var(--bg);
   color: var(--text-primary);
@@ -384,10 +384,10 @@ a:hover { color: var(--text-primary); }
     gap: 16px;
   }
 
-  .picker-head { flex-wrap: wrap; gap: 8px; }
+  .picker-head { flex-wrap: wrap; gap: 8px; min-width: 0; }
   .picker-label { flex: 1 0 100%; margin-bottom: 2px; }
-  .sort-chips { width: 100%; }
-  .chip { flex: 1; text-align: center; padding: 6px 4px; }
+  .sort-chips { width: 100%; min-width: 0; }
+  .chip { flex: 1 1 0; min-width: 0; text-align: center; padding: 6px 4px; }
 
   .picker-wrap { max-height: none; }
   .picker {
@@ -408,10 +408,10 @@ a:hover { color: var(--text-primary); }
   .picker li.active { font-size: 0.95rem; border-bottom-color: var(--accent); }
   .picker-center-indicator { display: none; }
 
-  .slab { padding: 18px; overflow: visible; border-radius: 12px; }
-  .slab-head { gap: 10px; }
-  .slab-name { font-size: 1.1rem; word-break: break-word; min-width: 0; }
-  .slab-speedup { font-size: 0.7rem; padding: 4px 9px; }
+  .slab { padding: 18px; overflow: visible; border-radius: 12px; min-width: 0; max-width: 100%; }
+  .slab-head { gap: 10px; flex-wrap: wrap; }
+  .slab-name { font-size: 1.05rem; overflow-wrap: anywhere; word-break: break-all; min-width: 0; flex: 1 1 auto; }
+  .slab-speedup { font-size: 0.68rem; padding: 4px 8px; flex: 0 0 auto; }
   .slab-desc { font-size: 0.95rem; margin: 12px 0 18px; }
 
   .slab-install {
@@ -426,8 +426,8 @@ a:hover { color: var(--text-primary); }
     margin-left: auto; padding: 6px 12px; font-size: 0.7rem;
   }
 
-  .slab-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
-  .slab-col { padding: 14px; }
+  .slab-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; min-width: 0; }
+  .slab-col { padding: 14px; min-width: 0; }
 
   .bar-row { font-size: 0.7rem; gap: 6px; }
 
