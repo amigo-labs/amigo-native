@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
     "nanoid": "^5.0.9",
     "vitest": "^3.0.0"
   },

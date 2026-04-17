@@ -43,6 +43,7 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
     "@types/jsonwebtoken": "^9.0.7",
+    "fast-check": "^3.23.0",
     "jsonwebtoken": "^9.0.2",
     "vitest": "^3.0.0"
   },
