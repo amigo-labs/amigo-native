@@ -46,14 +46,14 @@ The plan is grouped into sections:
 
 ### Step 4 — Present a concise summary and ask the user
 
-Summarize what's in each section (counts and which crates are affected), then ask explicitly how to proceed. Offer three choices — use clear German phrasing:
+Summarize what's in each section (counts and which crates are affected), then ask explicitly how to proceed. Offer three choices:
 
-> Ich hab N Lücken gefunden. Wie soll ich vorgehen?
-> - **A** — Alles automatisierbare anwenden (Section 1). Content-Gaps zeige ich dir als Liste.
-> - **B** — Den ganzen Plan durchziehen: automatisch fixen + Content-Templates befüllen (READMEs, docs-Einträge, fuzz-Skelette — ich nehme sinnvolle Defaults aus Crate-API + Benchmarks).
-> - **C** — Nur Report, ich fixe selbst.
+> Found N gaps. How should I proceed?
+> - **A** — Apply section 1 only (mechanical fixes). I'll list the content gaps for you to handle.
+> - **B** — Full pass: apply mechanical fixes and fill in the content templates (READMEs, docs entries, fuzz skeletons — I'll derive sensible defaults from each crate's API and measured benchmarks).
+> - **C** — Report only, I'll fix it myself.
 
-Wait for the answer before touching anything. Don't assume — the user may want to split it differently (e.g. "nur die READMEs jetzt").
+Wait for the answer before touching anything. The user may want to split differently (e.g. "only the READMEs for now") — honour that.
 
 ### Step 5 — Execute according to the answer
 
