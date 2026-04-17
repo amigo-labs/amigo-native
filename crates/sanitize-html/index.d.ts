@@ -8,6 +8,7 @@ export interface SanitizeOptions {
   allowedTags?: Array<string>
   allowedAttributes?: Record<string, Array<string>>
   allowedClasses?: Record<string, Array<string>>
+  allowedSchemes?: Array<string>
   stripComments?: boolean
   linkRel?: string
 }

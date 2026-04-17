@@ -118,14 +118,9 @@ new vm.Script(source, { filename: 'upstream/test.js' }).runInContext(ctx);
 // explanation of each category.
 const KNOWN_DIVERGENCES = new Set<string>([
   // -- Unsupported options / features --
-  'should allow defining schemes on a per-tag basis',
-  "should allow transform on all tags using '*'",
   'should allow attributes to be specified as globs',
   'should quote regex chars in attributes specified as globs',
   // -- Output shape / tree-builder differences --
-  'should preserve entities as such',
-  'should dump a javascript URL with a comment in the middle (probably only respected by browsers in XML data islands but just in case)',
-  'should allow data URLs with custom allowedSchemes',
   'should allow only approved attributes, when they contain colon characters, for approved tags',
   // -- Additional divergences detected by running the suite --
   'Should not double encode ampersands on HTML entities if decodeEntities is false (TODO more tests, this is too loose to rely upon)',
@@ -136,16 +131,10 @@ const KNOWN_DIVERGENCES = new Set<string>([
   'should delete the script tag content from script tags with no src when allowedScriptDomains is present',
   'should delete the script tag content from script tags with no src when allowedScriptHostnames is present',
   'should delete the script tag since src is not a valid URL',
-  'should drop bogus srcset',
-  'should dump a javascript URL with a comment in the middle (probably only respected by browsers in XML data islands, but just in case someone enables those)',
-  'should dump character codes 1-32 before testing scheme',
-  'should dump character codes 1-32 even when escaped with padding rather than trailing ;',
   'should not pass through any text outside html tag boundary since html tag is found and option is ON',
   'should not be faked out by double <',
   'Should only allow attributes to have any combination of specific values',
   'Should only allow attributes that match a specific value',
-  'Should not allow cite urls that do not have an allowed scheme',
-  'should insert spaces between removed tags whose content we keep',
   'should not process style sourceMappingURL with postCSS',
   'should support SVG tags',
 ]);

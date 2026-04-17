@@ -8,8 +8,27 @@ pub struct SanitizeOptions {
     pub allowed_tags: Option<Vec<String>>,
     pub allowed_attributes: Option<HashMap<String, Vec<String>>>,
     pub allowed_classes: Option<HashMap<String, Vec<String>>>,
+    pub allowed_schemes: Option<Vec<String>>,
     pub strip_comments: Option<bool>,
     pub link_rel: Option<String>,
+}
+
+// ammonia's `url_schemes` requires `&'static str`; the incoming scheme names
+// arrive as runtime `String` via NAPI. We leak each distinct scheme once
+// into a process-wide cache so the static-lifetime requirement is satisfied
+// without leaking on every call.
+fn intern_scheme(scheme: &str) -> &'static str {
+    use std::collections::HashSet as Set;
+    use std::sync::{Mutex, OnceLock};
+    static CACHE: OnceLock<Mutex<Set<&'static str>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(Set::new()));
+    let mut guard = cache.lock().unwrap();
+    if let Some(s) = guard.get(scheme) {
+        return s;
+    }
+    let leaked: &'static str = Box::leak(scheme.to_string().into_boxed_str());
+    guard.insert(leaked);
+    leaked
 }
 
 fn number_to_string(n: f64) -> String {
@@ -70,6 +89,10 @@ pub fn sanitize(html: Option<Either<String, f64>>, options: Option<SanitizeOptio
                 class_map.insert(tag.as_str(), inner);
             }
             builder.tag_attribute_values(class_map);
+        }
+        if let Some(schemes) = &opts.allowed_schemes {
+            let set: HashSet<&'static str> = schemes.iter().map(|s| intern_scheme(s)).collect();
+            builder.url_schemes(set);
         }
         if let Some(strip) = opts.strip_comments {
             builder.strip_comments(strip);

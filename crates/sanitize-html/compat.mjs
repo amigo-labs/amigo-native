@@ -63,6 +63,15 @@ const HTML_BOOLEAN_ATTRIBUTES = new Set([
 // sanitize-html's default `allowedEmptyAttributes`.
 const DEFAULT_ALLOWED_EMPTY_ATTRIBUTES = ['alt']
 
+// Attributes whose values are URLs (subject to scheme filtering).
+const URL_ATTRIBUTES = new Set([
+  'href', 'src', 'cite', 'action', 'formaction', 'data', 'srcset',
+  'xlink:href', 'usemap', 'longdesc', 'background', 'poster',
+])
+
+// sanitize-html's default `allowedSchemes`.
+const DEFAULT_ALLOWED_SCHEMES = ['http', 'https', 'ftp', 'mailto', 'tel']
+
 const VULNERABLE_TAGS = ['style', 'script', 'noscript', 'textarea']
 
 function warnVulnerableTags(allowedTags) {
@@ -97,7 +106,6 @@ const JS_ONLY_OPTIONS = new Set([
   ...HARNESS_POSTPROCESS_OPTIONS,
   // Accepted-but-ignored options so the shim doesn't reject
   // sanitize-html-style configs.
-  'allowedSchemes',
   'allowedSchemesAppliedToAttributes',
   'allowedSchemesByTag',
   'allowIframeRelativeUrls',
@@ -216,7 +224,11 @@ function regexTransform(html, renameMap) {
 }
 
 function escapeAttr(v) {
-  return String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+  return String(v)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
 }
 
 // Sentinel marker used to preserve the `<a href>` bare-attribute form across
@@ -249,6 +261,18 @@ function renderAttribs(attribs, bareSet, preserveBare) {
 function stripBareAttrSentinels(html) {
   if (!html.includes(BARE_ATTR_SENTINEL)) return html
   return html.replace(new RegExp(`="${BARE_ATTR_SENTINEL}"`, 'g'), '')
+}
+
+// ammonia decodes HTML entities inside attribute values and emits them raw
+// (`name="<silly>"`) — sanitize-html re-escapes to `name="&lt;silly&gt;"`.
+// Walk the output and encode stray `<`/`>` inside double-quoted attribute
+// values.
+function reEncodeAttrAngleBrackets(html) {
+  return html.replace(/(\s[\w:-]+=)"([^"]*)"/g, (_m, prefix, value) => {
+    if (!value.includes('<') && !value.includes('>')) return _m
+    const fixed = value.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    return `${prefix}"${fixed}"`
+  })
 }
 
 function escapeText(text) {
@@ -317,6 +341,60 @@ function filterStyleAttrib(styleStr, tagName, allowedStylesMap) {
     kept.push(`${name}:${value}${important ? ' !important' : ''}`)
   }
   return kept.join(';')
+}
+
+// Normalise a URL for scheme detection: drop HTML comments and any
+// control characters / zero that browsers silently strip before
+// interpreting the scheme. Matches sanitize-html's detection.
+function normaliseUrlForScheme(url) {
+  return url.replace(/<!--[\s\S]*?-->/g, '').replace(/[\x00-\x20]/g, '')
+}
+
+function urlScheme(url) {
+  const normalized = normaliseUrlForScheme(url)
+  const m = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(normalized)
+  return m ? m[1].toLowerCase() : null
+}
+
+function urlAllowed(url, allowedSchemes) {
+  const scheme = urlScheme(url)
+  if (scheme === null) return true // relative / fragment-only URL
+  return allowedSchemes.includes(scheme)
+}
+
+function filterSrcset(srcset, allowedSchemes) {
+  // srcset entries are separated by a comma followed by whitespace; URLs
+  // themselves may contain commas (e.g. Cloudinary-style paths), so we split
+  // only on that boundary rather than any comma.
+  return srcset
+    .split(/,\s+/)
+    .map((e) => e.trim())
+    .filter(Boolean)
+    .filter((entry) => {
+      const url = entry.split(/\s+/)[0]
+      return urlAllowed(url, allowedSchemes)
+    })
+    .join(', ')
+}
+
+function filterUrlAttribs(attribs, tagName, allowedSchemes, allowedSchemesByTag) {
+  const perTag = allowedSchemesByTag?.[tagName]
+  const schemes = Array.isArray(perTag) ? perTag : allowedSchemes
+  const out = {}
+  for (const [k, v] of Object.entries(attribs)) {
+    const lk = k.toLowerCase()
+    if (!URL_ATTRIBUTES.has(lk) || v === '') {
+      out[k] = v
+      continue
+    }
+    if (lk === 'srcset') {
+      const filtered = filterSrcset(v, schemes)
+      if (filtered) out[k] = filtered
+      continue
+    }
+    if (urlAllowed(v, schemes)) out[k] = v
+  }
+  return out
 }
 
 function isAttrNonBoolean(name, nonBoolOpt) {
@@ -427,6 +505,8 @@ function tokenizerTransform(
     onOpenTag,
     onCloseTag,
     nestingLimit,
+    allowedSchemes,
+    allowedSchemesByTag,
   },
 ) {
   const root = { children: [], rawText: '', mediaChildren: [] }
@@ -491,23 +571,45 @@ function tokenizerTransform(
           nextAttribs = filterClassAttrib(nextAttribs, tagName, allowedClasses)
         }
 
-        // Apply allowedStyles property allowlist. Remove the attribute
-        // entirely when the filter empties it. When parseStyleAttributes
-        // is explicitly `false`, skip parsing and pass the attr through.
+        // Apply allowedStyles property allowlist + whitespace normalisation.
+        // Remove the attribute entirely when the filter empties it. When
+        // parseStyleAttributes is explicitly `false`, pass the attribute
+        // through verbatim.
         if (parseStyleAttributes === false) {
-          // Keep attribute verbatim — no-op.
-        } else if (allowedStyles && nextAttribs.style !== undefined) {
-          const filtered = filterStyleAttrib(nextAttribs.style, tagName, allowedStyles)
-          if (filtered) {
-            nextAttribs = { ...nextAttribs, style: filtered }
-          } else {
+          // no-op
+        } else if (nextAttribs.style !== undefined) {
+          if (nextAttribs.style === '') {
             const { style: _s, ...rest } = nextAttribs
             nextAttribs = rest
+          } else if (allowedStyles) {
+            const filtered = filterStyleAttrib(nextAttribs.style, tagName, allowedStyles)
+            if (filtered) {
+              nextAttribs = { ...nextAttribs, style: filtered }
+            } else {
+              const { style: _s, ...rest } = nextAttribs
+              nextAttribs = rest
+            }
+          } else {
+            // Normalise whitespace (`text-align: center` → `text-align:center`)
+            // so output matches sanitize-html's compact serialisation.
+            const decls = parseStyleDeclarations(nextAttribs.style)
+            const compact = decls
+              .map(
+                ({ name, value, important }) =>
+                  `${name}:${value}${important ? ' !important' : ''}`,
+              )
+              .join(';')
+            nextAttribs = compact
+              ? { ...nextAttribs, style: compact }
+              : (({ style: _s, ...rest }) => rest)(nextAttribs)
           }
-        } else if (nextAttribs.style === '') {
-          const { style: _s, ...rest } = nextAttribs
-          nextAttribs = rest
         }
+
+        // URL scheme filtering (href/src/cite/srcset/...). sanitize-html
+        // applies this before the native pass so ammonia never sees the
+        // dangerous scheme.
+        const schemes = Array.isArray(allowedSchemes) ? allowedSchemes : DEFAULT_ALLOWED_SCHEMES
+        nextAttribs = filterUrlAttribs(nextAttribs, tagName, schemes, allowedSchemesByTag)
 
         // Drop empty non-boolean attributes (href="", target="", etc.) while
         // preserving empty booleans (`<input checked>`) and any attr listed in
@@ -909,6 +1011,8 @@ export function sanitize(html, options) {
       onOpenTag: rawOpts.onOpenTag,
       onCloseTag: rawOpts.onCloseTag,
       nestingLimit: rawOpts.nestingLimit,
+      allowedSchemes: rawOpts.allowedSchemes,
+      allowedSchemesByTag: rawOpts.allowedSchemesByTag,
     })
   } else if (rawOpts.transformTags) {
     pre = regexTransform(pre, rawOpts.transformTags)
@@ -926,6 +1030,20 @@ export function sanitize(html, options) {
   const forNative = normaliseOptions(rawOpts)
   if (forNative) {
     for (const k of JS_ONLY_OPTIONS) delete forNative[k]
+    // Native's allowedSchemes must include every scheme that any per-tag
+    // rule permits, otherwise ammonia strips URLs that the tokenizer's
+    // per-tag filter already validated.
+    const perTag = rawOpts.allowedSchemesByTag
+    if (perTag && typeof perTag === 'object') {
+      const existing = Array.isArray(forNative.allowedSchemes)
+        ? forNative.allowedSchemes
+        : [...DEFAULT_ALLOWED_SCHEMES]
+      const union = new Set(existing)
+      for (const list of Object.values(perTag)) {
+        if (Array.isArray(list)) for (const s of list) if (typeof s === 'string') union.add(s)
+      }
+      forNative.allowedSchemes = [...union]
+    }
     // allowedClasses was already resolved by the tokenizer (including any
     // regex / glob patterns). Pass `class` through as a plain attribute for
     // each tag with a rule so native sanitize keeps the filtered value.
@@ -952,7 +1070,7 @@ export function sanitize(html, options) {
   }
 
   // 3. Native clean.
-  const cleaned = stripBareAttrSentinels(amigoSanitize(pre, forNative))
+  const cleaned = reEncodeAttrAngleBrackets(stripBareAttrSentinels(amigoSanitize(pre, forNative)))
 
   // 4. Post-pass: output shape + iframe / protocol-relative enforcement.
   const shaped = normaliseOutput(cleaned, /\brel\s*=/.test(input))
@@ -968,6 +1086,11 @@ export function isClean(html, options) {
 sanitize.defaults = {
   allowedTags: DEFAULT_ALLOWED_TAGS,
   allowedAttributes: { a: ['href', 'name', 'target'], img: ['src'] },
+  allowedSchemes: DEFAULT_ALLOWED_SCHEMES,
+  allowedSchemesByTag: {},
+  allowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],
+  allowProtocolRelative: true,
+  enforceHtmlBoundary: false,
 }
 
 // Stub — callers sometimes reach for it; real behaviour needs transform
