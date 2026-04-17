@@ -26,3 +26,4 @@ size-results.json
 # Environment
 .env
 .env.*
+.claude/*.local.json
