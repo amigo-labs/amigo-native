@@ -47,6 +47,28 @@ const DEFAULT_ALLOWED_ATTRIBUTES = {
 
 const MEDIA_TAGS = new Set(['audio', 'video', 'img', 'picture', 'source', 'track', 'iframe', 'embed', 'object'])
 
+// Tags whose content should be dropped entirely when the tag itself is not
+// allowed (sanitize-html default). Callers can override via `nonTextTags`.
+const DEFAULT_NON_TEXT_TAGS = ['script', 'style', 'textarea', 'option']
+
+const VULNERABLE_TAGS = ['style', 'script', 'noscript', 'textarea']
+
+function warnVulnerableTags(allowedTags) {
+  if (!Array.isArray(allowedTags)) return
+  for (const tag of allowedTags) {
+    if (VULNERABLE_TAGS.includes(tag)) {
+      const message =
+        '\n\n⚠️ Your `allowedTags` option includes, `' +
+        tag +
+        '`, which is inherently\n' +
+        'vulnerable to XSS attacks. Please remove it from `allowedTags`.\n' +
+        'Or, to disable this warning, add the `allowVulnerableTags` option\n' +
+        'and ensure you are accounting for this risk.\n\n'
+      console.warn(message)
+    }
+  }
+}
+
 const HARNESS_POSTPROCESS_OPTIONS = [
   'allowedIframeHostnames',
   'allowedIframeDomains',
@@ -193,6 +215,22 @@ function escapeText(text) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
+// Render a tag token as escaped-text — used by disallowedTagsMode: 'escape'
+// and 'recursiveEscape'. sanitize-html preserves attr quotes literally
+// (doesn't HTML-encode attr values), so neither do we.
+function renderEscapedTag(tagName, attribs, { closing = false, selfClose = false } = {}) {
+  let out = '&lt;'
+  if (closing) out += '/'
+  out += tagName
+  if (!closing) {
+    for (const [k, v] of Object.entries(attribs)) {
+      out += v === '' ? ` ${k}` : ` ${k}="${v}"`
+    }
+    if (selfClose) out += ' /'
+  }
+  return out + '&gt;'
+}
+
 /**
  * Tokenizer-based pre-pass. Walks the input with htmlparser2 and applies
  * transformTags, exclusiveFilter, and textFilter so their callbacks run in
@@ -203,15 +241,21 @@ function escapeText(text) {
  * inner text. The wrapper + children are only serialised on the closing
  * tag, at which point `exclusiveFilter` can inspect the accumulated text.
  */
-function tokenizerTransform(html, { transformTags, exclusiveFilter, textFilter, allowedTags }) {
+function tokenizerTransform(
+  html,
+  { transformTags, exclusiveFilter, textFilter, allowedTags, disallowedTagsMode, nonTextTags },
+) {
   const root = { children: [], rawText: '', mediaChildren: [] }
   const stack = [root]
-  // sanitize-html only runs exclusiveFilter on tags that would survive the
-  // allowedTags gate — we mimic that by skipping the filter for unknown
-  // tag names.
   const allowedSet = new Set(
     (Array.isArray(allowedTags) ? allowedTags : DEFAULT_ALLOWED_TAGS).map((t) => t.toLowerCase()),
   )
+  const nonTextSet = new Set(
+    (Array.isArray(nonTextTags) ? nonTextTags : DEFAULT_NON_TEXT_TAGS).map((t) => t.toLowerCase()),
+  )
+  const escapeMode = disallowedTagsMode === 'escape' || disallowedTagsMode === 'recursiveEscape'
+  const recursiveEscape = disallowedTagsMode === 'recursiveEscape'
+  const completelyDiscard = disallowedTagsMode === 'completelyDiscard'
 
   function topFrame() {
     return stack[stack.length - 1]
@@ -241,6 +285,29 @@ function tokenizerTransform(html, { transformTags, exclusiveFilter, textFilter, 
           }
         }
 
+        // Determine this frame's escape mode given allowedTags + ancestors.
+        const lowerEmitted = tagName.toLowerCase()
+        const parentFrame = topFrame()
+        const insideRecursive =
+          parentFrame.escapeMode === 'recursive' || parentFrame.escapeMode === 'recursiveInherited'
+        const insideDropAll =
+          parentFrame.escapeMode === 'dropAll' || parentFrame.escapeMode === 'dropAllInherited'
+        let frameEscape = 'none'
+        if (insideDropAll) {
+          frameEscape = 'dropAllInherited'
+        } else if (insideRecursive) {
+          frameEscape = 'recursiveInherited'
+        } else if (!allowedSet.has(lowerEmitted) && nonTextSet.has(lowerEmitted)) {
+          // nonTextTag + disallowed → drop wrapper and contents entirely.
+          frameEscape = 'dropAll'
+        } else if (!allowedSet.has(lowerEmitted) && completelyDiscard) {
+          // disallowedTagsMode: 'completelyDiscard' — drop wrapper + direct
+          // text, but lift allowed nested tags up into the parent scope.
+          frameEscape = 'discardDirect'
+        } else if (!allowedSet.has(lowerEmitted) && escapeMode) {
+          frameEscape = recursiveEscape ? 'recursive' : 'wrapper'
+        }
+
         stack.push({
           originalName: name,
           emittedName: tagName,
@@ -249,31 +316,64 @@ function tokenizerTransform(html, { transformTags, exclusiveFilter, textFilter, 
           children: [],
           rawText: '',
           mediaChildren: [],
+          escapeMode: frameEscape,
         })
       },
       ontext(text) {
         const frame = topFrame()
-        // Record raw inner text for exclusiveFilter — undecoded.
-        frame.rawText += text
-        if (frame === root) {
-          const filtered = textFilter ? textFilter(text, '') : text
-          frame.children.push(escapeText(filtered ?? text))
-        } else {
-          const filtered = textFilter ? textFilter(text, frame.emittedName) : text
-          frame.children.push(escapeText(filtered ?? text))
+        if (frame.escapeMode === 'dropAll' || frame.escapeMode === 'dropAllInherited') {
+          return
         }
+        if (frame.escapeMode === 'discardDirect') return
+        // completelyDiscard: top-level text (not inside any allowed tag) is
+        // also dropped.
+        if (completelyDiscard && frame === root) return
+        frame.rawText += text
+        // Text inside raw-text elements (script/style/textarea) is already
+        // delivered undecoded by htmlparser2 — escaping it here would
+        // double-encode entities like `&amp;`.
+        const isRawTextFrame =
+          frame !== root &&
+          (frame.emittedName === 'script' ||
+            frame.emittedName === 'style' ||
+            frame.emittedName === 'textarea' ||
+            frame.emittedName === 'pre')
+        const ctxTag = frame === root ? '' : frame.emittedName
+        const filtered = textFilter ? (textFilter(text, ctxTag) ?? text) : text
+        frame.children.push(isRawTextFrame ? filtered : escapeText(filtered))
       },
       oncomment(data) {
         topFrame().children.push(`<!--${data}-->`)
       },
-      onclosetag() {
+      onclosetag(_name, isImplied) {
         if (stack.length <= 1) return
         const frame = stack.pop()
         const parent = topFrame()
 
-        const { emittedName, attribs, fixedText, children, rawText, mediaChildren } = frame
+        const {
+          emittedName,
+          attribs,
+          fixedText,
+          children,
+          rawText,
+          mediaChildren,
+          escapeMode: frameEscape,
+        } = frame
         const lowerName = emittedName.toLowerCase()
         const isVoid = VOID_ELEMENTS.has(lowerName)
+
+        // dropAll: suppress the entire subtree (content of disallowed
+        // nonTextTags like textarea/style/script/option).
+        if (frameEscape === 'dropAll' || frameEscape === 'dropAllInherited') {
+          return
+        }
+
+        // discardDirect (completelyDiscard mode): wrapper dropped, direct
+        // text already suppressed in ontext; lift allowed children up.
+        if (frameEscape === 'discardDirect') {
+          parent.children.push(children.join(''))
+          return
+        }
 
         // Propagate media-child tracking up to the parent. Only tags that
         // would survive the allowedTags gate count, matching sanitize-html.
@@ -282,10 +382,10 @@ function tokenizerTransform(html, { transformTags, exclusiveFilter, textFilter, 
         }
         for (const m of mediaChildren) parent.mediaChildren.push(m)
 
-        // Only run exclusiveFilter on tags that would survive allowedTags —
-        // matches sanitize-html ordering.
+        // Run exclusiveFilter first — it can veto even tags that would
+        // otherwise have been escape-rendered.
         let verdict = null
-        if (exclusiveFilter && allowedSet.has(lowerName)) {
+        if (exclusiveFilter && (allowedSet.has(lowerName) || frameEscape !== 'none')) {
           verdict = exclusiveFilter({
             tag: emittedName,
             attribs,
@@ -293,13 +393,31 @@ function tokenizerTransform(html, { transformTags, exclusiveFilter, textFilter, 
             mediaChildren,
           })
         }
-        if (verdict && verdict !== 'excludeTag') {
-          // Drop entire subtree — but sibling media tracking has already
-          // propagated so the filter on an ancestor still sees us.
-          return
-        }
+        if (verdict && verdict !== 'excludeTag') return
         if (verdict === 'excludeTag') {
           parent.children.push(children.join(''))
+          parent.rawText += rawText
+          return
+        }
+
+        // disallowedTagsMode = 'escape' / 'recursiveEscape' handling.
+        if (frameEscape === 'recursive' || frameEscape === 'recursiveInherited') {
+          parent.children.push(renderEscapedTag(emittedName, attribs, { selfClose: isVoid }))
+          parent.children.push(children.join(''))
+          if (!isVoid && !isImplied) {
+            parent.children.push(renderEscapedTag(emittedName, {}, { closing: true }))
+          }
+          parent.rawText += rawText
+          return
+        }
+        if (frameEscape === 'wrapper') {
+          parent.children.push(renderEscapedTag(emittedName, attribs, { selfClose: isVoid }))
+          if (!isVoid) {
+            parent.children.push(children.join(''))
+            if (!isImplied) {
+              parent.children.push(renderEscapedTag(emittedName, {}, { closing: true }))
+            }
+          }
           parent.rawText += rawText
           return
         }
@@ -339,6 +457,14 @@ function tokenizerTransform(html, { transformTags, exclusiveFilter, textFilter, 
         ? `<${frame.emittedName}${attrStr} />`
         : `<${frame.emittedName}${attrStr}>${frame.children.join('')}</${frame.emittedName}>`,
     )
+  }
+
+  // htmlparser2 silently drops partial tags at EOF (e.g. `<hello you` without
+  // a closing `>`). In escape modes sanitize-html preserves them as escaped
+  // text, so recover the trailing `<…` suffix here.
+  if (escapeMode) {
+    const trailing = /<[a-zA-Z][^>]*$/.exec(html)
+    if (trailing) root.children.push(escapeText(trailing[0]))
   }
 
   return root.children.join('')
@@ -442,12 +568,27 @@ export function sanitize(html, options) {
 
   const rawOpts = options && typeof options === 'object' ? { ...options } : {}
 
+  // Warn about vulnerable tags in allowedTags (matches sanitize-html's
+  // advisory console.warn). Opt-out via allowVulnerableTags: true.
+  if (rawOpts.allowVulnerableTags !== true) {
+    warnVulnerableTags(rawOpts.allowedTags)
+  }
+
   // 1. Pre-pass: apply transformTags / exclusiveFilter / textFilter.
   let pre = input
+  const escapeMode =
+    rawOpts.disallowedTagsMode === 'escape' || rawOpts.disallowedTagsMode === 'recursiveEscape'
+  // Always run the tokenizer when the input could contain a disallowed
+  // nonTextTag whose content must be dropped — otherwise rely on the
+  // cheaper regex pre-pass (or skip outright).
   const needsTokenizer =
     (rawOpts.transformTags && !isAllStringRenames(rawOpts.transformTags)) ||
     typeof rawOpts.exclusiveFilter === 'function' ||
-    typeof rawOpts.textFilter === 'function'
+    typeof rawOpts.textFilter === 'function' ||
+    escapeMode ||
+    rawOpts.disallowedTagsMode === 'completelyDiscard' ||
+    /<(script|style|textarea|option)\b/i.test(input) ||
+    (Array.isArray(rawOpts.nonTextTags) && rawOpts.nonTextTags.length > 0)
 
   if (needsTokenizer) {
     pre = tokenizerTransform(pre, {
@@ -455,6 +596,8 @@ export function sanitize(html, options) {
       exclusiveFilter: rawOpts.exclusiveFilter,
       textFilter: rawOpts.textFilter,
       allowedTags: Array.isArray(rawOpts.allowedTags) ? rawOpts.allowedTags : undefined,
+      disallowedTagsMode: rawOpts.disallowedTagsMode,
+      nonTextTags: rawOpts.nonTextTags,
     })
   } else if (rawOpts.transformTags) {
     pre = regexTransform(pre, rawOpts.transformTags)
