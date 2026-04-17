@@ -16,14 +16,14 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; overflow-x: hidden; max-width: 100%; }
+html, body { overflow-x: hidden; max-width: 100%; }
+html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.02em;
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
 }
 ::selection { background: var(--accent); color: var(--bg); }
 a { color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
@@ -60,7 +60,7 @@ a:hover { color: var(--text-primary); }
 .app {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
-  height: 100vh;
+  min-height: 100vh;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
@@ -134,15 +134,20 @@ a:hover { color: var(--text-primary); }
 .dashboard {
   display: grid; grid-template-columns: 260px 1fr;
   gap: 24px; padding: 24px 0;
-  overflow: hidden; min-height: 0;
+  align-items: start;
+}
+.slabs {
+  display: flex; flex-direction: column;
+  gap: 24px; min-width: 0;
 }
 
 /* PICKER */
 .picker-wrap {
-  position: relative; display: flex;
-  flex-direction: column; min-height: 0;
+  position: sticky; top: 16px;
+  display: flex; flex-direction: column;
   align-self: start;
-  max-height: clamp(280px, 50vh, 440px);
+  max-height: calc(100vh - 32px);
+  min-height: 0;
 }
 .picker-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -214,12 +219,18 @@ a:hover { color: var(--text-primary); }
 .slab {
   background: var(--bg-elevated);
   border: 1px solid var(--border); border-radius: 14px;
-  padding: 28px; overflow-y: auto; min-height: 0;
+  padding: 28px; min-width: 0;
   position: relative;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(232,230,226,0.03);
-  transition: opacity 0.15s ease;
+  scroll-margin-top: 20px;
+  transition: border-color 0.3s, box-shadow 0.3s, opacity 0.3s;
+  opacity: 0.55;
 }
-.slab.fading { opacity: 0; }
+.slab.in-view {
+  opacity: 1;
+  border-color: var(--border-hover);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px var(--accent-dim), inset 0 1px 0 rgba(232,230,226,0.03);
+}
 .slab-head {
   display: flex; align-items: baseline;
   justify-content: space-between; gap: 16px;
@@ -380,8 +391,19 @@ a:hover { color: var(--text-primary); }
 
   .dashboard {
     grid-template-columns: 1fr;
-    overflow: visible; padding: 16px 0;
-    gap: 16px;
+    padding: 12px 0 16px;
+    gap: 12px;
+  }
+
+  .picker-wrap {
+    position: sticky; top: 0; max-height: none;
+    background: rgba(10, 11, 13, 0.88);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0 8px;
+    z-index: 50;
+    margin: 0 -16px;
+    padding-left: 16px; padding-right: 16px;
   }
 
   .picker-head { flex-wrap: wrap; gap: 8px; min-width: 0; }
@@ -408,7 +430,7 @@ a:hover { color: var(--text-primary); }
   .picker li.active { font-size: 0.95rem; border-bottom-color: var(--accent); }
   .picker-center-indicator { display: none; }
 
-  .slab { padding: 18px; overflow: visible; border-radius: 12px; min-width: 0; max-width: 100%; }
+  .slab { padding: 18px; overflow: visible; border-radius: 12px; min-width: 0; max-width: 100%; scroll-margin-top: 120px; }
   .slab-head { gap: 10px; flex-wrap: wrap; }
   .slab-name { font-size: 1.05rem; overflow-wrap: anywhere; word-break: break-all; min-width: 0; flex: 1 1 auto; }
   .slab-speedup { font-size: 0.68rem; padding: 4px 8px; flex: 0 0 auto; }
