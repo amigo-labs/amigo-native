@@ -145,7 +145,7 @@
       "name": "xml",
       "title": "XML",
       "description": "SAX-style XML parser via quick-xml.",
-      "speedup": "1.7–2.8× slower",
+      "speedup": "2.8× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xml",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xml",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xml/README.md"

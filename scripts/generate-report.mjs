@@ -326,15 +326,31 @@ function formatRatio(x) {
   return Math.round(x).toString()
 }
 
+function entryVariant(name) {
+  const i = name.indexOf(' ')
+  return i === -1 ? '' : name.slice(i + 1)
+}
+
 function computeSpeedupString(suites) {
   const ratios = []
   for (const suite of suites) {
-    const amigo = suite.entries.find((e) => e.name.includes('@amigo') && e.hz > 0)
+    const amigoEntries = suite.entries.filter((e) => e.name.includes('@amigo') && e.hz > 0)
     const competitors = suite.entries.filter((e) => !e.name.includes('@amigo') && e.hz > 0)
-    if (!amigo || !competitors.length) continue
-    // fastest competitor per suite → most conservative claim
-    const bestHz = Math.max(...competitors.map((e) => e.hz))
-    ratios.push(amigo.hz / bestHz)
+    if (!amigoEntries.length || !competitors.length) continue
+    // Variant-match only when a suite has multiple amigo variants (e.g. encoding
+    // small/100KB/10MB): otherwise the variant suffix encodes library qualifiers
+    // (`slugify (npm)`, `file-type (upstream async)`) and strict matching would
+    // discard the legitimate 1-vs-1 comparison.
+    const variantMatch = new Set(amigoEntries.map((e) => entryVariant(e.name))).size > 1
+    for (const amigo of amigoEntries) {
+      const pool = variantMatch
+        ? competitors.filter((e) => entryVariant(e.name) === entryVariant(amigo.name))
+        : competitors
+      if (!pool.length) continue
+      // fastest competitor in pool → most conservative claim
+      const bestHz = Math.max(...pool.map((e) => e.hz))
+      ratios.push(amigo.hz / bestHz)
+    }
   }
   if (!ratios.length) return 'TBD'
   const min = Math.min(...ratios)

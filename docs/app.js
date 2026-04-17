@@ -14,10 +14,17 @@ const state = {
 // parses strings like "3-7x faster", "1.4-2.5× faster", returns max value
 function parseMaxSpeedup(s) {
   if (!s) return 0;
-  const matches = s.match(/(\d+(?:\.\d+)?)/g);
-  if (!matches) return 0;
-  const nums = matches.map(Number);
-  return Math.max(...nums);
+  let best = -Infinity;
+  for (const part of s.split('/')) {
+    const nums = part.match(/(\d+(?:\.\d+)?)/g);
+    if (!nums) continue;
+    const n = Math.max(...nums.map(Number));
+    const dir = /slower/i.test(part) ? -1 : /faster/i.test(part) ? 1 : 0;
+    if (dir === 0) continue;
+    const v = dir * n;
+    if (v > best) best = v;
+  }
+  return best === -Infinity ? 0 : best;
 }
 
 // returns how much smaller amigo is vs. the largest competitor for this pkg
