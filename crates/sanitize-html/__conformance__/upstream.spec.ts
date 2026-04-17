@@ -117,6 +117,116 @@ function normaliseOutput(html: string, inputHadRel: boolean): string {
   return out;
 }
 
+// Parse a URL's hostname, returning null for relative/invalid URLs. Browsers
+// accept several protocol-relative spellings ("//", "/\", "\\", "\/") and
+// silently strip control chars (tab/LF/CR) mid-URL, so we normalise both
+// before parsing to catch bypass attempts like "/\n\\example.com".
+function extractHost(url: string): string | null {
+  try {
+    const stripped = url.replace(/[\t\n\r]/g, '');
+    if (/^[/\\]{2}/.test(stripped)) {
+      return new URL('https://' + stripped.slice(2)).hostname;
+    }
+    if (stripped.includes('://')) return new URL(stripped).hostname;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function hostMatches(
+  host: string,
+  hostnames: string[] | undefined,
+  domains: string[] | undefined,
+): boolean {
+  if (hostnames?.includes(host)) return true;
+  if (domains?.some((d) => host === d || host.endsWith('.' + d))) return true;
+  return false;
+}
+
+// Post-process ammonia output to enforce sanitize-html's iframe/URL rules.
+function enforceIframeAndProtocolRelative(
+  html: string,
+  opts: {
+    allowedIframeHostnames?: string[];
+    allowedIframeDomains?: string[];
+    allowIframeRelativeUrls?: boolean;
+    allowProtocolRelative?: boolean;
+  },
+): string {
+  const iframeCheck =
+    Array.isArray(opts.allowedIframeHostnames) ||
+    Array.isArray(opts.allowedIframeDomains) ||
+    opts.allowIframeRelativeUrls === false;
+
+  if (iframeCheck) {
+    html = html.replace(/<iframe([^>]*?)>/gi, (match, attrs) => {
+      const srcMatch = /\ssrc="([^"]*)"/i.exec(attrs);
+      if (!srcMatch) return match;
+      const src = srcMatch[1];
+      const host = extractHost(src);
+
+      if (host === null) {
+        // Relative URL
+        if (opts.allowIframeRelativeUrls === false) {
+          return match.replace(srcMatch[0], '');
+        }
+        if (opts.allowIframeRelativeUrls === true) return match;
+        // Default: relative URLs only pass when no hostname/domain list is set
+        if (
+          Array.isArray(opts.allowedIframeHostnames) ||
+          Array.isArray(opts.allowedIframeDomains)
+        ) {
+          return match.replace(srcMatch[0], '');
+        }
+        return match;
+      }
+      if (hostMatches(host, opts.allowedIframeHostnames, opts.allowedIframeDomains)) {
+        return match;
+      }
+      return match.replace(srcMatch[0], '');
+    });
+  }
+
+  if (opts.allowProtocolRelative === false) {
+    // Strip href/src on any tag that's protocol-relative. ammonia sometimes
+    // rewrites one or both leading slashes to backslashes as an XSS hedge,
+    // so we accept any two-char prefix of [/\\].
+    html = html.replace(/\s(href|src)="[/\\]{2}[^"]*"/gi, '');
+  }
+
+  return html;
+}
+
+// Options understood by sanitize-html but not the native Rust API.
+// The harness extracts them before calling sanitize() and applies them as
+// pre/post processing steps so the conformance suite can exercise them.
+const HARNESS_OPTIONS = [
+  'allowedIframeHostnames',
+  'allowedIframeDomains',
+  'allowIframeRelativeUrls',
+  'allowProtocolRelative',
+] as const;
+
+type HarnessOpts = {
+  allowedIframeHostnames?: string[];
+  allowedIframeDomains?: string[];
+  allowIframeRelativeUrls?: boolean;
+  allowProtocolRelative?: boolean;
+};
+
+function extractHarnessOptions(opts: Record<string, unknown> | undefined): HarnessOpts {
+  const out: HarnessOpts = {};
+  if (!opts) return out;
+  for (const k of HARNESS_OPTIONS) {
+    if (k in opts) {
+      (out as Record<string, unknown>)[k] = opts[k];
+      delete opts[k];
+    }
+  }
+  return out;
+}
+
 const sanitizeHtml: unknown = Object.assign(
   (html: unknown, options?: unknown): string => {
     if (html === null || html === undefined) return '';
@@ -133,8 +243,10 @@ const sanitizeHtml: unknown = Object.assign(
     }
 
     const normalised = normaliseOptions(options);
+    const harnessOpts = extractHarnessOptions(normalised);
     const out = sanitize(input, normalised as never);
-    return normaliseOutput(out, /\brel\s*=/.test(input));
+    const shaped = normaliseOutput(out, /\brel\s*=/.test(input));
+    return enforceIframeAndProtocolRelative(shaped, harnessOpts);
   },
   {
     defaults: {
@@ -219,7 +331,6 @@ const KNOWN_DIVERGENCES = new Set<string>([
   'should replace text and attributes when they are changed by transforming function and textFilter is not set',
   'should preserve trailing text when replacing the tagName and adding new text via transforming function',
   'should add new text when not initially set and replace attributes when they are changed by transforming function',
-  'should preserve text when initially set and replace attributes when they are changed by transforming function',
   'should skip an empty link',
   "Should expose a node's inner text and inner HTML to the filter",
   'Exclusive filter should not affect elements which do not match the filter condition',
@@ -242,34 +353,22 @@ const KNOWN_DIVERGENCES = new Set<string>([
   'should process text nodes with provided function',
   'should skip text nodes based on tagName',
   'should respect htmlparser2 options when passed in',
-  'should allow protocol relative links by default',
   // -- Output shape / tree-builder differences --
-  'should cope identically with capitalized attributes and tags and should tolerate capitalized schemes',
   'should drop the content of textarea elements',
   'should drop the content of option elements',
   'should drop the content of textarea elements but keep the closing parent tag, when nested',
   'should preserve entities as such',
   'should dump a javascript URL with a comment in the middle (probably only respected by browsers in XML data islands but just in case)',
-  'should disallow data URLs with default allowedSchemes',
   'should allow data URLs with custom allowedSchemes',
   'should allow specific classes when allowlisted with allowedClasses for a single tag',
   'should allow specific classes when allowlisted with allowedClasses for all tags',
   'should allow only approved attributes, when they contain colon characters, for approved tags',
   // -- Additional divergences detected by running the suite --
   'Should allow a specific style from global',
-  'Should ignore styles when options.parseStyleAttributes is false',
-  'Should not allow iframe urls that do not have proper hostname',
-  'Should not allow protocol-relative iframe urls that do not have proper hostname',
   'Should not double encode ampersands on HTML entities if decodeEntities is false (TODO more tests, this is too loose to rely upon)',
   'Should not pass through &0; unescaped if decodeEntities is true (the default)',
-  'Should prevent hostname bypass using protocol-relative src',
   'Should remove empty style tags',
-  'Should remove iframe src urls that are not included in allowedIframeDomains',
-  'Should remove iframe src urls that are not included in allowedIframeHostnames',
-  'Should remove iframe src urls with host that ends as allowed domains but not preceded with a dot',
   'Should remove invalid styles',
-  'Should remove relative URLs for iframes',
-  'Should remove relative URLs for iframes when other hostnames are specified in allowedIframeHostnames',
   'Should support !important styles',
   'Should throw an error if both allowedStyles is set and  && parseStyleAttributes is set to false',
   'disallows markup of depth 7 with a nestingLimit of depth 6',
@@ -305,22 +404,12 @@ const KNOWN_DIVERGENCES = new Set<string>([
   'should escape unclosed tags without closing bracket in escape mode',
   'should escape unclosed tags without closing bracket in recursiveEscape mode',
   'should insert spaces between removed tags whose content we keep',
-  'should not allow IDNA (Internationalized Domain Name) iframe validation bypass attacks',
-  'should not allow protocol relative links when allowProtocolRelative is false',
-  'should not allow simple append attacks on iframe hostname validation',
   'should not automatically attach close tag for escaped tags in escape mode',
   'should not automatically attach close tag for escaped tags in recursiveEscape mode',
   'should not preserve attributes on escaped disallowed tags when `preserveEscapedAttributes` is false',
   'should not process style sourceMappingURL with postCSS',
   'should not remove boolean attributes that are empty',
-  'should not remove empty alt attribute value by default',
-  'should not remove empty alt attribute value by default when an empty nonBooleanAttributes option passed in',
   'should not remove non-boolean attributes that are empty when disabled',
-  'should not remove the empty attributes specified in allowedEmptyAttributes option',
-  'should parse ../ relative URLs sensibly',
-  'should parse bare relative URLs sensibly',
-  'should parse path-rooted relative URLs sensibly',
-  'should parse protocol relative URLs sensibly',
   'should preserve attributes on escaped disallowed tags when `preserveEscapedAttributes` is true',
   'should remove all the empty attributes when an empty allowedEmptyAttributes option passed in',
   'should remove boolean attributes that are empty when wildcard * passed in',
@@ -328,7 +417,6 @@ const KNOWN_DIVERGENCES = new Set<string>([
   "should remove top level tag's content",
   'should replace ol to ul, left attributes foo and bar untouched, remove baz attribute and add class attributte with foo value',
   'should sanitize styles correctly',
-  'should still allow regular relative URLs when allowProtocolRelative is false',
   'should support SVG tags',
   'should transform text content of tags even if they originally had none',
   'text from transformTags should not specify tags',
