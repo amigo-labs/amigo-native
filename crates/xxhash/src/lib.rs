@@ -1,9 +1,14 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
+// Keep the pre-migration wrapping semantics of the old `i64 as u64` cast:
+// a negative BigInt wraps to `u64::MAX - (-seed) + 1`, consistent with how
+// xxhash implementations treat signed seed inputs. Values outside the i64
+// range silently truncate — xxhash seeds are conceptually u64 but the NAPI
+// JS surface can't pass a raw u64 without BigInt, so we accept i64-range.
 fn seed_to_u64(seed: Option<BigInt>) -> u64 {
     match seed {
-        Some(b) => b.get_u64().1,
+        Some(b) => b.get_i64().0 as u64,
         None => 0,
     }
 }

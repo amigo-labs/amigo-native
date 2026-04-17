@@ -23,9 +23,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: cargo fmt --check
-      - run: cargo clippy --workspace -- -D warnings
-      - run: pnpm exec oxlint .
+      - run: pnpm run lint
 
   test-rust:
     runs-on: ubuntu-latest

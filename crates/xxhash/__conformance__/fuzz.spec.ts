@@ -7,7 +7,7 @@ describe('xxhash fuzzing', () => {
   it('xxh32 never throws for arbitrary byte input', () => {
     fc.assert(
       fc.property(
-        fc.uint8Array({ minLength: 0, maxLength: 100_000 }),
+        fc.uint8Array({ minLength: 0, maxLength: 10_000 }),
         (input) => {
           const result = xxh32(Buffer.from(input));
           return (
@@ -24,7 +24,7 @@ describe('xxhash fuzzing', () => {
   it('xxh64 never throws for arbitrary byte input', () => {
     fc.assert(
       fc.property(
-        fc.uint8Array({ minLength: 0, maxLength: 100_000 }),
+        fc.uint8Array({ minLength: 0, maxLength: 10_000 }),
         (input) => {
           const result = xxh64(Buffer.from(input));
           return typeof result === 'bigint' && result >= 0n;

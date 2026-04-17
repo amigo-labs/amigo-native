@@ -40,10 +40,10 @@ Ammonia normalizes the parsed DOM tree before re-serializing, so it often produc
 - Whitespace between siblings
 - Closing-tag insertion for unclosed `<p>`, `<li>`, etc.
 - Entity re-encoding (`&amp;lt;` vs `&lt;`)
-- Script / style element content: ammonia always drops the contents unconditionally, even when the tag itself is allowed.
+- Script / style element content: by default ammonia removes `<script>` and `<style>` entirely, including their text content. If the caller explicitly adds either tag to `allowedTags`, `@amigo-labs/sanitize-html` removes it from ammonia's `clean_content_tags` so the element and its contents survive the sanitize pass (see `crates/sanitize-html/src/lib.rs`).
 - Input coercion: ammonia accepts `String`-convertible inputs; sanitize-html coerces `undefined` / `null` / numbers to `''` at the JS boundary.
 
-None of these are security-relevant; they are serialization choices.
+Most of these are serialization choices, not security-relevant. The exception is the `script` / `style` override: allowing either tag via `allowedTags` is security-sensitive, and allowing `script` in particular lets active content pass through. Only enable it for inputs you fully trust.
 
 ## Input-coercion differences
 
