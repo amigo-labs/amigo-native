@@ -426,8 +426,8 @@ a:hover { color: var(--text-primary); }
   .picker li.active { font-size: 0.95rem; border-bottom-color: var(--accent); }
   .picker-center-indicator { display: none; }
 
-  .slab { padding: 18px; overflow: visible; border-radius: 12px; min-width: 0; max-width: 100%; }
-  .slab-head { gap: 10px; flex-wrap: wrap; }
+  .slab { padding: 18px; overflow-x: hidden; overflow-y: visible; border-radius: 12px; min-width: 0; max-width: 100%; }
+  .slab-head { gap: 10px; flex-wrap: wrap; max-width: 100%; }
   .slab-name { font-size: 1.05rem; overflow-wrap: anywhere; word-break: break-all; min-width: 0; flex: 1 1 auto; }
   .slab-speedup { font-size: 0.68rem; padding: 4px 8px; flex: 0 0 auto; }
   .slab-desc { font-size: 0.95rem; margin: 12px 0 18px; }
@@ -435,6 +435,7 @@ a:hover { color: var(--text-primary); }
   .slab-install {
     gap: 8px; padding: 12px 14px;
     font-size: 0.8rem; margin-bottom: 20px;
+    max-width: 100%; min-width: 0;
   }
   .slab-install .cmd {
     flex: 1 1 100%; min-width: 0;
@@ -444,10 +445,12 @@ a:hover { color: var(--text-primary); }
     margin-left: auto; padding: 6px 12px; font-size: 0.7rem;
   }
 
-  .slab-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; min-width: 0; }
-  .slab-col { padding: 14px; min-width: 0; }
+  .slab-grid { grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; min-width: 0; max-width: 100%; }
+  .slab-col { padding: 14px; min-width: 0; overflow: hidden; }
 
-  .bar-row { font-size: 0.7rem; gap: 6px; }
+  .bar-row { font-size: 0.7rem; gap: 6px; min-width: 0; max-width: 100%; }
+  .bar-row .label { min-width: 0; }
+  .bar-row .val { font-size: 0.7rem; }
 
   .kbd-hint { display: none; }
 
