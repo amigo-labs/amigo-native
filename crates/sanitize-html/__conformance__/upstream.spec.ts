@@ -40,11 +40,37 @@ const fakeSinon = {
       Object.defineProperty(s, 'notCalled', {
         get: () => (s.callCount as number) === 0,
       });
-      s.calledWith = (...expected: unknown[]) =>
-        calls.some(
-          (c) => c.length >= expected.length && expected.every((v, i) => c[i] === v),
-        );
+      const argsEqual = (call: unknown[], expected: unknown[]) => {
+        if (call.length < expected.length) return false;
+        return expected.every((v, i) => {
+          const actual = call[i];
+          if (v === actual) return true;
+          if (
+            v &&
+            actual &&
+            typeof v === 'object' &&
+            typeof actual === 'object' &&
+            !Array.isArray(v) &&
+            !Array.isArray(actual)
+          ) {
+            const va = v as Record<string, unknown>;
+            const aa = actual as Record<string, unknown>;
+            const ks = Object.keys(va);
+            if (ks.length !== Object.keys(aa).length) return false;
+            return ks.every((k) => va[k] === aa[k]);
+          }
+          return false;
+        });
+      };
+      s.calledWith = (...expected: unknown[]) => calls.some((c) => argsEqual(c, expected));
       s.args = calls;
+      s.getCall = (n: number) => {
+        const c = calls[n] ?? [];
+        return {
+          args: c,
+          calledWith: (...expected: unknown[]) => argsEqual(c, expected),
+        };
+      };
       return s;
     };
 
@@ -92,35 +118,19 @@ new vm.Script(source, { filename: 'upstream/test.js' }).runInContext(ctx);
 // explanation of each category.
 const KNOWN_DIVERGENCES = new Set<string>([
   // -- Unsupported options / features --
-  'should allow all classes that are allowlisted for a single tag or all tags',
-  'should allow classes that match wildcards for a single tag or all tags',
-  'should allow all classes if `allowedClasses` contains a single `*`',
-  'should allow all classes for a single tag if `allowedClasses` for the tag is false',
-  'should allow only classes that matches `allowedClasses` regex',
-  'should allow classes that match `allowedClasses` regex for all tags',
   'should allow defining schemes on a per-tag basis',
   "should allow transform on all tags using '*'",
   'should allow attributes to be specified as globs',
   'should quote regex chars in attributes specified as globs',
-  'should respect htmlparser2 options when passed in',
   // -- Output shape / tree-builder differences --
   'should preserve entities as such',
   'should dump a javascript URL with a comment in the middle (probably only respected by browsers in XML data islands but just in case)',
   'should allow data URLs with custom allowedSchemes',
-  'should allow specific classes when allowlisted with allowedClasses for a single tag',
-  'should allow specific classes when allowlisted with allowedClasses for all tags',
   'should allow only approved attributes, when they contain colon characters, for approved tags',
   // -- Additional divergences detected by running the suite --
-  'Should allow a specific style from global',
   'Should not double encode ampersands on HTML entities if decodeEntities is false (TODO more tests, this is too loose to rely upon)',
   'Should not pass through &0; unescaped if decodeEntities is true (the default)',
-  'Should remove empty style tags',
-  'Should remove invalid styles',
-  'Should support !important styles',
-  'Should throw an error if both allowedStyles is set and  && parseStyleAttributes is set to false',
-  'disallows markup of depth 7 with a nestingLimit of depth 6',
   'should allow only approved attributes, but to any tags, if tag is declared as  "*"',
-  'should call onOpenTag and onCloseTag callbacks',
   'should delete the script tag',
   'should delete the script tag content',
   'should delete the script tag content from script tags with no src when allowedScriptDomains is present',
@@ -131,20 +141,12 @@ const KNOWN_DIVERGENCES = new Set<string>([
   'should dump character codes 1-32 before testing scheme',
   'should dump character codes 1-32 even when escaped with padding rather than trailing ;',
   'should not pass through any text outside html tag boundary since html tag is found and option is ON',
-  'should dump closing tags which do not have any opening tags.',
   'should not be faked out by double <',
   'Should only allow attributes to have any combination of specific values',
   'Should only allow attributes that match a specific value',
   'Should not allow cite urls that do not have an allowed scheme',
   'should insert spaces between removed tags whose content we keep',
-  'should not preserve attributes on escaped disallowed tags when `preserveEscapedAttributes` is false',
   'should not process style sourceMappingURL with postCSS',
-  'should not remove boolean attributes that are empty',
-  'should not remove non-boolean attributes that are empty when disabled',
-  'should preserve attributes on escaped disallowed tags when `preserveEscapedAttributes` is true',
-  'should remove all the empty attributes when an empty allowedEmptyAttributes option passed in',
-  'should remove boolean attributes that are empty when wildcard * passed in',
-  'should remove non-boolean attributes that are empty',
   'should support SVG tags',
 ]);
 
