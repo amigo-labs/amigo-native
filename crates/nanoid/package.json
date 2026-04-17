@@ -37,8 +37,9 @@
     "build:debug": "napi build --platform",
     "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
-    "test:parity": "vitest run __parity__",
-    "bench": "vitest bench"
+    "bench": "vitest bench",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",

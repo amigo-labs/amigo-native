@@ -20,7 +20,7 @@
     { "k": "RUNTIME",      "v": "NAPI-RS v3" },
     { "k": "LANGUAGE",     "v": "RUST" },
     { "k": "PLATFORMS",    "v": "6" },
-    { "k": "PACKAGES",     "v": "5" },
+    { "k": "PACKAGES",     "v": "15" },
     { "k": "NODE",         "v": ">= 18" },
     { "k": "LICENSE",      "v": "MIT" },
     { "k": "PROVENANCE",   "v": "ENABLED" },
