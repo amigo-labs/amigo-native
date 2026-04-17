@@ -317,3 +317,61 @@ const docsDir = join(root, 'docs')
 const docsPath = join(docsDir, 'data.json')
 writeFileSync(docsPath, JSON.stringify(docsData, null, 2))
 console.log(`Written to ${docsPath}`)
+
+// --- Refresh docs/packages.json speedup strings ---
+
+function formatRatio(x) {
+  if (x < 2) return x.toFixed(2).replace(/\.?0+$/, '')
+  if (x < 10) return x.toFixed(1).replace(/\.0$/, '')
+  return Math.round(x).toString()
+}
+
+function computeSpeedupString(suites) {
+  const ratios = []
+  for (const suite of suites) {
+    const amigo = suite.entries.find((e) => e.name.includes('@amigo') && e.hz > 0)
+    const competitors = suite.entries.filter((e) => !e.name.includes('@amigo') && e.hz > 0)
+    if (!amigo || !competitors.length) continue
+    // fastest competitor per suite → most conservative claim
+    const bestHz = Math.max(...competitors.map((e) => e.hz))
+    ratios.push(amigo.hz / bestHz)
+  }
+  if (!ratios.length) return 'TBD'
+  const min = Math.min(...ratios)
+  const max = Math.max(...ratios)
+  if (min >= 1.05) {
+    const lo = formatRatio(min)
+    const hi = formatRatio(max)
+    return lo === hi ? `${lo}× faster` : `${lo}–${hi}× faster`
+  }
+  if (max <= 0.95) {
+    const lo = formatRatio(1 / max)
+    const hi = formatRatio(1 / min)
+    return lo === hi ? `${lo}× slower` : `${lo}–${hi}× slower`
+  }
+  // Mixed: show best win and worst regression
+  const winners = ratios.filter((r) => r >= 1.05)
+  const losers = ratios.filter((r) => r <= 0.95)
+  const parts = []
+  if (winners.length) parts.push(`up to ${formatRatio(Math.max(...winners))}× faster`)
+  if (losers.length) parts.push(`${formatRatio(1 / Math.min(...losers))}× slower`)
+  return parts.length ? parts.join(' / ') : '~equal'
+}
+
+const packagesPath = join(docsDir, 'packages.json')
+if (benchData?.suites?.length && existsSync(packagesPath)) {
+  const packagesData = JSON.parse(readFileSync(packagesPath, 'utf-8'))
+  const suitesByCrate = new Map()
+  for (const suite of benchData.suites) {
+    const m = suite.file?.match(/^crates\/([^/]+)\//)
+    if (!m) continue
+    if (!suitesByCrate.has(m[1])) suitesByCrate.set(m[1], [])
+    suitesByCrate.get(m[1]).push(suite)
+  }
+  for (const pkg of packagesData.packages ?? []) {
+    const suites = suitesByCrate.get(pkg.name)
+    if (suites?.length) pkg.speedup = computeSpeedupString(suites)
+  }
+  writeFileSync(packagesPath, JSON.stringify(packagesData, null, 2) + '\n')
+  console.log(`Updated speedup strings in ${packagesPath}`)
+}
