@@ -5,6 +5,8 @@ import {
   xxh3_64 as amigoXxh3,
   xxh32Batch as amigoXxh32Batch,
   xxh3_64Batch as amigoXxh3Batch,
+  Xxh32Hasher,
+  Xxh3Hasher,
 } from '../index.js'
 import xxhashWasmInit from 'xxhash-wasm'
 import XXHashJS from 'xxhashjs'
@@ -63,6 +65,11 @@ describe('xxh32 batch - 1000 × 64 bytes', () => {
   bench('@amigo-labs/xxhash (loop)', () => {
     for (const buf of batchInputs) amigoXxh32(buf)
   })
+  bench('@amigo-labs/xxhash (streaming)', () => {
+    const h = new Xxh32Hasher()
+    for (const buf of batchInputs) h.update(buf)
+    h.digest()
+  })
   bench('xxhash-wasm (loop)', () => {
     for (const buf of batchInputs) wasmHasher.h32Raw(buf)
   })
@@ -74,6 +81,11 @@ describe('xxh32 batch - 1000 × 64 bytes', () => {
 describe('xxh3_64 batch - 1000 × 64 bytes', () => {
   bench('@amigo-labs/xxhash (batch)', () => {
     amigoXxh3Batch(batchInputs)
+  })
+  bench('@amigo-labs/xxhash (streaming)', () => {
+    const h = new Xxh3Hasher()
+    for (const buf of batchInputs) h.update(buf)
+    h.digest()
   })
   bench('xxhash-wasm (loop)', () => {
     for (const buf of batchInputs) wasmHasher.h64Raw(buf)

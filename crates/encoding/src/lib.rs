@@ -90,19 +90,26 @@ fn encode_utf16_be(input: &str) -> Vec<u8> {
 }
 
 fn decode_utf16_le(input: &[u8]) -> String {
-    let units: Vec<u16> = input
-        .chunks_exact(2)
-        .map(|c| u16::from_le_bytes([c[0], c[1]]))
-        .collect();
-    String::from_utf16_lossy(&units)
+    // Fuse the u16 iterator directly into char decoding to avoid the
+    // intermediate Vec<u16> allocation (100KB input previously allocated
+    // 100KB of u16 + the final String).
+    char::decode_utf16(
+        input
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]])),
+    )
+    .map(|r| r.unwrap_or(char::REPLACEMENT_CHARACTER))
+    .collect()
 }
 
 fn decode_utf16_be(input: &[u8]) -> String {
-    let units: Vec<u16> = input
-        .chunks_exact(2)
-        .map(|c| u16::from_be_bytes([c[0], c[1]]))
-        .collect();
-    String::from_utf16_lossy(&units)
+    char::decode_utf16(
+        input
+            .chunks_exact(2)
+            .map(|c| u16::from_be_bytes([c[0], c[1]])),
+    )
+    .map(|r| r.unwrap_or(char::REPLACEMENT_CHARACTER))
+    .collect()
 }
 
 fn encode_latin1_strict(input: &str) -> Vec<u8> {

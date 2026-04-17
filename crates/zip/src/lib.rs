@@ -73,7 +73,7 @@ impl ZipReader {
     #[napi]
     pub fn entries(&self) -> Result<Vec<ZipEntryInfo>> {
         match &self.source {
-            Source::Buffer(b) => entries_from(Cursor::new(b.clone())),
+            Source::Buffer(b) => entries_from(Cursor::new(b.as_slice())),
             Source::File(p) => entries_from(File::open(p).map_err(to_err)?),
         }
     }
@@ -81,7 +81,7 @@ impl ZipReader {
     #[napi]
     pub fn read(&self, name: String) -> Result<Buffer> {
         let bytes = match &self.source {
-            Source::Buffer(b) => read_from(Cursor::new(b.clone()), &name)?,
+            Source::Buffer(b) => read_from(Cursor::new(b.as_slice()), &name)?,
             Source::File(p) => read_from(File::open(p).map_err(to_err)?, &name)?,
         };
         Ok(bytes.into())

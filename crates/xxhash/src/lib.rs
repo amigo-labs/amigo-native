@@ -66,6 +66,117 @@ pub fn xxh3_64_batch(inputs: Vec<Buffer>, seed: Option<BigInt>) -> Vec<BigInt> {
         .collect()
 }
 
+// --- Fixed-chunk bulk API: one Buffer in, Vec of u32/u64 out. Avoids the
+// Vec<Buffer> marshalling cost that makes xxh32Batch/xxh64Batch slower than
+// a serial loop when individual buffers are small.
+
+#[napi(js_name = "xxh32Many")]
+pub fn xxh32_many(input: Buffer, chunk_size: u32, seed: Option<u32>) -> Result<Vec<u32>> {
+    if chunk_size == 0 {
+        return Err(Error::from_reason("chunk_size must be > 0"));
+    }
+    let s = seed.unwrap_or(0);
+    let cs = chunk_size as usize;
+    Ok(input
+        .as_ref()
+        .chunks(cs)
+        .map(|c| xxhash_rust::xxh32::xxh32(c, s))
+        .collect())
+}
+
+#[napi(js_name = "xxh64Many")]
+pub fn xxh64_many(input: Buffer, chunk_size: u32, seed: Option<BigInt>) -> Result<Vec<BigInt>> {
+    if chunk_size == 0 {
+        return Err(Error::from_reason("chunk_size must be > 0"));
+    }
+    let s = seed_to_u64(seed);
+    let cs = chunk_size as usize;
+    Ok(input
+        .as_ref()
+        .chunks(cs)
+        .map(|c| BigInt::from(xxhash_rust::xxh64::xxh64(c, s)))
+        .collect())
+}
+
+#[napi(js_name = "xxh3_64Many")]
+pub fn xxh3_64_many(input: Buffer, chunk_size: u32, seed: Option<BigInt>) -> Result<Vec<BigInt>> {
+    if chunk_size == 0 {
+        return Err(Error::from_reason("chunk_size must be > 0"));
+    }
+    let s = seed_to_u64(seed);
+    let cs = chunk_size as usize;
+    Ok(input
+        .as_ref()
+        .chunks(cs)
+        .map(|c| BigInt::from(xxhash_rust::xxh3::xxh3_64_with_seed(c, s)))
+        .collect())
+}
+
+#[napi]
+pub struct Xxh32Hasher {
+    inner: xxhash_rust::xxh32::Xxh32,
+}
+
+#[napi]
+impl Xxh32Hasher {
+    #[napi(constructor)]
+    pub fn new(seed: Option<u32>) -> Self {
+        Self {
+            inner: xxhash_rust::xxh32::Xxh32::new(seed.unwrap_or(0)),
+        }
+    }
+
+    #[napi]
+    pub fn update(&mut self, chunk: Buffer) {
+        self.inner.update(chunk.as_ref());
+    }
+
+    #[napi]
+    pub fn digest(&self) -> u32 {
+        self.inner.digest()
+    }
+
+    #[napi]
+    pub fn reset(&mut self, seed: Option<u32>) {
+        self.inner.reset(seed.unwrap_or(0));
+    }
+}
+
+#[napi]
+pub struct Xxh64Hasher {
+    inner: xxhash_rust::xxh64::Xxh64,
+}
+
+#[napi]
+impl Xxh64Hasher {
+    #[napi(constructor)]
+    pub fn new(seed: Option<BigInt>) -> Self {
+        Self {
+            inner: xxhash_rust::xxh64::Xxh64::new(seed_to_u64(seed)),
+        }
+    }
+
+    #[napi]
+    pub fn update(&mut self, chunk: Buffer) {
+        self.inner.update(chunk.as_ref());
+    }
+
+    #[napi]
+    pub fn digest(&self) -> BigInt {
+        BigInt::from(self.inner.digest())
+    }
+
+    #[napi(js_name = "digestHex")]
+    pub fn digest_hex(&self) -> String {
+        format!("{:016x}", self.inner.digest())
+    }
+
+    #[napi]
+    pub fn reset(&mut self, seed: Option<BigInt>) {
+        self.inner.reset(seed_to_u64(seed));
+    }
+}
+
 #[napi]
 pub struct Xxh3Hasher {
     inner: xxhash_rust::xxh3::Xxh3,

@@ -576,11 +576,16 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
+module.exports.Xxh32Hasher = nativeBinding.Xxh32Hasher
 module.exports.Xxh3Hasher = nativeBinding.Xxh3Hasher
+module.exports.Xxh64Hasher = nativeBinding.Xxh64Hasher
 module.exports.xxh3_128 = nativeBinding.xxh3_128
 module.exports.xxh3_64 = nativeBinding.xxh3_64
 module.exports.xxh3_64Batch = nativeBinding.xxh3_64Batch
+module.exports.xxh3_64Many = nativeBinding.xxh3_64Many
 module.exports.xxh32 = nativeBinding.xxh32
 module.exports.xxh32Batch = nativeBinding.xxh32Batch
+module.exports.xxh32Many = nativeBinding.xxh32Many
 module.exports.xxh64 = nativeBinding.xxh64
 module.exports.xxh64Batch = nativeBinding.xxh64Batch
+module.exports.xxh64Many = nativeBinding.xxh64Many

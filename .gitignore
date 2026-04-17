@@ -23,6 +23,8 @@ Thumbs.db
 bench-results.json
 size-results.json
 parity-results.json
+conformance-results.json
+conformance-summary.md
 
 # Environment
 .env

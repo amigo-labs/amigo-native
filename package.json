@@ -6,6 +6,7 @@
     "test": "pnpm -r run test",
     "test:parity": "node scripts/parity-report.mjs",
     "test:conformance": "pnpm -r run test:conformance",
+    "test:conformance:summary": "node scripts/conformance-summary.mjs",
     "bench": "vitest bench",
     "bench:size": "node scripts/measure-size.mjs",
     "bench:report": "node scripts/run-benchmarks.mjs && node scripts/measure-size.mjs && node scripts/parity-report.mjs && node scripts/generate-report.mjs",

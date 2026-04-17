@@ -577,4 +577,6 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.nanoid = nativeBinding.nanoid
+module.exports.nanoidBatch = nativeBinding.nanoidBatch
 module.exports.nanoidCustom = nativeBinding.nanoidCustom
+module.exports.nanoidCustomBatch = nativeBinding.nanoidCustomBatch

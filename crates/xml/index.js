@@ -577,3 +577,4 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.parseXml = nativeBinding.parseXml
+module.exports.parseXmlToJson = nativeBinding.parseXmlToJson

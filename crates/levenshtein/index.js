@@ -577,4 +577,5 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.distance = nativeBinding.distance
+module.exports.distanceBatch = nativeBinding.distanceBatch
 module.exports.get = nativeBinding.get
