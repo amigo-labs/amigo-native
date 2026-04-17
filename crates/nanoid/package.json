@@ -38,8 +38,9 @@
     "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "bench": "vitest bench",
-    "test:conformance": "vitest run __conformance__",
-    "test:all": "vitest run"
+    "test:conformance": "vitest run __conformance__/fuzz.spec.ts",
+    "test:all": "vitest run",
+    "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",

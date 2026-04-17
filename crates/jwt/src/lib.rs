@@ -205,6 +205,24 @@ pub fn verify_sync(
     let key = to_decoding_key(header.alg, &secret)?;
     let data: TokenData<Value> = decode::<Value>(&token, &key, &validation).map_err(to_err)?;
 
+    // Explicit exp/nbf validation as a backstop, matching jsonwebtoken-node semantics.
+    // jsonwebtoken-rust 9.3 silently accepts tokens when payload is `Value` — the
+    // library's internal validate() path only runs on a strongly-typed struct.
+    let leeway = opts.clock_tolerance.unwrap_or(0) as i64;
+    let now = current_timestamp();
+    if !matches!(opts.ignore_expiration, Some(true))
+        && let Some(exp) = data.claims.get("exp").and_then(Value::as_i64)
+        && exp < now - leeway
+    {
+        return Err(Error::from_reason("jwt expired"));
+    }
+    if !matches!(opts.ignore_not_before, Some(true))
+        && let Some(nbf) = data.claims.get("nbf").and_then(Value::as_i64)
+        && nbf > now + leeway
+    {
+        return Err(Error::from_reason("jwt not active"));
+    }
+
     Ok(VerifyResult {
         payload: data.claims,
         header: serde_json::to_value(&data.header).map_err(to_err)?,

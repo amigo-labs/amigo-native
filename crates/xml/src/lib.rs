@@ -24,20 +24,34 @@ pub struct XmlEvent {
 fn decode_attrs(
     reader: &Reader<&[u8]>,
     bs: &quick_xml::events::BytesStart,
+    strict: bool,
 ) -> Result<Vec<XmlAttr>> {
     let mut out = Vec::new();
     let mut seen: HashMap<String, ()> = HashMap::new();
     for a in bs.attributes() {
-        let a = a.map_err(|e| Error::from_reason(format!("attribute error: {e}")))?;
+        let a = match a {
+            Ok(a) => a,
+            Err(e) => {
+                if strict {
+                    return Err(Error::from_reason(format!("attribute error: {e}")));
+                }
+                continue;
+            }
+        };
         let name = String::from_utf8_lossy(a.key.as_ref()).into_owned();
         if seen.contains_key(&name) {
             continue;
         }
         seen.insert(name.clone(), ());
-        let value = a
-            .decode_and_unescape_value(reader.decoder())
-            .map_err(|e| Error::from_reason(format!("attribute value error: {e}")))?
-            .into_owned();
+        let value = match a.decode_and_unescape_value(reader.decoder()) {
+            Ok(v) => v.into_owned(),
+            Err(e) => {
+                if strict {
+                    return Err(Error::from_reason(format!("attribute value error: {e}")));
+                }
+                String::from_utf8_lossy(a.value.as_ref()).into_owned()
+            }
+        };
         out.push(XmlAttr { name, value });
     }
     Ok(out)
@@ -59,7 +73,7 @@ pub fn parse_xml(input: String, strict: Option<bool>) -> Result<Vec<XmlEvent>> {
         match reader.read_event() {
             Ok(Event::Start(bs)) => {
                 let name = String::from_utf8_lossy(bs.name().as_ref()).into_owned();
-                let attrs = decode_attrs(&reader, &bs)?;
+                let attrs = decode_attrs(&reader, &bs, strict)?;
                 out.push(XmlEvent {
                     kind: "opentag".into(),
                     name: Some(name),
@@ -80,7 +94,7 @@ pub fn parse_xml(input: String, strict: Option<bool>) -> Result<Vec<XmlEvent>> {
             }
             Ok(Event::Empty(bs)) => {
                 let name = String::from_utf8_lossy(bs.name().as_ref()).into_owned();
-                let attrs = decode_attrs(&reader, &bs)?;
+                let attrs = decode_attrs(&reader, &bs, strict)?;
                 out.push(XmlEvent {
                     kind: "opentag".into(),
                     name: Some(name.clone()),
@@ -97,10 +111,15 @@ pub fn parse_xml(input: String, strict: Option<bool>) -> Result<Vec<XmlEvent>> {
                 });
             }
             Ok(Event::Text(bt)) => {
-                let text = bt
-                    .unescape()
-                    .map_err(|e| Error::from_reason(format!("text decode error: {e}")))?
-                    .into_owned();
+                let text = match bt.unescape() {
+                    Ok(t) => t.into_owned(),
+                    Err(e) => {
+                        if strict {
+                            return Err(Error::from_reason(format!("text decode error: {e}")));
+                        }
+                        String::from_utf8_lossy(bt.as_ref()).into_owned()
+                    }
+                };
                 out.push(XmlEvent {
                     kind: "text".into(),
                     name: None,
@@ -154,7 +173,10 @@ pub fn parse_xml(input: String, strict: Option<bool>) -> Result<Vec<XmlEvent>> {
             }
             Ok(Event::Eof) => break,
             Err(e) => {
-                return Err(Error::from_reason(format!("xml parse error: {e}")));
+                if strict {
+                    return Err(Error::from_reason(format!("xml parse error: {e}")));
+                }
+                break;
             }
         }
     }

@@ -52,6 +52,73 @@ fn normalise_label(label: &str) -> String {
     label.to_string()
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum NonWhatwg {
+    Utf16Le,
+    Utf16Be,
+    Latin1Strict,
+}
+
+fn classify(label: &str) -> Option<NonWhatwg> {
+    // encoding_rs is WHATWG-compliant: it encodes all UTF-16 variants as UTF-8
+    // (web-form behaviour) and aliases `latin1` to `windows-1252`. iconv-lite,
+    // however, treats UTF-16LE/BE as raw byte orderings and `latin1` as strict
+    // ISO-8859-1. We match the iconv-lite semantics for parity.
+    let norm = label.to_ascii_lowercase().replace(['_', '-'], "");
+    match norm.as_str() {
+        "utf16" | "utf16le" | "ucs2" => Some(NonWhatwg::Utf16Le),
+        "utf16be" => Some(NonWhatwg::Utf16Be),
+        "latin1" | "iso88591" => Some(NonWhatwg::Latin1Strict),
+        _ => None,
+    }
+}
+
+fn encode_utf16_le(input: &str) -> Vec<u8> {
+    let mut out = Vec::with_capacity(input.len() * 2);
+    for unit in input.encode_utf16() {
+        out.extend_from_slice(&unit.to_le_bytes());
+    }
+    out
+}
+
+fn encode_utf16_be(input: &str) -> Vec<u8> {
+    let mut out = Vec::with_capacity(input.len() * 2);
+    for unit in input.encode_utf16() {
+        out.extend_from_slice(&unit.to_be_bytes());
+    }
+    out
+}
+
+fn decode_utf16_le(input: &[u8]) -> String {
+    let units: Vec<u16> = input
+        .chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .collect();
+    String::from_utf16_lossy(&units)
+}
+
+fn decode_utf16_be(input: &[u8]) -> String {
+    let units: Vec<u16> = input
+        .chunks_exact(2)
+        .map(|c| u16::from_be_bytes([c[0], c[1]]))
+        .collect();
+    String::from_utf16_lossy(&units)
+}
+
+fn encode_latin1_strict(input: &str) -> Vec<u8> {
+    // ISO-8859-1: Unicode code points U+0000..U+00FF map 1:1 to bytes.
+    // Anything above U+00FF is replaced with '?' (same as iconv-lite default).
+    input
+        .chars()
+        .map(|c| if (c as u32) < 0x100 { c as u8 } else { b'?' })
+        .collect()
+}
+
+fn decode_latin1_strict(input: &[u8]) -> String {
+    // Every byte is a valid U+0000..U+00FF code point.
+    input.iter().map(|&b| b as char).collect()
+}
+
 fn lookup(label: &str) -> Option<&'static Encoding> {
     let mapped = normalise_label(label);
     Encoding::for_label(mapped.as_bytes())
@@ -59,11 +126,19 @@ fn lookup(label: &str) -> Option<&'static Encoding> {
 
 #[napi]
 pub fn encoding_exists(encoding: String) -> bool {
-    lookup(&encoding).is_some()
+    classify(&encoding).is_some() || lookup(&encoding).is_some()
 }
 
 #[napi]
 pub fn encode(input: String, encoding: String) -> Result<Buffer> {
+    if let Some(kind) = classify(&encoding) {
+        let bytes = match kind {
+            NonWhatwg::Utf16Le => encode_utf16_le(&input),
+            NonWhatwg::Utf16Be => encode_utf16_be(&input),
+            NonWhatwg::Latin1Strict => encode_latin1_strict(&input),
+        };
+        return Ok(bytes.into());
+    }
     let enc = lookup(&encoding)
         .ok_or_else(|| Error::from_reason(format!("unknown encoding: {encoding}")))?;
     let (out, _, _) = enc.encode(&input);
@@ -72,6 +147,14 @@ pub fn encode(input: String, encoding: String) -> Result<Buffer> {
 
 #[napi]
 pub fn decode(input: Buffer, encoding: String) -> Result<String> {
+    if let Some(kind) = classify(&encoding) {
+        let s = match kind {
+            NonWhatwg::Utf16Le => decode_utf16_le(&input),
+            NonWhatwg::Utf16Be => decode_utf16_be(&input),
+            NonWhatwg::Latin1Strict => decode_latin1_strict(&input),
+        };
+        return Ok(s);
+    }
     let enc = lookup(&encoding)
         .ok_or_else(|| Error::from_reason(format!("unknown encoding: {encoding}")))?;
     let (out, _, _) = enc.decode(&input);
