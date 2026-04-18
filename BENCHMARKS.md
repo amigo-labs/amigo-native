@@ -9,134 +9,134 @@
 
 | Scenario | slugify (npm) | @amigo-labs/slugify |
 |:---|---:|---:|
-| slugify - short ASCII (20 chars) | 507.3K | **1.47M** (**2.9x faster**) |
-| slugify - long ASCII (500 chars) | 26.2K | **116.0K** (**4.4x faster**) |
-| slugify - unicode heavy | 121.6K | **282.3K** (**2.3x faster**) |
+| slugify - short ASCII (20 chars) | 494.1K | **1.37M** (**2.8x faster**) |
+| slugify - long ASCII (500 chars) | 22.2K | **123.3K** (**5.6x faster**) |
+| slugify - unicode heavy | 109.7K | **267.5K** (**2.4x faster**) |
 
 ### argon2
 
 | Scenario | argon2 (npm, C-bindings) | hash-wasm (WASM) | @amigo-labs/argon2 |
 |:---|---:|---:|---:|
-| argon2 - hash (low-cost) | 230.6 | 132.7 | **320.4** (**1.4x faster**) |
-| argon2 - verify | — | — | 322.7 |
+| argon2 - hash (low-cost) | 234.6 | 135.6 | **321.2** (**1.4x faster**) |
+| argon2 - verify | — | — | 319.9 |
 
 ### xxhash
 
 | Scenario | xxhash-wasm | xxhashjs | xxhash-wasm (h64) | xxhash-wasm (loop) | xxhashjs (loop) | @amigo-labs/xxhash | @amigo-labs/xxhash (xxh3) | @amigo-labs/xxhash (batch) | @amigo-labs/xxhash (loop) |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| xxh32 - 64 bytes | 8.34M | 1.18M | — | — | — | **4.00M** (2.1x slower) | — | — | — |
-| xxh32 - 1 MB | 4.7K | 346.6 | — | — | — | **5.4K** (**1.1x faster**) | — | — | — |
-| xxh64 - 1 MB | 8.2K | 21.6 | — | — | — | **10.7K** (**1.3x faster**) | — | — | — |
-| xxh3_64 - 1 MB | — | — | 8.2K | — | — | — | **22.3K** (**2.7x faster**) | — | — |
-| xxh32 batch - 1000 × 64 bytes | — | — | — | 17.7K | 1.4K | — | — | **3.8K** (4.6x slower) | **5.5K** (3.2x slower) |
-| xxh3_64 batch - 1000 × 64 bytes | — | — | — | 17.2K | — | — | — | **3.2K** (5.4x slower) | — |
+| xxh32 - 64 bytes | 8.74M | 1.24M | — | — | — | **3.83M** (2.3x slower) | — | — | — |
+| xxh32 - 1 MB | 5.1K | 344.3 | — | — | — | **6.0K** (**1.2x faster**) | — | — | — |
+| xxh64 - 1 MB | 8.9K | 20.8 | — | — | — | **12.0K** (**1.3x faster**) | — | — | — |
+| xxh3_64 - 1 MB | — | — | 8.9K | — | — | — | **24.2K** (**2.7x faster**) | — | — |
+| xxh32 batch - 1000 × 64 bytes | — | — | — | 17.4K | 1.3K | — | — | **3.5K** (4.9x slower) | **6.4K** (2.7x slower) |
+| xxh3_64 batch - 1000 × 64 bytes | — | — | — | 17.2K | — | — | — | **3.0K** (5.8x slower) | — |
 
 ### sanitize-html
 
 | Scenario | sanitize-html (npm) | isomorphic-dompurify | @amigo-labs/sanitize-html |
 |:---|---:|---:|---:|
-| sanitize - small safe HTML (~200 chars) | 27.7K | 1.3K | **57.3K** (**2.1x faster**) |
-| sanitize - medium with XSS (~2 KB) | 3.8K | 221.2 | **6.3K** (**1.7x faster**) |
-| sanitize - large document (~100 KB) | 93.1 | 9.1 | **177.3** (**1.9x faster**) |
+| sanitize - small safe HTML (~200 chars) | 26.6K | 1.2K | **55.1K** (**2.1x faster**) |
+| sanitize - medium with XSS (~2 KB) | 3.7K | 193.8 | **5.9K** (**1.6x faster**) |
+| sanitize - large document (~100 KB) | 91.7 | 9.4 | **165.2** (**1.8x faster**) |
 
 ### csv
 
 | Scenario | csv-parse (sync) | papaparse | @amigo-labs/csv | @amigo-labs/csv (parseToJson) |
 |:---|---:|---:|---:|---:|
-| csv parse - 100 rows, 5 cols | 5.0K | 7.8K | **8.0K** (**1.6x faster**) | **12.3K** (**2.5x faster**) |
-| csv parse - 10,000 rows, 5 cols | 45.4 | 101.4 | **98.3** (**2.2x faster**) | **167.5** (**3.7x faster**) |
-| csv parse - 100,000 rows, 10 cols | 2.0 | 5.5 | **4.5** (**2.3x faster**) | **10.3** (**5.2x faster**) |
+| csv parse - 100 rows, 5 cols | 4.5K | 7.8K | **7.3K** (**1.6x faster**) | **12.1K** (**2.7x faster**) |
+| csv parse - 10,000 rows, 5 cols | 42.6 | 97.4 | **85.8** (**2.0x faster**) | **178.0** (**4.2x faster**) |
+| csv parse - 100,000 rows, 10 cols | 1.9 | 5.5 | **4.2** (**2.2x faster**) | **10.5** (**5.5x faster**) |
 
 ### file-type
 
 | Scenario | file-type (upstream async) | @amigo-labs/file-type (sync) |
 |:---|---:|---:|
-| file-type — medium JPEG buffer (100KB) | 52.3K | **1.37M** (**26.2x faster**) |
-| file-type — large MP4 buffer (10MB) | 1.2K | **1.27M** (**1066.9x faster**) |
+| file-type — medium JPEG buffer (100KB) | 51.5K | **1.33M** (**25.8x faster**) |
+| file-type — large MP4 buffer (10MB) | 1.1K | **1.24M** (**1176.6x faster**) |
 
 ### inflate
 
 | Scenario | pako | node:zlib | @amigo-labs/inflate |
 |:---|---:|---:|---:|
-| inflate — deflate 1KB text | 11.3K | 74.8K | **83.8K** (**7.4x faster**) |
-| inflate — deflate 100KB text | 928.6 | 4.1K | **27.4K** (**29.5x faster**) |
-| inflate — deflate 100KB random | 919.3 | 3.7K | **18.3K** (**19.9x faster**) |
-| inflate — deflate 10MB text | 8.7 | 40.9 | **341.6** (**39.4x faster**) |
-| inflate — inflate 1KB | 55.6K | 185.4K | **221.4K** (**4.0x faster**) |
-| inflate — inflate 100KB | 3.5K | 18.8K | **13.4K** (**3.8x faster**) |
-| inflate — inflate 10MB | 40.5 | 232.6 | **307.9** (**7.6x faster**) |
+| inflate — deflate 1KB text | 9.9K | 72.6K | **76.3K** (**7.7x faster**) |
+| inflate — deflate 100KB text | 901.8 | 3.2K | **26.7K** (**29.6x faster**) |
+| inflate — deflate 100KB random | 875.4 | 3.0K | **17.9K** (**20.4x faster**) |
+| inflate — deflate 10MB text | 8.8 | 31.8 | **360.5** (**41.0x faster**) |
+| inflate — inflate 1KB | 54.3K | 200.7K | **241.1K** (**4.4x faster**) |
+| inflate — inflate 100KB | 3.6K | 19.1K | **15.3K** (**4.3x faster**) |
+| inflate — inflate 10MB | 43.1 | 231.2 | **265.6** (**6.2x faster**) |
 
 ### levenshtein
 
 | Scenario | fast-levenshtein | leven | @amigo-labs/levenshtein |
 |:---|---:|---:|---:|
-| levenshtein — 10 chars | 4.19M | 1.78M | **2.51M** (1.7x slower) |
-| levenshtein — 100 chars | 277.3K | 46.2K | **279.3K** (~equal) |
-| levenshtein — 1000 chars | 4.7K | 518.4 | **1.3K** (3.6x slower) |
-| levenshtein — 10000 chars | 50.2 | 5.2 | **7.0** (7.1x slower) |
+| levenshtein — 10 chars | 4.07M | 1.70M | **2.24M** (1.8x slower) |
+| levenshtein — 100 chars | 283.8K | 42.0K | **299.3K** (**1.1x faster**) |
+| levenshtein — 1000 chars | 5.3K | 459.5 | **1.3K** (4.1x slower) |
+| levenshtein — 10000 chars | 57.7 | 4.6 | **7.9** (7.3x slower) |
 
 ### nanoid
 
 | Scenario | nanoid | crypto.randomUUID | @amigo-labs/nanoid |
 |:---|---:|---:|---:|
-| nanoid — single call (default size) | 3.73M | 3.75M | **1.00M** (3.7x slower) |
-| nanoid — batch 1000 × default | 4.9K | 5.7K | **1.2K** (4.1x slower) |
-| nanoid — customAlphabet (hex, 32 chars) | 2.87M | — | **849.1K** (3.4x slower) |
-| nanoid — single call size=128 | 842.7K | — | **811.2K** (~equal) |
+| nanoid — single call (default size) | 3.95M | 3.74M | **1.13M** (3.5x slower) |
+| nanoid — batch 1000 × default | 5.0K | 5.8K | **1.3K** (3.8x slower) |
+| nanoid — customAlphabet (hex, 32 chars) | 2.82M | — | **924.5K** (3.1x slower) |
+| nanoid — single call size=128 | 919.3K | — | **859.2K** (1.1x slower) |
 
 ### encoding
 
 | Scenario | iconv-lite small | Buffer.from small | iconv-lite 100KB | Buffer.from 100KB | iconv-lite 10MB | Buffer.from 10MB | iconv-lite | @amigo-labs/encoding small | @amigo-labs/encoding 100KB | @amigo-labs/encoding 10MB | @amigo-labs/encoding |
 |:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| encoding — encode utf-8 (small/medium/large) | 2.03M | 4.59M | 16.1K | 18.6K | 210.7 | 211.2 | — | **489.0K** (4.1x slower) | **6.1K** (333.9x slower) | **82.8** (24471.6x slower) | — |
-| encoding — decode utf-16le 100KB | — | — | — | — | — | — | 48.6K | — | — | — | **1.8K** (27.4x slower) |
-| encoding — decode shift_jis 100KB | — | — | — | — | — | — | 1.8K | — | — | — | **1.1K** (1.7x slower) |
-| encoding — decode latin1 10MB | — | — | — | — | — | — | 28.4 | — | — | — | **13.7** (2.1x slower) |
+| encoding — encode utf-8 (small/medium/large) | 2.00M | 4.43M | 20.2K | 21.9K | 220.6 | 219.8 | — | **508.0K** (3.9x slower) | **6.3K** (316.4x slower) | **78.2** (25631.7x slower) | — |
+| encoding — decode utf-16le 100KB | — | — | — | — | — | — | 49.8K | — | — | — | **1.8K** (27.1x slower) |
+| encoding — decode shift_jis 100KB | — | — | — | — | — | — | 2.0K | — | — | — | **1.2K** (1.6x slower) |
+| encoding — decode latin1 10MB | — | — | — | — | — | — | 28.3 | — | — | — | **13.4** (2.1x slower) |
 
 ### xml
 
 | Scenario | sax | @amigo-labs/xml (parseXml) | @amigo-labs/xml (sax API) | @amigo-labs/xml |
 |:---|---:|---:|---:|---:|
-| xml — small SVG (1KB) | 222.4K | **138.9K** (1.6x slower) | **134.4K** (1.7x slower) | — |
-| xml — RSS feed (100KB) | 448.1 | — | — | **148.6** (3.0x slower) |
+| xml — small SVG (1KB) | 227.0K | **133.1K** (1.7x slower) | **128.5K** (1.8x slower) | — |
+| xml — RSS feed (100KB) | 399.6 | — | — | **144.5** (2.8x slower) |
 | xml — SOAP response (10MB) | 1.9 | — | — | — |
 
 ### deep-equal
 
 | Scenario | fast-deep-equal | @amigo-labs/deep-equal |
 |:---|---:|---:|
-| deep-equal — flat 7-key objects | 2.14M | **2.96M** (**1.4x faster**) |
-| deep-equal — deeply nested (20 levels) | 517.4K | **534.8K** (~equal) |
-| deep-equal — 10k objects in array | 376.0 | **363.9** (~equal) |
+| deep-equal — flat 7-key objects | 2.08M | **2.87M** (**1.4x faster**) |
+| deep-equal — deeply nested (20 levels) | 535.5K | **533.6K** (~equal) |
+| deep-equal — 10k objects in array | 393.4 | **381.2** (~equal) |
 
 ### deepmerge
 
 | Scenario | deepmerge | @amigo-labs/deepmerge |
 |:---|---:|---:|
-| deepmerge — flat 4-key objects | 990.6K | **3.29M** (**3.3x faster**) |
-| deepmerge — deep (10 levels) | 39.9K | **213.0K** (**5.3x faster**) |
-| deepmerge — 1000 items arrays | 774.8 | **3.5K** (**4.5x faster**) |
+| deepmerge — flat 4-key objects | 1.01M | **3.13M** (**3.1x faster**) |
+| deepmerge — deep (10 levels) | 36.1K | **219.3K** (**6.1x faster**) |
+| deepmerge — 1000 items arrays | 676.0 | **3.4K** (**5.1x faster**) |
 
 ### jwt
 
 | Scenario | jsonwebtoken | @amigo-labs/jwt |
 |:---|---:|---:|
-| jwt — sign HS256 | 36.5K | **190.4K** (**5.2x faster**) |
-| jwt — verify HS256 | 29.8K | **130.0K** (**4.4x faster**) |
-| jwt — sign RS256 | 808.0 | **1.3K** (**1.6x faster**) |
-| jwt — verify RS256 | 16.6K | **23.9K** (**1.4x faster**) |
-| jwt — sign ES256 | 8.6K | **21.4K** (**2.5x faster**) |
-| jwt — verify ES256 | 7.1K | **12.2K** (**1.7x faster**) |
+| jwt — sign HS256 | 23.7K | **180.4K** (**7.6x faster**) |
+| jwt — verify HS256 | 19.6K | **120.4K** (**6.1x faster**) |
+| jwt — sign RS256 | 877.8 | **1.5K** (**1.7x faster**) |
+| jwt — verify RS256 | 12.9K | **26.0K** (**2.0x faster**) |
+| jwt — sign ES256 | 7.3K | **22.4K** (**3.1x faster**) |
+| jwt — verify ES256 | 6.3K | **13.5K** (**2.2x faster**) |
 
 ### zip
 
 | Scenario | adm-zip | @amigo-labs/zip |
 |:---|---:|---:|
-| zip — write 100 x 1KB files | 247.8 | **453.3** (**1.8x faster**) |
-| zip — write 1 x 10MB file | 18.0 | **44.6** (**2.5x faster**) |
-| zip — read entries (100 files) | 875.5 | **2.9K** (**3.3x faster**) |
-| zip — extract all (100 files) | 490.6 | **239.5** (2.0x slower) |
-| zip — extract large (10MB) | 26.6 | **269.9** (**10.1x faster**) |
+| zip — write 100 x 1KB files | 255.6 | **742.3** (**2.9x faster**) |
+| zip — write 1 x 10MB file | 16.8 | **30.9** (**1.8x faster**) |
+| zip — read entries (100 files) | 883.4 | **2.9K** (**3.3x faster**) |
+| zip — extract all (100 files) | 509.1 | **243.2** (2.1x slower) |
+| zip — extract large (10MB) | 31.4 | **280.6** (**8.9x faster**) |
 
 ## Package Size
 
@@ -168,18 +168,18 @@
 
 ## Summary
 
-- **slugify**: **2.3-4.4x faster** than slugify (npm)
+- **slugify**: **2.4-5.6x faster** than slugify (npm)
 - **argon2**: **1.4x faster** than argon2 (npm, C-bindings); **2.4x faster** than hash-wasm (WASM)
-- **xxhash**: up to **1.3x faster**, up to 2.1x slower vs xxhash-wasm; **3.4-495.6x faster** than xxhashjs; **2.7x faster** than xxhash-wasm (h64); 4.6-5.4x slower than xxhash-wasm (loop); **2.8x faster** than xxhashjs (loop)
-- **sanitize-html**: **1.7-2.1x faster** than sanitize-html (npm); **19.5-43.4x faster** than isomorphic-dompurify
-- **csv**: **1.6-2.3x faster** than csv-parse (sync); ~equal to papaparse
-- **file-type**: **26.2-1066.9x faster** than file-type (upstream async)
-- **inflate**: **3.8-39.4x faster** than pako; up to **8.3x faster**, up to 1.4x slower vs node:zlib
-- **levenshtein**: ~equal to fast-levenshtein; **1.3-6.0x faster** than leven
-- **nanoid**: ~equal to nanoid; 3.7-4.8x slower than crypto.randomUUID
-- **encoding**: 4.1-4.1x slower than iconv-lite small; 9.4-9.4x slower than Buffer.from small; **30.3x faster** than iconv-lite 100KB; **26.3x faster** than Buffer.from 100KB; **2321.2x faster** than iconv-lite 10MB; **2315.2x faster** than Buffer.from 10MB; 1.7-27.4x slower than iconv-lite
-- **xml**: 1.6-3.0x slower than sax
+- **xxhash**: up to **1.3x faster**, up to 2.3x slower vs xxhash-wasm; **3.1-575.5x faster** than xxhashjs; **2.7x faster** than xxhash-wasm (h64); 4.9-5.8x slower than xxhash-wasm (loop); **2.7x faster** than xxhashjs (loop)
+- **sanitize-html**: **1.6-2.1x faster** than sanitize-html (npm); **17.6-46.0x faster** than isomorphic-dompurify
+- **csv**: **1.6-2.2x faster** than csv-parse (sync); 1.1-1.3x slower than papaparse
+- **file-type**: **25.8-1176.6x faster** than file-type (upstream async)
+- **inflate**: **4.3-41.0x faster** than pako; up to **11.3x faster**, up to 1.2x slower vs node:zlib
+- **levenshtein**: up to **1.1x faster**, up to 7.3x slower vs fast-levenshtein; **1.3-7.1x faster** than leven
+- **nanoid**: 1.1-3.8x slower than nanoid; 3.3-4.4x slower than crypto.randomUUID
+- **encoding**: 3.9-3.9x slower than iconv-lite small; 8.7-8.7x slower than Buffer.from small; **25.2x faster** than iconv-lite 100KB; **23.2x faster** than Buffer.from 100KB; **2302.8x faster** than iconv-lite 10MB; **2311.0x faster** than Buffer.from 10MB; 1.6-27.1x slower than iconv-lite
+- **xml**: 1.7-2.8x slower than sax
 - **deep-equal**: ~equal to fast-deep-equal
-- **deepmerge**: **3.3-5.3x faster** than deepmerge
-- **jwt**: **1.4-5.2x faster** than jsonwebtoken
-- **zip**: up to **10.1x faster**, up to 2.0x slower vs adm-zip
+- **deepmerge**: **3.1-6.1x faster** than deepmerge
+- **jwt**: **1.7-7.6x faster** than jsonwebtoken
+- **zip**: up to **8.9x faster**, up to 2.1x slower vs adm-zip
