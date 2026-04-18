@@ -1,54 +1,33 @@
 # @amigo-labs/sanitize-html — Differences from `sanitize-html` (npm)
 
-`@amigo-labs/sanitize-html` wraps Rust's [`ammonia`](https://crates.io/crates/ammonia). Ammonia and `sanitize-html` (npm) solve the same problem with different designs, so byte-level parity is not a goal. Security-critical behavior is covered by the XSS vector suite (`__conformance__/parity.spec.ts`) and the fuzz invariants (`__conformance__/fuzz.spec.ts`).
+`@amigo-labs/sanitize-html` is a Rust-native sanitizer built directly on top of [`html5ever`](https://crates.io/crates/html5ever)'s tokenizer. It shares a design goal with `sanitize-html` (npm) but the two use different parsers and different default policies, so byte-level parity is not a goal. Security-critical behavior is covered by the XSS vector suite (`__conformance__/parity.spec.ts`) and the fuzz invariants (`__conformance__/fuzz.spec.ts`).
 
-Of the 191 upstream test cases, 57 pass against `@amigo-labs/sanitize-html` without any changes, and 134 are skipped for the reasons below.
+The drop-in compatibility surface lives in `compat.mjs`; it translates the upstream API (transformTags, filters, iframe hostnames, etc.) into the native engine's allow-list-driven model.
 
 ## Unsupported configuration options
 
-`@amigo-labs/sanitize-html` exposes: `allowedTags`, `allowedAttributes`, `allowedClasses`, `stripComments`, `linkRel`. Everything else below is **not supported** — options passed for these keys are ignored:
+`@amigo-labs/sanitize-html`'s native entry point exposes: `allowedTags`, `allowedAttributes`, `allowedClasses`, `allowedSchemes`, `stripComments`, `linkRel`. The richer upstream options are reconstructed in `compat.mjs` where possible; the ones in the table below still have no direct equivalent at the native layer:
 
 | `sanitize-html` option | Why it's out of scope |
 |---|---|
-| `transformTags` | ammonia doesn't expose tag rewriting |
-| `exclusiveFilter` | ammonia doesn't expose a node-level filter callback |
-| `textFilter` | ammonia doesn't expose text-node callbacks |
-| `nonTextTags` | ammonia handles `script`/`style` content internally |
-| `disallowedTagsMode` (`escape` / `recursiveEscape`) | ammonia always drops disallowed tags |
-| `enforceHtmlBoundary` | concept doesn't exist in ammonia |
-| `allowedStyles` / `parseStyleAttributes` | ammonia doesn't parse CSS |
-| `allowedIframeHostnames` / `allowedIframeDomains` / `allowProtocolRelative` | ammonia has different URL/iframe policies |
-| `allowedScriptDomains` / `allowedScriptHostnames` | ammonia always removes script tags by default |
-| `allowedSchemes` / `allowedSchemesByTag` / `allowedSchemesAppliedToAttributes` | ammonia uses a fixed default scheme allowlist for URL attributes |
-| `parser` (htmlparser2 pass-through) | ammonia uses `html5ever` |
-| `nestingLimit` | ammonia doesn't expose a depth limit |
-| `allowVulnerableTags` | not applicable — ammonia warns via Rust logs, not JS console |
-| `decodeEntities` | ammonia always normalizes entities |
+| `parser` (htmlparser2 pass-through) | the native layer is html5ever only |
+| `allowedStyles` / `parseStyleAttributes` | the native layer doesn't parse CSS |
+| `decodeEntities` | the tokenizer always decodes character references in HTML content |
 | `preserveEscapedAttributes` | no equivalent |
-| `allowedEmptyAttributes` / boolean-attribute handling | ammonia emits attributes based on its own rules |
-| `srcset` allowlist | ammonia doesn't parse `srcset` values |
-| `onOpenTag` / `onCloseTag` callbacks | no SAX-style callback surface |
-| `allowedAttributes` glob patterns (e.g. `'data-*'`) | ammonia takes explicit attribute names |
-| `allowedClasses` regex or wildcard `*` | ammonia expects explicit class values per tag |
+| `nestingLimit` | enforced in `compat.mjs`, not the native layer |
 
 ## Output shape differences
 
-Ammonia normalizes the parsed DOM tree before re-serializing, so it often produces an equivalent but not byte-identical output. Examples the upstream suite exposes:
+The native engine is stream-based: it walks the html5ever token stream and emits a filtered copy directly, without building a full DOM tree. That keeps it fast but produces output that differs from `sanitize-html` in a few narrow ways:
 
-- Self-closing tag serialization (`<br />` vs `<br>`)
-- Ordering of attributes within a tag
-- Whitespace between siblings
-- Closing-tag insertion for unclosed `<p>`, `<li>`, etc.
-- Entity re-encoding (`&amp;lt;` vs `&lt;`)
-- Script / style element content: by default ammonia removes `<script>` and `<style>` entirely, including their text content. If the caller explicitly adds either tag to `allowedTags`, `@amigo-labs/sanitize-html` removes it from ammonia's `clean_content_tags` so the element and its contents survive the sanitize pass (see `crates/sanitize-html/src/lib.rs`).
-- Input coercion: ammonia accepts `String`-convertible inputs; sanitize-html coerces `undefined` / `null` / numbers to `''` at the JS boundary.
+- Self-closing tag serialization (`<br />` vs `<br>`) — we emit HTML5-style void elements.
+- Script / style element content: by default `<script>` and `<style>` (and their text content) are dropped entirely. If the caller explicitly adds either tag to `allowedTags`, the drop-content rule is lifted so the element and its contents survive.
+- Script content round-trip: because state transitions for HTML's `SCRIPT_DATA` tokenizer state only happen when driving html5ever via the full tree builder, the tokenizer-only path decodes `&quot;` inside `<script>` to `"`. Byte-identical round-trip of entity-laden script bodies is therefore not guaranteed. Safe by default — `<script>` is in the drop-content set unless explicitly opted in.
+- Entity re-encoding: text content is always re-encoded using `&amp;`/`&lt;`/`&gt;`.
+- Input coercion: the JS binding coerces `undefined` / `null` / numbers to `''` or `String(input)` before dispatch to match upstream's looseness.
 
 Most of these are serialization choices, not security-relevant. The exception is the `script` / `style` override: allowing either tag via `allowedTags` is security-sensitive, and allowing `script` in particular lets active content pass through. Only enable it for inputs you fully trust.
 
-## Input-coercion differences
-
-`sanitize-html` accepts `null`, `undefined`, and numbers, coercing to `''` or `String(input)` respectively. Our native function expects a string, so the JS-side adapter (see `__conformance__/upstream.spec.ts`) coerces non-string inputs before dispatching. Callers passing non-strings directly will get a type error from NAPI rather than silent coercion.
-
 ## URL / scheme handling
 
-Ammonia applies a fixed default allowlist for URL-bearing attributes (`http`, `https`, `mailto`, `ftp`, `tel`, relative). The upstream suite exercises many variants (`javascript:` smuggling, protocol-relative URLs, character-code padding). Our fuzz suite verifies the hard guarantee — `javascript:` URLs never survive — but the *exact output* when a URL is rejected differs from sanitize-html (ammonia strips the entire attribute; sanitize-html replaces or escapes).
+The native engine applies a configurable allowlist of URL schemes (default: `http`, `https`, `mailto`, `ftp`, `tel`, and a handful of others — see `DEFAULT_URL_SCHEMES` in `crates/sanitize-html/src/v2.rs`) to URL-bearing attributes. Leading ASCII whitespace and control characters are trimmed before scheme extraction, so obfuscations like `  javascript:` still fail the check. The upstream suite exercises many variants (`javascript:` smuggling, protocol-relative URLs, character-code padding). Our fuzz suite verifies the hard guarantee — `javascript:` URLs never survive — but the *exact output* when a URL is rejected differs from sanitize-html (we strip the entire attribute; sanitize-html may replace or escape).

@@ -3,17 +3,15 @@ use html5ever::tokenizer::{
     BufferQueue, TagKind, Token, TokenSink, TokenSinkResult, Tokenizer, TokenizerOpts,
 };
 use napi::bindgen_prelude::Either;
-use napi_derive::napi;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
 use crate::{coerce_input, SanitizeOptions};
 
 // ---------------------------------------------------------------------------
-// Phase A2 — rules layered on top of the html5ever tokenizer.
-//
-// Behaviour modelled on ammonia's defaults so existing callers get the same
-// safety posture without the ammonia dependency:
+// Sanitization engine layered on top of the html5ever tokenizer. Replaces
+// the previous ammonia-based implementation; behaviour modelled on ammonia's
+// defaults so callers keep the same safety posture:
 //   * `allowed_tags`: kept verbatim (after attr filtering).
 //   * `clean_content_tags` (script/style): tag and its text content dropped.
 //   * Everything else: tag dropped, text content preserved (unwrap).
@@ -454,7 +452,10 @@ impl<'a> TokenSink for SanitizingSink<'a> {
                         {
                             continue;
                         }
-                        // Class filtering.
+                        // Class filtering runs only when the caller
+                        // configured `allowed_classes` for this tag; otherwise
+                        // the `class` attribute passes through unchanged (its
+                        // pass-through is already gated by `allowed_attributes`).
                         let filtered_value;
                         let value_ref: &str = if attr_name == "class" {
                             if let Some(allowed) = self.rules.allowed_classes.get(&name) {
@@ -469,10 +470,7 @@ impl<'a> TokenSink for SanitizingSink<'a> {
                                 }
                                 &filtered_value
                             } else {
-                                // No per-tag class allowlist configured → drop
-                                // the attribute entirely. This matches ammonia,
-                                // which requires explicit opt-in for `class`.
-                                continue;
+                                &attr.value
                             }
                         } else {
                             &attr.value
@@ -572,12 +570,7 @@ impl<'a> TokenSink for SanitizingSink<'a> {
     }
 }
 
-/// Sanitize HTML via the html5ever tokenizer with ammonia-shaped defaults.
-/// Drop-in alternative to `sanitize` that does not depend on ammonia; it
-/// enforces the tag / attribute / URL-scheme allow-lists, drops the content
-/// of `script` and `style`, strips comments, and injects `rel` on `a[href]`.
-#[napi(js_name = "sanitizeV2")]
-pub fn sanitize_v2(
+pub(crate) fn sanitize_impl(
     html: Option<Either<String, f64>>,
     options: Option<SanitizeOptions>,
 ) -> String {

@@ -117,15 +117,18 @@ new vm.Script(source, { filename: 'upstream/test.js' }).runInContext(ctx);
 // so regressions surface as signal. See DIFFERENCES.md for the narrative
 // explanation of each category.
 const KNOWN_DIVERGENCES = new Set<string>([
-  // -- Unsupported options / features --
   // -- Output shape / tree-builder differences --
-  'should allow only approved attributes, when they contain colon characters, for approved tags',
-  'should allow only approved attributes, but to any tags, if tag is declared as  "*"',
   'should support SVG tags',
   // -- Additional divergences detected by running the suite --
   'Should not double encode ampersands on HTML entities if decodeEntities is false (TODO more tests, this is too loose to rely upon)',
   'should not pass through any text outside html tag boundary since html tag is found and option is ON',
   'should not be faked out by double <',
+  // Script content byte-preservation requires SCRIPT_DATA tokenizer state
+  // transitions, which only happen when running html5ever via the full
+  // TreeBuilder. Our tokenizer-only path decodes `&quot;` inside `<script>`
+  // to `"`, so we cannot round-trip the original bytes. Safe by default —
+  // `<script>` is in the drop-content set unless explicitly allowed.
+  'should not unescape escapes found inside script tags',
 ]);
 
 describe('upstream sanitize-html tests (adapted)', () => {

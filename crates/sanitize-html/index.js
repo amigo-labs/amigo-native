@@ -578,4 +578,3 @@ if (!nativeBinding) {
 module.exports = nativeBinding
 module.exports.isClean = nativeBinding.isClean
 module.exports.sanitize = nativeBinding.sanitize
-module.exports.sanitizeV2 = nativeBinding.sanitizeV2
