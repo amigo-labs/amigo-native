@@ -4,7 +4,7 @@
  * binding. Exists so callers who want a drop-in replacement for sanitize-html
  * get the same loose option shapes and feature surface (transformTags,
  * exclusiveFilter, textFilter, allowedIframeHostnames, …) while the core
- * cleaning still runs in Rust via ammonia.
+ * cleaning still runs in Rust via html5ever.
  *
  * Architecture (see `__bench__/transforms.bench.ts` for the numbers that
  * informed this split):
@@ -143,7 +143,7 @@ function normaliseOptions(options) {
     }
   }
 
-  // Ammonia's default <a> attribute list doesn't include `target`, which
+  // The native default <a> attribute list doesn't include `target`, which
   // sanitize-html's default does. When no allowedAttributes was provided,
   // inject sanitize-html's defaults so tests that rely on the baseline work.
   if (!('allowedAttributes' in opts)) {
@@ -166,7 +166,7 @@ function normaliseOptions(options) {
         }
       }
       // Expand `'*'` wildcard across a broad set of tags so the attribute
-      // actually survives (ammonia has no per-tag wildcard).
+      // actually survives (the native engine has no per-tag wildcard).
       if (wildcardAttrs && wildcardAttrs.length) {
         const tags = Array.isArray(opts.allowedTags) ? opts.allowedTags : DEFAULT_ALLOWED_TAGS
         for (const tag of tags) {
@@ -232,7 +232,7 @@ function escapeAttr(v) {
 }
 
 // Sentinel marker used to preserve the `<a href>` bare-attribute form across
-// native ammonia (which unconditionally rewrites bare attrs as `attr=""`).
+// the native engine (which unconditionally rewrites bare attrs as `attr=""`).
 // Only used when the caller explicitly opts out of the default
 // empty-attribute cleanup via `nonBooleanAttributes`.
 const BARE_ATTR_SENTINEL = 'AMIGO-BARE-ATTR-SENTINEL-X9K7'
@@ -263,8 +263,8 @@ function stripBareAttrSentinels(html) {
   return html.replace(new RegExp(`="${BARE_ATTR_SENTINEL}"`, 'g'), '')
 }
 
-// ammonia decodes HTML entities inside attribute values and emits them raw
-// (`name="<silly>"`) — sanitize-html re-escapes to `name="&lt;silly&gt;"`.
+// html5ever decodes HTML entities inside attribute values and we emit them raw
+// — sanitize-html re-escapes to `name="&lt;silly&gt;"`, so normalize here.
 // Walk the output and encode stray `<`/`>` inside double-quoted attribute
 // values.
 function reEncodeAttrAngleBrackets(html) {
@@ -684,8 +684,8 @@ function tokenizerTransform(
         }
 
         // URL scheme filtering (href/src/cite/srcset/...). sanitize-html
-        // applies this before the native pass so ammonia never sees the
-        // dangerous scheme.
+        // applies this before the native pass so the native engine never
+        // sees the dangerous scheme.
         const schemes = Array.isArray(allowedSchemes) ? allowedSchemes : DEFAULT_ALLOWED_SCHEMES
         nextAttribs = filterUrlAttribs(nextAttribs, tagName, schemes, allowedSchemesByTag)
 
@@ -1078,7 +1078,8 @@ export function sanitize(html, options) {
       : null
 
   // Detect glob / object-value patterns in allowedAttributes. If present,
-  // the tokenizer must resolve them (ammonia only supports exact names).
+  // the tokenizer must resolve them (the native engine only supports
+  // exact names).
   function hasAdvancedAttrRule(rule) {
     if (!rule || typeof rule !== 'object') return false
     for (const list of Object.values(rule)) {
@@ -1163,8 +1164,8 @@ export function sanitize(html, options) {
 
   // When the caller opted out of tag/attribute sanitization entirely, the
   // tokenizer output is already the final answer — skipping native sanitize
-  // preserves non-standard tags / attributes that ammonia would otherwise
-  // strip.
+  // preserves non-standard tags / attributes that the native engine would
+  // otherwise strip.
   if (allowAllTags && allowAllAttributes) {
     return stripBareAttrSentinels(pre)
   }
@@ -1174,8 +1175,8 @@ export function sanitize(html, options) {
   if (forNative) {
     for (const k of JS_ONLY_OPTIONS) delete forNative[k]
     // Native's allowedSchemes must include every scheme that any per-tag
-    // rule permits, otherwise ammonia strips URLs that the tokenizer's
-    // per-tag filter already validated.
+    // rule permits, otherwise the native engine strips URLs that the
+    // tokenizer's per-tag filter already validated.
     const perTag = rawOpts.allowedSchemesByTag
     if (perTag && typeof perTag === 'object') {
       const existing = Array.isArray(forNative.allowedSchemes)
@@ -1188,7 +1189,7 @@ export function sanitize(html, options) {
       forNative.allowedSchemes = [...union]
     }
     // Extend allowedAttributes with attribute names the glob-/value-rule
-    // tokenizer pass already validated. Native ammonia has no pattern
+    // tokenizer pass already validated. The native engine has no pattern
     // matching, so without this extension it would strip the filtered attrs.
     if (observedAttribs && observedAttribs.size > 0) {
       const aa = (forNative.allowedAttributes = forNative.allowedAttributes ?? {})
@@ -1202,8 +1203,8 @@ export function sanitize(html, options) {
     // allowedClasses was already resolved by the tokenizer (including any
     // regex / glob patterns). Pass `class` through as a plain attribute for
     // each tag with a rule so native sanitize keeps the filtered value.
-    // Native ammonia has no `'*'` tag-wildcard, so we materialise the `'*'`
-    // rule onto every allowed tag explicitly.
+    // The native engine has no `'*'` tag-wildcard, so we materialise the
+    // `'*'` rule onto every allowed tag explicitly.
     if (allowedClassesMap) {
       delete forNative.allowedClasses
       const aa = (forNative.allowedAttributes = forNative.allowedAttributes ?? {})
