@@ -85,7 +85,7 @@ Write the action plan based on the classification:
 
 - **Green** — short polish list only (missing bucket in benches, maybe a batch API, README tightening).
 - **Yellow** — prioritized C-lever list with explicit targets and the expected classification-upgrade path. Budget: one focused optimization sprint. If it stays Yellow after, reclassify to Red.
-- **Red** — Phase-D deprecation path: (a) `deprecated` field in `package.json`, (b) README warning, (c) `MIGRATION.md` pointing to the recommended JS alternative, (d) 3-month deprecation window, (e) eventual move to `archived/`. Draft the `docs/post-mortems/<pkg>.md` outline.
+- **Red** — Phase-D deprecation path: (a) run `npm deprecate <pkg>@"*" "<migration message>"` so the registry flags installs, (b) README warning at the top of the crate, (c) `MIGRATION.md` pointing to the recommended JS alternative, (d) 3-month deprecation window, (e) eventual move to `archived/`. Draft the `docs/post-mortems/<pkg>.md` outline.
 - **Black** — archival plan and BACKLOG note under the appropriate rejection category.
 
 Render the `templates/existing-review.md` template and write to `reportPath`.
