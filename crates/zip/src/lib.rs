@@ -19,6 +19,12 @@ pub struct ZipEntryInfo {
     pub compression: String,
 }
 
+#[napi(object)]
+pub struct ZipEntryData {
+    pub name: String,
+    pub data: Buffer,
+}
+
 enum Source {
     Buffer(Vec<u8>),
     File(std::path::PathBuf),
@@ -86,6 +92,38 @@ impl ZipReader {
         };
         Ok(bytes.into())
     }
+
+    /// One-shot: parse the archive once and return every (non-directory)
+    /// entry's uncompressed bytes along with its name. Replaces the
+    /// `for (e of entries()) read(e.name)` pattern, which re-parsed the
+    /// central directory on every iteration — O(N²) on number of
+    /// entries. This is O(N) and the one call users want for
+    /// "unzip to memory".
+    #[napi(js_name = "extractAll")]
+    pub fn extract_all(&self) -> Result<Vec<ZipEntryData>> {
+        match &self.source {
+            Source::Buffer(b) => extract_all_from(Cursor::new(b.as_slice())),
+            Source::File(p) => extract_all_from(File::open(p).map_err(to_err)?),
+        }
+    }
+}
+
+fn extract_all_from<R: Read + std::io::Seek>(r: R) -> Result<Vec<ZipEntryData>> {
+    let mut ar = ZipArchive::new(r).map_err(to_err)?;
+    let mut out = Vec::with_capacity(ar.len());
+    for i in 0..ar.len() {
+        let mut f = ar.by_index(i).map_err(to_err)?;
+        if f.is_dir() {
+            continue;
+        }
+        let mut bytes = Vec::with_capacity(f.size() as usize);
+        f.read_to_end(&mut bytes).map_err(to_err)?;
+        out.push(ZipEntryData {
+            name: f.name().to_string(),
+            data: bytes.into(),
+        });
+    }
+    Ok(out)
 }
 
 #[napi(object)]
