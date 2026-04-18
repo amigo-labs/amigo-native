@@ -11,4 +11,18 @@ export interface SanitizeOptions {
   allowedSchemes?: Array<string>
   stripComments?: boolean
   linkRel?: string
+  /**
+   * When `true`, every attribute not an event handler passes through.
+   * Set by `compat.mjs` when the caller uses `allowedAttributes: false`.
+   */
+  allowAllAttributes?: boolean
 }
+
+/**
+ * Strict sanitize. Same rule surface as `sanitize`, but drives html5ever's
+ * full TreeBuilder so SCRIPT_DATA / RAWTEXT / foreign-content state
+ * transitions happen correctly. Routed to by `compat.mjs` when the caller
+ * enables `<script>`/`<style>` or SVG/MathML tags, or opts out of case
+ * normalisation via `parser.lowerCaseTags: false`.
+ */
+export declare function sanitizeStrict(html?: string | number | undefined | null, options?: SanitizeOptions | undefined | null): string

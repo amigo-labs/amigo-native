@@ -18,7 +18,7 @@
  */
 
 import { Parser } from 'htmlparser2'
-import { sanitize as amigoSanitize } from './index.js'
+import { sanitize as amigoSanitize, sanitizeStrict as amigoSanitizeStrict } from './index.js'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -73,6 +73,32 @@ const URL_ATTRIBUTES = new Set([
 const DEFAULT_ALLOWED_SCHEMES = ['http', 'https', 'ftp', 'mailto', 'tel']
 
 const VULNERABLE_TAGS = ['style', 'script', 'noscript', 'textarea']
+
+// Tags that must go through the strict native engine (full html5ever
+// parser) because they need tokenizer state transitions the fast-path
+// TokenSink does not implement: SCRIPT_DATA for <script>/<style>, and
+// foreign-content for SVG / MathML.
+const STRICT_TAGS = new Set([
+  'script', 'style',
+  'svg', 'g', 'path', 'circle', 'rect', 'ellipse', 'line', 'polyline',
+  'polygon', 'defs', 'linearGradient', 'radialGradient', 'stop',
+  'foreignObject', 'use', 'symbol', 'marker', 'clipPath', 'mask',
+  'pattern', 'image', 'tspan',
+  'math', 'mrow', 'mi', 'mn', 'mo', 'mtext', 'mfrac',
+])
+
+function needsStrictEngine(rawOpts) {
+  const tags = rawOpts.allowedTags
+  if (Array.isArray(tags)) {
+    for (const t of tags) if (STRICT_TAGS.has(t)) return true
+  }
+  const parser = rawOpts.parser
+  if (parser && typeof parser === 'object') {
+    if (parser.lowerCaseTags === false) return true
+    if (parser.lowerCaseAttributeNames === false) return true
+  }
+  return false
+}
 
 function warnVulnerableTags(allowedTags) {
   if (!Array.isArray(allowedTags)) return
@@ -1048,6 +1074,23 @@ export function sanitize(html, options) {
     if (m) input = m[1]
   }
 
+  // decodeEntities: false — the native engine always decodes HTML entity
+  // references, but sanitize-html exposes htmlparser2's opt-out. We preserve
+  // the original entity text by wrapping every `&name;` / `&#NN;` / `&#xHH;`
+  // reference in control-char sentinels before parsing, and converting
+  // them back on the way out. Bare `&` is sentinelled separately so it
+  // round-trips to `&amp;`, matching upstream's expected output.
+  const decodeEntities =
+    rawOpts.parser && rawOpts.parser.decodeEntities === false ? false : true
+  if (!decodeEntities) {
+    input = input
+      .replace(
+        /&([a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#x[0-9a-fA-F]+);/g,
+        (_m, body) => '\u0001E' + body + '\u0002',
+      )
+      .replace(/&/g, '\u0001A\u0002')
+  }
+
   const allowAllTags = rawOpts.allowedTags === false
   const allowAllAttributes = rawOpts.allowedAttributes === false
 
@@ -1237,8 +1280,20 @@ export function sanitize(html, options) {
     }
   }
 
-  // 3. Native clean.
-  const cleaned = reEncodeAttrAngleBrackets(stripBareAttrSentinels(amigoSanitize(pre, forNative)))
+  // 3. Native clean. Route through the strict engine (full html5ever
+  // parser) for inputs / options that need tokenizer state transitions
+  // the fast-path sink does not implement — see `needsStrictEngine`.
+  if (allowAllAttributes) {
+    forNative.allowAllAttributes = true
+  }
+  const useStrict = needsStrictEngine(rawOpts)
+  const engine = useStrict ? amigoSanitizeStrict : amigoSanitize
+  let cleaned = reEncodeAttrAngleBrackets(stripBareAttrSentinels(engine(pre, forNative)))
+  if (!decodeEntities) {
+    cleaned = cleaned
+      .replace(/\u0001A\u0002/g, '&amp;')
+      .replace(/\u0001E([^\u0002]+)\u0002/g, (_m, body) => '&' + body + ';')
+  }
 
   // 4. Post-pass: output shape + iframe / protocol-relative enforcement.
   const shaped = normaliseOutput(cleaned, /\brel\s*=/.test(input))

@@ -117,17 +117,13 @@ new vm.Script(source, { filename: 'upstream/test.js' }).runInContext(ctx);
 // so regressions surface as signal. See DIFFERENCES.md for the narrative
 // explanation of each category.
 const KNOWN_DIVERGENCES = new Set<string>([
-  // -- Output shape / tree-builder differences --
-  'should support SVG tags',
-  // -- Additional divergences detected by running the suite --
-  'Should not double encode ampersands on HTML entities if decodeEntities is false (TODO more tests, this is too loose to rely upon)',
+  // htmlparser2's `<<img …>` tokenisation can't be replicated byte-for-byte
+  // without bundling a Rust port of htmlparser2; the expected output drops
+  // the second half of the input entirely, which is a shape quirk of the
+  // upstream tokenizer rather than a real XSS-vector. Left as documented
+  // divergence — upstream itself notes the similar decodeEntities case is
+  // "too loose to rely upon".
   'should not be faked out by double <',
-  // Script content byte-preservation requires SCRIPT_DATA tokenizer state
-  // transitions, which only happen when running html5ever via the full
-  // TreeBuilder. Our tokenizer-only path decodes `&quot;` inside `<script>`
-  // to `"`, so we cannot round-trip the original bytes. Safe by default —
-  // `<script>` is in the drop-content set unless explicitly allowed.
-  'should not unescape escapes found inside script tags',
 ]);
 
 describe('upstream sanitize-html tests (adapted)', () => {
