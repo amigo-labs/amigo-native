@@ -10,6 +10,8 @@ crate-type = ["cdylib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 ammonia = "4"
+html5ever = "0.35"
+markup5ever = "0.35"
 
 [build-dependencies]
 napi-build = "2"

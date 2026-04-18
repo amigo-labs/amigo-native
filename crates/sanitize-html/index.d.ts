@@ -12,3 +12,10 @@ export interface SanitizeOptions {
   stripComments?: boolean
   linkRel?: string
 }
+
+/**
+ * Phase A1 entry point: tokenise + re-serialise. Equivalent to a no-op
+ * sanitize so we can verify the html5ever wiring before layering rules
+ * on top in Phase A2.
+ */
+export declare function sanitizeV2(html?: string | number | undefined | null, options?: SanitizeOptions | undefined | null): string

@@ -3,6 +3,8 @@ use napi::bindgen_prelude::Either;
 use napi_derive::napi;
 use std::collections::{HashMap, HashSet};
 
+mod v2;
+
 #[napi(object)]
 pub struct SanitizeOptions {
     pub allowed_tags: Option<Vec<String>>,
@@ -50,7 +52,7 @@ fn number_to_string(n: f64) -> String {
     format!("{n}")
 }
 
-fn coerce_input(html: Option<Either<String, f64>>) -> String {
+pub(crate) fn coerce_input(html: Option<Either<String, f64>>) -> String {
     match html {
         None => String::new(),
         Some(Either::A(s)) => s,
