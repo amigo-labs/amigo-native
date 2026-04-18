@@ -572,6 +572,10 @@ impl<'a> TokenSink for SanitizingSink<'a> {
     }
 }
 
+/// Sanitize HTML via the html5ever tokenizer with ammonia-shaped defaults.
+/// Drop-in alternative to `sanitize` that does not depend on ammonia; it
+/// enforces the tag / attribute / URL-scheme allow-lists, drops the content
+/// of `script` and `style`, strips comments, and injects `rel` on `a[href]`.
 #[napi(js_name = "sanitizeV2")]
 pub fn sanitize_v2(
     html: Option<Either<String, f64>>,

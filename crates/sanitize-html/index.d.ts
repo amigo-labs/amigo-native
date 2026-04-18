@@ -14,8 +14,9 @@ export interface SanitizeOptions {
 }
 
 /**
- * Phase A1 entry point: tokenise + re-serialise. Equivalent to a no-op
- * sanitize so we can verify the html5ever wiring before layering rules
- * on top in Phase A2.
+ * Sanitize HTML via the html5ever tokenizer with ammonia-shaped defaults.
+ * Drop-in alternative to `sanitize` that does not depend on ammonia; it
+ * enforces the tag / attribute / URL-scheme allow-lists, drops the content
+ * of `script` and `style`, strips comments, and injects `rel` on `a[href]`.
  */
 export declare function sanitizeV2(html?: string | number | undefined | null, options?: SanitizeOptions | undefined | null): string
