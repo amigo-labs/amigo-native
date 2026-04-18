@@ -121,7 +121,6 @@ const KNOWN_DIVERGENCES = new Set<string>([
   'should support SVG tags',
   // -- Additional divergences detected by running the suite --
   'Should not double encode ampersands on HTML entities if decodeEntities is false (TODO more tests, this is too loose to rely upon)',
-  'should not pass through any text outside html tag boundary since html tag is found and option is ON',
   'should not be faked out by double <',
   // Script content byte-preservation requires SCRIPT_DATA tokenizer state
   // transitions, which only happen when running html5ever via the full

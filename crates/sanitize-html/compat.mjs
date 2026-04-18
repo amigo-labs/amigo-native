@@ -1033,9 +1033,21 @@ function normaliseOutput(html, inputHadRel) {
 
 export function sanitize(html, options) {
   if (html === null || html === undefined) return ''
-  const input = typeof html === 'string' ? html : String(html)
+  let input = typeof html === 'string' ? html : String(html)
 
   const rawOpts = options && typeof options === 'object' ? { ...options } : {}
+
+  // enforceHtmlBoundary: discard everything outside the outermost
+  // `<html>…</html>` pair before any other pass. sanitize-html applies the
+  // same trimming at parser level; we approximate with a regex so the
+  // downstream tokenizer never sees the leading/trailing noise. If no
+  // `<html>` is present, leave the input untouched (sanitize-html also
+  // no-ops in that case).
+  if (rawOpts.enforceHtmlBoundary === true) {
+    const m = input.match(/<html\b[^>]*>([\s\S]*?)<\/html\s*>/i)
+    if (m) input = m[1]
+  }
+
   const allowAllTags = rawOpts.allowedTags === false
   const allowAllAttributes = rawOpts.allowedAttributes === false
 
