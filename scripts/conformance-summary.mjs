@@ -70,6 +70,7 @@ for (const pkg of packages) {
 
   let passed = 0
   let failed = 0
+  let skipped = 0
   let total = 0
   let suiteLoadError = false
   const files = []
@@ -78,22 +79,36 @@ for (const pkg of packages) {
       for (const tr of parsed.testResults) {
         let fp = 0
         let ff = 0
+        let fs = 0
         for (const t of tr.assertionResults ?? []) {
           total++
           if (t.status === 'passed') {
             passed++
             fp++
+          } else if (t.status === 'skipped' || t.status === 'pending' || t.status === 'todo') {
+            // Skipped tests are intentional opt-outs (KNOWN_DIVERGENCES,
+            // it.skip) — not failures. Track them separately so the
+            // summary can report them without flagging the PR red.
+            skipped++
+            fs++
           } else {
             failed++
             ff++
           }
         }
-        files.push({ name: basename(tr.name ?? ''), passed: fp, failed: ff, total: fp + ff })
+        files.push({
+          name: basename(tr.name ?? ''),
+          passed: fp,
+          failed: ff,
+          skipped: fs,
+          total: fp + ff + fs,
+        })
       }
     } else if (typeof parsed.numTotalTests === 'number') {
       total = parsed.numTotalTests
       passed = parsed.numPassedTests ?? 0
-      failed = total - passed
+      skipped = (parsed.numPendingTests ?? 0) + (parsed.numTodoTests ?? 0)
+      failed = total - passed - skipped
     }
     if (
       total === 0 &&
@@ -108,18 +123,25 @@ for (const pkg of packages) {
     console.warn(`  no tests parsed (stderr: ${stderr.split('\n').slice(0, 3).join(' | ')})`)
   }
 
-  results.push({ name: pkg, passed, failed, total, files, suiteLoadError })
+  results.push({ name: pkg, passed, failed, skipped, total, files, suiteLoadError })
   const pct = total > 0 ? ((passed / total) * 100).toFixed(1) : '100.0'
-  console.log(`  ${passed}/${total} passed (${pct}%)${failed ? `, ${failed} failed` : ''}`)
+  const extra = [
+    failed ? `${failed} failed` : '',
+    skipped ? `${skipped} skipped` : '',
+  ]
+    .filter(Boolean)
+    .join(', ')
+  console.log(`  ${passed}/${total} passed (${pct}%)${extra ? `, ${extra}` : ''}`)
 }
 
 const agg = results.reduce(
   (acc, r) => ({
     passed: acc.passed + r.passed,
     failed: acc.failed + r.failed,
+    skipped: acc.skipped + r.skipped,
     total: acc.total + r.total,
   }),
-  { passed: 0, failed: 0, total: 0 },
+  { passed: 0, failed: 0, skipped: 0, total: 0 },
 )
 
 writeFileSync(
@@ -131,7 +153,9 @@ const pct = agg.total > 0 ? ((agg.passed / agg.total) * 100).toFixed(1) : '100.0
 const anyLoadError = results.some((r) => r.suiteLoadError)
 const allGreen = agg.failed === 0 && !anyLoadError
 const header = allGreen
-  ? 'Conformance: all green'
+  ? agg.skipped
+    ? `Conformance: all green (${agg.skipped} skipped)`
+    : 'Conformance: all green'
   : agg.failed > 0
     ? `Conformance: ${agg.failed} failing`
     : 'Conformance: suite load errors'
@@ -139,23 +163,32 @@ const header = allGreen
 let md = `## ${header}\n\n`
 md += `**Totals:** ${agg.passed} / ${agg.total} passed (${pct}%)`
 if (agg.failed) md += ` — **${agg.failed} failed**`
+if (agg.skipped) md += ` — ${agg.skipped} skipped (documented divergences)`
 md += '\n\n'
-md += '| Package | Passed | Failed | Total | % |\n|:---|---:|---:|---:|---:|\n'
+md += '| Package | Passed | Failed | Skipped | Total | % |\n|:---|---:|---:|---:|---:|---:|\n'
 for (const r of results) {
   if (r.suiteLoadError) {
-    md += `| **${r.name}** | — | — | — | _suite load error_ |\n`
+    md += `| **${r.name}** | — | — | — | — | _suite load error_ |\n`
     continue
   }
   const p = r.total > 0 ? ((r.passed / r.total) * 100).toFixed(1) : '100.0'
   const nameCell = r.failed ? `**${r.name}**` : r.name
-  md += `| ${nameCell} | ${r.passed} | ${r.failed} | ${r.total} | ${p}% |\n`
+  md += `| ${nameCell} | ${r.passed} | ${r.failed} | ${r.skipped} | ${r.total} | ${p}% |\n`
 }
 
 writeFileSync(join(root, 'conformance-summary.md'), md)
 
+const aggExtra = [
+  agg.failed ? `${agg.failed} failed` : '',
+  agg.skipped ? `${agg.skipped} skipped` : '',
+]
+  .filter(Boolean)
+  .join(', ')
 console.log(
-  `\nAggregate: ${agg.passed}/${agg.total} (${pct}%)${agg.failed ? `, ${agg.failed} failed` : ''}`,
+  `\nAggregate: ${agg.passed}/${agg.total} (${pct}%)${aggExtra ? `, ${aggExtra}` : ''}`,
 )
 console.log(`Written conformance-summary.md and conformance-results.json`)
 
+// Skipped tests are documented divergences, not failures; only exit
+// non-zero on real failures or suite load errors.
 if (agg.failed > 0 || anyLoadError) process.exit(1)
