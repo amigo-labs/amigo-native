@@ -27,18 +27,12 @@ export declare function xxh3_128(input: Buffer, seed?: bigint | undefined | null
 
 export declare function xxh3_64(input: Buffer, seed?: bigint | undefined | null): bigint
 
-export declare function xxh3_64Batch(inputs: Array<Buffer>, seed?: bigint | undefined | null): Array<bigint>
-
-export declare function xxh3_64Many(input: Buffer, chunkSize: number, seed?: bigint | undefined | null): Array<bigint>
+export declare function xxh3_64Many(input: Buffer, chunkSize: number, seed?: bigint | undefined | null): Buffer
 
 export declare function xxh32(input: Buffer, seed?: number | undefined | null): number
 
-export declare function xxh32Batch(inputs: Array<Buffer>, seed?: number | undefined | null): Array<number>
-
-export declare function xxh32Many(input: Buffer, chunkSize: number, seed?: number | undefined | null): Array<number>
+export declare function xxh32Many(input: Buffer, chunkSize: number, seed?: number | undefined | null): Buffer
 
 export declare function xxh64(input: Buffer, seed?: bigint | undefined | null): bigint
 
-export declare function xxh64Batch(inputs: Array<Buffer>, seed?: bigint | undefined | null): Array<bigint>
-
-export declare function xxh64Many(input: Buffer, chunkSize: number, seed?: bigint | undefined | null): Array<bigint>
+export declare function xxh64Many(input: Buffer, chunkSize: number, seed?: bigint | undefined | null): Buffer

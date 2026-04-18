@@ -6,6 +6,15 @@ export declare class ZipReader {
   static fromPath(path: string): ZipReader
   entries(): Array<ZipEntryInfo>
   read(name: string): Buffer
+  /**
+   * One-shot: parse the archive once and return every (non-directory)
+   * entry's uncompressed bytes along with its name. Replaces the
+   * `for (e of entries()) read(e.name)` pattern, which re-parsed the
+   * central directory on every iteration — O(N²) on number of
+   * entries. This is O(N) and the one call users want for
+   * "unzip to memory".
+   */
+  extractAll(): Array<ZipEntryData>
 }
 
 export declare class ZipWriter {
@@ -19,6 +28,11 @@ export interface AddOptions {
   compression?: string
   /** Deflate level 0-9 (default 6). */
   level?: number
+}
+
+export interface ZipEntryData {
+  name: string
+  data: Buffer
 }
 
 export interface ZipEntryInfo {
