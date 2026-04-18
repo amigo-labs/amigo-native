@@ -106,7 +106,7 @@ Empfohlene Reihenfolge (kleinster Aufwand × größter Effekt zuerst):
 
 ## Was NICHT in diesem Review steht
 
-- **Bundle-Size-Analyse.** Ist in `BENCHMARKS.md` schon dokumentiert. Relevante Auffälligkeit: `slugify` 966KB für 21KB-JS-Alternative — das ist ein separater Trade-off (drei Größenordnungen schneller bei drei Größenordnungen Bundle).
+- **Bundle-Size-Analyse.** Ist in `docs/data.json` unter dem `sizes`-Key dokumentiert. Relevante Auffälligkeit: `slugify` 966KB für 21KB-JS-Alternative — das ist ein separater Trade-off (drei Größenordnungen schneller bei drei Größenordnungen Bundle).
 - **Security-Review.** Hier ging es rein um Perf. Crypto-Packages (`argon2`, `jwt`) sollten einen eigenen Security-Audit haben.
 - **Memory-Behavior bei Dauerläufen.** Alle Zahlen sind Throughput unter vitest-Warmup. Heap-Wachstum nicht gemessen.
 

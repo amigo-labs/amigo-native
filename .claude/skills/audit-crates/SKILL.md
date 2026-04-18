@@ -55,7 +55,7 @@ Wait for the answer. Honour custom splits ("just READMEs"). No preamble, no reca
 ### Step 5 — Execute according to the answer
 
 - **A**: Run section 1 commands. Verify with `node .claude/skills/audit-crates/scripts/audit.mjs` after. Report what's left.
-- **B**: A, then for each content section walk crate-by-crate. For speedups, check `BENCHMARKS.md` — if unmeasured, write `"TBD"` rather than inventing numbers. For fuzz tests, read the crate's `src/lib.rs` and `__test__/` to understand the API before writing properties.
+- **B**: A, then for each content section walk crate-by-crate. For speedups, check `docs/data.json` — if unmeasured, write `"TBD"` rather than inventing numbers. For fuzz tests, read the crate's `src/lib.rs` and `__test__/` to understand the API before writing properties.
 - **C**: Stop. Leave the plan output visible so the user can work from it.
 
 After any fix pass, commit using conventional commits (`refactor:`, `feat:`, `docs:`) — one commit per logical group (mechanical fixes, READMEs, docs entries) so the history stays reviewable.
