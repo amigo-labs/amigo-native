@@ -126,8 +126,8 @@
     {
       "name": "nanoid",
       "title": "NanoID",
-      "description": "Crypto-safe URL-friendly ID generator via the nanoid Rust crate.",
-      "speedup": "1.14–4.6× slower",
+      "description": "Fast crypto-safe URL-friendly ID generator with pool-amortised entropy. Pure JS — the NAPI FFI boundary was bigger than the entire ID-generation path.",
+      "speedup": "parity or faster than nanoid@5",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/nanoid",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/nanoid",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/nanoid/README.md"

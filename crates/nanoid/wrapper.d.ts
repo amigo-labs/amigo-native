@@ -18,3 +18,20 @@ export declare function customAlphabet(
   alphabet: string,
   defaultSize?: number,
 ): (size?: number) => string
+
+/**
+ * Generate `count` URL-safe IDs of length `size` (default 21) in a single
+ * call. No longer amortises FFI cost now that the package is pure JS, but
+ * kept for API compatibility with the 0.1.x NAPI build.
+ */
+export declare function nanoidBatch(count: number, size?: number): string[]
+
+/**
+ * Generate `count` IDs of length `size` from `alphabet` in a single call.
+ * Kept for 0.1.x compatibility.
+ */
+export declare function nanoidCustomBatch(
+  alphabet: string,
+  count: number,
+  size?: number,
+): string[]
