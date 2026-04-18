@@ -5,8 +5,8 @@ use html5ever::tokenizer::{
 use napi::bindgen_prelude::Either;
 use std::cell::RefCell;
 
-use crate::rules::{escape_attr, escape_text, is_void, Rules};
-use crate::{coerce_input, SanitizeOptions};
+use crate::rules::{Rules, escape_attr, escape_text, is_void};
+use crate::{SanitizeOptions, coerce_input};
 
 // ---------------------------------------------------------------------------
 // Tokenizer-based sanitization engine (fast path). Routes ~all real-world
@@ -156,12 +156,14 @@ impl<'a> TokenSink for SanitizingSink<'a> {
                         out.push('"');
                     }
 
-                    if name == "a" && has_href && !emitted_rel {
-                        if let Some(rel) = &self.rules.link_rel {
-                            out.push_str(" rel=\"");
-                            escape_attr(rel, &mut out);
-                            out.push('"');
-                        }
+                    if name == "a"
+                        && has_href
+                        && !emitted_rel
+                        && let Some(rel) = &self.rules.link_rel
+                    {
+                        out.push_str(" rel=\"");
+                        escape_attr(rel, &mut out);
+                        out.push('"');
                     }
                     out.push('>');
                     drop(out);

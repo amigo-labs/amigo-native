@@ -9,8 +9,8 @@ use markup5ever::interface::Attribute;
 use markup5ever_rcdom::{Handle, NodeData, RcDom};
 use napi::bindgen_prelude::Either;
 
-use crate::rules::{escape_attr, escape_text, is_raw_text_element, is_void, Rules};
-use crate::{coerce_input, SanitizeOptions};
+use crate::rules::{Rules, escape_attr, escape_text, is_raw_text_element, is_void};
+use crate::{SanitizeOptions, coerce_input};
 
 // ---------------------------------------------------------------------------
 // Strict sanitization engine. Runs html5ever's full parser
@@ -30,9 +30,7 @@ use crate::{coerce_input, SanitizeOptions};
 /// output `:xmlns`.
 fn attr_full_name<'a>(attr: &'a Attribute) -> Cow<'a, str> {
     match &attr.name.prefix {
-        Some(prefix) if !prefix.is_empty() => {
-            Cow::Owned(format!("{}:{}", prefix, attr.name.local))
-        }
+        Some(prefix) if !prefix.is_empty() => Cow::Owned(format!("{}:{}", prefix, attr.name.local)),
         _ => Cow::Borrowed(attr.name.local.as_ref()),
     }
 }
@@ -45,7 +43,7 @@ fn attr_full_name<'a>(attr: &'a Attribute) -> Cow<'a, str> {
 /// exact-string matching is correct here either way — and keeping source
 /// case lets us emit `<linearGradient>` verbatim, which the SVG test
 /// requires.
-fn element_name<'a>(qn: &'a QualName) -> &'a str {
+fn element_name(qn: &QualName) -> &str {
     qn.local.as_ref()
 }
 
@@ -167,12 +165,14 @@ fn emit_element(
         out.push('"');
     }
 
-    if tag == "a" && has_href && !emitted_rel {
-        if let Some(rel) = &rules.link_rel {
-            out.push_str(" rel=\"");
-            escape_attr(rel, out);
-            out.push('"');
-        }
+    if tag == "a"
+        && has_href
+        && !emitted_rel
+        && let Some(rel) = &rules.link_rel
+    {
+        out.push_str(" rel=\"");
+        escape_attr(rel, out);
+        out.push('"');
     }
     out.push('>');
 

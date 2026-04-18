@@ -102,6 +102,15 @@ importers:
         specifier: ^3.2.0
         version: 3.3.0
 
+  crates/_ffi-bench:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+
   crates/argon2:
     devDependencies:
       '@napi-rs/cli':
@@ -251,9 +260,6 @@ importers:
 
   crates/nanoid:
     devDependencies:
-      '@napi-rs/cli':
-        specifier: ^3.5.0
-        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
       fast-check:
         specifier: ^3.23.0
         version: 3.23.2

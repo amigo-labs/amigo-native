@@ -54,7 +54,11 @@ fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
             out.resize(out.len().saturating_mul(2).max(out.len() + 1), 0);
         }
         match dec
-            .decompress(&input[in_pos..], &mut out[out_pos..], FlushDecompress::Finish)
+            .decompress(
+                &input[in_pos..],
+                &mut out[out_pos..],
+                FlushDecompress::Finish,
+            )
             .map_err(to_napi_err)?
         {
             Status::StreamEnd => {
@@ -118,6 +122,7 @@ pub fn ungzip(data: Buffer) -> Result<Buffer> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use flate2::read::ZlibDecoder;
 
     fn roundtrip_zlib(data: &[u8]) {
         let enc = {

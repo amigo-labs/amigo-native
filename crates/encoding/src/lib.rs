@@ -124,9 +124,8 @@ where
                 if i + 1 < n {
                     let next = unit_at(input, i + 1);
                     if (0xDC00..=0xDFFF).contains(&next) {
-                        let cp = 0x10000
-                            + (((unit - 0xD800) as u32) << 10)
-                            + (next - 0xDC00) as u32;
+                        let cp =
+                            0x10000 + (((unit - 0xD800) as u32) << 10) + (next - 0xDC00) as u32;
                         out.push(0xF0 | (cp >> 18) as u8);
                         out.push(0x80 | ((cp >> 12) & 0x3F) as u8);
                         out.push(0x80 | ((cp >> 6) & 0x3F) as u8);

@@ -117,11 +117,16 @@ pub const DEFAULT_TAG_ATTRS: &[(&str, &[&str])] = &[
     ("q", &["cite"]),
     ("table", &["align", "char", "charoff", "summary"]),
     ("tbody", &["align", "char", "charoff"]),
-    ("td", &["align", "char", "charoff", "colspan", "headers", "rowspan"]),
+    (
+        "td",
+        &["align", "char", "charoff", "colspan", "headers", "rowspan"],
+    ),
     ("tfoot", &["align", "char", "charoff"]),
     (
         "th",
-        &["align", "char", "charoff", "colspan", "headers", "rowspan", "scope"],
+        &[
+            "align", "char", "charoff", "colspan", "headers", "rowspan", "scope",
+        ],
     ),
     ("thead", &["align", "char", "charoff"]),
     ("tr", &["align", "char", "charoff"]),
@@ -329,15 +334,15 @@ impl Rules {
         if self.generic_attrs.contains(attr) {
             return true;
         }
-        if let Some(attrs) = self.tag_attrs.get(tag) {
-            if attrs.contains(attr) {
-                return true;
-            }
+        if let Some(attrs) = self.tag_attrs.get(tag)
+            && attrs.contains(attr)
+        {
+            return true;
         }
-        if let Some(attrs) = self.tag_attrs.get("*") {
-            if attrs.contains(attr) {
-                return true;
-            }
+        if let Some(attrs) = self.tag_attrs.get("*")
+            && attrs.contains(attr)
+        {
+            return true;
         }
         false
     }
