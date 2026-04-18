@@ -1,3 +1,5 @@
+> ⚠️ **DEPRECATED in 0.2.0.** `sax` (JS) outperforms us on every size (0.44-0.68× our speed). SAX-style parsing is fundamentally a JS pattern — event callbacks across the NAPI boundary are the expensive part. See [docs/post-mortems/xml.md](../../docs/post-mortems/xml.md). Please migrate to `sax` (streaming) or `fast-xml-parser` (tree).
+
 # @amigo-labs/xml
 
 > SAX-style XML parsing via `quick-xml`. Drop-in for [`sax`](https://www.npmjs.com/package/sax), compiled via NAPI-RS.

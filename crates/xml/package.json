@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/xml",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Rust-powered SAX-style XML parser via quick-xml",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",
@@ -56,5 +56,6 @@
   },
   "engines": {
     "node": ">= 18"
-  }
+  },
+  "deprecated": "DEPRECATED in 0.2.0 — sax (streaming) and fast-xml-parser (tree) outperform this across every scenario. See docs/post-mortems/xml.md. Migrate to sax or fast-xml-parser."
 }

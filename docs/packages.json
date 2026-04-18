@@ -117,11 +117,12 @@
     {
       "name": "levenshtein",
       "title": "Levenshtein",
-      "description": "Edit distance via triple_accel (SIMD) with a strsim fallback.",
+      "description": "⚠️ DEPRECATED in 0.2.0 — see post-mortem. Edit distance via triple_accel (SIMD) with a strsim fallback.",
       "speedup": "7.5× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/levenshtein",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/levenshtein",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/levenshtein/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/levenshtein/README.md",
+      "deprecated": true
     },
     {
       "name": "nanoid",
@@ -144,20 +145,22 @@
     {
       "name": "xml",
       "title": "XML",
-      "description": "SAX-style XML parser via quick-xml.",
+      "description": "⚠️ DEPRECATED in 0.2.0 — see post-mortem. SAX-style XML parser via quick-xml.",
       "speedup": "2.8× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xml",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xml",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xml/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xml/README.md",
+      "deprecated": true
     },
     {
       "name": "deep-equal",
       "title": "Deep Equal",
-      "description": "Deep structural equality for JSON-safe values.",
+      "description": "⚠️ DEPRECATED in 0.2.0 — see post-mortem. Deep structural equality for JSON-safe values.",
       "speedup": "up to 1.39× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/deep-equal",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/deep-equal",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deep-equal/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deep-equal/README.md",
+      "deprecated": true
     },
     {
       "name": "deepmerge",

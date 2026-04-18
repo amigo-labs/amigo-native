@@ -1,3 +1,5 @@
+> ⚠️ **DEPRECATED in 0.2.0.** `fast-deep-equal` is parity-or-better on every scenario — native packages structurally cannot beat a monomorphic 50-line JS function that V8 inlines. See [docs/post-mortems/deep-equal.md](../../docs/post-mortems/deep-equal.md). Please migrate to `fast-deep-equal`.
+
 # @amigo-labs/deep-equal
 
 > Deep structural equality for JSON-safe values. Drop-in for [`fast-deep-equal`](https://www.npmjs.com/package/fast-deep-equal), compiled via NAPI-RS.
