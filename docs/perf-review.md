@@ -21,6 +21,36 @@
 - ⚫ **Black** — strukturell falsche Entscheidung. NAPI kann den
   Use-Case nicht gewinnen.
 
+## Nach-Sprint-Stand (Phase C/D abgeschlossen)
+
+Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
+
+| Package | Verdikt | Post-Sprint-Range | Was passiert ist |
+|---|---|---|---|
+| **slugify** | 🟢 | 3,0× – 6,0× | unverändert — war bereits Green |
+| **deepmerge** | 🟢 | 3,3× – 5,9× | unverändert |
+| **file-type** | 🟢 | 16× – 1265× | unverändert |
+| **jwt** | 🟢 | 1,4× – 4,8× | unverändert |
+| **sanitize-html** | 🟢 | 1,44× – 3,94× | unverändert |
+| **csv** | 🟢 | **1,43× – 1,77×** alle Größen | `parse()` routet jetzt durch `parseToJson + JSON.parse`. Von Red→Green auf allen drei Größen. (Commit `ecf8408`) |
+| **zip** | 🟢 | 2,66× – 3,7× | `extractAll()` hinzugefügt. Letzte Regression (0,56×) → 2,66× gegen adm-zip. (Commit `16c74ed`) |
+| **xxhash** | 🟢 | Large-Buffer 1,2×–2,5×, Batch **2,44× – 4,00×** | `*Batch(Vec<Buffer>)→Vec<T>` gelöscht, durch `*Many(Buffer, chunkSize)→Buffer` ersetzt. 0,17× → 4,00× auf dem schlimmsten Batch-Szenario. (Commit `4c6fb50`) |
+| **encoding** | 🟡 | latin1 decode **14,7×**, UTF-8 an Parität, shift_jis **0,65× bleibt** | V8-Fast-Paths bereits in `18cf727`. shift_jis liegt im encoding_rs-Backend; Lookup-Tabelle-Rewrite aufgeschoben. |
+| **inflate** | 🟡 | deflate 4,1×–6,4×, inflate 0,46×–0,49× | Direct-Decompress-API + pre-alloc auf 1,7× des alten Inflate-Stands. zlib-rs selbst limitiert hier; Backend-Wechsel aufgeschoben. (Commit `32d7dfa`) |
+| **argon2** | 🟡 | 1,37× | CPU-bound, Optimierungs-Ceiling erreicht. Keep as-is. |
+| **nanoid** | 🟡→Green-ish | 1,03× – 1,08× über nanoid@5 | Bereits pure-JS seit `794396b`. Schlägt nanoid@5 überall knapp; 0,8× vs `crypto.randomUUID` (erwartbar: weniger Work pro ID). |
+| **deep-equal** | 🔴 **DEPRECATED** | 0,96× – 1,30× | `deprecated` in 0.2.0. Post-Mortem in `docs/post-mortems/deep-equal.md`. |
+| **levenshtein** | 🔴 **DEPRECATED** | 0,13× – 1,10× | `deprecated` in 0.2.0. |
+| **xml** | 🔴 **DEPRECATED** | 0,44× – 0,68× | `deprecated` in 0.2.0. |
+
+**Net:** 5 Green → 8 Green + 1 faktisch-Green (nanoid). 7 Yellow → 3 Yellow (argon2, encoding, inflate — alle mit klaren Backend-Gründen für ihr Yellow-Stand). 3 Red → 3 Deprecated (3-Monats-Window).
+
+Die 8-Green-Packages sind alle netto-schneller-als-JS auf jedem gemessenen Szenario. Das ist die Qualitätsgarantie für das Portfolio: keine Footguns mehr, keine "works well for X but slow for Y"-Überraschungen in den Green-Packages.
+
+## Ursprüngliche Klassifizierung (pre-Sprint)
+
+Dieser Abschnitt dokumentiert die Post-Phase-A-Baseline. Verdikte oben unter "Nach-Sprint-Stand" sind aktuell.
+
 ## Ergebnis-Übersicht
 
 | Package | Verdikt | Range (amigo vs best JS) | Kommentar |
