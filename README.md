@@ -15,20 +15,28 @@ Monorepo using [napi-rs](https://napi.rs) for native Node.js addons, cross-compi
 
 ## Packages
 
-| Package                                               | Description                                        | Replaces                   | vs JS        | Parity | Status      |
-| :---------------------------------------------------- | :------------------------------------------------- | :------------------------- | :----------- | :----- | :---------- |
-| [`@amigo-labs/slugify`](./crates/slugify)             | Unicode-aware slugification via `deunicode`        | `slugify`                  | **3-7x**     | —      | Alternative |
-| [`@amigo-labs/argon2`](./crates/argon2)               | Argon2id password hashing (sync + async)           | `argon2`/`hash-wasm`       | **1.4-2x**   | —      | Drop-in     |
-| [`@amigo-labs/xxhash`](./crates/xxhash)               | XXH32/64/XXH3 hashing with batch + streaming API   | `xxhash-wasm`/`xxhashjs`   | **1.3-2.6x** | —      | Drop-in     |
-| [`@amigo-labs/sanitize-html`](./crates/sanitize-html) | HTML sanitization via Mozilla's `ammonia`          | `sanitize-html`            | **1.6-2x**   | —      | Compatible  |
-| [`@amigo-labs/csv`](./crates/csv)                     | CSV parsing/serialization via BurntSushi's `csv`   | `csv-parse`/`papaparse`    | **1.4-3.5x** | —      | Drop-in     |
-| [`@amigo-labs/file-type`](./crates/file-type)         | Magic-byte file detection via `infer`              | `file-type`                | TBD          | 89%    | Alternative |
-| [`@amigo-labs/inflate`](./crates/inflate)             | zlib deflate/inflate/gzip via `flate2` (zlib-rs)   | `pako`                     | TBD          | 100%   | Compatible  |
-| [`@amigo-labs/nanoid`](./crates/nanoid)               | Crypto-safe URL-safe IDs via `nanoid` crate        | `nanoid`                   | TBD          | 100%   | Drop-in     |
-| [`@amigo-labs/encoding`](./crates/encoding)           | Character encoding via `encoding_rs`               | `iconv-lite`               | TBD          | 66%    | Alternative |
-| [`@amigo-labs/deepmerge`](./crates/deepmerge)         | Recursive object merge                             | `deepmerge`                | TBD          | 100%   | Compatible  |
-| [`@amigo-labs/jwt`](./crates/jwt)                     | JWT sign/verify via `jsonwebtoken` crate           | `jsonwebtoken`             | TBD          | 86%    | Drop-in     |
-| [`@amigo-labs/zip`](./crates/zip)                     | ZIP read/write via `zip` crate                     | `yauzl`/`adm-zip`/`jszip`  | TBD          | 100%   | Alternative |
+<!-- PACKAGES_TABLE:START -->
+| Package                                               | Description                                      | Replaces               | vs JS        | Parity | Status      |
+| :---------------------------------------------------- | :----------------------------------------------- | :--------------------- | :----------- | :----- | :---------- |
+| [`@amigo-labs/argon2`](./crates/argon2)               | Argon2id password hashing (sync + async)         | `argon2/hash-wasm`     | **1.4-2x**   | —      | Drop-in     |
+| [`@amigo-labs/bcrypt`](./crates/bcrypt)               | Bcrypt password hashing (sync + async)           | `bcrypt/bcryptjs`      | **1.1-1.6x** | TBD    | Drop-in     |
+| [`@amigo-labs/commonmark`](./crates/commonmark)       | CommonMark + GFM renderer via `pulldown-cmark`   | `marked/markdown-it`   | TBD          | TBD    | Alternative |
+| [`@amigo-labs/csv`](./crates/csv)                     | CSV parsing/serialization via BurntSushi's `csv` | `csv-parse/papaparse`  | **1.4-3.5x** | —      | Drop-in     |
+| [`@amigo-labs/deepmerge`](./crates/deepmerge)         | Recursive object merge                           | `deepmerge`            | TBD          | 100%   | Compatible  |
+| [`@amigo-labs/encoding`](./crates/encoding)           | Character encoding via `encoding_rs`             | `iconv-lite`           | TBD          | 66%    | Alternative |
+| [`@amigo-labs/file-type`](./crates/file-type)         | Magic-byte file detection via `infer`            | `file-type`            | TBD          | 89%    | Alternative |
+| [`@amigo-labs/inflate`](./crates/inflate)             | zlib deflate/inflate/gzip via `flate2` (zlib-rs) | `pako`                 | TBD          | 100%   | Compatible  |
+| [`@amigo-labs/jose`](./crates/jose)                   | Ed25519 JWK + RFC 7638 thumbprints               | `jose (subset)`        | TBD          | TBD    | Alternative |
+| [`@amigo-labs/jwt`](./crates/jwt)                     | JWT sign/verify via `jsonwebtoken` crate         | `jsonwebtoken`         | TBD          | 86%    | Drop-in     |
+| [`@amigo-labs/nanoid`](./crates/nanoid)               | Crypto-safe URL-safe IDs via `nanoid` crate      | `nanoid`               | TBD          | 100%   | Drop-in     |
+| [`@amigo-labs/sanitize-html`](./crates/sanitize-html) | HTML sanitization via Mozilla's `ammonia`        | `sanitize-html`        | **1.6-2x**   | —      | Compatible  |
+| [`@amigo-labs/slugify`](./crates/slugify)             | Unicode-aware slugification via `deunicode`      | `slugify`              | **3-7x**     | —      | Alternative |
+| [`@amigo-labs/xxhash`](./crates/xxhash)               | XXH32/64/XXH3 hashing with batch + streaming API | `xxhash-wasm/xxhashjs` | **1.3-2.6x** | —      | Drop-in     |
+| [`@amigo-labs/zip`](./crates/zip)                     | ZIP read/write via `zip` crate                   | `yauzl/adm-zip/jszip`  | TBD          | 100%   | Alternative |
+<!-- PACKAGES_TABLE:END -->
+
+> The table above is regenerated from each crate's `package.json` `"amigo"` block by
+> `scripts/sync-registry.mjs`. Don't edit it by hand.
 
 Full benchmark data lives in [`docs/data.json`](./docs/data.json) (auto-generated by CI) and is rendered on the [dashboard](https://amigo-labs.github.io/amigo-native/).
 Parity scores populated once each package's `__parity__/upstream.spec.ts` is filled from the upstream test suite.

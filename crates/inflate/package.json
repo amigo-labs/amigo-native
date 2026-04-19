@@ -55,5 +55,15 @@
   },
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Inflate",
+    "description": "zlib deflate/inflate/gzip powered by flate2 + zlib-rs.",
+    "tableDescription": "zlib deflate/inflate/gzip via `flate2` (zlib-rs)",
+    "replaces": "pako",
+    "vsJs": "TBD",
+    "parity": "100%",
+    "status": "Compatible",
+    "competitors": ["pako@2.1.0"]
   }
 }

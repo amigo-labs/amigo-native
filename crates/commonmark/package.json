@@ -55,5 +55,15 @@
   },
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "CommonMark",
+    "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
+    "tableDescription": "CommonMark + GFM renderer via `pulldown-cmark`",
+    "replaces": "marked/markdown-it",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Alternative",
+    "competitors": ["marked@15.0.0", "markdown-it@14.1.0"]
   }
 }

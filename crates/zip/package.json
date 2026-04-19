@@ -56,5 +56,15 @@
   },
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "ZIP",
+    "description": "ZIP archive read/write via the zip Rust crate.",
+    "tableDescription": "ZIP read/write via `zip` crate",
+    "replaces": "yauzl/adm-zip/jszip",
+    "vsJs": "TBD",
+    "parity": "100%",
+    "status": "Alternative",
+    "competitors": ["yauzl@3.2.0", "adm-zip@0.5.16"]
   }
 }

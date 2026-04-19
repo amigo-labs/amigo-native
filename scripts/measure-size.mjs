@@ -6,63 +6,24 @@
  *
  * Amigo sizes = built binary + JS shim (what ships in the npm tarball).
  * Competitor sizes = full node_modules after `npm install`.
+ *
+ * Competitors are discovered from each crate's package.json `"amigo"` block —
+ * no hardcoded list, so adding a crate never touches this file.
  */
 
 import { execSync } from 'node:child_process'
-import { mkdtempSync, rmSync, statSync, readdirSync, writeFileSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
-const PACKAGES = {
-  slugify: {
-    amigo: { crate: 'slugify' },
-    competitors: ['slugify@1.6.6'],
-  },
-  argon2: {
-    amigo: { crate: 'argon2' },
-    competitors: ['argon2@0.41.1', 'hash-wasm@4.12.0'],
-  },
-  xxhash: {
-    amigo: { crate: 'xxhash' },
-    competitors: ['xxhash-wasm@1.1.0', 'xxhashjs@0.2.2'],
-  },
-  'sanitize-html': {
-    amigo: { crate: 'sanitize-html' },
-    competitors: ['sanitize-html@2.17.0', 'isomorphic-dompurify@2.16.0'],
-  },
-  csv: {
-    amigo: { crate: 'csv' },
-    competitors: ['csv-parse@5.6.0', 'papaparse@5.4.1'],
-  },
-  'file-type': {
-    amigo: { crate: 'file-type' },
-    competitors: ['file-type@19.6.0'],
-  },
-  inflate: {
-    amigo: { crate: 'inflate' },
-    competitors: ['pako@2.1.0'],
-  },
-  nanoid: {
-    amigo: { crate: 'nanoid' },
-    competitors: ['nanoid@5.0.9'],
-  },
-  encoding: {
-    amigo: { crate: 'encoding' },
-    competitors: ['iconv-lite@0.6.3'],
-  },
-  deepmerge: {
-    amigo: { crate: 'deepmerge' },
-    competitors: ['deepmerge@4.3.1'],
-  },
-  jwt: {
-    amigo: { crate: 'jwt' },
-    competitors: ['jsonwebtoken@9.0.2'],
-  },
-  zip: {
-    amigo: { crate: 'zip' },
-    competitors: ['yauzl@3.2.0', 'adm-zip@0.5.16'],
-  },
-}
+import { loadCrates } from './sync-registry.mjs'
 
 function getDirSize(dir) {
   let total = 0
@@ -128,13 +89,13 @@ function formatBytes(bytes) {
 console.log('Measuring package sizes...\n')
 
 const results = {}
+const crates = loadCrates().filter(({ amigo }) => (amigo.competitors ?? []).length > 0)
 
-for (const [name, config] of Object.entries(PACKAGES)) {
+for (const { dir: name, amigo } of crates) {
   console.log(`--- ${name} ---`)
 
-  // Amigo package (binary + JS shim)
-  const amigoSize = measureAmigoSize(config.amigo.crate)
-  if (amigoSize === null) {
+  const amigoSize = measureAmigoSize(name)
+  if (amigoSize === null || amigoSize === 0) {
     console.log(`  @amigo-labs/${name}: crate not built, skipping`)
     console.log()
     continue
@@ -143,8 +104,7 @@ for (const [name, config] of Object.entries(PACKAGES)) {
   results[name][`@amigo-labs/${name}`] = { installSize: amigoSize, type: 'binary+shim' }
   console.log(`  @amigo-labs/${name}: ${formatBytes(amigoSize)}`)
 
-  // Competitors (full node_modules)
-  for (const pkg of config.competitors) {
+  for (const pkg of amigo.competitors) {
     const displayName = pkg.replace(/@[\d.]+$/, '')
     console.log(`  ${pkg}: measuring...`)
     const size = measureNpmInstallSize(pkg)

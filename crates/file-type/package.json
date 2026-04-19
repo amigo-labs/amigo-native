@@ -53,5 +53,15 @@
   },
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "File Type",
+    "description": "Magic-byte file-type detection via the Rust infer crate.",
+    "tableDescription": "Magic-byte file detection via `infer`",
+    "replaces": "file-type",
+    "vsJs": "TBD",
+    "parity": "89%",
+    "status": "Alternative",
+    "competitors": ["file-type@19.6.0"]
   }
 }
