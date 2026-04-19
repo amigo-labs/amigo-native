@@ -8,8 +8,6 @@ New category, not yet ruled out. Each entry is subject to a `rust-check` candida
 
 ### Predicted Green (≥2× at median, FFI-shape viable)
 
-- **tiktoken** / **js-tiktoken** (~15M / ~3M). BPE tokenization over documents via `tiktoken-rs`. Batch-encode is the canonical green shape — one call per prompt, compute dominates.
-- **gpt-tokenizer** (~1M). Same `tiktoken-rs` backend, different JS API surface. Near-free second port once `tiktoken` ships.
 - **hnswlib-node** (~50k). Approximate-nearest-neighbor search on f32 vectors via `hnsw_rs` / `instant-distance`. One call per query returns k results, index is long-lived state (NAPI class).
 - **pdf-parse** (~1M, text-extraction path). Per-document parsing via `pdf-extract` / `lopdf`. Parity on edge-case PDFs is the main risk.
 - **wink-bm25-text-search** / **bm25** (~30k combined). Index build + scoring over a corpus; amortized FFI. Index as NAPI class.
@@ -62,6 +60,7 @@ Packages we actually built, shipped or staged, benchmarked, and then retired bec
 - **deep-equal** (shipped, deprecated in 0.2.0). ~1.3× on flat objects, parity on nested / arrays. `fast-deep-equal` is 50 lines of V8-friendly JS — FFI overhead has no headroom to pay for. See `docs/post-mortems/deep-equal.md`, `docs/perf-review/deep-equal.md`.
 - **levenshtein** (shipped, deprecated in 0.2.0). **Slower than JS on every size**, worsens with length (0.13× at 10k chars). UTF-16↔UTF-8 marshalling dominates; `triple_accel` SIMD can't offset it. See `docs/post-mortems/levenshtein.md`, `docs/perf-review/levenshtein.md`.
 - **xml** (never published, archived 2026-04-19). 0.72× `sax` at 10 MB SOAP, 0.78× at 100 KB RSS; `parseXmlToJson` win relative to own baseline (3×) didn't close the gap to JS. Returning event trees as JS objects means V8 `JSON.parse` on the output dominates. See `docs/post-mortems/xml.md`, `docs/perf-review/xml.md`.
+- **gpt-tokenizer** (not ported separately, considered a Red peer of `@amigo-labs/tiktoken`). gpt-tokenizer is 2–3× faster than our native Rust binding across all input sizes — its LRU-merge-cache plus V8-tuned hot path beat our FFI'd `tiktoken-rs`. Our tiktoken crate still ships (Green vs. `tiktoken` WASM + `js-tiktoken`) and exposes `encodeChat` / `countChatCompletionTokens` / `isWithinTokenLimit` as drop-ins, but gpt-tokenizer users have no reason to switch. See `docs/perf-review/gpt-tokenizer.md`, `docs/perf-review/tiktoken.md`.
 
 ## Deprecated / superseded
 
