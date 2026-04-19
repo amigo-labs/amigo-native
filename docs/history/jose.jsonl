@@ -1,0 +1,1 @@
+{"commit":"d1004d6","date":"2026-04-19","runner":"linux-x64","node":"v24.14.1","suites":[{"name":"jwkThumbprint - Ed25519","amigo":448721.73,"best_competitor":282249.3,"ratio":1.59},{"name":"jwkThumbprint - RSA-2048","amigo":371668.79,"best_competitor":232366.31,"ratio":1.599},{"name":"generateEd25519KeyPair","amigo":42597.18,"best_competitor":12866.16,"ratio":3.311}]}

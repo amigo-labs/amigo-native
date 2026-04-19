@@ -1,0 +1,63 @@
+{
+  "crate": "jose",
+  "generatedAt": "2026-04-19T18:17:41.941Z",
+  "commit": "d1004d6",
+  "runner": "linux-x64",
+  "nodeVersion": "v24.14.1",
+  "suites": [
+    {
+      "file": "crates/jose/__bench__/index.bench.ts",
+      "name": "jwkThumbprint - Ed25519",
+      "entries": [
+        {
+          "name": "@amigo-labs/jose",
+          "hz": 448721.73,
+          "rme": 0.28,
+          "samples": 1346166
+        },
+        {
+          "name": "jose (panva, pure JS)",
+          "hz": 282249.3,
+          "rme": 6.79,
+          "samples": 846748
+        }
+      ]
+    },
+    {
+      "file": "crates/jose/__bench__/index.bench.ts",
+      "name": "jwkThumbprint - RSA-2048",
+      "entries": [
+        {
+          "name": "@amigo-labs/jose",
+          "hz": 371668.79,
+          "rme": 0.23,
+          "samples": 1115007
+        },
+        {
+          "name": "jose (panva, pure JS)",
+          "hz": 232366.31,
+          "rme": 5.39,
+          "samples": 699247
+        }
+      ]
+    },
+    {
+      "file": "crates/jose/__bench__/index.bench.ts",
+      "name": "generateEd25519KeyPair",
+      "entries": [
+        {
+          "name": "@amigo-labs/jose",
+          "hz": 42597.18,
+          "rme": 0.06,
+          "samples": 127792
+        },
+        {
+          "name": "jose (panva, pure JS) — generateKeyPair Ed25519 + exportJWK",
+          "hz": 12866.16,
+          "rme": 1.18,
+          "samples": 38599
+        }
+      ]
+    }
+  ]
+}

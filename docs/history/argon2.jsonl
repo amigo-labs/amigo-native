@@ -1,1 +1,2 @@
 {"commit":"1d1624f","date":"2026-04-19","runner":"linux-x64","node":"v22.22.2","suites":[{"name":"argon2 - hash (low-cost)","amigo":233.17,"best_competitor":162.67,"ratio":1.433},{"name":"argon2 - verify","amigo":240.81,"best_competitor":null,"ratio":null}]}
+{"commit":"d1004d6","date":"2026-04-19","runner":"linux-x64","node":"v24.14.1","suites":[{"name":"argon2 - hash (low-cost)","amigo":321.4,"best_competitor":234.86,"ratio":1.368},{"name":"argon2 - verify","amigo":322.33,"best_competitor":null,"ratio":null}]}

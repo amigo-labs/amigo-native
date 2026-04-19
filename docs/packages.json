@@ -56,7 +56,7 @@
       "name": "argon2",
       "title": "Argon2",
       "description": "Argon2id password hashing with sync + async API.",
-      "speedup": "1.43× faster",
+      "speedup": "1.37× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/argon2",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/argon2",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/argon2/README.md"
@@ -65,7 +65,7 @@
       "name": "bcrypt",
       "title": "Bcrypt",
       "description": "Bcrypt password hashing with sync + async API. Argon2 sibling.",
-      "speedup": "1.10–1.42× faster vs bcrypt npm / 1.36–1.56× vs bcryptjs",
+      "speedup": "~equal",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bcrypt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bcrypt",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bcrypt/README.md"
@@ -74,7 +74,7 @@
       "name": "commonmark",
       "title": "CommonMark",
       "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
-      "speedup": "TBD",
+      "speedup": "6.4× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/commonmark",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/commonmark",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/commonmark/README.md"
@@ -83,7 +83,7 @@
       "name": "csv",
       "title": "CSV",
       "description": "CSV parsing and serialization via BurntSushi's csv crate.",
-      "speedup": "1.78–2.1× faster",
+      "speedup": "1.54–1.88× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/csv",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/csv",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/csv/README.md"
@@ -92,7 +92,7 @@
       "name": "deepmerge",
       "title": "Deepmerge",
       "description": "Recursive object merge for JSON-safe values.",
-      "speedup": "2.8–5.7× faster",
+      "speedup": "3.3–5.5× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/deepmerge",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/deepmerge",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deepmerge/README.md"
@@ -101,7 +101,7 @@
       "name": "encoding",
       "title": "Encoding",
       "description": "Character encoding conversion powered by Mozilla's encoding_rs.",
-      "speedup": "up to 15× faster / 1.11× slower",
+      "speedup": "up to 46× faster / 1.77× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/encoding",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/encoding",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/encoding/README.md"
@@ -110,7 +110,7 @@
       "name": "file-type",
       "title": "File Type",
       "description": "Magic-byte file-type detection via the Rust infer crate.",
-      "speedup": "28–2561× faster",
+      "speedup": "24–974× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/file-type",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/file-type",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/file-type/README.md"
@@ -119,7 +119,7 @@
       "name": "inflate",
       "title": "Inflate",
       "description": "zlib deflate/inflate/gzip powered by flate2 + zlib-rs.",
-      "speedup": "up to 6.4× faster / 2.1× slower",
+      "speedup": "up to 8.2× faster / 1.3× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/inflate",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/inflate",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/inflate/README.md"
@@ -128,7 +128,7 @@
       "name": "jose",
       "title": "JOSE",
       "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
-      "speedup": "1.62–2.19× thumbprint / 6.97× Ed25519 keygen",
+      "speedup": "1.59–3.3× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jose",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jose",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md"
@@ -137,7 +137,7 @@
       "name": "jwt",
       "title": "JWT",
       "description": "JWT sign, verify, and decode via the jsonwebtoken Rust crate.",
-      "speedup": "1.7–6.1× faster",
+      "speedup": "1.44–5.2× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jwt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jwt",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jwt/README.md"
@@ -146,7 +146,7 @@
       "name": "nanoid",
       "title": "NanoID",
       "description": "Fast crypto-safe URL-friendly ID generator with pool-amortised entropy. Pure JS — the NAPI FFI boundary was bigger than the entire ID-generation path.",
-      "speedup": "up to 1.22× faster / 1.31× slower",
+      "speedup": "up to 1.1× faster / 1.09× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/nanoid",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/nanoid",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/nanoid/README.md"
@@ -155,7 +155,7 @@
       "name": "sanitize-html",
       "title": "Sanitize HTML",
       "description": "HTML sanitization via Mozilla's ammonia engine.",
-      "speedup": "1.77–4.2× faster",
+      "speedup": "1.6–4.1× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sanitize-html",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sanitize-html",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sanitize-html/README.md"
@@ -164,7 +164,7 @@
       "name": "slugify",
       "title": "Slugify",
       "description": "Unicode-aware slugification. Wraps deunicode + unicode-normalization.",
-      "speedup": "2.9–6.6× faster",
+      "speedup": "2.3–4.4× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/slugify",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/slugify",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/slugify/README.md"
@@ -173,7 +173,7 @@
       "name": "xxhash",
       "title": "XXHash",
       "description": "XXH32, XXH64, and XXH3 with batch + streaming support.",
-      "speedup": "up to 2.4× faster / 2.9× slower",
+      "speedup": "up to 2.7× faster / 3.3× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xxhash",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xxhash",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xxhash/README.md"
@@ -182,7 +182,7 @@
       "name": "zip",
       "title": "ZIP",
       "description": "ZIP archive read/write via the zip Rust crate.",
-      "speedup": "1.59–3.5× faster",
+      "speedup": "1.84–9.6× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/zip",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/zip",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md"

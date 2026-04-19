@@ -1,9 +1,9 @@
 {
   "crate": "nanoid",
-  "generatedAt": "2026-04-19T09:34:51.034Z",
-  "commit": "1d1624f",
+  "generatedAt": "2026-04-19T18:17:41.941Z",
+  "commit": "d1004d6",
   "runner": "linux-x64",
-  "nodeVersion": "v22.22.2",
+  "nodeVersion": "v24.14.1",
   "suites": [
     {
       "file": "crates/nanoid/__bench__/index.bench.ts",
@@ -11,21 +11,21 @@
       "entries": [
         {
           "name": "@amigo-labs/nanoid",
-          "hz": 1499161.44,
-          "rme": 2.57,
-          "samples": 749581
+          "hz": 3930865.03,
+          "rme": 0.89,
+          "samples": 1965433
         },
         {
           "name": "nanoid",
-          "hz": 1468072,
-          "rme": 1.49,
-          "samples": 734036
+          "hz": 4160619.94,
+          "rme": 0.37,
+          "samples": 2080310
         },
         {
           "name": "crypto.randomUUID",
-          "hz": 1820669.12,
-          "rme": 0.88,
-          "samples": 910335
+          "hz": 4034121.82,
+          "rme": 0.17,
+          "samples": 2017061
         }
       ]
     },
@@ -35,21 +35,21 @@
       "entries": [
         {
           "name": "@amigo-labs/nanoid",
-          "hz": 2132.25,
-          "rme": 1.61,
-          "samples": 1067
+          "hz": 5547.82,
+          "rme": 0.57,
+          "samples": 2774
         },
         {
           "name": "nanoid",
-          "hz": 2120.87,
-          "rme": 1.74,
-          "samples": 1061
+          "hz": 4703.05,
+          "rme": 0.6,
+          "samples": 2352
         },
         {
           "name": "crypto.randomUUID",
-          "hz": 2795.05,
-          "rme": 0.91,
-          "samples": 1398
+          "hz": 6026.51,
+          "rme": 0.18,
+          "samples": 3014
         }
       ]
     },
@@ -59,15 +59,15 @@
       "entries": [
         {
           "name": "@amigo-labs/nanoid",
-          "hz": 1244361.55,
-          "rme": 1.08,
-          "samples": 622181
+          "hz": 3045653.14,
+          "rme": 0.47,
+          "samples": 1522827
         },
         {
           "name": "nanoid",
-          "hz": 1116132.77,
-          "rme": 1.51,
-          "samples": 558067
+          "hz": 2920246.7,
+          "rme": 0.53,
+          "samples": 1460124
         }
       ]
     },
@@ -77,15 +77,15 @@
       "entries": [
         {
           "name": "@amigo-labs/nanoid",
-          "hz": 438052.37,
-          "rme": 1.11,
-          "samples": 219027
+          "hz": 1027196.95,
+          "rme": 0.7,
+          "samples": 513599
         },
         {
           "name": "nanoid",
-          "hz": 360266.88,
-          "rme": 1.52,
-          "samples": 180341
+          "hz": 932632.5,
+          "rme": 0.7,
+          "samples": 466317
         }
       ]
     }

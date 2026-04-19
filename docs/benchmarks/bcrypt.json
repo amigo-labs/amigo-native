@@ -1,0 +1,81 @@
+{
+  "crate": "bcrypt",
+  "generatedAt": "2026-04-19T18:17:41.941Z",
+  "commit": "d1004d6",
+  "runner": "linux-x64",
+  "nodeVersion": "v24.14.1",
+  "suites": [
+    {
+      "file": "crates/bcrypt/__bench__/index.bench.ts",
+      "name": "bcrypt - hash (cost 4, low)",
+      "entries": [
+        {
+          "name": "@amigo-labs/bcrypt",
+          "hz": 858.49,
+          "rme": 0.06,
+          "samples": 4293
+        },
+        {
+          "name": "bcrypt (npm, C++ via node-gyp)",
+          "hz": 846.44,
+          "rme": 0.48,
+          "samples": 4233
+        },
+        {
+          "name": "bcryptjs (pure JS)",
+          "hz": 676.38,
+          "rme": 0.1,
+          "samples": 3382
+        }
+      ]
+    },
+    {
+      "file": "crates/bcrypt/__bench__/index.bench.ts",
+      "name": "bcrypt - hash (cost 10, industry default)",
+      "entries": [
+        {
+          "name": "@amigo-labs/bcrypt",
+          "hz": 15.4402,
+          "rme": 0.01,
+          "samples": 155
+        },
+        {
+          "name": "bcrypt (npm, C++ via node-gyp)",
+          "hz": 15.0427,
+          "rme": 0.02,
+          "samples": 151
+        },
+        {
+          "name": "bcryptjs (pure JS)",
+          "hz": 11.252,
+          "rme": 0.5,
+          "samples": 113
+        }
+      ]
+    },
+    {
+      "file": "crates/bcrypt/__bench__/index.bench.ts",
+      "name": "bcrypt - verify (cost 10)",
+      "entries": [
+        {
+          "name": "@amigo-labs/bcrypt",
+          "hz": 15.4379,
+          "rme": 0.06,
+          "samples": 155
+        },
+        {
+          "name": "bcrypt (npm, C++ via node-gyp)",
+          "hz": 15.0736,
+          "rme": 0.02,
+          "samples": 151
+        },
+        {
+          "name": "bcryptjs (pure JS)",
+          "hz": 11.2579,
+          "rme": 0.5,
+          "samples": 113
+        }
+      ]
+    }
+  ]
+}

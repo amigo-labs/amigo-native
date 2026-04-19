@@ -1,9 +1,9 @@
 {
   "crate": "zip",
-  "generatedAt": "2026-04-19T09:34:51.034Z",
-  "commit": "1d1624f",
+  "generatedAt": "2026-04-19T18:17:41.941Z",
+  "commit": "d1004d6",
   "runner": "linux-x64",
-  "nodeVersion": "v22.22.2",
+  "nodeVersion": "v24.14.1",
   "suites": [
     {
       "file": "crates/zip/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/zip",
-          "hz": 451.22,
-          "rme": 1.25,
-          "samples": 226
+          "hz": 467.03,
+          "rme": 0.17,
+          "samples": 234
         },
         {
           "name": "adm-zip",
-          "hz": 173.61,
-          "rme": 9.66,
-          "samples": 87
+          "hz": 253.62,
+          "rme": 13,
+          "samples": 127
         }
       ]
     },
@@ -29,14 +29,14 @@
       "entries": [
         {
           "name": "@amigo-labs/zip",
-          "hz": 24.9246,
-          "rme": 3.85,
-          "samples": 13
+          "hz": 44.2026,
+          "rme": 3.1,
+          "samples": 23
         },
         {
           "name": "adm-zip",
-          "hz": 15.7197,
-          "rme": 4.67,
+          "hz": 18.2825,
+          "rme": 1.26,
           "samples": 10
         }
       ]
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/zip",
-          "hz": 1776.27,
-          "rme": 1.02,
-          "samples": 889
+          "hz": 3069,
+          "rme": 0.67,
+          "samples": 1535
         },
         {
           "name": "adm-zip",
-          "hz": 518.94,
-          "rme": 11.9,
-          "samples": 260
+          "hz": 886.7,
+          "rme": 21.28,
+          "samples": 457
         }
       ]
     },
@@ -65,21 +65,21 @@
       "entries": [
         {
           "name": "@amigo-labs/zip (extractAll)",
-          "hz": 900.72,
-          "rme": 1.85,
-          "samples": 451
+          "hz": 1400.08,
+          "rme": 2.82,
+          "samples": 701
         },
         {
           "name": "@amigo-labs/zip (entries + read loop)",
-          "hz": 167.05,
-          "rme": 1.53,
-          "samples": 84
+          "hz": 235.14,
+          "rme": 0.34,
+          "samples": 118
         },
         {
           "name": "adm-zip",
-          "hz": 239.13,
-          "rme": 13.06,
-          "samples": 121
+          "hz": 506.45,
+          "rme": 11.07,
+          "samples": 254
         }
       ]
     },
@@ -89,15 +89,15 @@
       "entries": [
         {
           "name": "@amigo-labs/zip",
-          "hz": 80.4155,
-          "rme": 8.46,
-          "samples": 41
+          "hz": 273.47,
+          "rme": 3.04,
+          "samples": 137
         },
         {
           "name": "adm-zip",
-          "hz": 22.7424,
-          "rme": 12.09,
-          "samples": 12
+          "hz": 28.3624,
+          "rme": 5.2,
+          "samples": 15
         }
       ]
     }

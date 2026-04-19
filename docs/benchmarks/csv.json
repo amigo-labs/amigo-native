@@ -1,9 +1,9 @@
 {
   "crate": "csv",
-  "generatedAt": "2026-04-19T09:34:51.034Z",
-  "commit": "1d1624f",
+  "generatedAt": "2026-04-19T18:17:41.941Z",
+  "commit": "d1004d6",
   "runner": "linux-x64",
-  "nodeVersion": "v22.22.2",
+  "nodeVersion": "v24.14.1",
   "suites": [
     {
       "file": "crates/csv/__bench__/index.bench.ts",
@@ -11,27 +11,27 @@
       "entries": [
         {
           "name": "@amigo-labs/csv",
-          "hz": 8821.84,
-          "rme": 1.11,
-          "samples": 4411
+          "hz": 12087.69,
+          "rme": 0.75,
+          "samples": 6044
         },
         {
           "name": "@amigo-labs/csv (parseToJson)",
-          "hz": 8346.4,
-          "rme": 1.07,
-          "samples": 4174
+          "hz": 12496.2,
+          "rme": 0.31,
+          "samples": 6249
         },
         {
           "name": "csv-parse (sync)",
-          "hz": 2598.76,
-          "rme": 1.48,
-          "samples": 1300
+          "hz": 5010.09,
+          "rme": 0.58,
+          "samples": 2506
         },
         {
           "name": "papaparse",
-          "hz": 4946.98,
-          "rme": 7.82,
-          "samples": 2474
+          "hz": 7857.71,
+          "rme": 12.81,
+          "samples": 4003
         }
       ]
     },
@@ -41,27 +41,27 @@
       "entries": [
         {
           "name": "@amigo-labs/csv",
-          "hz": 113.21,
-          "rme": 3.95,
-          "samples": 57
+          "hz": 181.07,
+          "rme": 1.93,
+          "samples": 91
         },
         {
           "name": "@amigo-labs/csv (parseToJson)",
-          "hz": 117.15,
-          "rme": 3.72,
-          "samples": 59
+          "hz": 180.66,
+          "rme": 1.86,
+          "samples": 91
         },
         {
           "name": "csv-parse (sync)",
-          "hz": 25.3599,
-          "rme": 7.23,
-          "samples": 13
+          "hz": 45.4588,
+          "rme": 0.92,
+          "samples": 23
         },
         {
           "name": "papaparse",
-          "hz": 54.7717,
-          "rme": 9.98,
-          "samples": 28
+          "hz": 99.509,
+          "rme": 11.75,
+          "samples": 52
         }
       ]
     },
@@ -71,27 +71,27 @@
       "entries": [
         {
           "name": "@amigo-labs/csv",
-          "hz": 5.4124,
-          "rme": 3.95,
-          "samples": 55
+          "hz": 10.2956,
+          "rme": 1.74,
+          "samples": 103
         },
         {
           "name": "@amigo-labs/csv (parseToJson)",
-          "hz": 5.3461,
-          "rme": 4.57,
-          "samples": 54
+          "hz": 10.3338,
+          "rme": 1.59,
+          "samples": 104
         },
         {
           "name": "csv-parse (sync)",
-          "hz": 1.1234,
-          "rme": 2.4,
-          "samples": 12
+          "hz": 1.9888,
+          "rme": 1.03,
+          "samples": 20
         },
         {
           "name": "papaparse",
-          "hz": 3.0396,
-          "rme": 3.45,
-          "samples": 31
+          "hz": 5.481,
+          "rme": 2.19,
+          "samples": 55
         }
       ]
     }
