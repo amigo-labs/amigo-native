@@ -1,10 +1,10 @@
 # Perf-Review: `@amigo-labs/levenshtein`
 
-> **Status:** 🔴 Red · **Reviewed:** 2026-04-19 · **Version:** 0.2.0 (deprecated)
+> **Status:** 🔴 Red (spike measured 2026-04-19, gate failed) · **Version:** 0.2.0 (deprecated → proceeding to archive)
 
 ## Verdict
 
-Current `String`-in / `u32`-out shape is structurally dominated by FFI conversion cost on the dominant (large-string) use case — deprecation stands, but **one untried lever (`Uint16Array` input) is worth a 1–2 day spike before final archival**, because the post-mortem explicitly records zero optimization experiments.
+Spiked the one remaining untried lever (`Uint16Array` input to bypass UTF-16 → UTF-8 conversion) and measured the result. **Gate failed**: at 10k chars the Uint16Array path is 6,7× slower than `fast-levenshtein`, not the 1,5× faster required to un-deprecate. The spike additionally disproved the original post-mortem's theory that FFI conversion was the dominant cost — the real bottleneck is that V8-JIT on UTF-16 `charCodeAt` is structurally competitive with scalar Rust DP, and `triple_accel`'s SIMD banded path degenerates for random-string pairs where edit distance approaches n. Deprecation stands; archival proceeds as planned.
 
 ## Classification rationale
 
@@ -66,33 +66,39 @@ Applied to a 10k-char levenshtein call: 2 × 10.000 × 0,35 ns = **7 µs just in
 
 ## Phase-C optimization checklist
 
-| # | Lever | Applicable | Notes |
+| # | Lever | Status | Notes |
 |---|---|---|---|
-| C.1 | Input-type minimization (`String` → `&str`, `Vec<T>` → `&[T]`, Buffer-overload) | **applicable, untried** | `Uint16Array` overload (V8-string code units, zero-copy crossing ~180 ns flat). Rust side operates on `&[u16]`. Avoids UTF-16 → UTF-8 conversion entirely. Expected flip to ≥1,5× faster at 10k chars if algorithmic DP stays at ~20 µs. Caller must build the Uint16Array once; amortizes heavily in dictionary-search loops. |
-| C.2 | Output-type minimization (`String` → `&str`, `Vec<T>` → Buffer) | **applicable, untried** | `distance_batch` returns `Vec<u32>` (43 ns/elem). Packed `Buffer` of u32 LE cuts output marshalling from 43 µs to 180 ns flat on 1000-item batches. `crates/xxhash/src/lib.rs:40–80` is the reference for the pattern. |
-| C.3 | Batch API | **exists but unbenched & miscosted** | `distance_batch` ships but output-type bug (C.2) negates batching benefit. No bench entry exercises it. |
-| C.4 | Stateful API (reusable setup via NAPI class) | **not applicable** | Edit distance has no reusable per-query state (unlike regex compile or JWT key). Both strings must be fully present at call time. |
-| C.5 | Parallelization (rayon over large inputs) | **not applicable at current sizes** | FFI dominates below ~100k chars; rayon overhead would erase wins. Only relevant if a single-pair call crossed ~1 MB strings, which isn't the use case. |
-| C.6 | Algorithm swap (SIMD variant, streaming parser, etc.) | **applicable, untried** | Myers bit-parallel algorithm fits a DP column in a u64 register — 10–20× faster than scalar DP for strings ≤ 64 chars. Addresses the 0,52× regression at 10 chars where `strsim` fallback currently runs. Hand-port is ~30 lines, or use the `distance` crate. |
-| C.7 | Allocator tuning (arena, caller-provided output buffer) | **marginal** | `to_lowercase()` in `src/lib.rs:15–18` allocates two owned strings per call when collator is on. Inline-lowercasing during DP would save the allocation, but impact is small (<1 µs). |
-| C.8 | Bundle-size (LTO, features, panic=abort, strip) | **already done** | Workspace profile already applies all four. No further win available. |
+| C.1 | Input-type minimization (`String` → `&str`, `Vec<T>` → `&[T]`, Buffer-overload) | **tried, no win** | `distanceU16(Uint16Array, Uint16Array)` spike (2026-04-19) measured slower than the `String`-input path at every symmetric size tier. Reverted. Details below. |
+| C.2 | Output-type minimization (`String` → `&str`, `Vec<T>` → Buffer) | **applicable, not pursued** | `distance_batch` still returns `Vec<u32>` (43 ns/elem). Would reduce output marshalling but the per-call compute already loses to `fast-levenshtein`, so a cheaper batch envelope doesn't change the outcome. |
+| C.3 | Batch API | **exists but unbenched & miscosted** | `distance_batch` ships. Not worth benching since the per-call arithmetic already fails the gate. |
+| C.4 | Stateful API (reusable setup via NAPI class) | **not applicable** | Edit distance has no reusable per-query state. Both strings must be fully present at call time. |
+| C.5 | Parallelization (rayon over large inputs) | **not applicable at current sizes** | FFI dominates below ~100k chars; rayon overhead would erase wins. |
+| C.6 | Algorithm swap (SIMD variant, streaming parser, etc.) | **not pursued** | Myers bit-parallel would help ≤ 64 chars but the 10-char tier only loses 1,6×, and a faster small-string path doesn't rescue the 6,7× 10k-loss. |
+| C.7 | Allocator tuning (arena, caller-provided output buffer) | **marginal** | `to_lowercase()` allocation is <1 µs, irrelevant at this scale. |
+| C.8 | Bundle-size (LTO, features, panic=abort, strip) | **already done** | Workspace profile already applies all four. |
 
-Additional lever not in the standard table:
+## Spike result (2026-04-19)
 
-- **Bounded-distance API** (`distance_bounded(a, b, max) -> Option<u32>`): early-terminate when DP diagonal exceeds `max`. O(k·n) instead of O(n²) for small k. Common real-world shape ("distance ≤ 3?"). Could credibly win >10× on dictionary-search loads even with String input, because JS competitors also have to compute full distance.
+Added `distanceU16(Uint16Array, Uint16Array) -> u32` with a scalar Wagner-Fischer row-swap DP on `&[u16]` (~30 LOC). Built, unit-tested, benchmarked against the existing `get(String, String)` path and `fast-levenshtein`.
 
-## Action plan
+| Scenario | `get(String)` (Hz) | `distanceU16(Uint16Array)` (Hz) | `fast-levenshtein` (Hz) | Gate |
+|---|---:|---:|---:|:---:|
+| 10 chars | 1.505.530 | 1.282.693 | 2.451.414 | ✗ |
+| 100 chars | 271.992 | 53.427 | 195.135 | ✗ |
+| 1.000 chars | 966 | 570 | 3.554 | ✗ |
+| 10.000 chars | 6,98 | 5,74 | 38,4 | **✗** (gate target) |
+| 10 × 500 (asym) | 116.290 | 97.912 | 187.960 | ✗ |
+| 100 × 5.000 (asym) | 56,7 | 1.097 | 6.158 | — |
 
-**Default path: Phase-D (deprecation stands).** The 0.2.0 deprecation message and `deprecated: true` in `docs/packages.json` are correct given measured evidence. Three-month window continues; archive after expiry.
+**Gate:** "≥1,5× faster than `fast-levenshtein` at 10k chars." Measured distanceU16 at 10k is **6,7× slower** than `fast-levenshtein`. Gate failed. Spike reverted in the same branch.
 
-**Override path: Phase-C spike (1–2 days) before final archival.** The post-mortem records "What was tried: None." — we should not archive a Red without having measured at least one of the untried levers. Recommended spike:
+**Unexpected finding from the asymmetric row:** `triple_accel`'s SIMD banded path is **19× slower than scalar u16 DP** on 100 × 5.000 (56,7 Hz vs. 1.097 Hz). The adaptive-band expansion hits a pathological case when one input dominates. Documented in the post-mortem but not actionable for the deprecation decision — `fast-levenshtein` still wins this case at 6.158 Hz.
 
-1. Add `distance_u16(a: Uint16Array, b: Uint16Array) -> u32` to `src/lib.rs`. Port the inner DP from byte-slice to u16-slice (triple_accel internals are generic enough to fork, or hand-roll banded DP — ~60 lines).
-2. Add bench entries for the new API at the same 4 size tiers, plus the asymmetric (10 × 500, 100 × 5000) dictionary-lookup shape that's missing today.
-3. **Gate:** if the 10k-char case flips to ≥1,5× faster than `fast-levenshtein`, reclassify to Yellow and un-deprecate with README guidance: *"Use `distanceU16` for hot loops; String API remains deprecated."* If it doesn't flip, append the anti-result to `docs/post-mortems/levenshtein.md` and proceed with archival.
-4. **Stretch goals** if the spike succeeds: (a) packed-Buffer output for `distance_batch` per C.2, (b) `distance_bounded` API for early-termination, (c) Myers bit-parallel for ≤ 64 chars per C.6. Combined, these could plausibly push the package into Green territory for the dictionary-search use case.
+**Why the original theory was wrong:** The post-mortem estimated Rust-core ~20 µs + FFI conversion ~7 µs for 10k chars. Actual measurement is ~143 ms for `get` and ~174 ms for `distanceU16`. The FFI conversion is a tiny fraction of total time; the real cost is that (a) V8-JIT on `charCodeAt` is as fast as scalar Rust on `u16`, and (b) `triple_accel` degenerates for random inputs where distance ≈ n. Neither is fixable without rewriting the DP in SIMD-u16 or replacing the algorithm entirely, and neither justifies un-deprecating a drop-in replacement that users can swap out with a single import change.
 
-Either way, add the asymmetric-sizes and batch-API benches **first** — the existing bench grid understates the shape that matters most.
+## Final action
+
+Proceed with Phase-D per the 0.2.0 plan: three-month deprecation window continues, archive `crates/levenshtein/` after expiry, decrement `PACKAGES` count in `docs/packages.json:33`. The asymmetric benchmarks added during the spike stay in `__bench__/index.bench.ts` as evidence.
 
 ## References
 

@@ -45,9 +45,60 @@ because conversion scales linearly with length.
 
 ## What was tried
 
-None. The string-conversion cost was clear from the BASELINE numbers:
-no algorithmic improvement on the Rust side can pay off the 2×
-conversion penalty unless we can change the input shape.
+Original 0.2.0 deprecation: nothing — the analytical BASELINE
+numbers were taken as sufficient evidence.
+
+**2026-04-19 re-review (`docs/perf-review/levenshtein.md`)**: spiked
+a `distanceU16(Uint16Array, Uint16Array)` overload. The hypothesis
+was that replacing the `String` input (UTF-16 → UTF-8 conversion at
+~0.35 ns/byte × 2 directions) with a `Uint16Array` (V8-handle
+crossing, ~180 ns flat per `docs/BASELINE.md`) would flip the 10k-
+char case.
+
+Implementation: Wagner-Fischer over `&[u16]` with row-swap, scalar
+(no SIMD), ~30 LOC. Benched against the existing `String`-input path
+and `fast-levenshtein` across the same 4 size tiers plus two
+asymmetric pairs.
+
+Measured (node v22, Linux/x64):
+
+| Scenario | `get(String)` (Hz) | `distanceU16(Uint16Array)` (Hz) | `fast-levenshtein` (Hz) |
+|---|---:|---:|---:|
+| 10 chars | 1.505.530 | 1.282.693 | 2.451.414 |
+| 100 chars | 271.992 | 53.427 | 195.135 |
+| 1.000 chars | 966 | 570 | 3.554 |
+| 10.000 chars | 6,98 | 5,74 | 38,4 |
+| 10 × 500 | 116.290 | 97.912 | 187.960 |
+| 100 × 5.000 | 56,7 | **1.097** | 6.158 |
+
+Gate: "≥1,5× faster than `fast-levenshtein` at 10k chars". Actual:
+6,7× slower. **Gate failed** — spike reverted.
+
+Additional findings from the spike:
+
+- **FFI conversion was not the bottleneck.** The original post-mortem
+  estimated Rust-core ~20 µs for 10k chars; actual measurement is
+  ~143 ms. `triple_accel`'s SIMD banded DP collapses when the edit
+  distance approaches `n` (random string pair with distance ≈ n), the
+  band expands to full width and SIMD overhead exceeds the gain over
+  plain scalar DP.
+- **scalar u16 DP is slower than `triple_accel` on symmetric inputs.**
+  At 100 chars the u16 scalar path loses 5× vs. the byte SIMD path.
+  Skipping FFI conversion doesn't recover the compute gap.
+- **`triple_accel` has a 19× pathology on asymmetric input** (100 ×
+  5.000): `get` does 17,6 ms, scalar u16 DP does 0,9 ms. Even so,
+  `fast-levenshtein` beats both at 0,16 ms — V8-JIT on direct
+  UTF-16 code units is very hard to beat.
+
+The only shape the spike revealed as potentially competitive is
+**bounded-distance early-termination** (O(k·n) for small k). That
+would be a new API, not a faster implementation, and addresses a use
+case `fast-levenshtein` also doesn't cover. Not worth a port on its
+own — implementable in ~15 lines of JS.
+
+Conclusion: the deprecation stands. String-vs-V8-`charCodeAt` is the
+right comparison, and V8 wins structurally. Asymmetric benchmark
+additions stay in `__bench__/index.bench.ts` as evidence.
 
 ## Alternative that was considered and rejected
 
