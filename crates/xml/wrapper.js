@@ -78,5 +78,6 @@ function createParser(strict = true, _options = {}) {
 module.exports = {
   parser: createParser,
   parseXml: native.parseXml,
+  parseXmlToJson: native.parseXmlToJson,
 }
 module.exports.default = module.exports

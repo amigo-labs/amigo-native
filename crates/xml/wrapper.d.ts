@@ -21,6 +21,11 @@ export interface XmlEvent {
 /** Parse an entire XML string and return the ordered event list. */
 export declare function parseXml(input: string, strict?: boolean): XmlEvent[]
 
+/** Parse XML and return a JSON-encoded event array as a single string. One
+ *  FFI crossing for the full document — callers `JSON.parse()` the result.
+ *  Event shape: `{t,n,a,c,v}` (compact keys). */
+export declare function parseXmlToJson(input: string, strict?: boolean): string
+
 export interface SaxTag {
   name: string
   attributes: Record<string, string>
