@@ -1,14 +1,19 @@
 # Archived packages
 
-Packages whose deprecation window has closed. Source kept for git-archaeology
-purposes (post-mortems link into it), but:
+Tombstones for packages whose deprecation window has closed. Source was
+removed after the respective post-mortems landed — the git history still
+has every line. Each directory here keeps only a `README.md` pointing to
+the post-mortem, the perf-review, and the commit SHA of the last full
+tree so the code can be restored if a future investigation needs it.
 
-- **Not built** — the top-level `Cargo.toml` workspace glob `crates/*` and
-  `pnpm-workspace.yaml` only match `crates/`, so `pnpm -r build`, `cargo test
-  --workspace`, and `scripts/run-benchmarks.mjs` skip everything here.
-- **Not published** — the npm packages remain as their last deprecated release.
-  Nothing new ships from this tree.
-- **Not tested in CI** — conformance, parity, and bench runners enumerate
-  `crates/`, not `archived/`.
+| Package | Tombstone | Last full-tree commit |
+|---|---|---|
+| `@amigo-labs/deep-equal` | [deep-equal/](deep-equal/) | `5b92e44` |
+| `@amigo-labs/levenshtein` | [levenshtein/](levenshtein/) | `3a308be` |
+| `@amigo-labs/xml` | [xml/](xml/) | `cdade50` (never published) |
+
+Everything here is out of CI, out of the pnpm/cargo workspace, and out of
+the bench surface. The npm packages remain at their last deprecated
+release; nothing new ships from this tree.
 
 For the why, see `docs/post-mortems/<pkg>.md` and `docs/perf-review/<pkg>.md`.

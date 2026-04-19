@@ -1,29 +1,18 @@
-> ⚠️ **DEPRECATED in 0.2.0.** `fast-levenshtein` is 1.7-7.6× faster on realistic strings (10k chars: 54 ops/s vs our 7). Each input string crosses the NAPI boundary with UTF-16→UTF-8 conversion, which dominates runtime. See [docs/post-mortems/levenshtein.md](../../docs/post-mortems/levenshtein.md). Please migrate to `fast-levenshtein`.
+# @amigo-labs/levenshtein — archived
 
-# @amigo-labs/levenshtein
+> 🗄️ **Archived 2026-04-19.** Deprecated in 0.2.0; source removed from
+> the tree after the post-mortem landed.
 
-> Edit distance via `triple_accel` (SIMD) with a `strsim` fallback for short strings. Drop-in for [`fast-levenshtein`](https://www.npmjs.com/package/fast-levenshtein) and [`leven`](https://www.npmjs.com/package/leven), compiled via NAPI-RS.
+`fast-levenshtein` is 1,7–7,6× faster on realistic strings (10k chars:
+54 ops/s vs our 7). Each input string crosses the NAPI boundary with
+UTF-16→UTF-8 conversion, which dominates runtime. A Phase-C spike
+(`distanceU16`) missed the ≥1,5× gate at 10k chars. See
+[post-mortem](../../docs/post-mortems/levenshtein.md) and
+[perf-review](../../docs/perf-review/levenshtein.md) for the numbers.
 
-## Install
+**Migration:** `npm install fast-levenshtein`.
 
-```bash
-npm install @amigo-labs/levenshtein
-```
-
-## Usage
-
-```ts
-import { distance, get } from '@amigo-labs/levenshtein'
-
-distance('kitten', 'sitting')               // 3
-distance('Müller', 'mueller', { useCollator: true })  // 2
-
-// fast-levenshtein-compatible name:
-get('kitten', 'sitting')                    // 3
-```
-
-`useCollator: true` lowercases both inputs (UTF-8 aware) before measuring — matches `fast-levenshtein`'s collator flag.
-
-## Parity
-
-Tests in [`__conformance__/`](./__conformance__) run the upstream `fast-levenshtein` and `leven` test suites against this implementation. See [`divergences.md`](./__conformance__/divergences.md) for documented differences.
+**Source history:** last full tree at commit `3a308be`
+(`chore(levenshtein): archive crate, waive the three-month window`).
+The npm package `@amigo-labs/levenshtein` remains at its last
+deprecated release; nothing new ships from this tree.
