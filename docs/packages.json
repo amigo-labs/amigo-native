@@ -75,7 +75,7 @@
       "name": "commonmark",
       "title": "CommonMark",
       "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
-      "speedup": "6.4× faster",
+      "speedup": "7.2× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/commonmark",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/commonmark",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/commonmark/README.md"
@@ -111,7 +111,7 @@
       "name": "file-type",
       "title": "File Type",
       "description": "Magic-byte file-type detection via the Rust infer crate.",
-      "speedup": "24–974× faster",
+      "speedup": "32× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/file-type",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/file-type",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/file-type/README.md"
@@ -120,7 +120,7 @@
       "name": "inflate",
       "title": "Inflate",
       "description": "zlib deflate/inflate/gzip powered by flate2 + zlib-rs.",
-      "speedup": "up to 8.2× faster / 1.3× slower",
+      "speedup": "up to 7.1× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/inflate",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/inflate",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/inflate/README.md"
@@ -174,7 +174,7 @@
       "name": "tiktoken",
       "title": "Tiktoken",
       "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
-      "speedup": "3–23× vs tiktoken (WASM) / 2–4× vs js-tiktoken / 0.4× vs gpt-tokenizer",
+      "speedup": "3–3.8× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/tiktoken",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/tiktoken",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/tiktoken/README.md"
