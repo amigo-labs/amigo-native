@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest'
-import { render, renderBytes, renderMany } from '../index.js'
+import { render, renderBytes, renderFast, renderBytesFast, renderMany } from '../index.js'
 import { marked } from 'marked'
 import MarkdownIt from 'markdown-it'
 
@@ -109,6 +109,12 @@ describe(`small (~${Math.round(Buffer.byteLength(small) / 100) / 10} KB)`, () =>
   })
   bench('@amigo-labs/commonmark render (fast opts)', () => {
     render(small, fastOpts)
+  })
+  bench('@amigo-labs/commonmark renderFast', () => {
+    renderFast(small)
+  })
+  bench('@amigo-labs/commonmark renderBytesFast', () => {
+    renderBytesFast(smallBuf)
   })
   bench('marked', () => {
     marked.parse(small)

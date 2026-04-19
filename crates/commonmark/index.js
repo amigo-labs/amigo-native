@@ -579,4 +579,6 @@ module.exports = nativeBinding
 module.exports.Renderer = nativeBinding.Renderer
 module.exports.render = nativeBinding.render
 module.exports.renderBytes = nativeBinding.renderBytes
+module.exports.renderBytesFast = nativeBinding.renderBytesFast
+module.exports.renderFast = nativeBinding.renderFast
 module.exports.renderMany = nativeBinding.renderMany

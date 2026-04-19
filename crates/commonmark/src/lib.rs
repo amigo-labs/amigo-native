@@ -154,6 +154,32 @@ pub fn render_bytes(markdown: Buffer, options: Option<CommonMarkOptions>) -> Res
     Ok(render_str(s, resolve(options.as_ref())))
 }
 
+/// GFM + tables + strikethrough, raw HTML passthrough, no heading-ID
+/// rewrite. Equivalent to `render(md, { headingIds: false, unsafeHtml:
+/// true })` but without the options-object unmarshalling cost — measurable
+/// on sub-KB inputs where the option cost eats 10–15 % of the budget.
+#[napi(js_name = "renderFast")]
+pub fn render_fast(markdown: String) -> String {
+    render_str(&markdown, FAST_RESOLVED)
+}
+
+/// Buffer-input twin of `renderFast`. Skips both the V8 UTF-16 → UTF-8
+/// copy (via Buffer input) and the options-object unmarshalling.
+#[napi(js_name = "renderBytesFast")]
+pub fn render_bytes_fast(markdown: Buffer) -> Result<String> {
+    let s = decode_utf8(&markdown)?;
+    Ok(render_str(s, FAST_RESOLVED))
+}
+
+const FAST_RESOLVED: Resolved = Resolved {
+    pc: Options::ENABLE_TABLES
+        .union(Options::ENABLE_STRIKETHROUGH)
+        .union(Options::ENABLE_TASKLISTS)
+        .union(Options::ENABLE_GFM),
+    unsafe_html: true,
+    heading_ids: false,
+};
+
 #[napi(js_name = "renderMany")]
 pub fn render_many(docs: Vec<String>, options: Option<CommonMarkOptions>) -> Vec<String> {
     let r = resolve(options.as_ref());

@@ -37,10 +37,20 @@ impl Task for FileTypeTask {
     }
 }
 
+/// Magic-byte detection reads only the head of the buffer. `infer` checks
+/// signatures that fit well within 4 KB — keeping a 4 KB head-copy avoids
+/// a full `to_vec()` of a 10 MB MP4 before the async task even starts
+/// (1–3 ms memcpy that the task itself doesn't need). Since the `Buffer`
+/// isn't `Send`, we still need a copy to move into the worker thread;
+/// we just bound its size.
+const MAX_MAGIC_PREFIX: usize = 4096;
+
 #[napi]
 pub fn file_type_from_buffer(buffer: Buffer) -> AsyncTask<FileTypeTask> {
+    let slice = buffer.as_ref();
+    let head = &slice[..slice.len().min(MAX_MAGIC_PREFIX)];
     AsyncTask::new(FileTypeTask {
-        buffer: buffer.to_vec(),
+        buffer: head.to_vec(),
     })
 }
 

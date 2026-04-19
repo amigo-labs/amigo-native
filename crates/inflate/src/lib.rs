@@ -41,17 +41,25 @@ fn estimated_inflate_size(compressed_len: usize) -> usize {
 /// once per internal chunk (~8 KB default) and paying for the
 /// bookkeeping each time — measurable ~2× slowdown vs `node:zlib` at
 /// 100 KB / 10 MB. Driving `Decompress::decompress` with a single
-/// pre-sized output buffer, growing 1.5× on BufError, halves the gap.
+/// pre-sized output buffer, growing 2× on BufError, halves the gap.
+///
+/// The output buffer skips zero-initialisation (`set_len` on a Vec with
+/// uninitialised tail) — `decompress` only writes into the slice we hand
+/// it, and we `truncate` to `total_out` before returning, so the
+/// uninitialised bytes are never observable. Avoids a 6×-input memset
+/// that was visible at 10 MB (≈30 % of the total budget).
 fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
     let mut dec = Decompress::new(zlib_header);
-    let mut out = vec![0u8; estimated_inflate_size(input.len()).max(64)];
+    let initial = estimated_inflate_size(input.len()).max(64);
+    let mut out: Vec<u8> = Vec::with_capacity(initial);
+    // SAFETY: `decompress` only writes into `&mut out[out_pos..]`; we
+    // truncate to `total_out` before handing `out` to any reader.
+    unsafe { out.set_len(initial) };
     loop {
         let in_pos = dec.total_in() as usize;
         let out_pos = dec.total_out() as usize;
         if out_pos == out.len() {
-            // Reached the end of our buffer without seeing StreamEnd →
-            // grow and keep going.
-            out.resize(out.len().saturating_mul(2).max(out.len() + 1), 0);
+            grow_uninit(&mut out);
         }
         match dec
             .decompress(
@@ -70,11 +78,20 @@ fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
                 // input, but we gave everything upfront). Grow unless we
                 // just made forward progress on `Ok`.
                 if (dec.total_out() as usize) == out_pos {
-                    out.resize(out.len().saturating_mul(2).max(out.len() + 1), 0);
+                    grow_uninit(&mut out);
                 }
             }
         }
     }
+}
+
+#[inline]
+fn grow_uninit(out: &mut Vec<u8>) {
+    let new_len = out.len().saturating_mul(2).max(out.len() + 1);
+    out.reserve(new_len - out.len());
+    // SAFETY: see `decompress_bulk` — the tail is written by `decompress`
+    // before any read observes it; we truncate before return.
+    unsafe { out.set_len(new_len) };
 }
 
 #[napi]

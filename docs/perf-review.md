@@ -35,7 +35,7 @@ Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
 | **csv** | 🟢 | **1,43× – 1,77×** alle Größen | `parse()` routet jetzt durch `parseToJson + JSON.parse`. Von Red→Green auf allen drei Größen. (Commit `ecf8408`) |
 | **zip** | 🟢 | 2,66× – 3,7× | `extractAll()` hinzugefügt. Letzte Regression (0,56×) → 2,66× gegen adm-zip. (Commit `16c74ed`) |
 | **xxhash** | 🟢 | Large-Buffer 1,2×–2,5×, Batch **2,44× – 4,00×** | `*Batch(Vec<Buffer>)→Vec<T>` gelöscht, durch `*Many(Buffer, chunkSize)→Buffer` ersetzt. 0,17× → 4,00× auf dem schlimmsten Batch-Szenario. (Commit `4c6fb50`) |
-| **encoding** | 🟡 | latin1 decode **14,7×**, UTF-8 an Parität, shift_jis **0,65× bleibt** | V8-Fast-Paths bereits in `18cf727`. shift_jis liegt im encoding_rs-Backend; Lookup-Tabelle-Rewrite aufgeschoben. |
+| **encoding** | 🟢 | latin1 decode **14,8×**, UTF-8 an Parität, shift_jis **1,17×** | Shift_JIS nach encoding_rs-Upgrade jetzt über iconv-lite (961 vs 821 hz auf 100 KB, siehe `docs/data.json`). Status von Yellow → Green. |
 | **inflate** | 🟡 | deflate 4,1×–6,4×, inflate 0,46×–0,49× | Direct-Decompress-API + pre-alloc auf 1,7× des alten Inflate-Stands. zlib-rs selbst limitiert hier; Backend-Wechsel aufgeschoben. (Commit `32d7dfa`) |
 | **argon2** | 🟡 | 1,37× | CPU-bound, Optimierungs-Ceiling erreicht. Keep as-is. |
 | **nanoid** | 🟡→Green-ish | 1,03× – 1,08× über nanoid@5 | Bereits pure-JS seit `794396b`. Schlägt nanoid@5 überall knapp; 0,8× vs `crypto.randomUUID` (erwartbar: weniger Work pro ID). |
@@ -43,7 +43,9 @@ Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
 | **levenshtein** | 🗄️ **ARCHIVED** | 0,13× – 1,10× | Archived 2026-04-19 nach Phase-C-Spike (`distanceU16`) — Gate ≥1,5× bei 10k chars verfehlt (6,7× langsamer als fast-levenshtein). Siehe `docs/perf-review/levenshtein.md` und `docs/post-mortems/levenshtein.md`. |
 | **xml** | 🗄️ **ARCHIVED** | parseXml 0,44× – 0,68× / parseXmlToJson 0,72× – 1,55× | Archived 2026-04-19 (never published). Re-review mit `parseXmlToJson` verliert 100 KB-Median und 10 MB; 10 MB ist JSON.parse-gebunden. `archived/xml/` + `docs/perf-review/xml.md`. |
 
-**Net:** 5 Green → 8 Green + 1 faktisch-Green (nanoid). 7 Yellow → 3 Yellow (argon2, encoding, inflate — alle mit klaren Backend-Gründen für ihr Yellow-Stand). 3 Red → 3 Deprecated (3-Monats-Window).
+**Net:** 5 Green → 9 Green + 1 faktisch-Green (nanoid). 7 Yellow → 2 Yellow (argon2, inflate — beide Backend-limitiert). 3 Red → 3 Deprecated (3-Monats-Window).
+
+**Update 2026-04-19 (Perf-Sprint)**: encoding von Yellow → Green nach shift_jis Re-Messung (1,17× statt 0,65×). Inflate bleibt Yellow mit laufendem Backend-Spike (`docs/perf-review/inflate-backend-spike.md`); zusätzlich `decompress_bulk` ohne Zero-Init-Output-Buffer (erwartet +5–15 % auf 10 MB Inflate). Neue additive APIs im Portfolio: `xxh3_128Bytes`, `renderFast`/`renderBytesFast` — jeweils Option-Unmarshalling-frei für FFI-floor-dominierte Cases. file-type async bounded copy auf 4 KB Prefix (vorher: voller Buffer).
 
 Die 8-Green-Packages sind alle netto-schneller-als-JS auf jedem gemessenen Szenario. Das ist die Qualitätsgarantie für das Portfolio: keine Footguns mehr, keine "works well for X but slow for Y"-Überraschungen in den Green-Packages.
 
