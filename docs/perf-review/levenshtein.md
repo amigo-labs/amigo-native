@@ -98,7 +98,7 @@ Added `distanceU16(Uint16Array, Uint16Array) -> u32` with a scalar Wagner-Fische
 
 ## Final action
 
-Proceed with Phase-D per the 0.2.0 plan: three-month deprecation window continues, archive `crates/levenshtein/` after expiry, decrement `PACKAGES` count in `docs/packages.json:33`. The asymmetric benchmarks added during the spike stay in `__bench__/index.bench.ts` as evidence.
+Proceed with Phase-D per the 0.2.0 plan: three-month deprecation window continues, archive `crates/levenshtein/` after expiry, decrement `PACKAGES` count in `docs/packages.json:33`. The asymmetric benchmarks added during the spike are preserved in git history — the `__bench__/` directory was removed with the archived-bench cleanup, since deprecated packages no longer run benchmarks.
 
 ## References
 

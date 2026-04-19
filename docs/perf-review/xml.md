@@ -167,7 +167,7 @@ Phase nötig ist:
 ## References
 
 - Archived crate: `archived/xml/` (was `crates/xml/`)
-- Bench (historical): `archived/xml/__bench__/index.bench.ts`
+- Bench (historical): removed with the deprecated-bench cleanup; see git history for `archived/xml/__bench__/index.bench.ts`
 - Lib (historical): `archived/xml/src/lib.rs`
 - Post-Mortem (updated with measured numbers): `docs/post-mortems/xml.md`
 - FFI-Baseline: `docs/BASELINE.md`
