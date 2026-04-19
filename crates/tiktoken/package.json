@@ -57,5 +57,20 @@
   },
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Tiktoken",
+    "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
+    "tableDescription": "OpenAI BPE tokenizer (cl100k, o200k) via `tiktoken-rs`",
+    "replaces": "tiktoken/js-tiktoken",
+    "vsJs": "3-23× vs tiktoken-wasm",
+    "parity": "100%",
+    "status": "Drop-in",
+    "speedup": "3–23× vs tiktoken (WASM) / 2–4× vs js-tiktoken / 0.4× vs gpt-tokenizer",
+    "competitors": [
+      "tiktoken@1.0.16",
+      "js-tiktoken@1.0.15",
+      "gpt-tokenizer@2.5.0"
+    ]
   }
 }

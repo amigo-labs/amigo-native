@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest'
-import { fileTypeFromBufferSync as amigoSync } from '../index.js'
+import { fileTypeFromBufferSync as amigoSync, fileTypeFromBuffer as amigoAsync } from '../index.js'
 import { fileTypeFromBuffer as upstream } from 'file-type'
 
 const pngHeader = Buffer.from([
@@ -39,6 +39,10 @@ describe('file-type — medium JPEG buffer (100KB)', () => {
 describe('file-type — large MP4 buffer (10MB)', () => {
   bench('@amigo-labs/file-type (sync)', () => {
     amigoSync(mp4Large)
+  })
+
+  bench('@amigo-labs/file-type (async)', async () => {
+    await amigoAsync(mp4Large)
   })
 
   bench('file-type (upstream async)', async () => {

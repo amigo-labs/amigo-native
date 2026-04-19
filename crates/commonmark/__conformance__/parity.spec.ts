@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render } from '../index.js'
+import { render, renderFast, renderBytes, renderBytesFast } from '../index.js'
 
 describe('CommonMark basics', () => {
   const cases: Array<[string, string, RegExp | string]> = [
@@ -105,4 +105,28 @@ describe('heading IDs', () => {
     const out = render('# a!!! b??? c')
     expect(out).toMatch(/<h1 id="a-b-c">/)
   })
+})
+
+describe('renderFast parity with render(md, { headingIds: false, unsafeHtml: true })', () => {
+  const fastOpts = { headingIds: false, unsafeHtml: true }
+  const samples = [
+    '# Hello\n\nA paragraph with **bold**, *em*, `code`.',
+    '| a | b |\n|---|---|\n| 1 | 2 |',
+    '> quote\n> second line\n\n- one\n- two',
+    '~~strike~~ and a [link](https://example.com).',
+    '<div>raw passes through</div>',
+    '# Heading\n\nBody\n\n## Sub\n\nBody2',
+  ]
+
+  for (const md of samples) {
+    const label = JSON.stringify(md.slice(0, 30))
+    it(`renderFast matches render() for ${label}`, () => {
+      expect(renderFast(md)).toBe(render(md, fastOpts))
+    })
+
+    it(`renderBytesFast matches renderBytes() for ${label}`, () => {
+      const buf = Buffer.from(md, 'utf8')
+      expect(renderBytesFast(buf)).toBe(renderBytes(buf, fastOpts))
+    })
+  }
 })

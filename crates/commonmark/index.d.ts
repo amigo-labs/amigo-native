@@ -24,4 +24,18 @@ export declare function render(markdown: string, options?: CommonMarkOptions | u
  */
 export declare function renderBytes(markdown: Buffer, options?: CommonMarkOptions | undefined | null): string
 
+/**
+ * Buffer-input twin of `renderFast`. Skips both the V8 UTF-16 → UTF-8
+ * copy (via Buffer input) and the options-object unmarshalling.
+ */
+export declare function renderBytesFast(markdown: Buffer): string
+
+/**
+ * GFM + tables + strikethrough, raw HTML passthrough, no heading-ID
+ * rewrite. Equivalent to `render(md, { headingIds: false, unsafeHtml:
+ * true })` but without the options-object unmarshalling cost — measurable
+ * on sub-KB inputs where the option cost eats 10–15 % of the budget.
+ */
+export declare function renderFast(markdown: string): string
+
 export declare function renderMany(docs: Array<string>, options?: CommonMarkOptions | undefined | null): Array<string>
