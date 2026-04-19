@@ -1,18 +1,18 @@
 # Perf-Review: `@amigo-labs/xml`
 
-> **Status:** 🔴 Red (confirmed, with nuance) · **Reviewed:** 2026-04-19 · **Version:** 0.2.0 (deprecated)
+> **Status:** 🗄️ Archived (never published) · **Reviewed:** 2026-04-19 · **Version:** 0.2.0 (final)
 
 ## Verdict
 
-Deprecation bleibt berechtigt für den median Use-Case. Das
-`parseXmlToJson`-Experiment (lib.rs:219-353) hat die FFI-Kosten wirklich
-eliminiert — 1,9–3,1× schneller als das alte `parseXml` — aber am 100 KB
-RSS-Median liegen wir immer noch 0,78× `sax`, und am 10 MB SOAP nur 0,72×
-`sax`. Der einzige Bucket in dem wir jetzt gewinnen ist das 1 KB SVG
-(1,55× `sax`) — zu klein um die Deprecation umzuwerfen. Post-Mortem-
-Text („not tried") ist falsch und muss korrigiert werden; Dead-Code
-(`parseXmlToJson` in der Binary, unexportiert) wurde jetzt exportiert
-und gemessen.
+Archiviert ohne Deprecation-Window — das Paket war nie auf npm und
+brauchte deswegen keine 3-Monats-Warn-Phase. Crate liegt jetzt unter
+`archived/xml/`, aus Cargo/pnpm-Workspace raus, aus
+`docs/packages.json` / `docs/data.json` / `scripts/measure-size.mjs`
+entfernt. Der Grund bleibt derselbe: `parseXmlToJson` ist ein realer
+Hebel (1,9–3,1× schneller als das alte `parseXml`, gewinnt den 1 KB
+Bucket 1,55× gegen `sax`), aber am median 100 KB-RSS 0,78× und am
+10 MB-SOAP 0,72× `sax`. Post-Mortem-Text („not tried") war falsch und
+wurde mit den echten Zahlen aus dieser Messung ersetzt.
 
 ## Classification rationale
 
@@ -128,65 +128,48 @@ JS-side JSON.parse-Anteil.
   sax. Aber das ist ein anderes Produkt. Nicht im Scope von XML-Parse-
   Deprecation.
 
-## Action plan
+## Action taken (2026-04-19)
 
-**Empfehlung: Deprecation steht, mit zwei Korrekturen.**
+Durchgezogen, da das Paket nie publiziert wurde und keine Migrations-
+Phase nötig ist:
 
-### Schritt 1 — Post-Mortem korrigieren
+1. `crates/xml/` → `archived/xml/` (Git-Rename erhalten).
+2. `archived/xml/package.json` bekommt `"private": true`, `deprecated`-
+   Feld entfernt, description auf archive-hint geändert.
+3. `archived/xml/README.md` komplett umgeschrieben zu Archive-Header +
+   historical-Usage-Beispiel.
+4. Cargo-Workspace (`Cargo.toml`) und pnpm-Workspace (`pnpm-workspace.yaml`)
+   zeigen auf `crates/*` — Move aus `crates/` entfernt xml automatisch,
+   keine Edits nötig. Verifiziert mit `cargo metadata`: amigo-xml nicht
+   mehr Member.
+5. `docs/packages.json` — xml-Eintrag entfernt.
+6. `docs/data.json` — beide xml-Blöcke (benchmarks + install-size)
+   entfernt.
+7. `scripts/measure-size.mjs` — xml-Eintrag entfernt.
+8. `docs/post-mortems/xml.md` — „not tried" durch die realen Zahlen
+   aus dieser Review ersetzt, Status auf „archived 2026-04-19 (never
+   published to npm)" gesetzt, Deprecation-Plan durch Archival-Sektion
+   ersetzt.
+9. `docs/perf-review.md` Ergebnis-Tabelle — xml-Zeile auf
+   🗄️ **ARCHIVED** mit parseXml/parseXmlToJson-Range aktualisiert.
 
-`docs/post-mortems/xml.md:54-59` umschreiben:
+## Nicht durchgeführt — begründet verworfen
 
-> We tried a single-call "serialise-to-JSON-string" return mode
-> (`parseXmlToJson`, added in d1e2e46, measured 2026-04-19). It delivers
-> a 1,9-3,1× improvement over `parseXml` and wins the 1 KB bucket
-> against `sax` by 1,55×. But on the median 100 KB RSS case we still
-> reach only 0,78× `sax`, and on 10 MB SOAP 0,72×. At 10 MB the
-> dominant cost shifts from FFI to JS-side JSON.parse of the ~15 MB
-> output — a structural limit for any Rust-to-JS tree parser.
-
-### Schritt 2 — Entscheidung über `parseXmlToJson`
-
-Zwei Optionen, der Maintainer entscheidet:
-
-**(a) Keep as documented alternative.** README ergänzen um: „For small
-documents (<~10 KB) or when you want to pay a single FFI crossing,
-`parseXmlToJson(xml)` returns a JSON-encoded event stream that beats
-`sax` by 1,55× at 1 KB. At ≥100 KB, pure `sax` is still faster."
-Warum: Der Hebel ist real, die API steht, und ein klar abgegrenzter
-Niche existiert. `deprecated`-Flag bleibt aber, weil für die Mehrheit
-der Benutzer `sax` besser ist.
-
-**(b) Remove dead code.** `parseXmlToJson` aus lib.rs löschen,
-entsprechende `index.d.ts` und `wrapper.js`-Exporte wegräumen. Clean
-archive in `archived/`. Rationale: API-Chaos vermeiden, der
-Deprecation-Pfad ist klar.
-
-Meine Präferenz: **(a)**. Die Messung zeigt einen echten 1,55×-Gewinn
-bei 1 KB; das komplett zu löschen wäre Übersteuern. Aber die
-`package.json`-`"deprecated"`-Message muss auf „prefer `sax`; for
-single-FFI-crossing use `parseXmlToJson`" verfeinert werden.
-
-### Schritt 3 — Nicht empfohlen: Buffer-I/O-Sprint
-
-C.1 + C.2 würde 100 KB plausibel auf ~1,05–1,15× `sax` heben, aber:
-
-- Der Bundle-Size-Gap (7,7×) bleibt.
-- 10 MB bleibt verloren (JSON.parse-dominiert).
-- Entwicklungsaufwand für einen Grenzfall-Win am Median.
-
-Nur durchziehen falls der Maintainer einen strategischen Grund sieht
-(z. B. ein konkreter Caller profitiert asymmetrisch von dem 100 KB-
-Bucket). Sonst nicht.
+- **Buffer-I/O-Sprint (C.1/C.2):** Hätte 100 KB plausibel auf 1,05–1,15×
+  `sax` gehoben, aber 10 MB bleibt JSON.parse-dominiert und der
+  Bundle-Size-Gap (7,7×) bleibt. Aufwand für einen Grenzfall-Win am
+  Median nicht gerechtfertigt.
+- **Filter-/Query-API:** Wäre ein anderes Produkt. Falls in Zukunft ein
+  konkreter Use-Case das rechtfertigt: BACKLOG-Eintrag unter einem
+  neuen „XML-Extraction"-Scope, nicht eine Wiederbelebung des
+  General-Purpose-Parsers.
 
 ## References
 
-- Crate: `crates/xml`
-- Bench: `crates/xml/__bench__/index.bench.ts` (updated 2026-04-19)
-- Lib: `crates/xml/src/lib.rs`
-- Cargo: `crates/xml/Cargo.toml`
-- Wrapper: `crates/xml/wrapper.js` (parseXmlToJson now exported)
-- Post-Mortem: `docs/post-mortems/xml.md` (contains inaccurate "not tried")
+- Archived crate: `archived/xml/` (was `crates/xml/`)
+- Bench (historical): `archived/xml/__bench__/index.bench.ts`
+- Lib (historical): `archived/xml/src/lib.rs`
+- Post-Mortem (updated with measured numbers): `docs/post-mortems/xml.md`
 - FFI-Baseline: `docs/BASELINE.md`
-- `docs/packages.json` speedup field: `"2.3× slower"` (`deprecated: true`)
 - Implementation commit `parseXmlToJson`: `d1e2e46`
-- Re-benched commit: (this PR)
+- Re-bench + archive commits: this PR

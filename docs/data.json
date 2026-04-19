@@ -1079,60 +1079,6 @@
         ]
       },
       {
-        "file": "crates/xml/__bench__/index.bench.ts",
-        "name": "xml — small SVG (1KB)",
-        "entries": [
-          {
-            "name": "@amigo-labs/xml (parseXml)",
-            "hz": 101828.42,
-            "rme": 0.58,
-            "samples": 50915
-          },
-          {
-            "name": "@amigo-labs/xml (sax API)",
-            "hz": 93816.84,
-            "rme": 0.66,
-            "samples": 46909
-          },
-          {
-            "name": "sax",
-            "hz": 136714.43,
-            "rme": 1.03,
-            "samples": 68358
-          }
-        ]
-      },
-      {
-        "file": "crates/xml/__bench__/index.bench.ts",
-        "name": "xml — RSS feed (100KB)",
-        "entries": [
-          {
-            "name": "@amigo-labs/xml",
-            "hz": 110.16,
-            "rme": 1.91,
-            "samples": 56
-          },
-          {
-            "name": "sax",
-            "hz": 256.54,
-            "rme": 2.06,
-            "samples": 129
-          }
-        ]
-      },
-      {
-        "file": "crates/xml/__bench__/index.bench.ts",
-        "name": "xml — SOAP response (10MB)",
-        "entries": [
-          {
-            "name": "sax",
-            "hz": 1.1995,
-            "rme": 2.19,
-            "samples": 10
-          }
-        ]
-      },
-      {
         "file": "crates/xxhash/__bench__/index.bench.ts",
         "name": "xxh32 - 64 bytes",
         "entries": [
@@ -1498,16 +1444,6 @@
       },
       "iconv-lite": {
         "installSize": 391630,
-        "type": "node_modules"
-      }
-    },
-    "xml": {
-      "@amigo-labs/xml": {
-        "installSize": 434386,
-        "type": "binary+shim"
-      },
-      "sax": {
-        "installSize": 56383,
         "type": "node_modules"
       }
     },
