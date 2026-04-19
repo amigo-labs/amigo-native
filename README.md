@@ -70,9 +70,16 @@ pnpm test                # Node.js tests (vitest)
 ### Benchmark
 
 ```bash
-pnpm bench              # run all benchmarks (vitest bench)
-pnpm bench:report       # run benchmarks + measure sizes + update docs/data.json + docs/packages.json
+pnpm bench                                          # run all benchmarks (vitest bench)
+pnpm bench:report                                   # run all benchmarks + size + parity, regenerate shards
+node scripts/run-benchmarks.mjs --crates xxhash     # only this crate; writes bench-results-xxhash.json at repo root
+node scripts/run-benchmarks.mjs --only-changed      # crates whose source changed vs origin/main
+node scripts/generate-report.mjs                    # rebuild docs/data.json, generate docs/benchmarks/*.json, append history from fresh shards
 ```
+
+CI does the same thing automatically: on each push to `main` it benches only the crates whose
+`crates/<name>/` changed in that commit. Force a full rerun (e.g. after a toolchain bump) by
+putting `[full-bench]` anywhere in the merge commit message.
 
 ### Lint
 

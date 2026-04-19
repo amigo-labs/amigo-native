@@ -1,0 +1,159 @@
+{
+  "crate": "xxhash",
+  "generatedAt": "2026-04-19T09:35:56.340Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/xxhash/__bench__/index.bench.ts",
+      "name": "xxh32 - 64 bytes",
+      "entries": [
+        {
+          "name": "@amigo-labs/xxhash",
+          "hz": 3026109.07,
+          "rme": 0.41,
+          "samples": 1513055
+        },
+        {
+          "name": "xxhash-wasm",
+          "hz": 5582727.64,
+          "rme": 0.28,
+          "samples": 2791364
+        },
+        {
+          "name": "xxhashjs",
+          "hz": 767666.31,
+          "rme": 0.83,
+          "samples": 383834
+        }
+      ]
+    },
+    {
+      "file": "crates/xxhash/__bench__/index.bench.ts",
+      "name": "xxh32 - 1 MB",
+      "entries": [
+        {
+          "name": "@amigo-labs/xxhash",
+          "hz": 5908.63,
+          "rme": 0.5,
+          "samples": 2955
+        },
+        {
+          "name": "xxhash-wasm",
+          "hz": 3923.48,
+          "rme": 0.5,
+          "samples": 1963
+        },
+        {
+          "name": "xxhashjs",
+          "hz": 228.65,
+          "rme": 0.6,
+          "samples": 115
+        }
+      ]
+    },
+    {
+      "file": "crates/xxhash/__bench__/index.bench.ts",
+      "name": "xxh64 - 1 MB",
+      "entries": [
+        {
+          "name": "@amigo-labs/xxhash",
+          "hz": 11585.06,
+          "rme": 0.41,
+          "samples": 5793
+        },
+        {
+          "name": "xxhash-wasm",
+          "hz": 6450.17,
+          "rme": 0.38,
+          "samples": 3226
+        },
+        {
+          "name": "xxhashjs",
+          "hz": 15.4796,
+          "rme": 1.91,
+          "samples": 10
+        }
+      ]
+    },
+    {
+      "file": "crates/xxhash/__bench__/index.bench.ts",
+      "name": "xxh3_64 - 1 MB",
+      "entries": [
+        {
+          "name": "@amigo-labs/xxhash (xxh3)",
+          "hz": 16257.68,
+          "rme": 0.31,
+          "samples": 8129
+        },
+        {
+          "name": "xxhash-wasm (h64)",
+          "hz": 6673.8,
+          "rme": 0.32,
+          "samples": 3337
+        }
+      ]
+    },
+    {
+      "file": "crates/xxhash/__bench__/index.bench.ts",
+      "name": "xxh32 batch - 1000 × 64 bytes",
+      "entries": [
+        {
+          "name": "@amigo-labs/xxhash (many, Buffer in/out)",
+          "hz": 34625.4,
+          "rme": 11.23,
+          "samples": 17313
+        },
+        {
+          "name": "@amigo-labs/xxhash (loop)",
+          "hz": 4805.79,
+          "rme": 1.63,
+          "samples": 2403
+        },
+        {
+          "name": "@amigo-labs/xxhash (streaming)",
+          "hz": 4173.83,
+          "rme": 0.47,
+          "samples": 2087
+        },
+        {
+          "name": "xxhash-wasm (loop)",
+          "hz": 13981.41,
+          "rme": 0.46,
+          "samples": 6991
+        },
+        {
+          "name": "xxhashjs (loop)",
+          "hz": 863.92,
+          "rme": 1.51,
+          "samples": 432
+        }
+      ]
+    },
+    {
+      "file": "crates/xxhash/__bench__/index.bench.ts",
+      "name": "xxh3_64 batch - 1000 × 64 bytes",
+      "entries": [
+        {
+          "name": "@amigo-labs/xxhash (many, Buffer in/out)",
+          "hz": 50899.89,
+          "rme": 4.74,
+          "samples": 25468
+        },
+        {
+          "name": "@amigo-labs/xxhash (streaming)",
+          "hz": 3800.5,
+          "rme": 1.12,
+          "samples": 1901
+        },
+        {
+          "name": "xxhash-wasm (loop)",
+          "hz": 14699.84,
+          "rme": 0.51,
+          "samples": 7350
+        }
+      ]
+    }
+  ]
+}

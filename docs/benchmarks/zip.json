@@ -1,0 +1,105 @@
+{
+  "crate": "zip",
+  "generatedAt": "2026-04-19T09:34:51.034Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/zip/__bench__/index.bench.ts",
+      "name": "zip — write 100 x 1KB files",
+      "entries": [
+        {
+          "name": "@amigo-labs/zip",
+          "hz": 451.22,
+          "rme": 1.25,
+          "samples": 226
+        },
+        {
+          "name": "adm-zip",
+          "hz": 173.61,
+          "rme": 9.66,
+          "samples": 87
+        }
+      ]
+    },
+    {
+      "file": "crates/zip/__bench__/index.bench.ts",
+      "name": "zip — write 1 x 10MB file",
+      "entries": [
+        {
+          "name": "@amigo-labs/zip",
+          "hz": 24.9246,
+          "rme": 3.85,
+          "samples": 13
+        },
+        {
+          "name": "adm-zip",
+          "hz": 15.7197,
+          "rme": 4.67,
+          "samples": 10
+        }
+      ]
+    },
+    {
+      "file": "crates/zip/__bench__/index.bench.ts",
+      "name": "zip — read entries (100 files)",
+      "entries": [
+        {
+          "name": "@amigo-labs/zip",
+          "hz": 1776.27,
+          "rme": 1.02,
+          "samples": 889
+        },
+        {
+          "name": "adm-zip",
+          "hz": 518.94,
+          "rme": 11.9,
+          "samples": 260
+        }
+      ]
+    },
+    {
+      "file": "crates/zip/__bench__/index.bench.ts",
+      "name": "zip — extract all (100 files)",
+      "entries": [
+        {
+          "name": "@amigo-labs/zip (extractAll)",
+          "hz": 900.72,
+          "rme": 1.85,
+          "samples": 451
+        },
+        {
+          "name": "@amigo-labs/zip (entries + read loop)",
+          "hz": 167.05,
+          "rme": 1.53,
+          "samples": 84
+        },
+        {
+          "name": "adm-zip",
+          "hz": 239.13,
+          "rme": 13.06,
+          "samples": 121
+        }
+      ]
+    },
+    {
+      "file": "crates/zip/__bench__/index.bench.ts",
+      "name": "zip — extract large (10MB)",
+      "entries": [
+        {
+          "name": "@amigo-labs/zip",
+          "hz": 80.4155,
+          "rme": 8.46,
+          "samples": 41
+        },
+        {
+          "name": "adm-zip",
+          "hz": 22.7424,
+          "rme": 12.09,
+          "samples": 12
+        }
+      ]
+    }
+  ]
+}

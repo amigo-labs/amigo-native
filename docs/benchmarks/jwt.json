@@ -1,0 +1,117 @@
+{
+  "crate": "jwt",
+  "generatedAt": "2026-04-19T09:34:51.034Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/jwt/__bench__/index.bench.ts",
+      "name": "jwt — sign HS256",
+      "entries": [
+        {
+          "name": "@amigo-labs/jwt",
+          "hz": 122355.67,
+          "rme": 0.79,
+          "samples": 61178
+        },
+        {
+          "name": "jsonwebtoken",
+          "hz": 20187.43,
+          "rme": 3,
+          "samples": 10095
+        }
+      ]
+    },
+    {
+      "file": "crates/jwt/__bench__/index.bench.ts",
+      "name": "jwt — verify HS256",
+      "entries": [
+        {
+          "name": "@amigo-labs/jwt",
+          "hz": 84525.45,
+          "rme": 0.57,
+          "samples": 42263
+        },
+        {
+          "name": "jsonwebtoken",
+          "hz": 15852.88,
+          "rme": 2.86,
+          "samples": 7927
+        }
+      ]
+    },
+    {
+      "file": "crates/jwt/__bench__/index.bench.ts",
+      "name": "jwt — sign RS256",
+      "entries": [
+        {
+          "name": "@amigo-labs/jwt",
+          "hz": 1493.5,
+          "rme": 0.82,
+          "samples": 747
+        },
+        {
+          "name": "jsonwebtoken",
+          "hz": 671.35,
+          "rme": 1.64,
+          "samples": 336
+        }
+      ]
+    },
+    {
+      "file": "crates/jwt/__bench__/index.bench.ts",
+      "name": "jwt — verify RS256",
+      "entries": [
+        {
+          "name": "@amigo-labs/jwt",
+          "hz": 19777.77,
+          "rme": 0.7,
+          "samples": 9889
+        },
+        {
+          "name": "jsonwebtoken",
+          "hz": 11643.35,
+          "rme": 4.07,
+          "samples": 5823
+        }
+      ]
+    },
+    {
+      "file": "crates/jwt/__bench__/index.bench.ts",
+      "name": "jwt — sign ES256",
+      "entries": [
+        {
+          "name": "@amigo-labs/jwt",
+          "hz": 10131.13,
+          "rme": 2.04,
+          "samples": 5066
+        },
+        {
+          "name": "jsonwebtoken",
+          "hz": 4136.45,
+          "rme": 8.14,
+          "samples": 2069
+        }
+      ]
+    },
+    {
+      "file": "crates/jwt/__bench__/index.bench.ts",
+      "name": "jwt — verify ES256",
+      "entries": [
+        {
+          "name": "@amigo-labs/jwt",
+          "hz": 12051.87,
+          "rme": 0.46,
+          "samples": 6026
+        },
+        {
+          "name": "jsonwebtoken",
+          "hz": 4917.1,
+          "rme": 10.22,
+          "samples": 2459
+        }
+      ]
+    }
+  ]
+}

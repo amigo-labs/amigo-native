@@ -1,0 +1,63 @@
+{
+  "crate": "slugify",
+  "generatedAt": "2026-04-19T09:34:51.034Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/slugify/__bench__/index.bench.ts",
+      "name": "slugify - short ASCII (20 chars)",
+      "entries": [
+        {
+          "name": "@amigo-labs/slugify",
+          "hz": 906189.83,
+          "rme": 0.33,
+          "samples": 453095
+        },
+        {
+          "name": "slugify (npm)",
+          "hz": 311265.76,
+          "rme": 1.99,
+          "samples": 155633
+        }
+      ]
+    },
+    {
+      "file": "crates/slugify/__bench__/index.bench.ts",
+      "name": "slugify - long ASCII (500 chars)",
+      "entries": [
+        {
+          "name": "@amigo-labs/slugify",
+          "hz": 79738.53,
+          "rme": 0.54,
+          "samples": 39870
+        },
+        {
+          "name": "slugify (npm)",
+          "hz": 12071.83,
+          "rme": 14.29,
+          "samples": 6037
+        }
+      ]
+    },
+    {
+      "file": "crates/slugify/__bench__/index.bench.ts",
+      "name": "slugify - unicode heavy",
+      "entries": [
+        {
+          "name": "@amigo-labs/slugify",
+          "hz": 202513.74,
+          "rme": 0.21,
+          "samples": 101257
+        },
+        {
+          "name": "slugify (npm)",
+          "hz": 56659.05,
+          "rme": 1.3,
+          "samples": 28330
+        }
+      ]
+    }
+  ]
+}
