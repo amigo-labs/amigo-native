@@ -53,6 +53,18 @@ Synchronous version of `verify`.
 | --- | --- | --- |
 | `cost` | `number` | Work factor between 4 and 31 (default: 12) |
 
+## Performance
+
+Measured on linux-x64, Node v22.22.2:
+
+| Scenario | @amigo-labs/bcrypt | bcrypt npm (C++) | bcryptjs (pure JS) |
+| --- | ---: | ---: | ---: |
+| hash cost 4 | **848 hz** | 749 hz | 697 hz |
+| hash cost 10 | 14.6 hz | **16.2 hz** | 13.0 hz |
+| verify cost 10 | 14.7 hz | **16.2 hz** | 13.0 hz |
+
+**Positioning:** This package is designed primarily as a faster, prebuilt-binary replacement for [`bcryptjs`](https://www.npmjs.com/package/bcryptjs) — we win at every cost. Against the [`bcrypt`](https://www.npmjs.com/package/bcrypt) npm package's optimized C++ via node-gyp, we are slightly faster at small costs but ~10 % slower at the industry-default cost 10. If your environment can build node-gyp without friction, `bcrypt` may be marginally faster at production cost factors.
+
 ## Notes
 
 - Per the bcrypt specification, only the first **72 bytes** of a password are used. Inputs longer than that are silently truncated. This matches the behavior of `bcrypt` and `bcryptjs` on npm.

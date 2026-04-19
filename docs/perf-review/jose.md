@@ -1,6 +1,6 @@
 # Candidate review: `jose`
 
-> **Status:** GO (scoped) · **Predicted:** 🟢 Green-likely (Subset) / 🟡 Yellow (Full-Surface) · **Reviewed:** 2026-04-19
+> **Status:** SHIPPED v0.1 · **Predicted:** 🟢 Green-likely · **Measured:** 🟢 Green (3/4 Funktionen) / 🔴 Red (RSA-Keygen) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
@@ -105,3 +105,33 @@ Das ist die argon2-`hash`-vs-`verify`-Pattern angewandt auf JWE.
 ## If NO-GO — BACKLOG entry
 
 N/A — GO empfohlen (scoped).
+
+## Phase-B Messung (2026-04-19, linux-x64, Node v22.22.2)
+
+v0.1 Scope ausgeliefert: `generateRsaKeyPair`, `generateEd25519KeyPair`, `jwkThumbprint`. JWE/JWS auf v0.2 verschoben.
+
+| Funktion | @amigo-labs/jose | jose (panva, pure JS) | Speedup |
+|---|---:|---:|---|
+| jwkThumbprint Ed25519 | 507 407 hz | 271 279 hz | **1,87×** ✅ |
+| jwkThumbprint RSA-2048 | 470 445 hz | 182 718 hz | **2,57×** ✅✅ |
+| generateEd25519KeyPair | 52 939 hz | 7 312 hz | **7,24×** ✅✅✅ |
+| generateRsaKeyPair (2048) | 6,92 hz | **18,08 hz** | **0,38× (2,6× langsamer)** 🔴 |
+
+**Ergebnis: 3/4 Green, 1/4 Red.**
+
+**Warum RSA-Keygen verliert:**
+panva/jose nutzt unter der Haube `crypto.subtle.generateKey` (WebCrypto-API) — das ist Node-built-in OpenSSL-Code. **Genau die "Node-built-in dominates"-Falle, die scrypt/pbkdf2 zerlegt hat.** OpenSSL's RSA-Prime-Search (BIGNUM-Math, Miller-Rabin in C-ASM) ist signifikant schneller als pure-Rust `rsa = "0.9"`.
+
+Diese Erkenntnis hätte ich aus den scrypt/pbkdf2-Reviews extrapolieren müssen — RSA-Keygen war unbeobachtet und hat den gleichen Konkurrenten.
+
+**Was funktioniert weiterhin:**
+- **Ed25519-Keygen 7,24× schneller** — panva/jose's WebCrypto-API für Ed25519 hat anscheinend höheren JS↔WebCrypto-Overhead, oder Node's Ed25519 ist suboptimaler implementiert. Klarer Sieg.
+- **JWK-Thumbprint 1,87–2,57× schneller** — Hash-Computation (SHA-256) + JSON-Canonicalization in Rust schlägt panva/jose's pure-JS String-Concatenation
+- 3 von 4 Funktionen liefern Wert
+
+**Phase-C/D-Plan:**
+- **C.6 Algorithm:** `generateRsaKeyPair` ist nicht algorithmisch optimierbar (RSA-Math ist bekannt). Pure-Rust hat strukturellen Nachteil gegen OpenSSL.
+- **Realistische Option:** README + API-Doc explizit empfehlen, für RSA-Keygen Node-built-in `crypto.generateKeyPair('rsa', {modulusLength: 2048})` zu nutzen, dann nur die JWK-Konvertierung mit unserer Crate. Liefert beste-of-both-worlds.
+- **Drastische Option:** `generateRsaKeyPair` in v0.2 deprecaten / aus Public-API entfernen, Crate auf "JWK-Tooling + Ed25519" fokussieren.
+
+**Empfehlung für v0.1:** Behalten, README-Warning für RSA-Keygen. v0.2-Roadmap erweitert um JWE-Decrypt (echter Lückenfüller) statt RSA-Keygen-Optimierung.

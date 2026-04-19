@@ -126,6 +126,24 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
 
+  crates/bcrypt:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
+      bcrypt:
+        specifier: ^6.0.0
+        version: 6.0.0
+      bcryptjs:
+        specifier: ^2.4.3
+        version: 2.4.3
+      fast-check:
+        specifier: ^3.23.0
+        version: 3.23.2
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+
   crates/csv:
     devDependencies:
       '@napi-rs/cli':
@@ -200,6 +218,21 @@ importers:
       pako:
         specifier: ^2.1.0
         version: 2.1.0
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
+
+  crates/jose:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: ^3.5.0
+        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
+      fast-check:
+        specifier: ^3.23.0
+        version: 3.23.2
+      jose:
+        specifier: ^5.9.0
+        version: 5.10.0
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
@@ -1444,6 +1477,13 @@ packages:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
     engines: {node: '>=12'}
 
+  bcrypt@6.0.0:
+    resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
+    engines: {node: '>= 18'}
+
+  bcryptjs@2.4.3:
+    resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
+
   before-after-hook@4.0.0:
     resolution: {integrity: sha512-q6tR3RPqIB1pMiTRMFcZwuG5T8vwp+vUvEG0vuI6B+Rikh5BfPp2fQ82c925FOs+b0lcFQ8CFrL+KbilfZFhOQ==}
 
@@ -1670,6 +1710,9 @@ packages:
   isomorphic-dompurify@2.36.0:
     resolution: {integrity: sha512-E8YkGyPY3a/U5s0WOoc8Ok+3SWL/33yn2IHCoxCFLBUUPVy9WGa++akJZFxQCcJIhI+UvYhbrbnTIFQkHKZbgA==}
     engines: {node: '>=20.19.5'}
+
+  jose@5.10.0:
+    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
@@ -2898,6 +2941,13 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
+  bcrypt@6.0.0:
+    dependencies:
+      node-addon-api: 8.7.0
+      node-gyp-build: 4.8.4
+
+  bcryptjs@2.4.3: {}
+
   before-after-hook@4.0.0: {}
 
   bidi-js@1.0.3:
@@ -3134,6 +3184,8 @@ snapshots:
       - '@noble/hashes'
       - canvas
       - supports-color
+
+  jose@5.10.0: {}
 
   js-tokens@9.0.1: {}
 

@@ -81,6 +81,11 @@ impl Task for RsaGenTask {
     type JsValue = JwkKeyPair;
 
     fn compute(&mut self) -> Result<Self::Output> {
+        if self.bits < 2048 {
+            return Err(Error::from_reason(
+                "RSA key size must be at least 2048 bits",
+            ));
+        }
         let mut rng = rand::thread_rng();
         let private = RsaPrivateKey::new(&mut rng, self.bits as usize)
             .map_err(|e| Error::from_reason(format!("RSA key generation failed: {e}")))?;
@@ -99,14 +104,10 @@ impl Task for RsaGenTask {
 /// `bits` must be ≥ 2048. Generation is CPU-bound and runs on the libuv
 /// thread-pool — typically 100ms–3s depending on key size.
 #[napi]
-pub fn generate_rsa_key_pair(bits: Option<u32>) -> Result<AsyncTask<RsaGenTask>> {
-    let bits = bits.unwrap_or(2048);
-    if bits < 2048 {
-        return Err(Error::from_reason(
-            "RSA key size must be at least 2048 bits",
-        ));
-    }
-    Ok(AsyncTask::new(RsaGenTask { bits }))
+pub fn generate_rsa_key_pair(bits: Option<u32>) -> AsyncTask<RsaGenTask> {
+    AsyncTask::new(RsaGenTask {
+        bits: bits.unwrap_or(2048),
+    })
 }
 
 // ── Ed25519 ───────────────────────────────────────────────────────────────

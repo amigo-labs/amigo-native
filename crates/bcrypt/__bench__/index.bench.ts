@@ -1,4 +1,4 @@
-import { bench, describe, beforeAll } from 'vitest'
+import { bench, describe } from 'vitest'
 import { hashSync as amigoHashSync, verifySync as amigoVerifySync } from '../index.js'
 
 // Competitor imports — bcrypt npm needs node-gyp, may not be available
@@ -21,20 +21,15 @@ const password = 'benchmark-password-2024'
 const LOW_COST = 4 // smallest realistic — keeps bench wall-time sane
 const STD_COST = 10 // industry default
 
-// Pre-compute hashes for verify benchmarks
-let amigoHash: string
-let nodeBcryptHash: string | undefined
-let bcryptjsHash: string | undefined
-
-beforeAll(async () => {
-  amigoHash = amigoHashSync(password, { cost: STD_COST })
-  if (nodeBcrypt) {
-    nodeBcryptHash = await nodeBcrypt.hash(password, STD_COST)
-  }
-  if (bcryptjs) {
-    bcryptjsHash = await bcryptjs.hash(password, STD_COST)
-  }
-})
+// Pre-compute hashes at top level so the conditional `bench()` registrations
+// below see real values, not undefined (which silently skips the bench).
+const amigoHash = amigoHashSync(password, { cost: STD_COST })
+const nodeBcryptHash = nodeBcrypt
+  ? await nodeBcrypt.hash(password, STD_COST)
+  : undefined
+const bcryptjsHash = bcryptjs
+  ? await bcryptjs.hash(password, STD_COST)
+  : undefined
 
 describe('bcrypt - hash (cost 4, low)', () => {
   bench(

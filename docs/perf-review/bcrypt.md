@@ -1,6 +1,6 @@
 # Candidate review: `bcrypt`
 
-> **Status:** GO · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-19
+> **Status:** SHIPPED v0.1 · **Predicted:** 🟢 Green · **Measured:** 🟡 Yellow · **Reviewed:** 2026-04-19
 
 ## Verdict
 
@@ -93,3 +93,32 @@ Vergleichspunkte aus Post-Mortems:
 ## If NO-GO — BACKLOG entry
 
 N/A — GO empfohlen.
+
+## Phase-B Messung (2026-04-19, linux-x64, Node v22.22.2)
+
+Implementiert in `crates/bcrypt/`. Echte Bench-Resultate vs. argon2-Pattern-Vorhersage:
+
+| Szenario | @amigo-labs/bcrypt | bcrypt npm (C++) | bcryptjs (pure JS) | Speedup |
+|---|---:|---:|---:|---|
+| hash cost 4 | **848,75 hz** | 748,70 hz | 696,96 hz | 1,13× / 1,22× ✅ |
+| hash cost 10 | 14,64 hz | **16,18 hz** | 12,99 hz | **0,90×** / 1,13× ⚠️ |
+| verify cost 10 | 14,71 hz | **16,23 hz** | 12,95 hz | **0,91×** / 1,14× ⚠️ |
+
+**Ergebnis: 🟡 Yellow, nicht Green.** Vorhersage war falsch.
+
+**Warum die argon2-Analogie nicht durchschlägt:**
+- Argon2 vs argon2-npm: 1,43× schneller (gemessen) → wir haben das auf bcrypt extrapoliert
+- Bcrypt vs bcrypt-npm: 0,90× — wir verlieren bei realistischer Cost (10)
+- Hypothese: bcrypt-npm's C++-Implementierung (`bcrypt-pbkdf` C-Code mit hand-getuntem Blowfish-Schedule) ist signifikant schneller als RustCrypto's `blowfish`-Crate. Argon2 hat keinen so optimierten C-Konkurrenten — Rust gewinnt dort durch sauberere FFI; bei bcrypt ist der C-Code-Konkurrent algorithmisch kompetitiv
+
+**Was wir trotzdem gewinnen:**
+- vs. `bcryptjs` (6,5 M weekly, größere Userbase als bcrypt-npm) gewinnen wir an **allen** Cost-Stufen — 1,13–1,22× (klein bis Standard)
+- Bei Cost 4 (Test-Use-Cases) auch vs. bcrypt-npm
+- Cross-Platform-Prebuilds ohne node-gyp-Build-Dependency
+
+**Optionen für Phase C / D:**
+- **C.6 Algorithm-Swap:** `bcrypt`-Crate evaluieren mit alternativen Blowfish-Backends. `bcrypt = "0.18"` nutzt `blowfish 0.9` — vermutlich keine SIMD/ASM-Variante verfügbar
+- **Yellow halten:** ehrlich positionieren als "bcryptjs-Ersatz mit native-Speed", nicht als bcrypt-npm-Killer
+- **Re-Review in 6 Monaten** falls `blowfish`-Crate eine schnellere Variante kriegt
+
+**Empfehlung:** Yellow halten, Phase-C nicht priorisieren. Die `bcryptjs` → @amigo-labs/bcrypt Migration ist ein klarer Win; bcrypt-npm-User haben weniger Grund zum Wechsel (außer Build-Friction). README muss diese Positionierung explizit machen.

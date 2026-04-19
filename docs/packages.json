@@ -74,7 +74,7 @@
       "name": "bcrypt",
       "title": "Bcrypt",
       "description": "Bcrypt password hashing with sync + async API. Argon2 sibling.",
-      "speedup": "predicted ≥1.4× vs bcrypt npm, ≥1.8× vs bcryptjs",
+      "speedup": "1.13–1.22× faster vs bcryptjs / 0.90× vs bcrypt npm at cost 10",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bcrypt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bcrypt",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bcrypt/README.md"
@@ -164,7 +164,7 @@
       "name": "jose",
       "title": "JOSE",
       "description": "JWK key generation (RSA, Ed25519) and RFC 7638 thumbprints. JWE/JWS roadmap.",
-      "speedup": "predicted 2–4× vs panva/jose key-ops",
+      "speedup": "1.87–2.57× thumbprint / 7.24× Ed25519 keygen / 2.6× slower RSA keygen",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jose",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jose",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md"
