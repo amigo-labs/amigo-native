@@ -1,6 +1,6 @@
 use napi::bindgen_prelude::{Buffer, Error, Result, Status};
 use napi_derive::napi;
-use pulldown_cmark::{html, CowStr, Event, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{CowStr, Event, Options, Parser, Tag, TagEnd, html};
 use rayon::prelude::*;
 use std::collections::HashMap;
 
@@ -41,7 +41,11 @@ fn resolve(opts: Option<&CommonMarkOptions>) -> Resolved {
     if smart {
         pc |= Options::ENABLE_SMART_PUNCTUATION;
     }
-    Resolved { pc, unsafe_html, heading_ids }
+    Resolved {
+        pc,
+        unsafe_html,
+        heading_ids,
+    }
 }
 
 fn slugify(text: &str) -> String {
@@ -76,8 +80,8 @@ fn assign_heading_ids(events: &mut [Event<'_>]) {
             continue;
         }
         let mut text = String::new();
-        for j in (i + 1)..events.len() {
-            match &events[j] {
+        for event in events.iter().skip(i + 1) {
+            match event {
                 Event::End(TagEnd::Heading(_)) => break,
                 Event::Text(t) | Event::Code(t) => text.push_str(t),
                 _ => {}
@@ -172,7 +176,9 @@ pub struct Renderer {
 impl Renderer {
     #[napi(constructor)]
     pub fn new(options: Option<CommonMarkOptions>) -> Self {
-        Self { resolved: resolve(options.as_ref()) }
+        Self {
+            resolved: resolve(options.as_ref()),
+        }
     }
 
     #[napi]
