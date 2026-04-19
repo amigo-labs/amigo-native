@@ -70,5 +70,15 @@
   ],
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Sanitize HTML",
+    "description": "HTML sanitization via Mozilla's ammonia engine.",
+    "tableDescription": "HTML sanitization via Mozilla's `ammonia`",
+    "replaces": "sanitize-html",
+    "vsJs": "1.6-2x",
+    "parity": "—",
+    "status": "Compatible",
+    "competitors": ["sanitize-html@2.17.0", "isomorphic-dompurify@2.16.0"]
   }
 }

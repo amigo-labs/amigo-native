@@ -36,5 +36,15 @@
   },
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "NanoID",
+    "description": "Fast crypto-safe URL-friendly ID generator with pool-amortised entropy. Pure JS — the NAPI FFI boundary was bigger than the entire ID-generation path.",
+    "tableDescription": "Crypto-safe URL-safe IDs via `nanoid` crate",
+    "replaces": "nanoid",
+    "vsJs": "TBD",
+    "parity": "100%",
+    "status": "Drop-in",
+    "competitors": ["nanoid@5.0.9"]
   }
 }

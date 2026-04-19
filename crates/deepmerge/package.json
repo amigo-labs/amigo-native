@@ -54,5 +54,15 @@
   },
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Deepmerge",
+    "description": "Recursive object merge for JSON-safe values.",
+    "tableDescription": "Recursive object merge",
+    "replaces": "deepmerge",
+    "vsJs": "TBD",
+    "parity": "100%",
+    "status": "Compatible",
+    "competitors": ["deepmerge@4.3.1"]
   }
 }

@@ -54,5 +54,15 @@
   ],
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "XXHash",
+    "description": "XXH32, XXH64, and XXH3 with batch + streaming support.",
+    "tableDescription": "XXH32/64/XXH3 hashing with batch + streaming API",
+    "replaces": "xxhash-wasm/xxhashjs",
+    "vsJs": "1.3-2.6x",
+    "parity": "—",
+    "status": "Drop-in",
+    "competitors": ["xxhash-wasm@1.1.0", "xxhashjs@0.2.2"]
   }
 }

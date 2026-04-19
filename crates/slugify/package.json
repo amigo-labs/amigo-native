@@ -51,5 +51,15 @@
   ],
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Slugify",
+    "description": "Unicode-aware slugification. Wraps deunicode + unicode-normalization.",
+    "tableDescription": "Unicode-aware slugification via `deunicode`",
+    "replaces": "slugify",
+    "vsJs": "3-7x",
+    "parity": "—",
+    "status": "Alternative",
+    "competitors": ["slugify@1.6.6"]
   }
 }

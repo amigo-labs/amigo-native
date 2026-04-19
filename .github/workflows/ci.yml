@@ -26,6 +26,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Check crate registry is in sync
+        run: node scripts/sync-registry.mjs --check
       - run: pnpm run lint
 
   test-rust:

@@ -57,5 +57,15 @@
   ],
   "engines": {
     "node": ">= 18"
+  },
+  "amigo": {
+    "title": "JOSE",
+    "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
+    "tableDescription": "Ed25519 JWK + RFC 7638 thumbprints",
+    "replaces": "jose (subset)",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Alternative",
+    "competitors": ["jose@5.9.0"]
   }
 }
