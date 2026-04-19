@@ -55,6 +55,14 @@ New category, not yet ruled out. Each entry is subject to a `rust-check` candida
 
 - **ejs** (39M). Executes embedded JS code at render time — not feasible without a QuickJS-style integration.
 
+## Ported then deprecated — measured Red/Black
+
+Packages we actually built, shipped or staged, benchmarked, and then retired because the numbers refused to meet the Green gate. Listed here so future candidate scans don't reconsider them without reading the post-mortem first.
+
+- **deep-equal** (shipped, deprecated in 0.2.0). ~1.3× on flat objects, parity on nested / arrays. `fast-deep-equal` is 50 lines of V8-friendly JS — FFI overhead has no headroom to pay for. See `docs/post-mortems/deep-equal.md`, `docs/perf-review/deep-equal.md`.
+- **levenshtein** (shipped, deprecated in 0.2.0). **Slower than JS on every size**, worsens with length (0.13× at 10k chars). UTF-16↔UTF-8 marshalling dominates; `triple_accel` SIMD can't offset it. See `docs/post-mortems/levenshtein.md`, `docs/perf-review/levenshtein.md`.
+- **xml** (never published, archived 2026-04-19). 0.72× `sax` at 10 MB SOAP, 0.78× at 100 KB RSS; `parseXmlToJson` win relative to own baseline (3×) didn't close the gap to JS. Returning event trees as JS objects means V8 `JSON.parse` on the output dominates. See `docs/post-mortems/xml.md`, `docs/perf-review/xml.md`.
+
 ## Deprecated / superseded
 
 - `moment`, `request`, `core-js`, `har-validator`. Don't touch.
