@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-04-19",
-  "nodeVersion": "v22.22.2",
+  "nodeVersion": "v24.14.1",
   "platform": "linux x64",
   "benchmarks": {
     "suites": [
@@ -37,6 +37,144 @@
             "hz": 240.81,
             "rme": 0.26,
             "samples": 2409
+          }
+        ]
+      },
+      {
+        "file": "crates/commonmark/__bench__/index.bench.ts",
+        "name": "small (~0.1 KB)",
+        "entries": [
+          {
+            "name": "@amigo-labs/commonmark render",
+            "hz": 298326.38,
+            "rme": 0.16,
+            "samples": 149164
+          },
+          {
+            "name": "@amigo-labs/commonmark renderBytes",
+            "hz": 311054.77,
+            "rme": 0.29,
+            "samples": 155528
+          },
+          {
+            "name": "@amigo-labs/commonmark render (fast opts)",
+            "hz": 259486.3,
+            "rme": 0.83,
+            "samples": 129744
+          },
+          {
+            "name": "marked",
+            "hz": 34973.57,
+            "rme": 1.58,
+            "samples": 17487
+          },
+          {
+            "name": "markdown-it",
+            "hz": 54713.95,
+            "rme": 0.66,
+            "samples": 27357
+          }
+        ]
+      },
+      {
+        "file": "crates/commonmark/__bench__/index.bench.ts",
+        "name": "medium (~2.8 KB)",
+        "entries": [
+          {
+            "name": "@amigo-labs/commonmark render",
+            "hz": 30362.25,
+            "rme": 0.28,
+            "samples": 15182
+          },
+          {
+            "name": "@amigo-labs/commonmark renderBytes",
+            "hz": 31867.19,
+            "rme": 0.31,
+            "samples": 15934
+          },
+          {
+            "name": "@amigo-labs/commonmark render (fast opts)",
+            "hz": 39588.59,
+            "rme": 0.27,
+            "samples": 19795
+          },
+          {
+            "name": "marked",
+            "hz": 3450.56,
+            "rme": 0.7,
+            "samples": 1726
+          },
+          {
+            "name": "markdown-it",
+            "hz": 5416.68,
+            "rme": 0.96,
+            "samples": 2709
+          }
+        ]
+      },
+      {
+        "file": "crates/commonmark/__bench__/index.bench.ts",
+        "name": "large (~81 KB)",
+        "entries": [
+          {
+            "name": "@amigo-labs/commonmark render",
+            "hz": 722.29,
+            "rme": 2.18,
+            "samples": 362
+          },
+          {
+            "name": "@amigo-labs/commonmark renderBytes",
+            "hz": 739.97,
+            "rme": 2.32,
+            "samples": 370
+          },
+          {
+            "name": "@amigo-labs/commonmark render (fast opts)",
+            "hz": 863.82,
+            "rme": 1.96,
+            "samples": 432
+          },
+          {
+            "name": "marked",
+            "hz": 69.7166,
+            "rme": 2.66,
+            "samples": 35
+          },
+          {
+            "name": "markdown-it",
+            "hz": 133.75,
+            "rme": 3.87,
+            "samples": 67
+          }
+        ]
+      },
+      {
+        "file": "crates/commonmark/__bench__/index.bench.ts",
+        "name": "batch — renderMany (500 × medium docs)",
+        "entries": [
+          {
+            "name": "@amigo-labs/commonmark renderMany (parallel)",
+            "hz": 127.04,
+            "rme": 0.44,
+            "samples": 64
+          },
+          {
+            "name": "@amigo-labs/commonmark per-call loop",
+            "hz": 63.1715,
+            "rme": 0.43,
+            "samples": 32
+          },
+          {
+            "name": "marked per-call loop",
+            "hz": 6.7054,
+            "rme": 1.55,
+            "samples": 10
+          },
+          {
+            "name": "markdown-it per-call loop",
+            "hz": 8.9846,
+            "rme": 3.31,
+            "samples": 10
           }
         ]
       },
@@ -127,60 +265,6 @@
             "hz": 3.0396,
             "rme": 3.45,
             "samples": 31
-          }
-        ]
-      },
-      {
-        "file": "crates/deep-equal/__bench__/index.bench.ts",
-        "name": "deep-equal — flat 7-key objects",
-        "entries": [
-          {
-            "name": "@amigo-labs/deep-equal",
-            "hz": 1909262.7,
-            "rme": 2,
-            "samples": 954633
-          },
-          {
-            "name": "fast-deep-equal",
-            "hz": 1468803.74,
-            "rme": 0.73,
-            "samples": 734402
-          }
-        ]
-      },
-      {
-        "file": "crates/deep-equal/__bench__/index.bench.ts",
-        "name": "deep-equal — deeply nested (20 levels)",
-        "entries": [
-          {
-            "name": "@amigo-labs/deep-equal",
-            "hz": 334890.06,
-            "rme": 0.39,
-            "samples": 167446
-          },
-          {
-            "name": "fast-deep-equal",
-            "hz": 316431.3,
-            "rme": 1.28,
-            "samples": 158216
-          }
-        ]
-      },
-      {
-        "file": "crates/deep-equal/__bench__/index.bench.ts",
-        "name": "deep-equal — 10k objects in array",
-        "entries": [
-          {
-            "name": "@amigo-labs/deep-equal",
-            "hz": 240.1,
-            "rme": 1.93,
-            "samples": 121
-          },
-          {
-            "name": "fast-deep-equal",
-            "hz": 236.48,
-            "rme": 3.01,
-            "samples": 119
           }
         ]
       },
@@ -661,102 +745,6 @@
             "hz": 4917.1,
             "rme": 10.22,
             "samples": 2459
-          }
-        ]
-      },
-      {
-        "file": "crates/levenshtein/__bench__/index.bench.ts",
-        "name": "levenshtein — 10 chars",
-        "entries": [
-          {
-            "name": "@amigo-labs/levenshtein",
-            "hz": 1304091.88,
-            "rme": 0.19,
-            "samples": 652046
-          },
-          {
-            "name": "fast-levenshtein",
-            "hz": 2489311.32,
-            "rme": 0.81,
-            "samples": 1244656
-          },
-          {
-            "name": "leven",
-            "hz": 1051370.94,
-            "rme": 0.4,
-            "samples": 525686
-          }
-        ]
-      },
-      {
-        "file": "crates/levenshtein/__bench__/index.bench.ts",
-        "name": "levenshtein — 100 chars",
-        "entries": [
-          {
-            "name": "@amigo-labs/levenshtein",
-            "hz": 285657.06,
-            "rme": 0.16,
-            "samples": 142829
-          },
-          {
-            "name": "fast-levenshtein",
-            "hz": 167767.56,
-            "rme": 0.48,
-            "samples": 83884
-          },
-          {
-            "name": "leven",
-            "hz": 23575.63,
-            "rme": 0.34,
-            "samples": 11788
-          }
-        ]
-      },
-      {
-        "file": "crates/levenshtein/__bench__/index.bench.ts",
-        "name": "levenshtein — 1000 chars",
-        "entries": [
-          {
-            "name": "@amigo-labs/levenshtein",
-            "hz": 1035.03,
-            "rme": 0.73,
-            "samples": 518
-          },
-          {
-            "name": "fast-levenshtein",
-            "hz": 3230.29,
-            "rme": 0.6,
-            "samples": 1616
-          },
-          {
-            "name": "leven",
-            "hz": 258.61,
-            "rme": 1.13,
-            "samples": 130
-          }
-        ]
-      },
-      {
-        "file": "crates/levenshtein/__bench__/index.bench.ts",
-        "name": "levenshtein — 10000 chars",
-        "entries": [
-          {
-            "name": "@amigo-labs/levenshtein",
-            "hz": 6.9052,
-            "rme": 0.68,
-            "samples": 10
-          },
-          {
-            "name": "fast-levenshtein",
-            "hz": 31.5118,
-            "rme": 11.27,
-            "samples": 17
-          },
-          {
-            "name": "leven",
-            "hz": 2.5883,
-            "rme": 2.62,
-            "samples": 10
           }
         ]
       },
@@ -1455,7 +1443,7 @@
   "sizes": {
     "slugify": {
       "@amigo-labs/slugify": {
-        "installSize": 992993,
+        "installSize": 988673,
         "type": "binary+shim"
       },
       "slugify": {
@@ -1465,7 +1453,7 @@
     },
     "argon2": {
       "@amigo-labs/argon2": {
-        "installSize": 480555,
+        "installSize": 469931,
         "type": "binary+shim"
       },
       "argon2": {
@@ -1479,7 +1467,7 @@
     },
     "xxhash": {
       "@amigo-labs/xxhash": {
-        "installSize": 430491,
+        "installSize": 427051,
         "type": "binary+shim"
       },
       "xxhash-wasm": {
@@ -1493,7 +1481,7 @@
     },
     "sanitize-html": {
       "@amigo-labs/sanitize-html": {
-        "installSize": 1358336,
+        "installSize": 1350824,
         "type": "binary+shim"
       },
       "sanitize-html": {
@@ -1507,7 +1495,7 @@
     },
     "csv": {
       "@amigo-labs/csv": {
-        "installSize": 456058,
+        "installSize": 450994,
         "type": "binary+shim"
       },
       "csv-parse": {
@@ -1521,7 +1509,7 @@
     },
     "file-type": {
       "@amigo-labs/file-type": {
-        "installSize": 460760,
+        "installSize": 456888,
         "type": "binary+shim"
       },
       "file-type": {
@@ -1531,25 +1519,11 @@
     },
     "inflate": {
       "@amigo-labs/inflate": {
-        "installSize": 526665,
+        "installSize": 519425,
         "type": "binary+shim"
       },
       "pako": {
         "installSize": 1641188,
-        "type": "node_modules"
-      }
-    },
-    "levenshtein": {
-      "@amigo-labs/levenshtein": {
-        "installSize": 496154,
-        "type": "binary+shim"
-      },
-      "fast-levenshtein": {
-        "installSize": 29757,
-        "type": "node_modules"
-      },
-      "leven": {
-        "installSize": 5675,
         "type": "node_modules"
       }
     },
@@ -1565,7 +1539,7 @@
     },
     "encoding": {
       "@amigo-labs/encoding": {
-        "installSize": 626932,
+        "installSize": 615180,
         "type": "binary+shim"
       },
       "iconv-lite": {
@@ -1573,19 +1547,9 @@
         "type": "node_modules"
       }
     },
-    "deep-equal": {
-      "@amigo-labs/deep-equal": {
-        "installSize": 399431,
-        "type": "binary+shim"
-      },
-      "fast-deep-equal": {
-        "installSize": 13368,
-        "type": "node_modules"
-      }
-    },
     "deepmerge": {
       "@amigo-labs/deepmerge": {
-        "installSize": 421874,
+        "installSize": 416490,
         "type": "binary+shim"
       },
       "deepmerge": {
@@ -1595,7 +1559,7 @@
     },
     "jwt": {
       "@amigo-labs/jwt": {
-        "installSize": 1210171,
+        "installSize": 1203683,
         "type": "binary+shim"
       },
       "jsonwebtoken": {
@@ -1605,7 +1569,7 @@
     },
     "zip": {
       "@amigo-labs/zip": {
-        "installSize": 699729,
+        "installSize": 695137,
         "type": "binary+shim"
       },
       "yauzl": {
