@@ -9,7 +9,8 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-bcrypt = "0.18"
+rand = "0.8"
 
 [build-dependencies]
 napi-build = "2"
+cc = "1"

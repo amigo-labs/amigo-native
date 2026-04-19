@@ -59,11 +59,13 @@ Measured on linux-x64, Node v22.22.2:
 
 | Scenario | @amigo-labs/bcrypt | bcrypt npm (C++) | bcryptjs (pure JS) |
 | --- | ---: | ---: | ---: |
-| hash cost 4 | **848 hz** | 749 hz | 697 hz |
-| hash cost 10 | 14.6 hz | **16.2 hz** | 13.0 hz |
-| verify cost 10 | 14.7 hz | **16.2 hz** | 13.0 hz |
+| hash cost 4 | **981 hz** | 689 hz | 629 hz |
+| hash cost 10 | **17.6 hz** | 16.0 hz | 12.9 hz |
+| verify cost 10 | **17.6 hz** | 16.2 hz | 13.0 hz |
 
-**Positioning:** This package is designed primarily as a faster, prebuilt-binary replacement for [`bcryptjs`](https://www.npmjs.com/package/bcryptjs) — we win at every cost. Against the [`bcrypt`](https://www.npmjs.com/package/bcrypt) npm package's optimized C++ via node-gyp, we are slightly faster at small costs but ~10 % slower at the industry-default cost 10. If your environment can build node-gyp without friction, `bcrypt` may be marginally faster at production cost factors.
+Speedup vs `bcrypt` npm: **1.10–1.42×**. Speedup vs `bcryptjs`: **1.36–1.56×**.
+
+This package wraps the same vendored [`crypt_blowfish`](https://github.com/openwall/crypt_blowfish) C source as `bcrypt` npm but compiles it with current toolchain flags (`-O3 -fomit-frame-pointer -funroll-loops`) and crosses the FFI boundary via [napi-rs](https://napi.rs) v3, which is meaningfully faster than the older NAN binding `bcrypt` npm uses. Same algorithm, same correctness — every output is bit-for-bit identical and verifiable across implementations (the conformance suite cross-verifies against both `bcrypt` and `bcryptjs`).
 
 ## Notes
 
