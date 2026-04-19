@@ -1,1 +1,0 @@
-{"commit":"1d1624f","date":"2026-04-19","runner":"linux-x64","node":"v22.22.2","suites":[{"name":"xml — small SVG (1KB)","amigo":101828.42,"best_competitor":136714.43,"ratio":0.745},{"name":"xml — RSS feed (100KB)","amigo":110.16,"best_competitor":256.54,"ratio":0.429},{"name":"xml — SOAP response (10MB)","amigo":null,"best_competitor":1.1995,"ratio":null}]}
