@@ -1,0 +1,61 @@
+{
+  "name": "@amigo-labs/tiktoken",
+  "version": "0.1.0",
+  "description": "Fast BPE tokenizer for OpenAI models — Rust-powered drop-in for tiktoken and gpt-tokenizer",
+  "keywords": [
+    "tiktoken",
+    "gpt-tokenizer",
+    "openai",
+    "tokenizer",
+    "bpe",
+    "gpt-4",
+    "gpt-4o",
+    "cl100k",
+    "o200k",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "tiktoken",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/tiktoken"
+  },
+  "engines": {
+    "node": ">= 18"
+  }
+}

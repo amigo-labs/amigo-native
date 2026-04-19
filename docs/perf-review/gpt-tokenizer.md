@@ -1,6 +1,6 @@
 # Candidate review: `gpt-tokenizer`
 
-> **Status:** GO als Sub-Surface von `@amigo-labs/tiktoken` · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-19
+> **Status:** SHIPPED als Sub-Surface von `@amigo-labs/tiktoken`, aber **NO-GO als Konkurrenz** · **Predicted:** 🟢 Green · **Measured:** 🔴 Red (gpt-tokenizer ist 2–3× schneller als wir) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
@@ -123,3 +123,38 @@ gpt-tokenizer's LRU-Merge-Cache ist eine micro-opt; sie schließt die Lücke zu 
 ## If NO-GO — BACKLOG entry
 
 N/A — GO empfohlen als API-Erweiterung von `@amigo-labs/tiktoken`, nicht als separates Crate.
+
+## Phase-B Messung (2026-04-19, linux-x64, Node v22)
+
+Vorhersage war falsch. `gpt-tokenizer` benutzt **nicht** dasselbe Performance-Profil wie `js-tiktoken`. Gemessen gegen `@amigo-labs/tiktoken` (gleiche Binary wie der tiktoken-Perf-Review), `cl100k_base`:
+
+| Szenario | @amigo-labs/tiktoken | gpt-tokenizer | Verhältnis |
+|---|---:|---:|---:|
+| encode 10 B (small) | 164 256 hz | **586 445 hz** | 0,28× (3,57× langsamer) |
+| encode ~2 KB (medium) | 5 999 hz | **14 855 hz** | 0,40× (2,48× langsamer) |
+| encode ~90 KB (large) | 126 hz | **269 hz** | 0,47× (2,13× langsamer) |
+| 100 × 10 B (RAG batch) | 1 471 hz | **4 364 hz** | 0,34× (2,97× langsamer) |
+
+**Wir verlieren an jedem Messpunkt.** Der predicted Green (2,8× schneller) war auf Basis des `js-tiktoken`-Benchmarks geschätzt. `gpt-tokenizer` ist aber **8-9× schneller als `js-tiktoken`** — dieselbe Messung gegen `js-tiktoken` hätte uns Green gegeben.
+
+**Warum gpt-tokenizer so viel schneller ist als js-tiktoken:**
+- **LRU-Merge-Cache** (explizit dokumentiertes Feature). Wiederholte Bigram-Paare innerhalb eines einzigen `encode()`-Calls werden aus Cache bedient statt neu berechnet. Bei natural-language-Texten mit redundanten Wort-Paaren ist der Hit-Rate sehr hoch.
+- **V8-optimierter Hot-Path.** gpt-tokenizer's Autor (niieani) hat den BPE-Merge-Loop bewusst für V8's JIT geschrieben: monomorphe Objekte, keine Polymorphie, stabile `Map`-Shapes.
+- **Kein FFI.** Selbst unsere 109 ns NAPI-Floor zahlt pro Call; gpt-tokenizer hat 0 ns Floor.
+
+**Warum unser Native-Rust nicht hilft:**
+- `tiktoken-rs` hat keinen LRU-Merge-Cache. Der BPE-Merge-Loop läuft O(n²) über die Chunks statt mit Cache-amortisiert.
+- V8's JIT ist für BPE-Lookups kompetitiv mit Rust's `rustc_hash` — die Cache-Locality-Vorteile von Rust werden durch den Cache-Miss-Penalty aufgefressen
+- Wir sind weder gegen C++-Bindings (argon2-Pattern) noch gegen Text-Processing-Spezialisten (sanitize-html-Pattern) angetreten, sondern gegen einen **handoptimierten pure-JS-Konkurrenten** mit Domain-spezifischer Caching-Strategie. Das ist ein ganz anderes Rennen.
+
+**Endklassifikation: 🔴 Red gegen gpt-tokenizer** — ohne Optimierung nicht einholbar.
+
+**Was wir trotzdem shippen:**
+- `encodeChat` / `countChatCompletionTokens` / `isWithinTokenLimit` als Sub-Surface des `@amigo-labs/tiktoken`-Crates — konsistente API, aber primär für die `tiktoken` npm-User (die diese API auch vermissen) relevant, nicht als Migration für gpt-tokenizer-Nutzer
+- **README-Text:** expliziter Hinweis "nicht schneller als gpt-tokenizer" — keine falschen Versprechen
+
+**Phase-C-Option für zukünftige Review:**
+- **C.6 Algorithm-Swap:** LRU-Merge-Cache in `tiktoken-rs` upstream einbringen (PR an zurawiki/tiktoken-rs). Realistischer 1,5-2× Gewinn, nähert uns an gpt-tokenizer an, erreicht es aber vermutlich nicht (FFI-Floor bleibt)
+- **Re-Review in 6 Monaten** falls `tiktoken-rs` Caching aufnimmt oder gpt-tokenizer strukturell langsamer wird
+
+**BACKLOG-Empfehlung:** Eintrag aus "Under investigation — Predicted Green" entfernen und in "Ported then deprecated — measured Red/Black" verlagern — Unterkategorie "konkurriert mit über-optimiertem pure-JS". Sorgt dafür dass künftige Candidate-Scans den Post-Mortem lesen bevor sie über einen eigenen gpt-tokenizer-Port nachdenken.

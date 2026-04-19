@@ -14,6 +14,7 @@
     "drop-in for xxhash",
     "drop-in for sanitize-html",
     "drop-in for csv",
+    "drop-in for tiktoken",
     "zero transitive dependencies",
     "prebuilt native binaries"
   ],
@@ -32,7 +33,7 @@
     },
     {
       "k": "PACKAGES",
-      "v": "14"
+      "v": "15"
     },
     {
       "k": "NODE",
@@ -177,6 +178,15 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/zip",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/zip",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md"
+    },
+    {
+      "name": "tiktoken",
+      "title": "Tiktoken",
+      "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
+      "speedup": "3–23× vs tiktoken (WASM) / 2–4× vs js-tiktoken / 0.4× vs gpt-tokenizer",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/tiktoken",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/tiktoken",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/tiktoken/README.md"
     }
   ]
 }

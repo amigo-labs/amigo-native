@@ -1,6 +1,6 @@
 # Candidate review: `tiktoken`
 
-> **Status:** GO (qualified) · **Predicted:** 🟢 Green vs. pure-JS / 🟡 Yellow vs. WASM · **Reviewed:** 2026-04-19
+> **Status:** SHIPPED v0.1 · **Predicted:** 🟢 Green vs. pure-JS / 🟡 Yellow vs. WASM · **Measured:** 🟢 Green vs. WASM + js-tiktoken / 🔴 Red vs. gpt-tokenizer · **Reviewed:** 2026-04-19
 
 ## Verdict
 
@@ -122,3 +122,46 @@ Dies ist ein zweigleisiger Fall, den eine einzelne Tier-Klassifikation nicht sau
 ## If NO-GO — BACKLOG entry
 
 N/A — GO empfohlen mit qualifizierter Klassifikation (Green vs. pure-JS, Yellow vs. WASM).
+
+## Phase-B Messung (2026-04-19, linux-x64, Node v22)
+
+Implementiert in `crates/tiktoken/` gegen `tiktoken-rs 0.11`. Drei Baselines, drei Größen-Buckets (`cl100k_base`, ops/sec, höher = besser):
+
+| Szenario | @amigo-labs/tiktoken | tiktoken (WASM) | js-tiktoken | gpt-tokenizer |
+|---|---:|---:|---:|---:|
+| encode 10 B (small) | **164 256 hz** | 7 006 hz | 73 907 hz | 586 445 hz |
+| encode ~2 KB (medium) | **5 999 hz** | 1 445 hz | 1 698 hz | 14 855 hz |
+| encode ~90 KB (large) | **126 hz** | 38 hz | 28 hz | 269 hz |
+| 100 × 10 B (RAG batch) | **1 471 hz** | 67 hz | — | 4 364 hz |
+
+Speedup-Matrix (>1 = wir schneller):
+
+| Szenario | vs. WASM | vs. js-tiktoken | vs. gpt-tokenizer |
+|---|---:|---:|---:|
+| Small | **23,4×** ✅ | **2,22×** ✅ | **0,28×** ❌ |
+| Medium | **4,15×** ✅ | **3,53×** ✅ | **0,40×** ❌ |
+| Large | **3,32×** ✅ | **4,48×** ✅ | **0,47×** ❌ |
+
+**Vorhersage vs. Realität:**
+- Gegen `tiktoken` (WASM): vorhergesagt Yellow (~1,25×), gemessen **Green** (3–23×). Vorhersage war zu pessimistisch — der externe Benchmark ([maxim-saplin/tiktoken-bench](https://github.com/maxim-saplin/tiktoken-bench)) hat WASM gegen Python/Rust-Native gemessen, nicht gegen napi-rs. Der napi-rs-Pfad ist deutlich günstiger als WASM-Bridge + wasm-bindgen-Marshalling.
+- Gegen `js-tiktoken`: vorhergesagt 2,8× Green, gemessen **2-4,5× Green**. On-target.
+- Gegen `gpt-tokenizer`: **nicht antizipiert** — vorhergesagt in `gpt-tokenizer.md` als "pure-JS ~2,8× slower" analog zu js-tiktoken. Gemessen **gpt-tokenizer ist 2-3× schneller als wir**.
+
+**Warum `gpt-tokenizer` uns schlägt:**
+- LRU-Merge-Cache in der BPE-Schleife — wiederholte Bigram-Paare innerhalb eines Textes werden cached
+- V8-JIT optimiert den heißen Merge-Loop extrem aggressiv (inline caches für die `Map`-lookups)
+- Pure JS hat keine FFI-Fixkosten — selbst unsere 109 ns Floor schlagen durch
+
+**Warum `js-tiktoken` *nicht* so schnell ist (obwohl auch pure-JS):**
+- Kein LRU-Cache
+- Weniger monomorphe Hot-Path-Struktur
+- Auf dem 1-MB-externen-Bench 3× langsamer als Rust — das deckt sich mit unseren Messungen
+
+**Endklassifikation: 🟡 Yellow (mixed).** Grüner Win gegen `tiktoken` + `js-tiktoken` (18 M weekly DL kombiniert); Red gegen `gpt-tokenizer` (1 M weekly). Positionierung im README: "drop-in für tiktoken und js-tiktoken; **kein** Ersatz für gpt-tokenizer". 88 Tests grün (12 Unit + 70 Parität + 6 Fuzz).
+
+**Optionen für Phase C:**
+- **C.6 Algorithm:** LRU-Merge-Cache in `tiktoken-rs` upstream einbringen oder als lokaler Wrapper — realistisches 1,5-2× Upside im Medium-Bucket
+- **C.2 Output-Type:** `encodeOrdinary` könnte als `Buffer` mit LE-u32 statt `Uint32Array` zurückgeben (BASELINE §3: ~180 ns flat vs. Uint32Array-Alloc). Vermutlich <10 % Gain
+- **Yellow halten:** positionieren als "tiktoken-WASM-Killer" (15 M weekly), gpt-tokenizer-User ignorieren (1 M weekly). Defensive Empfehlung
+
+**Empfehlung:** Yellow shippen, Phase-C nur wenn upstream tiktoken-rs den LRU-Cache akzeptiert. Die WASM-User-Migration ist der primäre ROI.
