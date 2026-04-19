@@ -41,7 +41,7 @@ Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
 | **nanoid** | 🟡→Green-ish | 1,03× – 1,08× über nanoid@5 | Bereits pure-JS seit `794396b`. Schlägt nanoid@5 überall knapp; 0,8× vs `crypto.randomUUID` (erwartbar: weniger Work pro ID). |
 | **deep-equal** | 🔴 **DEPRECATED** | 0,96× – 1,30× | `deprecated` in 0.2.0. Post-Mortem in `docs/post-mortems/deep-equal.md`. |
 | **levenshtein** | 🔴 **DEPRECATED** | 0,13× – 1,10× | `deprecated` in 0.2.0. |
-| **xml** | 🔴 **DEPRECATED** | 0,44× – 0,68× | `deprecated` in 0.2.0. |
+| **xml** | 🗄️ **ARCHIVED** | parseXml 0,44× – 0,68× / parseXmlToJson 0,72× – 1,55× | Archived 2026-04-19 (never published). Re-review mit `parseXmlToJson` verliert 100 KB-Median und 10 MB; 10 MB ist JSON.parse-gebunden. `archived/xml/` + `docs/perf-review/xml.md`. |
 
 **Net:** 5 Green → 8 Green + 1 faktisch-Green (nanoid). 7 Yellow → 3 Yellow (argon2, encoding, inflate — alle mit klaren Backend-Gründen für ihr Yellow-Stand). 3 Red → 3 Deprecated (3-Monats-Window).
 

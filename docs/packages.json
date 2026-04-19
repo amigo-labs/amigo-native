@@ -31,7 +31,7 @@
     },
     {
       "k": "PACKAGES",
-      "v": "15"
+      "v": "13"
     },
     {
       "k": "NODE",
@@ -141,16 +141,6 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/encoding",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/encoding",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/encoding/README.md"
-    },
-    {
-      "name": "xml",
-      "title": "XML",
-      "description": "⚠️ DEPRECATED in 0.2.0 — see post-mortem. SAX-style XML parser via quick-xml.",
-      "speedup": "2.3× slower",
-      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xml",
-      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xml",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xml/README.md",
-      "deprecated": true
     },
     {
       "name": "deepmerge",

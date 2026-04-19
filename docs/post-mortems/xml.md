@@ -1,7 +1,7 @@
 # Post-Mortem: `@amigo-labs/xml`
 
-**Status:** deprecated in 0.2.0, recommending `sax` (JS) for streaming
-and `fast-xml-parser` for tree-building.
+**Status:** archived 2026-04-19 (never published to npm), recommending
+`sax` (JS) for streaming and `fast-xml-parser` for tree-building.
 
 ## Expected gain
 
@@ -47,11 +47,22 @@ dispatch is free.
 ## What was tried
 
 - Tree API vs SAX API: both paid FFI costs, just at different granularities.
-- We did not try a single-call "serialise-to-JSON-string" return mode
-  (the csv `parseToJson` pattern), which would collapse all the FFI
-  crossings into one. That might work for tree-building, but would
-  duplicate effort for users who then `JSON.parse` the result — V8's
-  native JSON parser is fast but not free.
+- **`parseXmlToJson` (single-call "serialise-to-JSON-string" return
+  mode)**: added in commit `d1e2e46` but unexported and unbenchmarked
+  until the 2026-04-19 re-review. Measured result (Node 22, Linux x64,
+  release build):
+
+  | Scenario | `parseXml` | **`parseXmlToJson`** | `sax` | best amigo vs. sax |
+  |---|---:|---:|---:|---:|
+  | 1 KB SVG | 143 885 Hz | **279 093 Hz** | 179 724 Hz | **1,55× win** |
+  | 100 KB RSS | 146 Hz | **354 Hz** | 455 Hz | 0,78× lose |
+  | 10 MB SOAP | 0,46 Hz | **1,42 Hz** | 1,98 Hz | 0,72× lose |
+
+  Big improvement over `parseXml` (1,9–3,1×) and wins the 1 KB bucket
+  against `sax`, but still loses the 100 KB median and the 10 MB tail.
+  Root cause at 10 MB: cost shifts from FFI to JS-side `JSON.parse` of
+  the ~15 MB JSON output — a structural limit no further Rust-side
+  lever can bypass for a tree-returning parser.
 
 Not pursued further because the SAX use case (streaming, event-driven)
 fundamentally can't work with a "one FFI call returns everything"
@@ -70,11 +81,13 @@ already (`fast-xml-parser` routinely beats `sax` on throughput).
   performance advantage. Rust can't help because it can't stay on the
   JS side.
 
-## Deprecation plan
+## Archival (2026-04-19)
 
-- 0.2.0: `deprecated` field in package.json; README warning.
-- Three month window.
-- After: archived/.
+Never published to npm, so no deprecation window or `npm deprecate`
+flag is needed. Crate moved from `crates/xml/` to `archived/xml/`,
+removed from the Cargo/pnpm workspace globs, and struck from
+`docs/packages.json` / `docs/data.json` / `scripts/measure-size.mjs`.
+Code preserved under `archived/xml/` as a reference implementation.
 
 Recommended alternatives:
 - `sax` — event-based streaming, the package we were trying to beat.

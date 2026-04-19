@@ -54,10 +54,6 @@ const PACKAGES = {
     amigo: { crate: 'encoding' },
     competitors: ['iconv-lite@0.6.3'],
   },
-  xml: {
-    amigo: { crate: 'xml' },
-    competitors: ['sax@1.4.1'],
-  },
   deepmerge: {
     amigo: { crate: 'deepmerge' },
     competitors: ['deepmerge@4.3.1'],
