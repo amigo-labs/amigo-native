@@ -31,7 +31,7 @@
     },
     {
       "k": "PACKAGES",
-      "v": "13"
+      "v": "12"
     },
     {
       "k": "NODE",
@@ -113,16 +113,6 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/inflate",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/inflate",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/inflate/README.md"
-    },
-    {
-      "name": "levenshtein",
-      "title": "Levenshtein",
-      "description": "⚠️ DEPRECATED in 0.2.0 — see post-mortem. Edit distance via triple_accel (SIMD) with a strsim fallback.",
-      "speedup": "up to 1.7× faster / 4.6× slower",
-      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/levenshtein",
-      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/levenshtein",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/levenshtein/README.md",
-      "deprecated": true
     },
     {
       "name": "nanoid",

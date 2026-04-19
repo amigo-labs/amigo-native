@@ -222,24 +222,6 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
 
-  crates/levenshtein:
-    devDependencies:
-      '@napi-rs/cli':
-        specifier: ^3.5.0
-        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
-      fast-check:
-        specifier: ^3.23.0
-        version: 3.23.2
-      fast-levenshtein:
-        specifier: ^3.0.0
-        version: 3.0.0
-      leven:
-        specifier: ^4.0.0
-        version: 4.1.0
-      vitest:
-        specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
-
   crates/nanoid:
     devDependencies:
       fast-check:
@@ -285,24 +267,6 @@ importers:
       slugify:
         specifier: ^1.6.6
         version: 1.6.9
-      vitest:
-        specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
-
-  crates/xml:
-    devDependencies:
-      '@napi-rs/cli':
-        specifier: ^3.5.0
-        version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
-      '@types/sax':
-        specifier: ^1.2.7
-        version: 1.2.7
-      fast-check:
-        specifier: ^3.23.0
-        version: 3.23.2
-      sax:
-        specifier: ^1.4.1
-        version: 1.6.0
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@28.1.0)
