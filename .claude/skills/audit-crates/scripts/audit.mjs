@@ -247,7 +247,7 @@ if (asPlan) {
   if (docs.missingInPackagesJson.length) {
     plan.push('## 3. `docs/packages.json` entries')
     plan.push('')
-    plan.push('Append to the `packages` array. Use measured `speedup` from `BENCHMARKS.md` if available:')
+    plan.push('Append to the `packages` array. Use measured `speedup` from `docs/data.json` if available:')
     plan.push('')
     plan.push('```json')
     for (const name of docs.missingInPackagesJson) {

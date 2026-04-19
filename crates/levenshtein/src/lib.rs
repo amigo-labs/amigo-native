@@ -46,6 +46,31 @@ pub fn distance(a: String, b: String, options: Option<LevenshteinOptions>) -> u3
     distance_impl(&a, &b, use_collator)
 }
 
+/// Batch API: compute distance for N pairs in a single FFI call. For small
+/// strings the N-API crossing dominates compute time, so amortizing over
+/// many pairs is the difference between losing and beating fast-levenshtein.
+/// `a_list` and `b_list` must have the same length.
+#[napi(js_name = "distanceBatch")]
+pub fn distance_batch(
+    a_list: Vec<String>,
+    b_list: Vec<String>,
+    options: Option<LevenshteinOptions>,
+) -> napi::Result<Vec<u32>> {
+    if a_list.len() != b_list.len() {
+        return Err(napi::Error::from_reason(format!(
+            "distanceBatch: length mismatch ({} vs {})",
+            a_list.len(),
+            b_list.len()
+        )));
+    }
+    let use_collator = options.and_then(|o| o.use_collator).unwrap_or(false);
+    Ok(a_list
+        .iter()
+        .zip(b_list.iter())
+        .map(|(a, b)| distance_impl(a, b, use_collator))
+        .collect())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,59 +1,71 @@
-use ammonia::Builder;
+use napi::bindgen_prelude::Either;
 use napi_derive::napi;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+
+mod rules;
+mod strict;
+mod v2;
 
 #[napi(object)]
 pub struct SanitizeOptions {
     pub allowed_tags: Option<Vec<String>>,
     pub allowed_attributes: Option<HashMap<String, Vec<String>>>,
     pub allowed_classes: Option<HashMap<String, Vec<String>>>,
+    pub allowed_schemes: Option<Vec<String>>,
     pub strip_comments: Option<bool>,
     pub link_rel: Option<String>,
+    /// When `true`, every attribute not an event handler passes through.
+    /// Set by `compat.mjs` when the caller uses `allowedAttributes: false`.
+    pub allow_all_attributes: Option<bool>,
+}
+
+fn number_to_string(n: f64) -> String {
+    // Match JS Number.prototype.toString(): integers print without decimals,
+    // NaN/Infinity use their JS names.
+    if n.is_nan() {
+        return "NaN".to_string();
+    }
+    if n.is_infinite() {
+        return if n < 0.0 {
+            "-Infinity".into()
+        } else {
+            "Infinity".into()
+        };
+    }
+    if n == n.trunc() && n.abs() < 1e21 {
+        return format!("{}", n as i64);
+    }
+    format!("{n}")
+}
+
+pub(crate) fn coerce_input(html: Option<Either<String, f64>>) -> String {
+    match html {
+        None => String::new(),
+        Some(Either::A(s)) => s,
+        Some(Either::B(n)) => number_to_string(n),
+    }
 }
 
 #[napi]
-pub fn sanitize(html: String, options: Option<SanitizeOptions>) -> String {
-    let mut builder = Builder::default();
+pub fn sanitize(html: Option<Either<String, f64>>, options: Option<SanitizeOptions>) -> String {
+    v2::sanitize_impl(html, options)
+}
 
-    if let Some(opts) = &options {
-        if let Some(tags) = &opts.allowed_tags {
-            let tag_set: HashSet<&str> = tags.iter().map(|s| s.as_str()).collect();
-            // Ammonia panics if a tag is in both `tags` and `clean_content_tags`
-            // (e.g. default `script`/`style`). If the caller explicitly allows
-            // such a tag, remove it from `clean_content_tags` first.
-            builder.rm_clean_content_tags(tag_set.iter().copied());
-            builder.tags(tag_set);
-        }
-        if let Some(attrs) = &opts.allowed_attributes {
-            let mut attr_map: HashMap<&str, HashSet<&str>> = HashMap::new();
-            for (tag, attr_list) in attrs {
-                let attr_set: HashSet<&str> = attr_list.iter().map(|s| s.as_str()).collect();
-                attr_map.insert(tag.as_str(), attr_set);
-            }
-            builder.tag_attributes(attr_map);
-        }
-        if let Some(classes) = &opts.allowed_classes {
-            let mut class_map: HashMap<&str, HashMap<&str, HashSet<&str>>> = HashMap::new();
-            for (tag, class_list) in classes {
-                let class_set: HashSet<&str> = class_list.iter().map(|s| s.as_str()).collect();
-                let mut inner = HashMap::new();
-                inner.insert("class", class_set);
-                class_map.insert(tag.as_str(), inner);
-            }
-            builder.tag_attribute_values(class_map);
-        }
-        if let Some(strip) = opts.strip_comments {
-            builder.strip_comments(strip);
-        }
-        if let Some(ref rel) = opts.link_rel {
-            builder.link_rel(Some(rel));
-        }
-    }
-
-    builder.clean(&html).to_string()
+/// Strict sanitize. Same rule surface as `sanitize`, but drives html5ever's
+/// full TreeBuilder so SCRIPT_DATA / RAWTEXT / foreign-content state
+/// transitions happen correctly. Routed to by `compat.mjs` when the caller
+/// enables `<script>`/`<style>` or SVG/MathML tags, or opts out of case
+/// normalisation via `parser.lowerCaseTags: false`.
+#[napi(js_name = "sanitizeStrict")]
+pub fn sanitize_strict(
+    html: Option<Either<String, f64>>,
+    options: Option<SanitizeOptions>,
+) -> String {
+    strict::sanitize_impl(html, options)
 }
 
 #[napi(js_name = "isClean")]
-pub fn is_clean(html: String, options: Option<SanitizeOptions>) -> bool {
-    sanitize(html.clone(), options) == html
+pub fn is_clean(html: Option<Either<String, f64>>, options: Option<SanitizeOptions>) -> bool {
+    let coerced = coerce_input(html);
+    sanitize(Some(Either::A(coerced.clone())), options) == coerced
 }

@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/@amigo-labs/sanitize-html)](https://www.npmjs.com/package/@amigo-labs/sanitize-html)
 [![license](https://img.shields.io/npm/l/@amigo-labs/sanitize-html)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
 
-Blazing fast HTML sanitization powered by Rust via [NAPI-RS](https://napi.rs). A native Node.js binding to the [ammonia](https://crates.io/crates/ammonia) crate.
+Blazing fast HTML sanitization powered by Rust via [NAPI-RS](https://napi.rs). A stream-based native Node.js sanitizer built directly on top of the [`html5ever`](https://crates.io/crates/html5ever) tokenizer — ~2–4× faster than the JS `sanitize-html` package on realistic inputs (2–100 KB).
 
 ## Installation
 
@@ -46,11 +46,24 @@ Returns `true` if the HTML contains no dangerous content (i.e. sanitization woul
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `allowedTags` | `string[]` | Tags to allow (default: ammonia defaults) |
+| `allowedTags` | `string[]` | Tags to allow (default: a conservative safe set — see `DEFAULT_TAGS` in `src/v2.rs`) |
 | `allowedAttributes` | `Record<string, string[]>` | Attributes to allow per tag |
 | `allowedClasses` | `Record<string, string[]>` | CSS classes to allow per tag |
-| `stripComments` | `boolean` | Whether to strip HTML comments |
-| `linkRel` | `string` | Value for `rel` attribute on links |
+| `allowedSchemes` | `string[]` | URL schemes accepted in `href`/`src`/… (default: http, https, mailto, ftp, tel, …) |
+| `stripComments` | `boolean` | Whether to strip HTML comments (default: true) |
+| `linkRel` | `string` | Value for `rel` attribute on `<a href>` (default: `"noopener noreferrer"`) |
+
+## Performance
+
+Benchmarked against `sanitize-html` (npm) and `isomorphic-dompurify` (`npm run bench`):
+
+| Input | `@amigo-labs/sanitize-html` | vs `sanitize-html` (npm) | vs `dompurify` |
+| --- | --- | --- | --- |
+| small safe (~200 chars) | 45,900 ops/s | **1.5×** faster | **45×** faster |
+| medium with XSS (~2 KB) | 9,600 ops/s | **2.3×** faster | **46×** faster |
+| large doc (~100 KB) | 360 ops/s | **3.9×** faster | **36×** faster |
+
+The margin grows with input size because the streaming tokenizer avoids the DOM build cost that the JS alternatives pay.
 
 ## Supported Platforms
 

@@ -49,6 +49,19 @@ describe('zip', () => {
     expect(() => r.read('missing.txt')).toThrow()
   })
 
+  it('extractAll returns every non-directory entry in one pass', () => {
+    const zip = makeZip([
+      ['a.txt', 'AAA'],
+      ['nested/b.txt', 'BBB'],
+      ['c.txt', 'CCC'],
+    ])
+    const out = ZipReader.fromBuffer(zip).extractAll()
+    expect(out.map((e) => e.name)).toEqual(['a.txt', 'nested/b.txt', 'c.txt'])
+    expect(out[0].data.toString('utf-8')).toBe('AAA')
+    expect(out[1].data.toString('utf-8')).toBe('BBB')
+    expect(out[2].data.toString('utf-8')).toBe('CCC')
+  })
+
   it('throws after finalize', () => {
     const w = new ZipWriter()
     w.add('a', Buffer.from('x'))

@@ -1,6 +1,6 @@
 ---
 name: rust-check
-description: Evaluate a single package against the amigo-native perf-review framework and decide keep-great-or-kill. Takes one package name (argument or prompted) and auto-detects the mode — an existing `crates/*` entry gets a measurement-based Green/Yellow/Red/Black classification with a Phase-C optimization plan or a Phase-D deprecation path, while an unknown npm name gets a candidate assessment with FFI-overhead heuristics, a BACKLOG check, a scan for a usable Rust crate, and a go/no-go prediction. Output is a single decision doc at `docs/perf-review/<pkg>.md`; the skill never touches crate source, benchmarks, docs/packages.json, or BACKLOG.md. Use when deciding whether to port a new npm package, when a released crate looks weak in BENCHMARKS.md, before deprecating or archiving a package, or for the quarterly re-review of already-shipped crates.
+description: Evaluate a single package against the amigo-native perf-review framework and decide keep-great-or-kill. Takes one package name (argument or prompted) and auto-detects the mode — an existing `crates/*` entry gets a measurement-based Green/Yellow/Red/Black classification with a Phase-C optimization plan or a Phase-D deprecation path, while an unknown npm name gets a candidate assessment with FFI-overhead heuristics, a BACKLOG check, a scan for a usable Rust crate, and a go/no-go prediction. Output is a single decision doc at `docs/perf-review/<pkg>.md`; the skill never touches crate source, benchmarks, docs/packages.json, or BACKLOG.md. Use when deciding whether to port a new npm package, when a released crate looks weak in docs/data.json, before deprecating or archiving a package, or for the quarterly re-review of already-shipped crates.
 ---
 
 # rust-check
@@ -10,7 +10,7 @@ Evaluate **one** package against the amigo-native perf-review framework. Every `
 ## When to use
 
 - Considering a new npm package to port (candidate mode)
-- A released crate under-performs vs. its BENCHMARKS.md promise (review mode)
+- A released crate under-performs vs. its docs/data.json promise (review mode)
 - Before deprecating or archiving a package (review mode → Phase-D plan)
 - Quarterly re-review cycle — V8 moves, Rust crates improve, the calculus changes
 
@@ -46,7 +46,7 @@ Outputs a JSON object on stdout. Key fields:
 
 - `mode`: `"existing"` or `"candidate"`
 - `cratePath`, `libRs`, `cargoToml`, `benchFile`, `readme`, `jsCompetitors` — only on existing
-- `benchmarksMdSection` — the `### <name>` block from `BENCHMARKS.md` if present
+- `benchmarkSuites` — the `### <name>` block from `docs/data.json` if present
 - `backlogEntry` — matching line in `BACKLOG.md` if present
 - `packagesJsonEntry` — registry entry if present (has advertised `speedup`)
 - `baselineExists` — whether `docs/BASELINE.md` (FFI-overhead baseline) has been captured
@@ -61,9 +61,9 @@ Collect evidence read-only (no edits, no bench runs):
 
 1. `libRs` — read exported `#[napi]` signatures. Note: `String` vs `&str`, `Vec<T>` vs `Buffer`, whether any state is kept, async boundaries.
 2. `benchFile` — what input sizes are covered? Which JS competitor packages? Are the small/medium/large buckets all present?
-3. `benchmarksMdSection` — copy verbatim into the report's Evidence section. **Do not invent numbers.** If a size is missing, list it under "Benchmark gaps".
+3. `benchmarkSuites` — copy verbatim into the report's Evidence section. **Do not invent numbers.** If a size is missing, list it under "Benchmark gaps".
 4. `cargoToml` — which Rust crate is wrapped, which features, release profile overrides.
-5. `packagesJsonEntry.speedup` — compare to the actual BENCHMARKS.md numbers. A mismatch is a red flag for the report.
+5. `packagesJsonEntry.speedup` — compare to the actual docs/data.json numbers. A mismatch is a red flag for the report.
 6. `baselineExists` — if `false`, note that FFI-overhead estimates for the optimization plan are qualitative, not quantitative. Recommend creating the `_ffi-bench` crate as a follow-up.
 
 Ask the user one short question if the realistic median use-case isn't obvious from the README: "What's the real-world call pattern — size, frequency, batched or not?" Don't guess. The whole review turns on this.
@@ -118,8 +118,8 @@ One or two sentences in chat: the classification (or GO/NO-GO), the single most 
 
 ## What the skill must not do
 
-- Never modify `crates/*`, `scripts/*`, `docs/packages.json`, `BACKLOG.md`, `BENCHMARKS.md`, or `README.md`.
-- Never run `vitest bench` as a side effect — benchmarks are expensive and the user owns that decision. Use numbers from `BENCHMARKS.md` only. If data is missing, say so.
+- Never modify `crates/*`, `scripts/*`, `docs/packages.json`, `BACKLOG.md`, `docs/data.json`, or `README.md`.
+- Never run `vitest bench` as a side effect — benchmarks are expensive and the user owns that decision. Use numbers from `docs/data.json` only. If data is missing, say so.
 - Never invent speedup numbers. "Bench gap" is a valid classification input — an unmeasured small-input bucket for a package that only bench-covers large inputs is itself a Yellow downgrade signal.
 - Never commit. The user reviews the report and chooses follow-up.
 

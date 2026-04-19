@@ -12,7 +12,7 @@
 
 ## Evidence
 
-### Measured speedup (from BENCHMARKS.md)
+### Measured speedup (from docs/data.json)
 
 {{BENCHMARKS_TABLE}}
 

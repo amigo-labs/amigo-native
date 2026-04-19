@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/deep-equal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Semantic drop-in for fast-deep-equal with a Rust fast-path for plain JSON",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",
@@ -55,5 +55,6 @@
   },
   "engines": {
     "node": ">= 18"
-  }
+  },
+  "deprecated": "DEPRECATED in 0.2.0 — fast-deep-equal beats this at parity or better on every scenario. See docs/post-mortems/deep-equal.md. Migrate to fast-deep-equal."
 }

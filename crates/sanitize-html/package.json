@@ -1,12 +1,24 @@
 {
   "name": "@amigo-labs/sanitize-html",
-  "version": "0.1.0",
-  "description": "Blazing fast HTML sanitization powered by Rust (ammonia)",
+  "version": "0.2.0",
+  "description": "Blazing fast native HTML sanitizer powered by Rust and html5ever",
   "main": "index.js",
   "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./compat": {
+      "types": "./compat.d.ts",
+      "default": "./compat.mjs"
+    }
+  },
   "files": [
     "index.js",
     "index.d.ts",
+    "compat.mjs",
+    "compat.d.ts",
     "README.md"
   ],
   "napi": {
@@ -30,6 +42,9 @@
     "test:all": "vitest run",
     "bench": "vitest bench"
   },
+  "dependencies": {
+    "htmlparser2": "^10.0.0"
+  },
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
     "fast-check": "^3.23.0",
@@ -51,7 +66,7 @@
     "native",
     "rust",
     "napi",
-    "ammonia"
+    "html5ever"
   ],
   "engines": {
     "node": ">= 18"

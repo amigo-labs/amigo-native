@@ -17,7 +17,7 @@ import { join } from 'node:path'
 
 const ROOT = process.cwd()
 const CRATES_DIR = join(ROOT, 'crates')
-const BENCHMARKS_MD = join(ROOT, 'BENCHMARKS.md')
+const DATA_JSON = join(ROOT, 'docs', 'data.json')
 const BACKLOG_MD = join(ROOT, 'BACKLOG.md')
 const PACKAGES_JSON = join(ROOT, 'docs', 'packages.json')
 const BASELINE_MD = join(ROOT, 'docs', 'BASELINE.md')
@@ -97,15 +97,15 @@ function listCrates() {
     .sort()
 }
 
-function extractBenchmarksSection(md, crateName) {
-  if (!md) return null
-  // Sections are `### <crateName>` until the next `### ` or end of file.
-  const marker = `### ${crateName}`
-  const start = md.indexOf(marker)
-  if (start === -1) return null
-  const rest = md.slice(start)
-  const nextHeading = rest.search(/\n### /)
-  return nextHeading === -1 ? rest.trim() : rest.slice(0, nextHeading).trim()
+function extractBenchmarkSuites(data, crateName) {
+  // docs/data.json shape: { benchmarks: { suites: [{ name, file, entries }] } }
+  // Each suite's `file` is e.g. `crates/<crate>/__bench__/index.bench.ts` —
+  // filter by that prefix so we return only the target crate's suites.
+  const suites = data?.benchmarks?.suites
+  if (!Array.isArray(suites)) return null
+  const prefix = `crates/${crateName}/`
+  const matched = suites.filter((s) => typeof s.file === 'string' && s.file.startsWith(prefix))
+  return matched.length ? matched : null
 }
 
 function findBacklogMention(md, name) {
@@ -133,7 +133,7 @@ const reportFilename = `${safeFilename(name)}.md`
 const packagesJson = readJson(PACKAGES_JSON)
 const packagesJsonEntry = packagesJson?.packages?.find?.((p) => p.name === name) ?? null
 
-const benchmarksMdSection = extractBenchmarksSection(readText(BENCHMARKS_MD), name)
+const benchmarkSuites = extractBenchmarkSuites(readJson(DATA_JSON), name)
 const backlogEntry = findBacklogMention(readText(BACKLOG_MD), name)
 const existingReview = existsSync(join(PERF_REVIEW_DIR, reportFilename))
 const baselineExists = existsSync(BASELINE_MD)
@@ -168,7 +168,7 @@ const result = {
   name,
   inputRaw: rawArg,
   packagesJsonEntry,
-  benchmarksMdSection,
+  benchmarkSuites,
   backlogEntry,
   baselineExists,
   existingReview,

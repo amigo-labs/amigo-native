@@ -37,33 +37,127 @@ pub fn xxh3_128(input: Buffer, seed: Option<BigInt>) -> String {
     format!("{:032x}", hash)
 }
 
-// --- Batch API: one FFI call for many inputs ---
+// --- Fixed-chunk bulk API: one Buffer in, one Buffer out. Avoids both
+// the `Vec<Buffer>` input cost (per-entry FFI crossing) and the
+// `Vec<u32>` / `Vec<BigInt>` output cost (43 ns per element per
+// `docs/BASELINE.md`). The returned Buffer is tightly packed
+// little-endian hashes — u32 × N for xxh32, u64 × N for xxh64/xxh3_64.
+// Readers can `buf.readUInt32LE(i * 4)` or use a `Uint32Array` view.
+//
+// Replaces the 0.1.x `xxh32Batch(Vec<Buffer>) -> Vec<u32>` family,
+// which was slower than a hand-written loop of single-hash calls.
 
-#[napi(js_name = "xxh32Batch")]
-pub fn xxh32_batch(inputs: Vec<Buffer>, seed: Option<u32>) -> Vec<u32> {
+#[napi(js_name = "xxh32Many")]
+pub fn xxh32_many(input: Buffer, chunk_size: u32, seed: Option<u32>) -> Result<Buffer> {
+    if chunk_size == 0 {
+        return Err(Error::from_reason("chunk_size must be > 0"));
+    }
     let s = seed.unwrap_or(0);
-    inputs
-        .iter()
-        .map(|buf| xxhash_rust::xxh32::xxh32(buf.as_ref(), s))
-        .collect()
+    let cs = chunk_size as usize;
+    let bytes = input.as_ref();
+    let n_chunks = bytes.len().div_ceil(cs);
+    let mut out = Vec::with_capacity(n_chunks * 4);
+    for c in bytes.chunks(cs) {
+        out.extend_from_slice(&xxhash_rust::xxh32::xxh32(c, s).to_le_bytes());
+    }
+    Ok(out.into())
 }
 
-#[napi(js_name = "xxh64Batch")]
-pub fn xxh64_batch(inputs: Vec<Buffer>, seed: Option<BigInt>) -> Vec<BigInt> {
+#[napi(js_name = "xxh64Many")]
+pub fn xxh64_many(input: Buffer, chunk_size: u32, seed: Option<BigInt>) -> Result<Buffer> {
+    if chunk_size == 0 {
+        return Err(Error::from_reason("chunk_size must be > 0"));
+    }
     let s = seed_to_u64(seed);
-    inputs
-        .iter()
-        .map(|buf| BigInt::from(xxhash_rust::xxh64::xxh64(buf.as_ref(), s)))
-        .collect()
+    let cs = chunk_size as usize;
+    let bytes = input.as_ref();
+    let n_chunks = bytes.len().div_ceil(cs);
+    let mut out = Vec::with_capacity(n_chunks * 8);
+    for c in bytes.chunks(cs) {
+        out.extend_from_slice(&xxhash_rust::xxh64::xxh64(c, s).to_le_bytes());
+    }
+    Ok(out.into())
 }
 
-#[napi(js_name = "xxh3_64Batch")]
-pub fn xxh3_64_batch(inputs: Vec<Buffer>, seed: Option<BigInt>) -> Vec<BigInt> {
+#[napi(js_name = "xxh3_64Many")]
+pub fn xxh3_64_many(input: Buffer, chunk_size: u32, seed: Option<BigInt>) -> Result<Buffer> {
+    if chunk_size == 0 {
+        return Err(Error::from_reason("chunk_size must be > 0"));
+    }
     let s = seed_to_u64(seed);
-    inputs
-        .iter()
-        .map(|buf| BigInt::from(xxhash_rust::xxh3::xxh3_64_with_seed(buf.as_ref(), s)))
-        .collect()
+    let cs = chunk_size as usize;
+    let bytes = input.as_ref();
+    let n_chunks = bytes.len().div_ceil(cs);
+    let mut out = Vec::with_capacity(n_chunks * 8);
+    for c in bytes.chunks(cs) {
+        out.extend_from_slice(&xxhash_rust::xxh3::xxh3_64_with_seed(c, s).to_le_bytes());
+    }
+    Ok(out.into())
+}
+
+#[napi]
+pub struct Xxh32Hasher {
+    inner: xxhash_rust::xxh32::Xxh32,
+}
+
+#[napi]
+impl Xxh32Hasher {
+    #[napi(constructor)]
+    pub fn new(seed: Option<u32>) -> Self {
+        Self {
+            inner: xxhash_rust::xxh32::Xxh32::new(seed.unwrap_or(0)),
+        }
+    }
+
+    #[napi]
+    pub fn update(&mut self, chunk: Buffer) {
+        self.inner.update(chunk.as_ref());
+    }
+
+    #[napi]
+    pub fn digest(&self) -> u32 {
+        self.inner.digest()
+    }
+
+    #[napi]
+    pub fn reset(&mut self, seed: Option<u32>) {
+        self.inner.reset(seed.unwrap_or(0));
+    }
+}
+
+#[napi]
+pub struct Xxh64Hasher {
+    inner: xxhash_rust::xxh64::Xxh64,
+}
+
+#[napi]
+impl Xxh64Hasher {
+    #[napi(constructor)]
+    pub fn new(seed: Option<BigInt>) -> Self {
+        Self {
+            inner: xxhash_rust::xxh64::Xxh64::new(seed_to_u64(seed)),
+        }
+    }
+
+    #[napi]
+    pub fn update(&mut self, chunk: Buffer) {
+        self.inner.update(chunk.as_ref());
+    }
+
+    #[napi]
+    pub fn digest(&self) -> BigInt {
+        BigInt::from(self.inner.digest())
+    }
+
+    #[napi(js_name = "digestHex")]
+    pub fn digest_hex(&self) -> String {
+        format!("{:016x}", self.inner.digest())
+    }
+
+    #[napi]
+    pub fn reset(&mut self, seed: Option<BigInt>) {
+        self.inner.reset(seed_to_u64(seed));
+    }
 }
 
 #[napi]

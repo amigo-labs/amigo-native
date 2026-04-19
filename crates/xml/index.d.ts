@@ -2,6 +2,15 @@
 /* eslint-disable */
 export declare function parseXml(input: string, strict?: boolean | undefined | null): Array<XmlEvent>
 
+/**
+ * Stream-parse XML and return events as a single JSON array string.
+ * Avoids the Vec<XmlEvent> + per-event String allocations of `parseXml`.
+ * Event shape: `{"t":"open"|"close"|"text"|"cdata"|"comment"|"pi"|"doctype",
+ * "n":"tag","a":[{"n":"attr","v":"val"}],"c":bool,"v":"text"}` (fields present
+ * as relevant). Use JSON.parse() on the JS side.
+ */
+export declare function parseXmlToJson(input: string, strict?: boolean | undefined | null): string
+
 export interface XmlAttr {
   name: string
   value: string

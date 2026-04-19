@@ -1,7 +1,8 @@
 [package]
-name = "amigo-nanoid"
-version = "0.1.0"
+name = "amigo-ffi-bench"
+version = "0.0.0"
 edition = "2024"
+publish = false
 
 [lib]
 crate-type = ["cdylib"]
@@ -9,7 +10,6 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-nanoid = "0.4"
 
 [build-dependencies]
 napi-build = "2"

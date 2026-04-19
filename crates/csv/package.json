@@ -7,6 +7,8 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "native.cjs",
+    "native.d.ts",
     "README.md"
   ],
   "napi": {
@@ -22,8 +24,8 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
+    "build": "napi build --platform --release --js native.cjs --dts native.d.ts",
+    "build:debug": "napi build --platform --js native.cjs --dts native.d.ts",
     "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "test:conformance": "vitest run __conformance__",

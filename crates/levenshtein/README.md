@@ -1,3 +1,5 @@
+> ⚠️ **DEPRECATED in 0.2.0.** `fast-levenshtein` is 1.7-7.6× faster on realistic strings (10k chars: 54 ops/s vs our 7). Each input string crosses the NAPI boundary with UTF-16→UTF-8 conversion, which dominates runtime. See [docs/post-mortems/levenshtein.md](../../docs/post-mortems/levenshtein.md). Please migrate to `fast-levenshtein`.
+
 # @amigo-labs/levenshtein
 
 > Edit distance via `triple_accel` (SIMD) with a `strsim` fallback for short strings. Drop-in for [`fast-levenshtein`](https://www.npmjs.com/package/fast-levenshtein) and [`leven`](https://www.npmjs.com/package/leven), compiled via NAPI-RS.

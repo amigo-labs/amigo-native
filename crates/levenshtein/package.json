@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/levenshtein",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Rust-powered Levenshtein edit distance (SIMD via triple_accel)",
   "main": "index.js",
   "types": "index.d.ts",
@@ -55,5 +55,6 @@
   },
   "engines": {
     "node": ">= 18"
-  }
+  },
+  "deprecated": "DEPRECATED in 0.2.0 — fast-levenshtein is 1.7-7.6× faster on realistic strings because it operates on V8 strings directly. See docs/post-mortems/levenshtein.md. Migrate to fast-levenshtein."
 }

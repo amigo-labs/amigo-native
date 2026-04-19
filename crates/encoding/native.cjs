@@ -70,13 +70,13 @@ function requireNative() {
   } else if (process.platform === 'android') {
     if (process.arch === 'arm64') {
       try {
-        return require('./nanoid.android-arm64.node')
+        return require('./encoding.android-arm64.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-android-arm64')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-android-arm64/package.json').version
+        const binding = require('@amigo-labs/encoding-android-arm64')
+        const bindingPackageVersion = require('@amigo-labs/encoding-android-arm64/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -86,13 +86,13 @@ function requireNative() {
       }
     } else if (process.arch === 'arm') {
       try {
-        return require('./nanoid.android-arm-eabi.node')
+        return require('./encoding.android-arm-eabi.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-android-arm-eabi')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-android-arm-eabi/package.json').version
+        const binding = require('@amigo-labs/encoding-android-arm-eabi')
+        const bindingPackageVersion = require('@amigo-labs/encoding-android-arm-eabi/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -107,13 +107,13 @@ function requireNative() {
     if (process.arch === 'x64') {
       if (process.config?.variables?.shlib_suffix === 'dll.a' || process.config?.variables?.node_target_type === 'shared_library') {
         try {
-        return require('./nanoid.win32-x64-gnu.node')
+        return require('./encoding.win32-x64-gnu.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-win32-x64-gnu')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-win32-x64-gnu/package.json').version
+        const binding = require('@amigo-labs/encoding-win32-x64-gnu')
+        const bindingPackageVersion = require('@amigo-labs/encoding-win32-x64-gnu/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -123,13 +123,13 @@ function requireNative() {
       }
       } else {
         try {
-        return require('./nanoid.win32-x64-msvc.node')
+        return require('./encoding.win32-x64-msvc.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-win32-x64-msvc')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-win32-x64-msvc/package.json').version
+        const binding = require('@amigo-labs/encoding-win32-x64-msvc')
+        const bindingPackageVersion = require('@amigo-labs/encoding-win32-x64-msvc/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -140,13 +140,13 @@ function requireNative() {
       }
     } else if (process.arch === 'ia32') {
       try {
-        return require('./nanoid.win32-ia32-msvc.node')
+        return require('./encoding.win32-ia32-msvc.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-win32-ia32-msvc')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-win32-ia32-msvc/package.json').version
+        const binding = require('@amigo-labs/encoding-win32-ia32-msvc')
+        const bindingPackageVersion = require('@amigo-labs/encoding-win32-ia32-msvc/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -156,13 +156,13 @@ function requireNative() {
       }
     } else if (process.arch === 'arm64') {
       try {
-        return require('./nanoid.win32-arm64-msvc.node')
+        return require('./encoding.win32-arm64-msvc.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-win32-arm64-msvc')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-win32-arm64-msvc/package.json').version
+        const binding = require('@amigo-labs/encoding-win32-arm64-msvc')
+        const bindingPackageVersion = require('@amigo-labs/encoding-win32-arm64-msvc/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -175,13 +175,13 @@ function requireNative() {
     }
   } else if (process.platform === 'darwin') {
     try {
-      return require('./nanoid.darwin-universal.node')
+      return require('./encoding.darwin-universal.node')
     } catch (e) {
       loadErrors.push(e)
     }
     try {
-      const binding = require('@amigo-labs/nanoid-darwin-universal')
-      const bindingPackageVersion = require('@amigo-labs/nanoid-darwin-universal/package.json').version
+      const binding = require('@amigo-labs/encoding-darwin-universal')
+      const bindingPackageVersion = require('@amigo-labs/encoding-darwin-universal/package.json').version
       if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
         throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
       }
@@ -191,13 +191,13 @@ function requireNative() {
     }
     if (process.arch === 'x64') {
       try {
-        return require('./nanoid.darwin-x64.node')
+        return require('./encoding.darwin-x64.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-darwin-x64')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-darwin-x64/package.json').version
+        const binding = require('@amigo-labs/encoding-darwin-x64')
+        const bindingPackageVersion = require('@amigo-labs/encoding-darwin-x64/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -207,13 +207,13 @@ function requireNative() {
       }
     } else if (process.arch === 'arm64') {
       try {
-        return require('./nanoid.darwin-arm64.node')
+        return require('./encoding.darwin-arm64.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-darwin-arm64')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-darwin-arm64/package.json').version
+        const binding = require('@amigo-labs/encoding-darwin-arm64')
+        const bindingPackageVersion = require('@amigo-labs/encoding-darwin-arm64/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -227,13 +227,13 @@ function requireNative() {
   } else if (process.platform === 'freebsd') {
     if (process.arch === 'x64') {
       try {
-        return require('./nanoid.freebsd-x64.node')
+        return require('./encoding.freebsd-x64.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-freebsd-x64')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-freebsd-x64/package.json').version
+        const binding = require('@amigo-labs/encoding-freebsd-x64')
+        const bindingPackageVersion = require('@amigo-labs/encoding-freebsd-x64/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -243,13 +243,13 @@ function requireNative() {
       }
     } else if (process.arch === 'arm64') {
       try {
-        return require('./nanoid.freebsd-arm64.node')
+        return require('./encoding.freebsd-arm64.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-freebsd-arm64')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-freebsd-arm64/package.json').version
+        const binding = require('@amigo-labs/encoding-freebsd-arm64')
+        const bindingPackageVersion = require('@amigo-labs/encoding-freebsd-arm64/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -264,13 +264,13 @@ function requireNative() {
     if (process.arch === 'x64') {
       if (isMusl()) {
         try {
-          return require('./nanoid.linux-x64-musl.node')
+          return require('./encoding.linux-x64-musl.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-x64-musl')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-x64-musl/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-x64-musl')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-x64-musl/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -280,13 +280,13 @@ function requireNative() {
         }
       } else {
         try {
-          return require('./nanoid.linux-x64-gnu.node')
+          return require('./encoding.linux-x64-gnu.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-x64-gnu')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-x64-gnu/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-x64-gnu')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-x64-gnu/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -298,13 +298,13 @@ function requireNative() {
     } else if (process.arch === 'arm64') {
       if (isMusl()) {
         try {
-          return require('./nanoid.linux-arm64-musl.node')
+          return require('./encoding.linux-arm64-musl.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-arm64-musl')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-arm64-musl/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-arm64-musl')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-arm64-musl/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -314,13 +314,13 @@ function requireNative() {
         }
       } else {
         try {
-          return require('./nanoid.linux-arm64-gnu.node')
+          return require('./encoding.linux-arm64-gnu.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-arm64-gnu')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-arm64-gnu/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-arm64-gnu')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-arm64-gnu/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -332,13 +332,13 @@ function requireNative() {
     } else if (process.arch === 'arm') {
       if (isMusl()) {
         try {
-          return require('./nanoid.linux-arm-musleabihf.node')
+          return require('./encoding.linux-arm-musleabihf.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-arm-musleabihf')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-arm-musleabihf/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-arm-musleabihf')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-arm-musleabihf/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -348,13 +348,13 @@ function requireNative() {
         }
       } else {
         try {
-          return require('./nanoid.linux-arm-gnueabihf.node')
+          return require('./encoding.linux-arm-gnueabihf.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-arm-gnueabihf')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-arm-gnueabihf/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-arm-gnueabihf')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-arm-gnueabihf/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -366,13 +366,13 @@ function requireNative() {
     } else if (process.arch === 'loong64') {
       if (isMusl()) {
         try {
-          return require('./nanoid.linux-loong64-musl.node')
+          return require('./encoding.linux-loong64-musl.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-loong64-musl')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-loong64-musl/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-loong64-musl')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-loong64-musl/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -382,13 +382,13 @@ function requireNative() {
         }
       } else {
         try {
-          return require('./nanoid.linux-loong64-gnu.node')
+          return require('./encoding.linux-loong64-gnu.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-loong64-gnu')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-loong64-gnu/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-loong64-gnu')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-loong64-gnu/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -400,13 +400,13 @@ function requireNative() {
     } else if (process.arch === 'riscv64') {
       if (isMusl()) {
         try {
-          return require('./nanoid.linux-riscv64-musl.node')
+          return require('./encoding.linux-riscv64-musl.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-riscv64-musl')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-riscv64-musl/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-riscv64-musl')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-riscv64-musl/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -416,13 +416,13 @@ function requireNative() {
         }
       } else {
         try {
-          return require('./nanoid.linux-riscv64-gnu.node')
+          return require('./encoding.linux-riscv64-gnu.node')
         } catch (e) {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@amigo-labs/nanoid-linux-riscv64-gnu')
-          const bindingPackageVersion = require('@amigo-labs/nanoid-linux-riscv64-gnu/package.json').version
+          const binding = require('@amigo-labs/encoding-linux-riscv64-gnu')
+          const bindingPackageVersion = require('@amigo-labs/encoding-linux-riscv64-gnu/package.json').version
           if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
             throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
           }
@@ -433,13 +433,13 @@ function requireNative() {
       }
     } else if (process.arch === 'ppc64') {
       try {
-        return require('./nanoid.linux-ppc64-gnu.node')
+        return require('./encoding.linux-ppc64-gnu.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-linux-ppc64-gnu')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-linux-ppc64-gnu/package.json').version
+        const binding = require('@amigo-labs/encoding-linux-ppc64-gnu')
+        const bindingPackageVersion = require('@amigo-labs/encoding-linux-ppc64-gnu/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -449,13 +449,13 @@ function requireNative() {
       }
     } else if (process.arch === 's390x') {
       try {
-        return require('./nanoid.linux-s390x-gnu.node')
+        return require('./encoding.linux-s390x-gnu.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-linux-s390x-gnu')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-linux-s390x-gnu/package.json').version
+        const binding = require('@amigo-labs/encoding-linux-s390x-gnu')
+        const bindingPackageVersion = require('@amigo-labs/encoding-linux-s390x-gnu/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -469,13 +469,13 @@ function requireNative() {
   } else if (process.platform === 'openharmony') {
     if (process.arch === 'arm64') {
       try {
-        return require('./nanoid.openharmony-arm64.node')
+        return require('./encoding.openharmony-arm64.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-openharmony-arm64')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-openharmony-arm64/package.json').version
+        const binding = require('@amigo-labs/encoding-openharmony-arm64')
+        const bindingPackageVersion = require('@amigo-labs/encoding-openharmony-arm64/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -485,13 +485,13 @@ function requireNative() {
       }
     } else if (process.arch === 'x64') {
       try {
-        return require('./nanoid.openharmony-x64.node')
+        return require('./encoding.openharmony-x64.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-openharmony-x64')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-openharmony-x64/package.json').version
+        const binding = require('@amigo-labs/encoding-openharmony-x64')
+        const bindingPackageVersion = require('@amigo-labs/encoding-openharmony-x64/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -501,13 +501,13 @@ function requireNative() {
       }
     } else if (process.arch === 'arm') {
       try {
-        return require('./nanoid.openharmony-arm.node')
+        return require('./encoding.openharmony-arm.node')
       } catch (e) {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@amigo-labs/nanoid-openharmony-arm')
-        const bindingPackageVersion = require('@amigo-labs/nanoid-openharmony-arm/package.json').version
+        const binding = require('@amigo-labs/encoding-openharmony-arm')
+        const bindingPackageVersion = require('@amigo-labs/encoding-openharmony-arm/package.json').version
         if (bindingPackageVersion !== '0.1.0' && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
           throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`)
         }
@@ -529,7 +529,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
   let wasiBinding = null
   let wasiBindingError = null
   try {
-    wasiBinding = require('./nanoid.wasi.cjs')
+    wasiBinding = require('./encoding.wasi.cjs')
     nativeBinding = wasiBinding
   } catch (err) {
     if (process.env.NAPI_RS_FORCE_WASI) {
@@ -538,7 +538,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
   }
   if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
     try {
-      wasiBinding = require('@amigo-labs/nanoid-wasm32-wasi')
+      wasiBinding = require('@amigo-labs/encoding-wasm32-wasi')
       nativeBinding = wasiBinding
     } catch (err) {
       if (process.env.NAPI_RS_FORCE_WASI) {
@@ -576,5 +576,6 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
-module.exports.nanoid = nativeBinding.nanoid
-module.exports.nanoidCustom = nativeBinding.nanoidCustom
+module.exports.decode = nativeBinding.decode
+module.exports.encode = nativeBinding.encode
+module.exports.encodingExists = nativeBinding.encodingExists

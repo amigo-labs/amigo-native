@@ -55,7 +55,10 @@ describe('zip — read entries (100 files)', () => {
 })
 
 describe('zip — extract all (100 files)', () => {
-  bench('@amigo-labs/zip', () => {
+  bench('@amigo-labs/zip (extractAll)', () => {
+    ZipReader.fromBuffer(smallArchive).extractAll()
+  })
+  bench('@amigo-labs/zip (entries + read loop)', () => {
     const r = ZipReader.fromBuffer(smallArchive)
     for (const e of r.entries()) r.read(e.name)
   })

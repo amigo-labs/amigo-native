@@ -3,8 +3,10 @@ import {
   xxh32 as amigoXxh32,
   xxh64 as amigoXxh64,
   xxh3_64 as amigoXxh3,
-  xxh32Batch as amigoXxh32Batch,
-  xxh3_64Batch as amigoXxh3Batch,
+  xxh32Many as amigoXxh32Many,
+  xxh3_64Many as amigoXxh3Many,
+  Xxh32Hasher,
+  Xxh3Hasher,
 } from '../index.js'
 import xxhashWasmInit from 'xxhash-wasm'
 import XXHashJS from 'xxhashjs'
@@ -12,7 +14,12 @@ import XXHashJS from 'xxhashjs'
 const buf64 = Buffer.alloc(64, 0xab)
 const buf1m = Buffer.alloc(1_048_576, 0xab)
 
-// Batch: 1000 small buffers (64 bytes each)
+// Batch fixture: 1000 × 64 bytes packed into one contiguous buffer so
+// `xxh*Many` can consume it without paying for 1000 separate FFI trips.
+const batchPacked = Buffer.alloc(1000 * 64)
+for (let i = 0; i < 1000; i++) batchPacked.writeUInt32LE(i, i * 64)
+
+// Legacy Vec<Buffer> fixture for comparison benches (JS-loop path).
 const batchInputs = Array.from({ length: 1000 }, (_, i) => {
   const b = Buffer.alloc(64)
   b.writeUInt32LE(i, 0)
@@ -57,11 +64,16 @@ describe('xxh3_64 - 1 MB', () => {
 // --- Batch: 1000 × 64 bytes (amortized FFI overhead) ---
 
 describe('xxh32 batch - 1000 × 64 bytes', () => {
-  bench('@amigo-labs/xxhash (batch)', () => {
-    amigoXxh32Batch(batchInputs)
+  bench('@amigo-labs/xxhash (many, Buffer in/out)', () => {
+    amigoXxh32Many(batchPacked, 64)
   })
   bench('@amigo-labs/xxhash (loop)', () => {
     for (const buf of batchInputs) amigoXxh32(buf)
+  })
+  bench('@amigo-labs/xxhash (streaming)', () => {
+    const h = new Xxh32Hasher()
+    for (const buf of batchInputs) h.update(buf)
+    h.digest()
   })
   bench('xxhash-wasm (loop)', () => {
     for (const buf of batchInputs) wasmHasher.h32Raw(buf)
@@ -72,8 +84,13 @@ describe('xxh32 batch - 1000 × 64 bytes', () => {
 })
 
 describe('xxh3_64 batch - 1000 × 64 bytes', () => {
-  bench('@amigo-labs/xxhash (batch)', () => {
-    amigoXxh3Batch(batchInputs)
+  bench('@amigo-labs/xxhash (many, Buffer in/out)', () => {
+    amigoXxh3Many(batchPacked, 64)
+  })
+  bench('@amigo-labs/xxhash (streaming)', () => {
+    const h = new Xxh3Hasher()
+    for (const buf of batchInputs) h.update(buf)
+    h.digest()
   })
   bench('xxhash-wasm (loop)', () => {
     for (const buf of batchInputs) wasmHasher.h64Raw(buf)
