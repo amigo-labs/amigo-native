@@ -21,6 +21,7 @@ Thumbs.db
 
 # Benchmark / parity artifacts
 bench-results.json
+bench-results-*.json
 size-results.json
 parity-results.json
 conformance-results.json

@@ -1,32 +1,46 @@
 #!/usr/bin/env node
 
 /**
- * Reads bench-results.json + size-results.json + parity-results.json and
- * produces two outputs that live in git:
+ * Consumes per-crate `bench-results-<crate>.json` shards produced by
+ * scripts/run-benchmarks.mjs (plus size-results.json and parity-results.json
+ * from their respective generators) and updates the files that live in git:
  *
- *   docs/data.json       — feeds the GitHub Pages dashboard (docs/app.js
- *                          consumes this directly).
- *   docs/packages.json   — human-curated metadata; only the `speedup`
- *                          string on each entry is regenerated from the
- *                          latest bench numbers.
+ *   docs/benchmarks/<crate>.json   — per-crate shard. Only crates that were
+ *                                    re-benched this run are overwritten;
+ *                                    everything else stays byte-identical so
+ *                                    noisy hardware-variance diffs stop
+ *                                    churning the tree.
+ *   docs/history/<crate>.jsonl     — append-only trend log. One JSONL line
+ *                                    per bench run per crate; compact
+ *                                    (only hz + ratio) so it stays small.
+ *   docs/data.json                 — legacy aggregate the dashboard
+ *                                    (docs/app.js) consumes directly.
+ *                                    Rebuilt from every shard on every run.
+ *   docs/packages.json             — only the `speedup` field per entry is
+ *                                    regenerated from the aggregated data.
  *
- * The JSON output is the single source of truth for benchmark numbers.
- * Consumers that want a tabular view render from docs/data.json — the
- * dashboard (docs/index.html), per-crate READMEs via shields.io endpoints,
- * etc. We intentionally do NOT emit a BENCHMARKS.md any more: regenerating
- * a markdown table on every CI run produced merge conflicts and noisy
- * diffs for what was essentially the same data as data.json.
+ * If no fresh `bench-results-*.json` exist, only the aggregate is rebuilt —
+ * shards and history stay untouched.
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
-const benchPath = join(root, 'bench-results.json')
-const sizePath = join(root, 'size-results.json')
-const parityPath = join(root, 'parity-results.json')
+const docsDir = join(root, 'docs')
+const shardsDir = join(docsDir, 'benchmarks')
+const historyDir = join(docsDir, 'history')
 
-// --- Load data -----------------------------------------------------------
+mkdirSync(shardsDir, { recursive: true })
+mkdirSync(historyDir, { recursive: true })
 
 function loadJson(path) {
   if (!existsSync(path)) return null
@@ -38,33 +52,94 @@ function loadJson(path) {
   }
 }
 
-const benchData = loadJson(benchPath)
-const sizeData = loadJson(sizePath)
-const parityData = loadJson(parityPath)
-
-if (!benchData && !sizeData) {
-  console.error(
-    'No data found. Run `node scripts/run-benchmarks.mjs` and `node scripts/measure-size.mjs` first.',
-  )
-  process.exit(1)
+function gitShortSha() {
+  const res = spawnSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: root, encoding: 'utf-8' })
+  return res.status === 0 ? res.stdout.trim() : null
 }
 
-// --- Write docs/data.json ------------------------------------------------
+function runnerLabel() {
+  return process.env.RUNNER_OS
+    ? `${process.env.RUNNER_OS.toLowerCase()}-${process.arch}`
+    : `${process.platform}-${process.arch}`
+}
 
-const docsDir = join(root, 'docs')
-const docsPath = join(docsDir, 'data.json')
+// --- 1. Ingest fresh per-crate bench results -----------------------------
+
+const freshShardFiles = readdirSync(root).filter(
+  (f) => f.startsWith('bench-results-') && f.endsWith('.json'),
+)
+
+const now = new Date()
+const commit = gitShortSha()
+const runner = runnerLabel()
+const nodeVersion = process.version
+const generatedAt = now.toISOString()
+const dateOnly = generatedAt.slice(0, 10)
+
+for (const file of freshShardFiles) {
+  const data = loadJson(join(root, file))
+  if (!data?.crate || !Array.isArray(data.suites) || !data.suites.length) continue
+
+  const shard = {
+    crate: data.crate,
+    generatedAt,
+    commit,
+    runner,
+    nodeVersion,
+    suites: data.suites,
+  }
+  writeFileSync(join(shardsDir, `${data.crate}.json`), JSON.stringify(shard, null, 2) + '\n')
+
+  const historyEntry = {
+    commit,
+    date: dateOnly,
+    runner,
+    node: nodeVersion,
+    suites: data.suites.map((s) => {
+      const amigoEntries = s.entries.filter((e) => e.name.includes('@amigo') && e.hz > 0)
+      const competitors = s.entries.filter((e) => !e.name.includes('@amigo') && e.hz > 0)
+      const amigo = amigoEntries.length ? Math.max(...amigoEntries.map((e) => e.hz)) : null
+      const bestCompetitor = competitors.length ? Math.max(...competitors.map((e) => e.hz)) : null
+      return {
+        name: s.name,
+        amigo,
+        best_competitor: bestCompetitor,
+        ratio: amigo && bestCompetitor ? Number((amigo / bestCompetitor).toFixed(3)) : null,
+      }
+    }),
+  }
+  appendFileSync(join(historyDir, `${data.crate}.jsonl`), JSON.stringify(historyEntry) + '\n')
+  console.log(`Updated docs/benchmarks/${data.crate}.json + appended history`)
+}
+
+// --- 2. Rebuild docs/data.json aggregate from all shards -----------------
+
+const allShards = readdirSync(shardsDir)
+  .filter((f) => f.endsWith('.json'))
+  .map((f) => loadJson(join(shardsDir, f)))
+  .filter(Boolean)
+  .sort((a, b) => a.crate.localeCompare(b.crate))
+
+const aggregatedSuites = []
+for (const shard of allShards) {
+  for (const suite of shard.suites ?? []) aggregatedSuites.push(suite)
+}
+
+const sizeData = loadJson(join(root, 'size-results.json'))
+const parityData = loadJson(join(root, 'parity-results.json'))
+
 const docsData = {
-  generatedAt: new Date().toISOString().split('T')[0],
-  nodeVersion: process.version,
+  generatedAt: dateOnly,
+  nodeVersion,
   platform: `${process.platform} ${process.arch}`,
-  benchmarks: benchData ?? null,
+  benchmarks: aggregatedSuites.length ? { suites: aggregatedSuites } : null,
   sizes: sizeData ?? null,
   parity: parityData ?? null,
 }
-writeFileSync(docsPath, JSON.stringify(docsData, null, 2) + '\n')
-console.log(`Written to ${docsPath}`)
+writeFileSync(join(docsDir, 'data.json'), JSON.stringify(docsData, null, 2) + '\n')
+console.log(`Wrote docs/data.json (${aggregatedSuites.length} suites from ${allShards.length} shards)`)
 
-// --- Refresh docs/packages.json speedup strings --------------------------
+// --- 3. Refresh docs/packages.json speedup strings -----------------------
 
 function formatRatio(x) {
   if (x < 2) return x.toFixed(2).replace(/\.?0+$/, '')
@@ -83,17 +158,12 @@ function computeSpeedupString(suites) {
     const amigoEntries = suite.entries.filter((e) => e.name.includes('@amigo') && e.hz > 0)
     const competitors = suite.entries.filter((e) => !e.name.includes('@amigo') && e.hz > 0)
     if (!amigoEntries.length || !competitors.length) continue
-    // Variant-match only when a suite has multiple amigo variants (e.g. encoding
-    // small/100KB/10MB): otherwise the variant suffix encodes library qualifiers
-    // (`slugify (npm)`, `file-type (upstream async)`) and strict matching would
-    // discard the legitimate 1-vs-1 comparison.
     const variantMatch = new Set(amigoEntries.map((e) => entryVariant(e.name))).size > 1
     for (const amigo of amigoEntries) {
       const pool = variantMatch
         ? competitors.filter((e) => entryVariant(e.name) === entryVariant(amigo.name))
         : competitors
       if (!pool.length) continue
-      // fastest competitor in pool → most conservative claim
       const bestHz = Math.max(...pool.map((e) => e.hz))
       ratios.push(amigo.hz / bestHz)
     }
@@ -111,7 +181,6 @@ function computeSpeedupString(suites) {
     const hi = formatRatio(1 / min)
     return lo === hi ? `${lo}× slower` : `${lo}–${hi}× slower`
   }
-  // Mixed: show best win and worst regression
   const winners = ratios.filter((r) => r >= 1.05)
   const losers = ratios.filter((r) => r <= 0.95)
   const parts = []
@@ -121,10 +190,10 @@ function computeSpeedupString(suites) {
 }
 
 const packagesPath = join(docsDir, 'packages.json')
-if (benchData?.suites?.length && existsSync(packagesPath)) {
+if (aggregatedSuites.length && existsSync(packagesPath)) {
   const packagesData = JSON.parse(readFileSync(packagesPath, 'utf-8'))
   const suitesByCrate = new Map()
-  for (const suite of benchData.suites) {
+  for (const suite of aggregatedSuites) {
     const m = suite.file?.match(/^crates\/([^/]+)\//)
     if (!m) continue
     if (!suitesByCrate.has(m[1])) suitesByCrate.set(m[1], [])
@@ -135,5 +204,5 @@ if (benchData?.suites?.length && existsSync(packagesPath)) {
     if (suites?.length) pkg.speedup = computeSpeedupString(suites)
   }
   writeFileSync(packagesPath, JSON.stringify(packagesData, null, 2) + '\n')
-  console.log(`Updated speedup strings in ${packagesPath}`)
+  console.log(`Updated speedup strings in docs/packages.json`)
 }

@@ -128,9 +128,33 @@ jobs:
         if: steps.conformance.outputs.exit != '0'
         run: exit 1
 
+  detect-changes:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      crates: ${{ steps.detect.outputs.crates }}
+      fullbench: ${{ steps.detect.outputs.fullbench }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+      - id: detect
+        run: |
+          crates=$(git diff --name-only HEAD^..HEAD \
+            | grep -E '^crates/[^_][^/]*/' \
+            | sed -E 's|^crates/([^/]+)/.*|\1|' \
+            | sort -u \
+            | paste -sd, -)
+          echo "crates=$crates" >> "$GITHUB_OUTPUT"
+          if git log -1 --format=%B | grep -qF '[full-bench]'; then
+            echo "fullbench=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "fullbench=0" >> "$GITHUB_OUTPUT"
+          fi
+
   benchmark:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [lint, test-rust, test-node, test-conformance]
+    needs: [lint, test-rust, test-node, test-conformance, detect-changes, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -150,11 +174,22 @@ jobs:
           name: napi-binaries
           path: crates/
       - name: Run benchmarks and generate report
-        run: pnpm bench:report
-      - name: Commit benchmark JSON
+        run: |
+          if [ "${{ needs.detect-changes.outputs.fullbench }}" = "1" ]; then
+            node scripts/run-benchmarks.mjs
+          elif [ -n "${{ needs.detect-changes.outputs.crates }}" ]; then
+            node scripts/run-benchmarks.mjs --crates "${{ needs.detect-changes.outputs.crates }}"
+          else
+            echo "No crates changed; skipping benchmarks, size, parity, and report."
+            exit 0
+          fi
+          node scripts/measure-size.mjs
+          node scripts/parity-report.mjs
+          node scripts/generate-report.mjs
+      - name: Commit shards + history + aggregate
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/data.json docs/packages.json
+          git add docs/benchmarks/ docs/history/ docs/data.json docs/packages.json
           git diff --cached --quiet || git commit -m "docs: update benchmarks [skip ci]"
           git push
