@@ -1,0 +1,16 @@
+[package]
+name = "amigo-commonmark"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
+rayon = "1.10"
+
+[build-dependencies]
+napi-build = "2"

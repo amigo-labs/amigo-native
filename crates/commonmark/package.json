@@ -1,7 +1,7 @@
 {
-  "name": "@amigo-labs/{{NAME}}",
+  "name": "@amigo-labs/commonmark",
   "version": "0.1.0",
-  "description": "",
+  "description": "Blazing fast native CommonMark + GFM renderer powered by Rust and pulldown-cmark",
   "main": "index.js",
   "types": "index.d.ts",
   "files": [
@@ -10,7 +10,7 @@
     "README.md"
   ],
   "napi": {
-    "binaryName": "{{NAME}}",
+    "binaryName": "commonmark",
     "targets": [
       "x86_64-unknown-linux-gnu",
       "x86_64-unknown-linux-musl",
@@ -33,13 +33,25 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
     "fast-check": "^3.23.0",
+    "marked": "^15.0.0",
+    "markdown-it": "^14.1.0",
     "vitest": "^3.0.0"
   },
+  "keywords": [
+    "markdown",
+    "commonmark",
+    "gfm",
+    "render",
+    "native",
+    "rust",
+    "napi",
+    "pulldown-cmark"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/amigo-labs/amigo-native",
-    "directory": "crates/{{NAME}}"
+    "directory": "crates/commonmark"
   },
   "engines": {
     "node": ">= 18"
