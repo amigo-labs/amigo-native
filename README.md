@@ -72,9 +72,9 @@ pnpm test                # Node.js tests (vitest)
 ```bash
 pnpm bench                                          # run all benchmarks (vitest bench)
 pnpm bench:report                                   # run all benchmarks + size + parity, regenerate shards
-node scripts/run-benchmarks.mjs --crates xxhash     # only this crate; writes docs/benchmarks/xxhash.json
+node scripts/run-benchmarks.mjs --crates xxhash     # only this crate; writes bench-results-xxhash.json at repo root
 node scripts/run-benchmarks.mjs --only-changed      # crates whose source changed vs origin/main
-node scripts/generate-report.mjs                    # rebuild docs/data.json + append history from fresh shards
+node scripts/generate-report.mjs                    # rebuild docs/data.json, generate docs/benchmarks/*.json, append history from fresh shards
 ```
 
 CI does the same thing automatically: on each push to `main` it benches only the crates whose

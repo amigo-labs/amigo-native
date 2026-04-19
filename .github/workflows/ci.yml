@@ -140,8 +140,11 @@ jobs:
           fetch-depth: 2
       - id: detect
         run: |
+          # `set -o pipefail` (GitHub Actions default) makes grep's exit=1 on
+          # no match fail the whole pipeline, so the second grep-based gate
+          # is written as an `if` block and this one is tolerated explicitly.
           crates=$(git diff --name-only HEAD^..HEAD \
-            | grep -E '^crates/[^_][^/]*/' \
+            | { grep -E '^crates/[^_][^/]*/' || true; } \
             | sed -E 's|^crates/([^/]+)/.*|\1|' \
             | sort -u \
             | paste -sd, -)

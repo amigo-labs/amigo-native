@@ -30,6 +30,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
@@ -109,6 +110,9 @@ for (const file of freshShardFiles) {
     }),
   }
   appendFileSync(join(historyDir, `${data.crate}.jsonl`), JSON.stringify(historyEntry) + '\n')
+  // Consume the intermediate so a later run without a fresh bench for this
+  // crate doesn't re-ingest stale numbers and double-append its history.
+  unlinkSync(join(root, file))
   console.log(`Updated docs/benchmarks/${data.crate}.json + appended history`)
 }
 

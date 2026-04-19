@@ -79,6 +79,10 @@ if (args.onlyChanged) {
     process.exit(0)
   }
 } else if (args.crates) {
+  if (!args.crates.length) {
+    console.error('`--crates` requires at least one crate name')
+    process.exit(2)
+  }
   const unknown = args.crates.filter((c) => !available.includes(c))
   if (unknown.length) {
     console.error(`Unknown crates: ${unknown.join(', ')}`)
