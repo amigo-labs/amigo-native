@@ -1,0 +1,123 @@
+{
+  "crate": "encoding",
+  "generatedAt": "2026-04-19T09:34:51.034Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/encoding/__bench__/index.bench.ts",
+      "name": "encoding — encode utf-8 (small/medium/large)",
+      "entries": [
+        {
+          "name": "@amigo-labs/encoding small",
+          "hz": 1905783.42,
+          "rme": 0.57,
+          "samples": 952892
+        },
+        {
+          "name": "iconv-lite small",
+          "hz": 1142417.41,
+          "rme": 0.46,
+          "samples": 571213
+        },
+        {
+          "name": "Buffer.from small",
+          "hz": 1862493.4,
+          "rme": 0.82,
+          "samples": 931247
+        },
+        {
+          "name": "@amigo-labs/encoding 100KB",
+          "hz": 3951.84,
+          "rme": 2.62,
+          "samples": 1976
+        },
+        {
+          "name": "iconv-lite 100KB",
+          "hz": 4007.24,
+          "rme": 2.71,
+          "samples": 2004
+        },
+        {
+          "name": "Buffer.from 100KB",
+          "hz": 3539.18,
+          "rme": 2.8,
+          "samples": 1770
+        },
+        {
+          "name": "@amigo-labs/encoding 10MB",
+          "hz": 47.242,
+          "rme": 8.8,
+          "samples": 24
+        },
+        {
+          "name": "iconv-lite 10MB",
+          "hz": 52.4122,
+          "rme": 10.71,
+          "samples": 27
+        },
+        {
+          "name": "Buffer.from 10MB",
+          "hz": 47.5942,
+          "rme": 9.48,
+          "samples": 24
+        }
+      ]
+    },
+    {
+      "file": "crates/encoding/__bench__/index.bench.ts",
+      "name": "encoding — decode utf-16le 100KB",
+      "entries": [
+        {
+          "name": "@amigo-labs/encoding",
+          "hz": 27433.21,
+          "rme": 1.61,
+          "samples": 13720
+        },
+        {
+          "name": "iconv-lite",
+          "hz": 25132.76,
+          "rme": 1.82,
+          "samples": 12567
+        }
+      ]
+    },
+    {
+      "file": "crates/encoding/__bench__/index.bench.ts",
+      "name": "encoding — decode shift_jis 100KB",
+      "entries": [
+        {
+          "name": "@amigo-labs/encoding",
+          "hz": 961.47,
+          "rme": 1.13,
+          "samples": 481
+        },
+        {
+          "name": "iconv-lite",
+          "hz": 821.18,
+          "rme": 2.36,
+          "samples": 411
+        }
+      ]
+    },
+    {
+      "file": "crates/encoding/__bench__/index.bench.ts",
+      "name": "encoding — decode latin1 10MB",
+      "entries": [
+        {
+          "name": "@amigo-labs/encoding",
+          "hz": 175.75,
+          "rme": 13.07,
+          "samples": 88
+        },
+        {
+          "name": "iconv-lite",
+          "hz": 11.8602,
+          "rme": 11.8,
+          "samples": 10
+        }
+      ]
+    }
+  ]
+}

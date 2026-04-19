@@ -1,0 +1,189 @@
+{
+  "crate": "sanitize-html",
+  "generatedAt": "2026-04-19T09:34:51.034Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/sanitize-html/__bench__/transforms.bench.ts",
+      "name": "transform ol→ul (simple rename) - small (~80B)",
+      "entries": [
+        {
+          "name": "sanitize-html (npm)",
+          "hz": 28462,
+          "rme": 5.87,
+          "samples": 14231
+        },
+        {
+          "name": "regex-wrapper + amigo",
+          "hz": 19610.72,
+          "rme": 0.37,
+          "samples": 9806
+        },
+        {
+          "name": "tokenizer-wrapper + amigo",
+          "hz": 17449.25,
+          "rme": 0.73,
+          "samples": 8725
+        },
+        {
+          "name": "amigo (baseline, no transform)",
+          "hz": 20972.03,
+          "rme": 0.32,
+          "samples": 10487
+        }
+      ]
+    },
+    {
+      "file": "crates/sanitize-html/__bench__/transforms.bench.ts",
+      "name": "transform ol→ul - medium (~6KB, 100 lists)",
+      "entries": [
+        {
+          "name": "sanitize-html (npm)",
+          "hz": 1313.65,
+          "rme": 7.47,
+          "samples": 661
+        },
+        {
+          "name": "regex-wrapper + amigo",
+          "hz": 3263.96,
+          "rme": 0.96,
+          "samples": 1632
+        },
+        {
+          "name": "tokenizer-wrapper + amigo",
+          "hz": 1975.55,
+          "rme": 1.32,
+          "samples": 989
+        },
+        {
+          "name": "amigo (baseline, no transform)",
+          "hz": 4440.7,
+          "rme": 0.55,
+          "samples": 2221
+        }
+      ]
+    },
+    {
+      "file": "crates/sanitize-html/__bench__/transforms.bench.ts",
+      "name": "transform ol→ul - heavy (~40KB, 1000 transforms)",
+      "entries": [
+        {
+          "name": "sanitize-html (npm)",
+          "hz": 193.6,
+          "rme": 12.84,
+          "samples": 97
+        },
+        {
+          "name": "regex-wrapper + amigo",
+          "hz": 422.36,
+          "rme": 1.98,
+          "samples": 212
+        },
+        {
+          "name": "tokenizer-wrapper + amigo",
+          "hz": 148.3,
+          "rme": 3.09,
+          "samples": 75
+        },
+        {
+          "name": "amigo (baseline, no transform)",
+          "hz": 570.73,
+          "rme": 1.96,
+          "samples": 286
+        }
+      ]
+    },
+    {
+      "file": "crates/sanitize-html/__bench__/transforms.bench.ts",
+      "name": "transform rewrite ol→ul + add class (attribute mutation) - 1000 tags",
+      "entries": [
+        {
+          "name": "sanitize-html (npm)",
+          "hz": 143.37,
+          "rme": 12.66,
+          "samples": 72
+        },
+        {
+          "name": "tokenizer-wrapper + amigo",
+          "hz": 150.25,
+          "rme": 2.14,
+          "samples": 76
+        }
+      ]
+    },
+    {
+      "file": "crates/sanitize-html/__bench__/index.bench.ts",
+      "name": "sanitize - small safe HTML (~200 chars)",
+      "entries": [
+        {
+          "name": "@amigo-labs/sanitize-html",
+          "hz": 34599.36,
+          "rme": 0.39,
+          "samples": 17300
+        },
+        {
+          "name": "sanitize-html (npm)",
+          "hz": 19518.6,
+          "rme": 7.9,
+          "samples": 9821
+        },
+        {
+          "name": "isomorphic-dompurify",
+          "hz": 686.65,
+          "rme": 8,
+          "samples": 344
+        }
+      ]
+    },
+    {
+      "file": "crates/sanitize-html/__bench__/index.bench.ts",
+      "name": "sanitize - medium with XSS (~2 KB)",
+      "entries": [
+        {
+          "name": "@amigo-labs/sanitize-html",
+          "hz": 7727.83,
+          "rme": 2.29,
+          "samples": 3864
+        },
+        {
+          "name": "sanitize-html (npm)",
+          "hz": 2431.22,
+          "rme": 7.12,
+          "samples": 1223
+        },
+        {
+          "name": "isomorphic-dompurify",
+          "hz": 104.56,
+          "rme": 7.54,
+          "samples": 53
+        }
+      ]
+    },
+    {
+      "file": "crates/sanitize-html/__bench__/index.bench.ts",
+      "name": "sanitize - large document (~100 KB)",
+      "entries": [
+        {
+          "name": "@amigo-labs/sanitize-html",
+          "hz": 248.6,
+          "rme": 6.42,
+          "samples": 125
+        },
+        {
+          "name": "sanitize-html (npm)",
+          "hz": 59.7608,
+          "rme": 12.03,
+          "samples": 30
+        },
+        {
+          "name": "isomorphic-dompurify",
+          "hz": 6.3696,
+          "rme": 3.42,
+          "samples": 10
+        }
+      ]
+    }
+  ]
+}

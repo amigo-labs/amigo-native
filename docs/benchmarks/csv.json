@@ -1,0 +1,99 @@
+{
+  "crate": "csv",
+  "generatedAt": "2026-04-19T09:34:51.034Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/csv/__bench__/index.bench.ts",
+      "name": "csv parse - 100 rows, 5 cols",
+      "entries": [
+        {
+          "name": "@amigo-labs/csv",
+          "hz": 8821.84,
+          "rme": 1.11,
+          "samples": 4411
+        },
+        {
+          "name": "@amigo-labs/csv (parseToJson)",
+          "hz": 8346.4,
+          "rme": 1.07,
+          "samples": 4174
+        },
+        {
+          "name": "csv-parse (sync)",
+          "hz": 2598.76,
+          "rme": 1.48,
+          "samples": 1300
+        },
+        {
+          "name": "papaparse",
+          "hz": 4946.98,
+          "rme": 7.82,
+          "samples": 2474
+        }
+      ]
+    },
+    {
+      "file": "crates/csv/__bench__/index.bench.ts",
+      "name": "csv parse - 10,000 rows, 5 cols",
+      "entries": [
+        {
+          "name": "@amigo-labs/csv",
+          "hz": 113.21,
+          "rme": 3.95,
+          "samples": 57
+        },
+        {
+          "name": "@amigo-labs/csv (parseToJson)",
+          "hz": 117.15,
+          "rme": 3.72,
+          "samples": 59
+        },
+        {
+          "name": "csv-parse (sync)",
+          "hz": 25.3599,
+          "rme": 7.23,
+          "samples": 13
+        },
+        {
+          "name": "papaparse",
+          "hz": 54.7717,
+          "rme": 9.98,
+          "samples": 28
+        }
+      ]
+    },
+    {
+      "file": "crates/csv/__bench__/index.bench.ts",
+      "name": "csv parse - 100,000 rows, 10 cols",
+      "entries": [
+        {
+          "name": "@amigo-labs/csv",
+          "hz": 5.4124,
+          "rme": 3.95,
+          "samples": 55
+        },
+        {
+          "name": "@amigo-labs/csv (parseToJson)",
+          "hz": 5.3461,
+          "rme": 4.57,
+          "samples": 54
+        },
+        {
+          "name": "csv-parse (sync)",
+          "hz": 1.1234,
+          "rme": 2.4,
+          "samples": 12
+        },
+        {
+          "name": "papaparse",
+          "hz": 3.0396,
+          "rme": 3.45,
+          "samples": 31
+        }
+      ]
+    }
+  ]
+}

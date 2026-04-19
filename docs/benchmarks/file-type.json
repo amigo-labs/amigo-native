@@ -1,0 +1,45 @@
+{
+  "crate": "file-type",
+  "generatedAt": "2026-04-19T09:34:51.034Z",
+  "commit": "1d1624f",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/file-type/__bench__/index.bench.ts",
+      "name": "file-type — medium JPEG buffer (100KB)",
+      "entries": [
+        {
+          "name": "@amigo-labs/file-type (sync)",
+          "hz": 880450.81,
+          "rme": 0.33,
+          "samples": 440226
+        },
+        {
+          "name": "file-type (upstream async)",
+          "hz": 31379.07,
+          "rme": 1.75,
+          "samples": 15690
+        }
+      ]
+    },
+    {
+      "file": "crates/file-type/__bench__/index.bench.ts",
+      "name": "file-type — large MP4 buffer (10MB)",
+      "entries": [
+        {
+          "name": "@amigo-labs/file-type (sync)",
+          "hz": 851355.12,
+          "rme": 0.3,
+          "samples": 425678
+        },
+        {
+          "name": "file-type (upstream async)",
+          "hz": 332.46,
+          "rme": 1.9,
+          "samples": 167
+        }
+      ]
+    }
+  ]
+}
