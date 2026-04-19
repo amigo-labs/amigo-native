@@ -1,0 +1,16 @@
+[package]
+name = "amigo-bcrypt"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+rand = "0.8"
+
+[build-dependencies]
+napi-build = "2"
+cc = "1"

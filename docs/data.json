@@ -1311,6 +1311,132 @@
             "samples": 12
           }
         ]
+      },
+      {
+        "file": "crates/bcrypt/__bench__/index.bench.ts",
+        "name": "bcrypt - hash (cost 4, low)",
+        "entries": [
+          {
+            "name": "@amigo-labs/bcrypt",
+            "hz": 980.98,
+            "rme": 0.24,
+            "samples": 4905
+          },
+          {
+            "name": "bcrypt (npm, C++ via node-gyp)",
+            "hz": 689.13,
+            "rme": 0.72,
+            "samples": 3446
+          },
+          {
+            "name": "bcryptjs (pure JS)",
+            "hz": 629.08,
+            "rme": 0.53,
+            "samples": 3146
+          }
+        ]
+      },
+      {
+        "file": "crates/bcrypt/__bench__/index.bench.ts",
+        "name": "bcrypt - hash (cost 10, industry default)",
+        "entries": [
+          {
+            "name": "@amigo-labs/bcrypt",
+            "hz": 17.6223,
+            "rme": 0.10,
+            "samples": 177
+          },
+          {
+            "name": "bcrypt (npm, C++ via node-gyp)",
+            "hz": 16.0290,
+            "rme": 0.17,
+            "samples": 161
+          },
+          {
+            "name": "bcryptjs (pure JS)",
+            "hz": 12.8572,
+            "rme": 0.27,
+            "samples": 129
+          }
+        ]
+      },
+      {
+        "file": "crates/bcrypt/__bench__/index.bench.ts",
+        "name": "bcrypt - verify (cost 10)",
+        "entries": [
+          {
+            "name": "@amigo-labs/bcrypt",
+            "hz": 17.6183,
+            "rme": 0.10,
+            "samples": 177
+          },
+          {
+            "name": "bcrypt (npm, C++ via node-gyp)",
+            "hz": 16.2000,
+            "rme": 0.14,
+            "samples": 162
+          },
+          {
+            "name": "bcryptjs (pure JS)",
+            "hz": 12.9787,
+            "rme": 0.14,
+            "samples": 130
+          }
+        ]
+      },
+      {
+        "file": "crates/jose/__bench__/index.bench.ts",
+        "name": "jwkThumbprint - Ed25519",
+        "entries": [
+          {
+            "name": "@amigo-labs/jose",
+            "hz": 398751.5,
+            "rme": 0.42,
+            "samples": 1196255
+          },
+          {
+            "name": "jose (panva, pure JS)",
+            "hz": 246636.49,
+            "rme": 3.48,
+            "samples": 739910
+          }
+        ]
+      },
+      {
+        "file": "crates/jose/__bench__/index.bench.ts",
+        "name": "jwkThumbprint - RSA-2048",
+        "entries": [
+          {
+            "name": "@amigo-labs/jose",
+            "hz": 368756.04,
+            "rme": 0.26,
+            "samples": 1106270
+          },
+          {
+            "name": "jose (panva, pure JS)",
+            "hz": 168409.41,
+            "rme": 3.51,
+            "samples": 505823
+          }
+        ]
+      },
+      {
+        "file": "crates/jose/__bench__/index.bench.ts",
+        "name": "generateEd25519KeyPair",
+        "entries": [
+          {
+            "name": "@amigo-labs/jose",
+            "hz": 46405.97,
+            "rme": 0.35,
+            "samples": 139218
+          },
+          {
+            "name": "jose (panva, pure JS) — generateKeyPair Ed25519 + exportJWK",
+            "hz": 6659.59,
+            "rme": 0.85,
+            "samples": 19979
+          }
+        ]
       }
     ]
   },

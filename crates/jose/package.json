@@ -1,0 +1,61 @@
+{
+  "name": "@amigo-labs/jose",
+  "version": "0.1.0",
+  "description": "JOSE primitives — JWK key generation and RFC 7638 thumbprints",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "jose",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "jose": "^5.9.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/jose"
+  },
+  "keywords": [
+    "jose",
+    "jwk",
+    "jws",
+    "jwe",
+    "rfc7638",
+    "thumbprint",
+    "rsa",
+    "ed25519",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  }
+}

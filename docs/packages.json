@@ -10,6 +10,7 @@
   "heroTaglines": [
     "drop-in for slugify",
     "drop-in for argon2",
+    "drop-in for bcrypt",
     "drop-in for xxhash",
     "drop-in for sanitize-html",
     "drop-in for csv",
@@ -31,7 +32,7 @@
     },
     {
       "k": "PACKAGES",
-      "v": "12"
+      "v": "14"
     },
     {
       "k": "NODE",
@@ -68,6 +69,15 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/argon2",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/argon2",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/argon2/README.md"
+    },
+    {
+      "name": "bcrypt",
+      "title": "Bcrypt",
+      "description": "Bcrypt password hashing with sync + async API. Argon2 sibling.",
+      "speedup": "1.10–1.42× faster vs bcrypt npm / 1.36–1.56× vs bcryptjs",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bcrypt",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bcrypt",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bcrypt/README.md"
     },
     {
       "name": "xxhash",
@@ -149,6 +159,15 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jwt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jwt",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jwt/README.md"
+    },
+    {
+      "name": "jose",
+      "title": "JOSE",
+      "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
+      "speedup": "1.62–2.19× thumbprint / 6.97× Ed25519 keygen",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jose",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jose",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md"
     },
     {
       "name": "zip",
