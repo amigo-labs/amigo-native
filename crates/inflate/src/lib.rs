@@ -48,6 +48,10 @@ fn estimated_inflate_size(compressed_len: usize) -> usize {
 /// it, and we `truncate` to `total_out` before returning, so the
 /// uninitialised bytes are never observable. Avoids a 6×-input memset
 /// that was visible at 10 MB (≈30 % of the total budget).
+///
+/// `clippy::uninit_vec` is a conservative default; for `u8` every bit
+/// pattern is valid and `decompress` writes every byte we expose.
+#[allow(clippy::uninit_vec)]
 fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
     let mut dec = Decompress::new(zlib_header);
     let initial = estimated_inflate_size(input.len()).max(64);
@@ -86,6 +90,7 @@ fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
 }
 
 #[inline]
+#[allow(clippy::uninit_vec)]
 fn grow_uninit(out: &mut Vec<u8>) {
     let new_len = out.len().saturating_mul(2).max(out.len() + 1);
     out.reserve(new_len - out.len());
