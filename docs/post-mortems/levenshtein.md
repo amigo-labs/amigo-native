@@ -134,9 +134,13 @@ If that use case ever materialises, ship it as a separate package.
 
 ## Deprecation plan
 
-- 0.2.0: `deprecated` field in package.json; README warning.
-- Three month window.
-- After: archived/.
+- 0.2.0 (2026-Q1): `deprecated` field in package.json; README warning.
+- Three-month window **waived** after the 2026-04-19 re-review: spike
+  measured, gate failed, no credible flip remains. Source moved to
+  `archived/levenshtein/` the same day.
+- npm registry keeps 0.2.0 with the deprecation notice — no further
+  releases. Historical bench data stays in `docs/benchmarks/levenshtein.json`
+  and `docs/history/levenshtein.jsonl`.
 
 Users should switch to `fast-levenshtein` (or `leven` for smaller
 bundles, acknowledging it's noticeably slower).

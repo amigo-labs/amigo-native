@@ -40,7 +40,7 @@ Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
 | **argon2** | 🟡 | 1,37× | CPU-bound, Optimierungs-Ceiling erreicht. Keep as-is. |
 | **nanoid** | 🟡→Green-ish | 1,03× – 1,08× über nanoid@5 | Bereits pure-JS seit `794396b`. Schlägt nanoid@5 überall knapp; 0,8× vs `crypto.randomUUID` (erwartbar: weniger Work pro ID). |
 | **deep-equal** | 🔴 **DEPRECATED** | 0,96× – 1,30× | `deprecated` in 0.2.0. Post-Mortem in `docs/post-mortems/deep-equal.md`. |
-| **levenshtein** | 🔴 **DEPRECATED** | 0,13× – 1,10× | `deprecated` in 0.2.0. |
+| **levenshtein** | ⚫ **ARCHIVED** | 0,13× – 1,10× | Archived 2026-04-19 after Phase-C spike (`distanceU16`) failed the ≥1,5× gate. See `docs/perf-review/levenshtein.md` and `docs/post-mortems/levenshtein.md`. Source moved to `archived/levenshtein/`. |
 | **xml** | 🔴 **DEPRECATED** | 0,44× – 0,68× | `deprecated` in 0.2.0. |
 
 **Net:** 5 Green → 8 Green + 1 faktisch-Green (nanoid). 7 Yellow → 3 Yellow (argon2, encoding, inflate — alle mit klaren Backend-Gründen für ihr Yellow-Stand). 3 Red → 3 Deprecated (3-Monats-Window).

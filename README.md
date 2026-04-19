@@ -24,7 +24,6 @@ Monorepo using [napi-rs](https://napi.rs) for native Node.js addons, cross-compi
 | [`@amigo-labs/csv`](./crates/csv)                     | CSV parsing/serialization via BurntSushi's `csv`   | `csv-parse`/`papaparse`    | **1.4-3.5x** | —      | Drop-in     |
 | [`@amigo-labs/file-type`](./crates/file-type)         | Magic-byte file detection via `infer`              | `file-type`                | TBD          | 89%    | Alternative |
 | [`@amigo-labs/inflate`](./crates/inflate)             | zlib deflate/inflate/gzip via `flate2` (zlib-rs)   | `pako`                     | TBD          | 100%   | Compatible  |
-| [`@amigo-labs/levenshtein`](./crates/levenshtein)     | Edit distance via `triple_accel` (SIMD) + `strsim` | `fast-levenshtein`/`leven` | TBD          | 100%   | Drop-in     |
 | [`@amigo-labs/nanoid`](./crates/nanoid)               | Crypto-safe URL-safe IDs via `nanoid` crate        | `nanoid`                   | TBD          | 100%   | Drop-in     |
 | [`@amigo-labs/encoding`](./crates/encoding)           | Character encoding via `encoding_rs`               | `iconv-lite`               | TBD          | 66%    | Alternative |
 | [`@amigo-labs/xml`](./crates/xml)                     | SAX-style XML parser via `quick-xml`               | `sax`                      | TBD          | 100%   | Compatible  |

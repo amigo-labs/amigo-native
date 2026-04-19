@@ -42,10 +42,6 @@ const PACKAGES = {
     amigo: { crate: 'inflate' },
     competitors: ['pako@2.1.0'],
   },
-  levenshtein: {
-    amigo: { crate: 'levenshtein' },
-    competitors: ['fast-levenshtein@3.0.0', 'leven@4.0.0'],
-  },
   nanoid: {
     amigo: { crate: 'nanoid' },
     competitors: ['nanoid@5.0.9'],
