@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, renderMany, Renderer } from '../index.js'
+import { render, renderBytes, renderMany, Renderer } from '../index.js'
 
 describe('render', () => {
   it('renders a paragraph', () => {
@@ -87,6 +87,24 @@ describe('renderMany', () => {
   })
 })
 
+describe('renderBytes', () => {
+  it('matches render() on identical input', () => {
+    const md = '# Hello, **world**\n\n- [x] done\n- [ ] todo'
+    expect(renderBytes(Buffer.from(md, 'utf8'))).toBe(render(md))
+  })
+
+  it('accepts options', () => {
+    const out = renderBytes(Buffer.from('# H', 'utf8'), { headingIds: false })
+    expect(out).toBe('<h1>H</h1>\n')
+  })
+
+  it('throws a clear error on invalid UTF-8', () => {
+    // 0xC3 0x28 is an invalid 2-byte sequence
+    const bad = Buffer.from([0x23, 0x20, 0xc3, 0x28])
+    expect(() => renderBytes(bad)).toThrow(/UTF-8/)
+  })
+})
+
 describe('Renderer', () => {
   it('reuses options across renders', () => {
     const r = new Renderer({ headingIds: false, gfm: false })
@@ -104,5 +122,11 @@ describe('Renderer', () => {
     const r = new Renderer()
     expect(r.render('# Same')).toContain('id="same"')
     expect(r.render('# Same')).toContain('id="same"')
+  })
+
+  it('exposes renderBytes with matching output', () => {
+    const r = new Renderer()
+    const md = '# H\n\ntext'
+    expect(r.renderBytes(Buffer.from(md, 'utf8'))).toBe(r.render(md))
   })
 })

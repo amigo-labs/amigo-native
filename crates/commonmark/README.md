@@ -28,6 +28,12 @@ renderMany(['# Page 1', '# Page 2', '# Page 3'])
 // Reusable renderer (same options across many calls)
 const r = new Renderer({ gfm: true, unsafeHtml: false })
 r.render('## Section')
+
+// Buffer-input overload — skips V8 UTF-16 → UTF-8 copy on the FFI boundary.
+// Measurably faster on small inputs; parity on medium/large where
+// rendering dominates.
+import { renderBytes } from '@amigo-labs/commonmark'
+renderBytes(Buffer.from('# fast'))
 ```
 
 ## Options
@@ -68,15 +74,22 @@ const safe = sanitize(unsafe_but_html_free)
 
 ## Performance
 
-Target (see [`__bench__/index.bench.ts`](./__bench__/index.bench.ts) — run `pnpm bench`):
+Measured on Linux x64 with `pnpm bench` (Vitest). Best of `render`, `renderBytes`, and `render({ headingIds: false, unsafeHtml: true })`:
 
-| Size | Target vs `marked` | Target vs `markdown-it` |
+| Size | vs `marked` | vs `markdown-it` |
 |---|---:|---:|
-| 1 KB | ≥ 2× | ≥ 2× |
-| 50 KB | ≥ 5× | ≥ 5× |
-| 500 KB | ≥ 8× | ≥ 8× |
+| Small (~0.1 KB) | **8.05×** | 5.19× |
+| Medium (~2.8 KB) | **10.73×** | 7.63× |
+| Large (~81 KB) | **9.36×** | 7.56× |
+| Batch (500 × medium, `renderMany`) | **51.79×** | 42.65× |
 
-Numbers are published in [`docs/data.json`](../../docs/data.json) after the first release.
+Notes on the options that drive these numbers:
+
+- `renderBytes(Buffer)` avoids the V8 UTF-16 → UTF-8 copy on input — about 5% faster than `render(string)` on small inputs; roughly parity once rendering dominates.
+- `{ headingIds: false, unsafeHtml: true }` enables the streaming fast-path: no event collection, no filter pass. ~1.23–1.37× faster than default options.
+- `renderMany` parallelises across cores via `rayon` for batches ≥ 8 docs where at least one doc is ≥ 512 bytes. On a 500-doc batch it's **5.45×** faster than calling `render` in a per-call loop.
+
+Numbers are re-published in [`docs/data.json`](../../docs/data.json) after each release.
 
 ## Conformance
 

@@ -1,9 +1,10 @@
 import { bench, describe } from 'vitest'
-import { render, renderMany } from '../index.js'
+import { render, renderBytes, renderMany } from '../index.js'
 import { marked } from 'marked'
 import MarkdownIt from 'markdown-it'
 
 const mdit = new MarkdownIt({ html: false, linkify: true, typographer: false })
+const fastOpts = { headingIds: false, unsafeHtml: true }
 
 // --- Fixtures ---
 
@@ -95,9 +96,19 @@ void small1k; void medium50k; void large100k
 
 // --- Benches ---
 
+const smallBuf = Buffer.from(small, 'utf8')
+const mediumBuf = Buffer.from(medium, 'utf8')
+const largeBuf = Buffer.from(large, 'utf8')
+
 describe(`small (~${Math.round(Buffer.byteLength(small) / 100) / 10} KB)`, () => {
-  bench('@amigo-labs/commonmark', () => {
+  bench('@amigo-labs/commonmark render', () => {
     render(small)
+  })
+  bench('@amigo-labs/commonmark renderBytes', () => {
+    renderBytes(smallBuf)
+  })
+  bench('@amigo-labs/commonmark render (fast opts)', () => {
+    render(small, fastOpts)
   })
   bench('marked', () => {
     marked.parse(small)
@@ -108,8 +119,14 @@ describe(`small (~${Math.round(Buffer.byteLength(small) / 100) / 10} KB)`, () =>
 })
 
 describe(`medium (~${Math.round(Buffer.byteLength(medium) / 100) / 10} KB)`, () => {
-  bench('@amigo-labs/commonmark', () => {
+  bench('@amigo-labs/commonmark render', () => {
     render(medium)
+  })
+  bench('@amigo-labs/commonmark renderBytes', () => {
+    renderBytes(mediumBuf)
+  })
+  bench('@amigo-labs/commonmark render (fast opts)', () => {
+    render(medium, fastOpts)
   })
   bench('marked', () => {
     marked.parse(medium)
@@ -120,8 +137,14 @@ describe(`medium (~${Math.round(Buffer.byteLength(medium) / 100) / 10} KB)`, () 
 })
 
 describe(`large (~${Math.round(Buffer.byteLength(large) / 1024)} KB)`, () => {
-  bench('@amigo-labs/commonmark', () => {
+  bench('@amigo-labs/commonmark render', () => {
     render(large)
+  })
+  bench('@amigo-labs/commonmark renderBytes', () => {
+    renderBytes(largeBuf)
+  })
+  bench('@amigo-labs/commonmark render (fast opts)', () => {
+    render(large, fastOpts)
   })
   bench('marked', () => {
     marked.parse(large)
@@ -133,7 +156,7 @@ describe(`large (~${Math.round(Buffer.byteLength(large) / 1024)} KB)`, () => {
 
 describe('batch — renderMany (500 × medium docs)', () => {
   const batch = Array.from({ length: 500 }, () => medium)
-  bench('@amigo-labs/commonmark renderMany', () => {
+  bench('@amigo-labs/commonmark renderMany (parallel)', () => {
     renderMany(batch)
   })
   bench('@amigo-labs/commonmark per-call loop', () => {
@@ -143,5 +166,9 @@ describe('batch — renderMany (500 × medium docs)', () => {
   bench('marked per-call loop', () => {
     const out: string[] = []
     for (const d of batch) out.push(marked.parse(d) as string)
+  })
+  bench('markdown-it per-call loop', () => {
+    const out: string[] = []
+    for (const d of batch) out.push(mdit.render(d))
   })
 })

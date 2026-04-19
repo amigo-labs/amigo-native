@@ -1,5 +1,7 @@
+use napi::bindgen_prelude::{Buffer, Error, Result, Status};
 use napi_derive::napi;
 use pulldown_cmark::{html, CowStr, Event, Options, Parser, Tag, TagEnd};
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 #[napi(object)]
@@ -60,69 +62,105 @@ fn slugify(text: &str) -> String {
     out
 }
 
-fn render_internal(markdown: &str, r: Resolved) -> String {
-    let parser = Parser::new_ext(markdown, r.pc);
-    let events: Vec<Event<'_>> = parser.collect();
+fn is_raw_html(e: &Event<'_>) -> bool {
+    matches!(e, Event::Html(_) | Event::InlineHtml(_))
+}
 
-    let mut out_events: Vec<Event<'_>> = Vec::with_capacity(events.len());
-    let mut used_ids: HashMap<String, u32> = HashMap::new();
-
-    let mut i = 0;
-    while i < events.len() {
-        match &events[i] {
-            Event::Start(Tag::Heading { level, id, classes, attrs })
-                if r.heading_ids && id.is_none() =>
-            {
-                let mut text = String::new();
-                let mut j = i + 1;
-                while j < events.len() {
-                    match &events[j] {
-                        Event::End(TagEnd::Heading(_)) => break,
-                        Event::Text(t) | Event::Code(t) => text.push_str(t),
-                        _ => {}
-                    }
-                    j += 1;
-                }
-                let base = slugify(&text);
-                let slug = if base.is_empty() {
-                    "heading".to_string()
-                } else {
-                    let counter = used_ids.entry(base.clone()).or_insert(0);
-                    let s = if *counter == 0 {
-                        base.clone()
-                    } else {
-                        format!("{}-{}", base, counter)
-                    };
-                    *counter += 1;
-                    s
-                };
-                out_events.push(Event::Start(Tag::Heading {
-                    level: *level,
-                    id: Some(CowStr::from(slug)),
-                    classes: classes.clone(),
-                    attrs: attrs.clone(),
-                }));
-            }
-            Event::Html(_) | Event::InlineHtml(_) if !r.unsafe_html => {}
-            e => out_events.push(e.clone()),
+/// Walk collected events and assign slugified IDs to headings that don't
+/// already have one. Mutates in place — no cloning of the event vector.
+fn assign_heading_ids(events: &mut [Event<'_>]) {
+    let mut used: HashMap<String, u32> = HashMap::new();
+    for i in 0..events.len() {
+        let needs = matches!(&events[i], Event::Start(Tag::Heading { id: None, .. }));
+        if !needs {
+            continue;
         }
-        i += 1;
+        let mut text = String::new();
+        for j in (i + 1)..events.len() {
+            match &events[j] {
+                Event::End(TagEnd::Heading(_)) => break,
+                Event::Text(t) | Event::Code(t) => text.push_str(t),
+                _ => {}
+            }
+        }
+        let base = slugify(&text);
+        let slug = if base.is_empty() {
+            "heading".to_string()
+        } else {
+            let counter = used.entry(base.clone()).or_insert(0);
+            let s = if *counter == 0 {
+                base.clone()
+            } else {
+                format!("{}-{}", base, counter)
+            };
+            *counter += 1;
+            s
+        };
+        if let Event::Start(Tag::Heading { id, .. }) = &mut events[i] {
+            *id = Some(CowStr::from(slug));
+        }
+    }
+}
+
+fn render_str(markdown: &str, r: Resolved) -> String {
+    let mut out = String::with_capacity(markdown.len() * 2);
+    let parser = Parser::new_ext(markdown, r.pc);
+
+    // Fast path 1: no heading-ID rewrite, raw HTML allowed → stream straight through.
+    if !r.heading_ids && r.unsafe_html {
+        html::push_html(&mut out, parser);
+        return out;
     }
 
-    let mut output = String::with_capacity(markdown.len() * 3 / 2);
-    html::push_html(&mut output, out_events.into_iter());
-    output
+    // Fast path 2: no heading-ID rewrite, HTML filtered → streaming filter, no collect.
+    if !r.heading_ids && !r.unsafe_html {
+        html::push_html(&mut out, parser.filter(|e| !is_raw_html(e)));
+        return out;
+    }
+
+    // Slow path: heading-IDs need lookahead → one collect, in-place mutation, no clones.
+    let mut events: Vec<Event<'_>> = parser.collect();
+    assign_heading_ids(&mut events);
+
+    if r.unsafe_html {
+        html::push_html(&mut out, events.into_iter());
+    } else {
+        html::push_html(&mut out, events.into_iter().filter(|e| !is_raw_html(e)));
+    }
+    out
+}
+
+fn decode_utf8(buf: &[u8]) -> Result<&str> {
+    std::str::from_utf8(buf)
+        .map_err(|e| Error::new(Status::InvalidArg, format!("input is not valid UTF-8: {e}")))
 }
 
 #[napi]
 pub fn render(markdown: String, options: Option<CommonMarkOptions>) -> String {
-    render_internal(&markdown, resolve(options.as_ref()))
+    render_str(&markdown, resolve(options.as_ref()))
+}
+
+/// Render from a UTF-8 byte buffer. Skips the V8 UTF-16 → UTF-8 copy on
+/// the FFI boundary — measurably faster for inputs ≥ ~10 KB (see
+/// `docs/BASELINE.md`: ~0.35 ns/byte on string input vs. flat 170 ns
+/// on Buffer input).
+#[napi(js_name = "renderBytes")]
+pub fn render_bytes(markdown: Buffer, options: Option<CommonMarkOptions>) -> Result<String> {
+    let s = decode_utf8(&markdown)?;
+    Ok(render_str(s, resolve(options.as_ref())))
 }
 
 #[napi(js_name = "renderMany")]
 pub fn render_many(docs: Vec<String>, options: Option<CommonMarkOptions>) -> Vec<String> {
     let r = resolve(options.as_ref());
-    docs.iter().map(|d| render_internal(d, r)).collect()
+    // Parallelise only when the batch is big enough to amortise rayon's
+    // thread-pool overhead. Threshold tuned empirically on medium-sized
+    // documents.
+    if docs.len() >= 8 && docs.iter().any(|d| d.len() >= 512) {
+        docs.par_iter().map(|d| render_str(d, r)).collect()
+    } else {
+        docs.iter().map(|d| render_str(d, r)).collect()
+    }
 }
 
 #[napi]
@@ -139,6 +177,12 @@ impl Renderer {
 
     #[napi]
     pub fn render(&self, markdown: String) -> String {
-        render_internal(&markdown, self.resolved)
+        render_str(&markdown, self.resolved)
+    }
+
+    #[napi(js_name = "renderBytes")]
+    pub fn render_bytes(&self, markdown: Buffer) -> Result<String> {
+        let s = decode_utf8(&markdown)?;
+        Ok(render_str(s, self.resolved))
     }
 }

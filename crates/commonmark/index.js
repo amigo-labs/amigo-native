@@ -578,4 +578,5 @@ if (!nativeBinding) {
 module.exports = nativeBinding
 module.exports.Renderer = nativeBinding.Renderer
 module.exports.render = nativeBinding.render
+module.exports.renderBytes = nativeBinding.renderBytes
 module.exports.renderMany = nativeBinding.renderMany
