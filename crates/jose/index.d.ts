@@ -7,14 +7,6 @@
  */
 export declare function generateEd25519KeyPair(): JwkKeyPair
 
-/**
- * Generate a fresh RSA key-pair as JWKs.
- *
- * `bits` must be ≥ 2048. Generation is CPU-bound and runs on the libuv
- * thread-pool — typically 100ms–3s depending on key size.
- */
-export declare function generateRsaKeyPair(bits?: number | undefined | null): Promise<JwkKeyPair>
-
 /** A JWK key-pair — both public and private representations of the same key. */
 export interface JwkKeyPair {
   publicJwk: any

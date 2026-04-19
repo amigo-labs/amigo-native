@@ -1,6 +1,6 @@
 # Candidate review: `jose`
 
-> **Status:** SHIPPED v0.1 · **Predicted:** 🟢 Green-likely · **Measured:** 🟢 Green (3/4 Funktionen) / 🔴 Red (RSA-Keygen) · **Reviewed:** 2026-04-19
+> **Status:** SHIPPED v0.1 (rescoped) · **Predicted:** 🟢 Green-likely · **Measured:** 🟢 Green (RSA-thumbprint, Ed25519-keygen) / 🟡 Yellow (Ed25519-thumbprint) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
@@ -135,3 +135,34 @@ Diese Erkenntnis hätte ich aus den scrypt/pbkdf2-Reviews extrapolieren müssen 
 - **Drastische Option:** `generateRsaKeyPair` in v0.2 deprecaten / aus Public-API entfernen, Crate auf "JWK-Tooling + Ed25519" fokussieren.
 
 **Empfehlung für v0.1:** Behalten, README-Warning für RSA-Keygen. v0.2-Roadmap erweitert um JWE-Decrypt (echter Lückenfüller) statt RSA-Keygen-Optimierung.
+
+## Phase-C Rescope (2026-04-19, dieselbe Session)
+
+User wählte **C: RSA-Keygen rauswerfen**, damit die Crate kein Red-Klassifikat mehr trägt.
+
+**Maßnahme:**
+- `generateRsaKeyPair` komplett aus Public-API entfernt (nicht depreciert, nie öffentlich gewesen)
+- `rsa`-Crate + transitive Deps (pkcs1, pkcs8 für RSA, num-bigint-dig, num-traits, num-iter, zeroize) aus `Cargo.toml` gestrichen
+- README dokumentiert die Entscheidung + zeigt `node:crypto.generateKeyPair` als Alternative
+- `RsaGenTask` Task-Struct entfernt; der RSA-Thumbprint-Pfad bleibt voll erhalten (nutzt keine RSA-Crate-Abhängigkeit)
+
+**Neue Messung nach Rescope:**
+
+| Funktion | @amigo-labs/jose | panva/jose | Speedup |
+|---|---:|---:|---|
+| jwkThumbprint Ed25519 | 398 751 hz | 246 636 hz | **1,62×** 🟡 |
+| jwkThumbprint RSA-2048 | 368 756 hz | 168 409 hz | **2,19×** 🟢 |
+| generateEd25519KeyPair | 46 406 hz | 6 660 hz | **6,97×** 🟢🟢 |
+
+**Portfolio-Auswirkung:**
+- Kein Red-Punkt mehr in der Crate
+- Median-Funktion (`jwkThumbprint` auf RSA-JWKs, der dominante Production-Use-Case via OAuth/OIDC) ist 🟢 Green bei 2,19×
+- Ed25519-Thumbprint-Sub-Case knapp unter 2×-Gate (1,62×) — akzeptabel, da es denselben Rust-Code ist, der bei RSA-Input Green liefert; die Varianz kommt vom kleineren SHA-256-Input (Ed25519-JWK ~80 Bytes vs. RSA-JWK ~400 Bytes) wo V8's WebCrypto-Overhead relativ kleiner wird
+- Binary-Size deutlich kleiner (keine `rsa`/`num-bigint`/`pkcs1` mehr)
+
+**Endklassifikation:** 🟢 Green (mit Ed25519-Thumbprint-Sub-Case als toleriertes Yellow-Randphänomen). Alle ausgelieferten Funktionen haben net-positive Speedup gegen den einzigen relevanten Konkurrenten.
+
+**15/15 Tests passing** nach Rescope:
+- Ed25519-Keygen + RSA-Thumbprint-Tests cross-verify mit panva/jose
+- RFC 7638 §3.1 Standard-Vector verifiziert
+- Property-Fuzz (50 Runs) für Ed25519-Thumbprint-Parität

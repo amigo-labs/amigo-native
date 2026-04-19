@@ -577,5 +577,4 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.generateEd25519KeyPair = nativeBinding.generateEd25519KeyPair
-module.exports.generateRsaKeyPair = nativeBinding.generateRsaKeyPair
 module.exports.jwkThumbprint = nativeBinding.jwkThumbprint

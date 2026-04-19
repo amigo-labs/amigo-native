@@ -1,16 +1,19 @@
-//! JOSE primitives: JWK key generation + RFC 7638 thumbprints.
+//! JOSE primitives: Ed25519 JWK key generation + RFC 7638 thumbprints.
 //!
-//! v0.1 scope is intentionally narrow — key-format operations only. JWS sign/
-//! verify is covered by `@amigo-labs/jwt`. JWE encrypt/decrypt is roadmap
-//! (see README).
+//! v0.1 scope is intentionally narrow — key-format operations only where the
+//! Rust stack has a measurable advantage. JWS sign/verify is covered by
+//! `@amigo-labs/jwt`. JWE encrypt/decrypt is roadmap (see README).
+//!
+//! **RSA key generation is not exposed** — Node's built-in
+//! `crypto.generateKeyPair('rsa', ...)` uses OpenSSL's BIGNUM math via the
+//! libuv thread-pool, which is ~2.6× faster than any pure-Rust `rsa`-crate
+//! we can link. If you need RSA keys, generate via Node built-in and pass
+//! the resulting JWK to `jwkThumbprint`.
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use ed25519_dalek::SigningKey;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use rsa::pkcs1::EncodeRsaPrivateKey;
-use rsa::traits::{PrivateKeyParts, PublicKeyParts};
-use rsa::{RsaPrivateKey, RsaPublicKey};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
@@ -23,91 +26,6 @@ pub struct JwkKeyPair {
 
 fn b64url(bytes: &[u8]) -> String {
     URL_SAFE_NO_PAD.encode(bytes)
-}
-
-// ── RSA ───────────────────────────────────────────────────────────────────
-
-fn rsa_to_jwk(private: &RsaPrivateKey) -> Result<JwkKeyPair> {
-    let public: RsaPublicKey = private.to_public_key();
-
-    let n = b64url(&public.n().to_bytes_be());
-    let e = b64url(&public.e().to_bytes_be());
-    let d = b64url(&private.d().to_bytes_be());
-    let primes = private.primes();
-    let p = b64url(&primes[0].to_bytes_be());
-    let q = b64url(&primes[1].to_bytes_be());
-
-    // CRT parameters — required by RFC 7518 §6.3.2 when present
-    let dp = private
-        .dp()
-        .ok_or_else(|| Error::from_reason("missing dP"))?
-        .to_bytes_be();
-    let dq = private
-        .dq()
-        .ok_or_else(|| Error::from_reason("missing dQ"))?
-        .to_bytes_be();
-    let qi = private
-        .crt_coefficient()
-        .ok_or_else(|| Error::from_reason("missing qInv"))?
-        .to_bytes_be();
-
-    Ok(JwkKeyPair {
-        public_jwk: json!({
-            "kty": "RSA",
-            "n": n,
-            "e": e,
-        }),
-        private_jwk: json!({
-            "kty": "RSA",
-            "n": n,
-            "e": e,
-            "d": d,
-            "p": p,
-            "q": q,
-            "dp": b64url(&dp),
-            "dq": b64url(&dq),
-            "qi": b64url(&qi),
-        }),
-    })
-}
-
-pub struct RsaGenTask {
-    bits: u32,
-}
-
-#[napi]
-impl Task for RsaGenTask {
-    type Output = JwkKeyPair;
-    type JsValue = JwkKeyPair;
-
-    fn compute(&mut self) -> Result<Self::Output> {
-        if self.bits < 2048 {
-            return Err(Error::from_reason(
-                "RSA key size must be at least 2048 bits",
-            ));
-        }
-        let mut rng = rand::thread_rng();
-        let private = RsaPrivateKey::new(&mut rng, self.bits as usize)
-            .map_err(|e| Error::from_reason(format!("RSA key generation failed: {e}")))?;
-        // Force CRT computation
-        let _ = private.to_pkcs1_der();
-        rsa_to_jwk(&private)
-    }
-
-    fn resolve(&mut self, _env: Env, output: Self::Output) -> Result<Self::JsValue> {
-        Ok(output)
-    }
-}
-
-/// Generate a fresh RSA key-pair as JWKs.
-///
-/// `bits` must be ≥ 2048. Generation is CPU-bound and runs on the libuv
-/// thread-pool — typically 100ms–3s depending on key size.
-#[napi]
-pub fn generate_rsa_key_pair(bits: Option<u32>) -> AsyncTask<RsaGenTask> {
-    AsyncTask::new(RsaGenTask {
-        bits: bits.unwrap_or(2048),
-    })
 }
 
 // ── Ed25519 ───────────────────────────────────────────────────────────────

@@ -163,8 +163,8 @@
     {
       "name": "jose",
       "title": "JOSE",
-      "description": "JWK key generation (RSA, Ed25519) and RFC 7638 thumbprints. JWE/JWS roadmap.",
-      "speedup": "1.87–2.57× thumbprint / 7.24× Ed25519 keygen / 2.6× slower RSA keygen",
+      "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
+      "speedup": "1.62–2.19× thumbprint / 6.97× Ed25519 keygen",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jose",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jose",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md"
