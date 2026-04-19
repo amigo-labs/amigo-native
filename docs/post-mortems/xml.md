@@ -72,9 +72,12 @@ already (`fast-xml-parser` routinely beats `sax` on throughput).
 
 ## Deprecation plan
 
-- 0.2.0: `deprecated` field in package.json; README warning.
-- Three month window.
-- After: archived/.
+- 0.2.0 (2026-Q1): `deprecated` field in package.json; README warning.
+- Three-month window **waived** on 2026-04-19 along with the other
+  0.2.0 deprecations (levenshtein, deep-equal): no credible fix
+  remains, keeping the crate around only delays the migration signal.
+- Source moved to `archived/xml/` the same day. npm registry keeps
+  0.2.0 with the existing deprecation notice — no further releases.
 
 Recommended alternatives:
 - `sax` — event-based streaming, the package we were trying to beat.

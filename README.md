@@ -26,8 +26,6 @@ Monorepo using [napi-rs](https://napi.rs) for native Node.js addons, cross-compi
 | [`@amigo-labs/inflate`](./crates/inflate)             | zlib deflate/inflate/gzip via `flate2` (zlib-rs)   | `pako`                     | TBD          | 100%   | Compatible  |
 | [`@amigo-labs/nanoid`](./crates/nanoid)               | Crypto-safe URL-safe IDs via `nanoid` crate        | `nanoid`                   | TBD          | 100%   | Drop-in     |
 | [`@amigo-labs/encoding`](./crates/encoding)           | Character encoding via `encoding_rs`               | `iconv-lite`               | TBD          | 66%    | Alternative |
-| [`@amigo-labs/xml`](./crates/xml)                     | SAX-style XML parser via `quick-xml`               | `sax`                      | TBD          | 100%   | Compatible  |
-| [`@amigo-labs/deep-equal`](./crates/deep-equal)       | Deep structural equality                           | `fast-deep-equal`          | TBD          | 100%   | Drop-in     |
 | [`@amigo-labs/deepmerge`](./crates/deepmerge)         | Recursive object merge                             | `deepmerge`                | TBD          | 100%   | Compatible  |
 | [`@amigo-labs/jwt`](./crates/jwt)                     | JWT sign/verify via `jsonwebtoken` crate           | `jsonwebtoken`             | TBD          | 86%    | Drop-in     |
 | [`@amigo-labs/zip`](./crates/zip)                     | ZIP read/write via `zip` crate                     | `yauzl`/`adm-zip`/`jszip`  | TBD          | 100%   | Alternative |
