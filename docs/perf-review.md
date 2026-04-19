@@ -39,9 +39,9 @@ Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
 | **inflate** | 🟡 | deflate 4,1×–6,4×, inflate 0,46×–0,49× | Direct-Decompress-API + pre-alloc auf 1,7× des alten Inflate-Stands. zlib-rs selbst limitiert hier; Backend-Wechsel aufgeschoben. (Commit `32d7dfa`) |
 | **argon2** | 🟡 | 1,37× | CPU-bound, Optimierungs-Ceiling erreicht. Keep as-is. |
 | **nanoid** | 🟡→Green-ish | 1,03× – 1,08× über nanoid@5 | Bereits pure-JS seit `794396b`. Schlägt nanoid@5 überall knapp; 0,8× vs `crypto.randomUUID` (erwartbar: weniger Work pro ID). |
-| **deep-equal** | ⚫ **ARCHIVED** | 0,96× – 1,30× | Archived 2026-04-19. See `docs/post-mortems/deep-equal.md`. Source moved to `archived/deep-equal/`. |
-| **levenshtein** | ⚫ **ARCHIVED** | 0,13× – 1,10× | Archived 2026-04-19 after Phase-C spike (`distanceU16`) failed the ≥1,5× gate. See `docs/perf-review/levenshtein.md` and `docs/post-mortems/levenshtein.md`. Source moved to `archived/levenshtein/`. |
-| **xml** | ⚫ **ARCHIVED** | 0,44× – 0,68× | Archived 2026-04-19. See `docs/post-mortems/xml.md`. Source moved to `archived/xml/`. |
+| **deep-equal** | 🗄️ **ARCHIVED** | 0,96× – 1,30× | Archived 2026-04-19. Re-review bestätigte Red, kein FFI-Hebel denkbar. Post-Mortem in `docs/post-mortems/deep-equal.md`, Review in `docs/perf-review/deep-equal.md`. |
+| **levenshtein** | 🗄️ **ARCHIVED** | 0,13× – 1,10× | Archived 2026-04-19 nach Phase-C-Spike (`distanceU16`) — Gate ≥1,5× bei 10k chars verfehlt (6,7× langsamer als fast-levenshtein). Siehe `docs/perf-review/levenshtein.md` und `docs/post-mortems/levenshtein.md`. |
+| **xml** | 🗄️ **ARCHIVED** | parseXml 0,44× – 0,68× / parseXmlToJson 0,72× – 1,55× | Archived 2026-04-19 (never published). Re-review mit `parseXmlToJson` verliert 100 KB-Median und 10 MB; 10 MB ist JSON.parse-gebunden. `archived/xml/` + `docs/perf-review/xml.md`. |
 
 **Net:** 5 Green → 8 Green + 1 faktisch-Green (nanoid). 7 Yellow → 3 Yellow (argon2, encoding, inflate — alle mit klaren Backend-Gründen für ihr Yellow-Stand). 3 Red → 3 Deprecated (3-Monats-Window).
 

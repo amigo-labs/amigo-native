@@ -1,5 +1,9 @@
 import { bench, describe } from 'vitest'
-import { parser as amigoParser, parseXml as amigoParseXml } from '../wrapper.js'
+import {
+  parser as amigoParser,
+  parseXml as amigoParseXml,
+  parseXmlToJson as amigoParseXmlToJson,
+} from '../wrapper.js'
 import sax from 'sax'
 
 const smallSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0 L10 10"/></svg>'
@@ -31,6 +35,9 @@ describe('xml — small SVG (1KB)', () => {
   bench('@amigo-labs/xml (parseXml)', () => {
     amigoParseXml(smallSvg)
   })
+  bench('@amigo-labs/xml (parseXmlToJson)', () => {
+    JSON.parse(amigoParseXmlToJson(smallSvg))
+  })
   bench('@amigo-labs/xml (sax API)', () => {
     const p = amigoParser()
     p.onopentag = () => {}
@@ -46,8 +53,11 @@ describe('xml — small SVG (1KB)', () => {
 })
 
 describe('xml — RSS feed (100KB)', () => {
-  bench('@amigo-labs/xml', () => {
+  bench('@amigo-labs/xml (parseXml)', () => {
     amigoParseXml(mediumRss)
+  })
+  bench('@amigo-labs/xml (parseXmlToJson)', () => {
+    JSON.parse(amigoParseXmlToJson(mediumRss))
   })
   bench('sax', () => {
     const p = sax.parser(true, {})
@@ -59,8 +69,11 @@ describe('xml — RSS feed (100KB)', () => {
 })
 
 describe('xml — SOAP response (10MB)', () => {
-  bench('@amigo-labs/xml', () => {
+  bench('@amigo-labs/xml (parseXml)', () => {
     amigoParseXml(largeSoap)
+  })
+  bench('@amigo-labs/xml (parseXmlToJson)', () => {
+    JSON.parse(amigoParseXmlToJson(largeSoap))
   })
   bench('sax', () => {
     const p = sax.parser(true, {})
