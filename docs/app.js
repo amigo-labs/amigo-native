@@ -221,7 +221,7 @@ function renderPicker() {
     </li>
   `).join('');
 
-  // pad top/bottom so first/last can center-snap (desktop only; mobile uses horizontal layout)
+  // mobile still needs horizontal center-snap padding; desktop is a flat top-aligned list
   const updatePadding = () => {
     const isMobile = window.innerWidth <= 900;
     if (isMobile) {
@@ -232,20 +232,13 @@ function renderPicker() {
     } else {
       picker.style.paddingLeft = '';
       picker.style.paddingRight = '';
-      const firstItem = picker.querySelector('li');
-      if (firstItem) {
-        const itemH = firstItem.offsetHeight;
-        const pad = Math.max((picker.clientHeight - itemH) / 2, 0);
-        picker.style.paddingTop = pad + 'px';
-        picker.style.paddingBottom = pad + 'px';
-      }
+      picker.style.paddingTop = '';
+      picker.style.paddingBottom = '';
     }
   };
   updatePadding();
   window.addEventListener('resize', () => {
     updatePadding();
-    updateIndicator();
-    snapTo(state.activeIdx, false);
   });
 
   // click to select
@@ -256,9 +249,10 @@ function renderPicker() {
     });
   });
 
-  // scroll-based active detection (suppressed while programmatic snap is running)
+  // scroll-based active detection only on mobile (horizontal wheel-picker)
   let scrollTimer = null;
   picker.addEventListener('scroll', () => {
+    if (window.innerWidth > 900) return;
     if (state.isSnapping) return;
     if (scrollTimer) cancelAnimationFrame(scrollTimer);
     scrollTimer = requestAnimationFrame(() => {
@@ -308,8 +302,7 @@ function snapTo(idx, smooth) {
     const target = li.offsetLeft - (picker.clientWidth - li.offsetWidth) / 2;
     picker.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
   } else {
-    const target = li.offsetTop - (picker.clientHeight - li.offsetHeight) / 2;
-    picker.scrollTo({ top: target, behavior: smooth ? 'smooth' : 'auto' });
+    li.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
   }
 
   // release the flag once scroll has settled (smooth ~500ms worst case)
@@ -388,6 +381,12 @@ function buildSlabHTML(p) {
       <button class="copy-btn" type="button" id="slabCopy">Copy</button>
     </div>
 
+    <div class="slab-links">
+      <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
+      <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
+      <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
+    </div>
+
     <div class="slab-grid">
       <div class="slab-col">
         <div class="slab-col-head">Benchmarks (ops/s)</div>
@@ -397,12 +396,6 @@ function buildSlabHTML(p) {
         <div class="slab-col-head">Install footprint</div>
         <div id="slabSizes"></div>
       </div>
-    </div>
-
-    <div class="slab-links">
-      <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
-      <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
-      <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
     </div>
   `;
 }
