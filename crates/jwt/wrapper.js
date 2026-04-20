@@ -17,12 +17,8 @@ function normalizeSignOptions(options) {
   if (options.issuer !== undefined) opts.issuer = String(options.issuer)
   if (options.subject !== undefined) opts.subject = String(options.subject)
   if (options.jwtid !== undefined) opts.jwtid = String(options.jwtid)
-  if (options.expiresIn !== undefined) {
-    opts.expiresIn = typeof options.expiresIn === 'number' ? options.expiresIn : 0
-  }
-  if (options.notBefore !== undefined) {
-    opts.notBefore = typeof options.notBefore === 'number' ? options.notBefore : 0
-  }
+  if (options.expiresIn !== undefined) opts.expiresIn = options.expiresIn
+  if (options.notBefore !== undefined) opts.notBefore = options.notBefore
   if (options.header && typeof options.header === 'object') opts.header = options.header
   return opts
 }

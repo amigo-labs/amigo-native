@@ -23,12 +23,19 @@ Cross-validated bidirectionally against `jsonwebtoken` in `__parity__/`.
 
 ## Options
 
-Supported: `algorithm`, `algorithms`, `expiresIn` (seconds, number only),
-`notBefore`, `audience`, `issuer`, `subject`, `jwtid`, `header`,
-`clockTolerance`, `ignoreExpiration`, `ignoreNotBefore`.
+Supported: `algorithm`, `algorithms`, `expiresIn`, `notBefore`, `audience`,
+`issuer`, `subject`, `jwtid`, `header`, `clockTolerance`,
+`ignoreExpiration`, `ignoreNotBefore`.
+
+`expiresIn` and `notBefore` accept either:
+
+- a **number** — seconds from now (e.g. `3600` for 1 hour), or
+- a **string** parsed the same way as `jsonwebtoken` / the [`ms`](https://www.npmjs.com/package/ms)
+  package: `"1s"`, `"2m"`, `"1h"`, `"1d"`, `"2 weeks"`, `"1.5 hours"`. A
+  unit-less string like `"1500"` is treated as milliseconds (so `1500` →
+  `1` second). Unknown units raise an error.
 
 Not supported in v1:
-- **`expiresIn` as string** (`"2h"`, `"1d"`): pass seconds as number.
 - **`audience` as array or regex**: single string only.
 - **`jwksRsa` / JWK key sets**: plain PEM keys only. Pair with a JWK-to-PEM
   converter if you need rotation.

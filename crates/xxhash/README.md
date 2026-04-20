@@ -20,26 +20,30 @@ import { xxh3_64, xxh64, xxh32, Xxh3Hasher } from "@amigo-labs/xxhash";
 const buf = Buffer.from("hello world");
 
 // XXH3 (fastest, recommended)
-xxh3_64(buf); // number
+xxh3_64(buf); // bigint
 
 // Classic variants
-xxh64(buf);  // number
-xxh32(buf);  // number
+xxh64(buf);   // bigint
+xxh32(buf);   // number
 
 // 128-bit hash (returned as hex string)
 import { xxh3_128 } from "@amigo-labs/xxhash";
-xxh3_128(buf); // "a]\\xc8b\\x1c..."
+xxh3_128(buf); // "a5dfc8621c..." (hex)
 
 // Streaming hasher
 const hasher = new Xxh3Hasher();
 hasher.update(Buffer.from("hello "));
 hasher.update(Buffer.from("world"));
-hasher.digest();    // number
+hasher.digest();    // bigint
 hasher.digestHex(); // hex string
 
-// Batch hashing (single FFI call for many inputs)
-import { xxh3_64Batch } from "@amigo-labs/xxhash";
-const hashes = xxh3_64Batch([buf1, buf2, buf3]);
+// Batch hashing: one FFI call, flat Buffer in, flat Buffer out
+import { xxh3_64Many } from "@amigo-labs/xxhash";
+// 1000 fixed-size 64-byte chunks concatenated in a single Buffer:
+const input = Buffer.concat(chunks); // 1000 × 64 B = 64 000 B
+const out = xxh3_64Many(input, 64);  // Buffer of 1000 × 8 B = 8 000 B
+// out contains 1000 little-endian u64 hashes back-to-back
+const firstHash = out.readBigUInt64LE(0);
 ```
 
 ## API
@@ -48,28 +52,39 @@ const hashes = xxh3_64Batch([buf1, buf2, buf3]);
 
 | Function | Returns | Description |
 | --- | --- | --- |
-| `xxh3_64(input, seed?)` | `number` | XXH3 64-bit hash |
-| `xxh3_128(input, seed?)` | `string` | XXH3 128-bit hash (hex) |
-| `xxh64(input, seed?)` | `number` | Classic XXH64 hash |
-| `xxh32(input, seed?)` | `number` | Classic XXH32 hash |
+| `xxh3_64(input, seed?: bigint)` | `bigint` | XXH3 64-bit hash |
+| `xxh3_128(input, seed?: bigint)` | `string` | XXH3 128-bit hash (hex) |
+| `xxh64(input, seed?: bigint)` | `bigint` | Classic XXH64 hash |
+| `xxh32(input, seed?: number)` | `number` | Classic XXH32 hash |
 
-### Batch functions
+### Batch functions (flat `Buffer` in, flat `Buffer` out)
+
+Single FFI call over the whole input, avoiding per-item array marshalling. The input is a single `Buffer` containing `N × chunkSize` bytes; the output is a flat `Buffer` of `N` hashes back-to-back (`u64` as 8 bytes LE for xxh3/xxh64, `u32` as 4 bytes LE for xxh32).
 
 | Function | Returns | Description |
 | --- | --- | --- |
-| `xxh3_64Batch(inputs, seed?)` | `number[]` | XXH3 64-bit hashes for many inputs |
-| `xxh64Batch(inputs, seed?)` | `number[]` | XXH64 hashes for many inputs |
-| `xxh32Batch(inputs, seed?)` | `number[]` | XXH32 hashes for many inputs |
+| `xxh3_64Many(input, chunkSize, seed?: bigint)` | `Buffer` | XXH3 64-bit hashes for `input.length / chunkSize` fixed-size chunks |
+| `xxh64Many(input, chunkSize, seed?: bigint)` | `Buffer` | XXH64 hashes for fixed-size chunks |
+| `xxh32Many(input, chunkSize, seed?: number)` | `Buffer` | XXH32 hashes for fixed-size chunks |
 
-### `Xxh3Hasher` (streaming)
+### `Xxh3Hasher` / `Xxh64Hasher` (64-bit streaming)
 
 | Method | Description |
 | --- | --- |
-| `new Xxh3Hasher(seed?)` | Create a streaming hasher |
-| `update(chunk)` | Feed data into the hasher |
-| `digest()` | Finalize and return hash as `number` |
-| `digestHex()` | Finalize and return hash as hex `string` |
-| `reset()` | Reset hasher for reuse |
+| `new Xxh3Hasher(seed?: bigint)` / `new Xxh64Hasher(seed?: bigint)` | Create a streaming hasher |
+| `update(chunk: Buffer)` | Feed data into the hasher |
+| `digest(): bigint` | Finalize and return hash as `bigint` |
+| `digestHex(): string` | Finalize and return hash as hex `string` |
+| `reset(seed?)` | Reset hasher for reuse (`Xxh3Hasher.reset()` takes no seed) |
+
+### `Xxh32Hasher` (32-bit streaming)
+
+| Method | Description |
+| --- | --- |
+| `new Xxh32Hasher(seed?: number)` | Create a streaming hasher |
+| `update(chunk: Buffer)` | Feed data into the hasher |
+| `digest(): number` | Finalize and return hash as `number` |
+| `reset(seed?: number)` | Reset hasher for reuse |
 
 ## Supported Platforms
 

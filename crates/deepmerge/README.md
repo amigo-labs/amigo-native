@@ -1,6 +1,6 @@
 # @amigo-labs/deepmerge
 
-> Recursive object merge for JSON-safe values. Drop-in for [`deepmerge`](https://www.npmjs.com/package/deepmerge), compiled via NAPI-RS.
+> Recursive object merge for JSON-safe values, compiled via NAPI-RS. Semantic-compatible with [`deepmerge`](https://www.npmjs.com/package/deepmerge); the entry points are named `mergeJson` / `mergeAllJson` (not `deepmerge`/`deepmerge.all`) — see [`MIGRATION.md`](./MIGRATION.md).
 
 ## Install
 

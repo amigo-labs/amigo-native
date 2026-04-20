@@ -110,7 +110,7 @@ function nanoidCustom(alphabet, size = DEFAULT_SIZE) {
 
 function nanoidBatch(count, size = DEFAULT_SIZE) {
   count |= 0
-  const out = new Array(count)
+  const out = Array.from({ length: count })
   for (let i = 0; i < count; i++) out[i] = nanoid(size)
   return out
 }
@@ -121,7 +121,7 @@ function nanoidCustomBatch(alphabet, count, size = DEFAULT_SIZE) {
   }
   count |= 0
   const gen = customRandom(alphabet, size)
-  const out = new Array(count)
+  const out = Array.from({ length: count })
   for (let i = 0; i < count; i++) out[i] = gen(size)
   return out
 }

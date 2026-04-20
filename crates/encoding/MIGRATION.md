@@ -25,6 +25,6 @@ Firefox' [`encoding_rs`](https://crates.io/crates/encoding_rs) crate.
 
 - **Substitution characters** for un-mappable input may differ between
   `encoding_rs` (WHATWG spec) and `iconv-lite` (library-specific defaults). See
-  `__parity__/divergences.md` after running the parity suite.
+  `__conformance__/divergences.md` after running the conformance suite.
 - **Legacy single-byte encodings** like `KOI8-R` are recognised by both but
   byte-encoding may differ in edge cases involving the Euro sign or NEL.

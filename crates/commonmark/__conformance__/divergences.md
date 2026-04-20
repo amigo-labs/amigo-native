@@ -29,6 +29,33 @@ These are inherited from the underlying parser and documented for transparency:
 - **Indented code block trailing newline**: spec renders `    code` as `<pre><code>code\n</code></pre>`; this package emits `<pre><code>code</code></pre>` (no trailing `\n` inside `<code>`). Display in browsers is identical.
 - **Single-tilde strikethrough**: GFM spec requires **double** tilde (`~~X~~`). `pulldown-cmark` also accepts single tilde (`~X~`) as strikethrough. If you have literal `~` characters in your Markdown, escape them (`\~`) to preserve them.
 
+### Full-spec pass rate
+
+`upstream.spec.ts` runs the complete CommonMark 0.31.2 spec corpus
+(652 examples from the `commonmark-spec` npm package) against our
+`render(md, { headingIds: false, unsafeHtml: true })`. As of the
+current `pulldown-cmark` dependency, **630 / 652 examples pass
+(96.6 %)**. The 22 failures cluster in:
+
+- **Backslash escapes** (2 cases) — edge cases in escape sequences
+  inside link titles and attribute values.
+- **Entity and numeric character references** (2 cases) — expansion
+  of `&#xNN;` forms inside attribute contexts.
+- **Link reference definitions** (3 cases) — multi-line definition
+  normalization.
+- **Emphasis and strong emphasis** (6 cases) — a handful of edge
+  cases in the precedence algorithm for intra-word `_` / `*`.
+- **Code spans** (1 case).
+- **Links / Images** (2 cases) — corner cases in title parsing.
+- **Raw HTML** (4 cases) — `pulldown-cmark`'s tag-boundary heuristic
+  differs on some multi-line tag forms.
+- **Setext headings / HTML blocks** (2 cases).
+
+None of these affect the Green verdict — they are documented
+behavioural divergences of the underlying parser, not bugs in the
+binding. Users who need byte-identical CommonMark reference output
+should stay with `commonmark.js` (pure JS, lower performance).
+
 ## Unsupported
 
 - **Custom tokenizer plugins** (as in `marked` / `markdown-it`)

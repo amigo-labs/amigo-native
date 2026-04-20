@@ -6,8 +6,6 @@ const small = 'café résumé naïve '.repeat(10) // ~160B
 const medium = 'café résumé naïve '.repeat(6000) // ~100KB
 const large = 'café résumé naïve '.repeat(600_000) // ~10MB
 
-const smallBytes = Buffer.from(small, 'utf-8')
-const mediumBytes = Buffer.from(medium, 'utf-8')
 const largeBytes = Buffer.from(large, 'utf-8')
 
 describe('encoding — encode utf-8 (small/medium/large)', () => {

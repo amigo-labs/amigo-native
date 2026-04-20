@@ -47,7 +47,7 @@ describe('nanoid — parity with nanoid@5', () => {
 
   it('byte distribution roughly uniform (chi-square gate)', () => {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
-    const counts = new Array(alphabet.length).fill(0)
+    const counts = Array.from({ length: alphabet.length }, () => 0)
     const samples = 100_000
     for (let i = 0; i < samples / 21; i++) {
       const id = amigoNanoid()

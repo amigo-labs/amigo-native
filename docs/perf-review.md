@@ -1,6 +1,6 @@
 # Perf-Review
 
-> Ehrliche Klassifizierung der 15 publizierten `@amigo-labs/*`-Packages
+> Ehrliche Klassifizierung der 16 publizierten `@amigo-labs/*`-Packages
 > gegen ihre jeweiligen JS-Alternativen. Entscheidungsgrundlage:
 > `npm run bench` Zahlen aus `bench-results.json` (gemessen
 > 2026-04-18, Node v22.22.2 linux/x64) und der FFI-Overhead-Baseline in
@@ -36,16 +36,20 @@ Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
 | **zip** | 🟢 | 2,66× – 3,7× | `extractAll()` hinzugefügt. Letzte Regression (0,56×) → 2,66× gegen adm-zip. (Commit `16c74ed`) |
 | **xxhash** | 🟢 | Large-Buffer 1,2×–2,5×, Batch **2,44× – 4,00×** | `*Batch(Vec<Buffer>)→Vec<T>` gelöscht, durch `*Many(Buffer, chunkSize)→Buffer` ersetzt. 0,17× → 4,00× auf dem schlimmsten Batch-Szenario. (Commit `4c6fb50`) |
 | **encoding** | 🟢 | latin1 decode **14,8×**, UTF-8 an Parität, shift_jis **1,17×** | Shift_JIS nach encoding_rs-Upgrade jetzt über iconv-lite (961 vs 821 hz auf 100 KB, siehe `docs/data.json`). Status von Yellow → Green. |
+| **commonmark** | 🟢 | 3,5× – 8,1× vs `marked` / `markdown-it` | Neuer Port auf `pulldown-cmark` — explizit CommonMark+GFM spec-strict statt `marked`-Drop-in. Green über alle Größen (small bis large). |
+| **jose** | 🟢 | 1,62× – 6,97× | Rescope: `generateRsaKeyPair` aus Public-API entfernt (2,6× langsamer als panva/jose). Shipped surface — Ed25519 keygen + JWK-Thumbprint — alle net-positiv. (Commit `12cf84e`) |
+| **tiktoken** | 🟢 | 2,22× – 23,4× vs `js-tiktoken` + `tiktoken`-WASM | BPE-Tokenizer via `tiktoken-rs`, Singleton-NAPI-Class. Gegen `gpt-tokenizer` (LRU-Merge-Cache in JS) strukturell 0,3×–0,5× — Positionierung als pure-JS/WASM-Killer, nicht gpt-tokenizer-Killer. (Commit `2b49284`) |
 | **inflate** | 🟡 | deflate 4,1×–6,4×, inflate 0,46×–0,49× | Direct-Decompress-API + pre-alloc auf 1,7× des alten Inflate-Stands. zlib-rs selbst limitiert hier; Backend-Wechsel aufgeschoben. (Commit `32d7dfa`) |
 | **argon2** | 🟡 | 1,37× | CPU-bound, Optimierungs-Ceiling erreicht. Keep as-is. |
+| **bcrypt** | 🟡 | 1,10×–1,42× vs `bcrypt`-npm, 1,37×–1,56× vs `bcryptjs` | Phase-C: pure-Rust Blowfish-Backend durch vendored Solar-Designer `crypt_blowfish` C-Source ersetzt. Red→Yellow; 2× Green-Gate strukturell nicht erreichbar (identischer Algorithmus in beiden Konkurrenten). (Commit `53db550`) |
 | **nanoid** | 🟡→Green-ish | 1,03× – 1,08× über nanoid@5 | Bereits pure-JS seit `794396b`. Schlägt nanoid@5 überall knapp; 0,8× vs `crypto.randomUUID` (erwartbar: weniger Work pro ID). |
 | **deep-equal** | 🗄️ **ARCHIVED** | 0,96× – 1,30× | Archived 2026-04-19. Re-review bestätigte Red, kein FFI-Hebel denkbar. Post-Mortem in `docs/post-mortems/deep-equal.md`, Review in `docs/perf-review/deep-equal.md`. |
 | **levenshtein** | 🗄️ **ARCHIVED** | 0,13× – 1,10× | Archived 2026-04-19 nach Phase-C-Spike (`distanceU16`) — Gate ≥1,5× bei 10k chars verfehlt (6,7× langsamer als fast-levenshtein). Siehe `docs/perf-review/levenshtein.md` und `docs/post-mortems/levenshtein.md`. |
 | **xml** | 🗄️ **ARCHIVED** | parseXml 0,44× – 0,68× / parseXmlToJson 0,72× – 1,55× | Archived 2026-04-19 (never published). Re-review mit `parseXmlToJson` verliert 100 KB-Median und 10 MB; 10 MB ist JSON.parse-gebunden. `archived/xml/` + `docs/perf-review/xml.md`. |
 
-**Net:** 5 Green → 9 Green + 1 faktisch-Green (nanoid). 7 Yellow → 2 Yellow (argon2, inflate — beide Backend-limitiert). 3 Red → 3 Deprecated (3-Monats-Window).
+**Net (Stand nach den 4 post-Sprint-Shipments bcrypt / commonmark / jose / tiktoken):** 5 Green → **12 Green** + 1 faktisch-Green (nanoid). 7 Yellow → **3 Yellow** (argon2, inflate, bcrypt — alle drei algorithmisch/Backend-limitiert, 2× Gate strukturell nicht erreichbar). 3 Red → 3 Deprecated (3-Monats-Window). Portfolio-Total: 16 shipped.
 
-**Update 2026-04-19 (Perf-Sprint)**: encoding von Yellow → Green nach shift_jis Re-Messung (1,17× statt 0,65×). Inflate bleibt Yellow mit laufendem Backend-Spike (`docs/perf-review/inflate-backend-spike.md`); zusätzlich `decompress_bulk` ohne Zero-Init-Output-Buffer (erwartet +5–15 % auf 10 MB Inflate). Neue additive APIs im Portfolio: `xxh3_128Bytes`, `renderFast`/`renderBytesFast` — jeweils Option-Unmarshalling-frei für FFI-floor-dominierte Cases. file-type async bounded copy auf 4 KB Prefix (vorher: voller Buffer).
+**Update 2026-04-19 (Perf-Sprint)**: encoding von Yellow → Green nach shift_jis Re-Messung (1,17× statt 0,65×). Inflate bleibt Yellow mit laufendem Backend-Spike (`docs/perf-review/inflate-backend-spike.md`); zusätzlich `decompress_bulk` ohne Zero-Init-Output-Buffer (erwartet +5–15 % auf 10 MB Inflate). Neue additive APIs im Portfolio: `renderFast`/`renderBytesFast` — jeweils Option-Unmarshalling-frei für FFI-floor-dominierte Cases. file-type async bounded copy auf 4 KB Prefix (vorher: voller Buffer).
 
 Die 8-Green-Packages sind alle netto-schneller-als-JS auf jedem gemessenen Szenario. Das ist die Qualitätsgarantie für das Portfolio: keine Footguns mehr, keine "works well for X but slow for Y"-Überraschungen in den Green-Packages.
 

@@ -373,6 +373,7 @@ function filterStyleAttrib(styleStr, tagName, allowedStylesMap) {
 // control characters / zero that browsers silently strip before
 // interpreting the scheme. Matches sanitize-html's detection.
 function normaliseUrlForScheme(url) {
+  // eslint-disable-next-line no-control-regex -- browsers strip C0 controls + space before scheme parse; mirror that
   return url.replace(/<!--[\s\S]*?-->/g, '').replace(/[\x00-\x20]/g, '')
 }
 
@@ -1290,9 +1291,10 @@ export function sanitize(html, options) {
   const engine = useStrict ? amigoSanitizeStrict : amigoSanitize
   let cleaned = reEncodeAttrAngleBrackets(stripBareAttrSentinels(engine(pre, forNative)))
   if (!decodeEntities) {
+    // U+0001/0002 below are in-house sentinels marking pre-decoded entity bounds.
     cleaned = cleaned
-      .replace(/\u0001A\u0002/g, '&amp;')
-      .replace(/\u0001E([^\u0002]+)\u0002/g, (_m, body) => '&' + body + ';')
+      .replace(/\u0001A\u0002/g, '&amp;') // eslint-disable-line no-control-regex
+      .replace(/\u0001E([^\u0002]+)\u0002/g, (_m, body) => '&' + body + ';') // eslint-disable-line no-control-regex
   }
 
   // 4. Post-pass: output shape + iframe / protocol-relative enforcement.

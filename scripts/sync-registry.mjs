@@ -69,7 +69,7 @@ function buildPackagesJson(crates, existing) {
 }
 
 function columnWidths(rows) {
-  const widths = new Array(rows[0].length).fill(0)
+  const widths = Array.from({ length: rows[0].length }, () => 0)
   for (const row of rows) {
     row.forEach((cell, i) => {
       if (cell.length > widths[i]) widths[i] = cell.length

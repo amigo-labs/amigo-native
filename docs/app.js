@@ -221,7 +221,7 @@ function renderPicker() {
     </li>
   `).join('');
 
-  // pad top/bottom so first/last can center-snap (desktop only; mobile uses horizontal layout)
+  // mobile still needs horizontal center-snap padding; desktop is a flat top-aligned list
   const updatePadding = () => {
     const isMobile = window.innerWidth <= 900;
     if (isMobile) {
@@ -232,19 +232,15 @@ function renderPicker() {
     } else {
       picker.style.paddingLeft = '';
       picker.style.paddingRight = '';
-      const firstItem = picker.querySelector('li');
-      if (firstItem) {
-        const itemH = firstItem.offsetHeight;
-        const pad = Math.max((picker.clientHeight - itemH) / 2, 0);
-        picker.style.paddingTop = pad + 'px';
-        picker.style.paddingBottom = pad + 'px';
-      }
+      picker.style.paddingTop = '';
+      picker.style.paddingBottom = '';
     }
   };
   updatePadding();
   window.addEventListener('resize', () => {
     updatePadding();
-    updateIndicator();
+    // mobile's horizontal picker needs to re-center on the active item when the
+    // layout flips across the 900px breakpoint; desktop's flat list is a no-op
     snapTo(state.activeIdx, false);
   });
 
@@ -256,9 +252,10 @@ function renderPicker() {
     });
   });
 
-  // scroll-based active detection (suppressed while programmatic snap is running)
+  // scroll-based active detection only on mobile (horizontal wheel-picker)
   let scrollTimer = null;
   picker.addEventListener('scroll', () => {
+    if (window.innerWidth > 900) return;
     if (state.isSnapping) return;
     if (scrollTimer) cancelAnimationFrame(scrollTimer);
     scrollTimer = requestAnimationFrame(() => {
@@ -308,8 +305,7 @@ function snapTo(idx, smooth) {
     const target = li.offsetLeft - (picker.clientWidth - li.offsetWidth) / 2;
     picker.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
   } else {
-    const target = li.offsetTop - (picker.clientHeight - li.offsetHeight) / 2;
-    picker.scrollTo({ top: target, behavior: smooth ? 'smooth' : 'auto' });
+    li.scrollIntoView({ block: 'nearest', behavior: smooth ? 'smooth' : 'auto' });
   }
 
   // release the flag once scroll has settled (smooth ~500ms worst case)
@@ -331,24 +327,6 @@ function updateActiveClass() {
     if (isActive) activeId = li.id;
   });
   picker.setAttribute('aria-activedescendant', activeId);
-  updateIndicator();
-}
-
-function updateIndicator() {
-  const picker = $('#picker');
-  if (!picker) return;
-  const indicator = picker.parentElement.querySelector('.picker-center-indicator');
-  if (!indicator) return;
-  const activeLi = picker.querySelector('li.active');
-  if (!activeLi) return;
-  // wait for the next frame so font-size change on .active has applied
-  requestAnimationFrame(() => {
-    const h = activeLi.offsetHeight;
-    if (h > 0) {
-      indicator.style.height = h + 'px';
-      indicator.style.marginTop = -(h / 2) + 'px';
-    }
-  });
 }
 
 function updateHash() {
@@ -388,6 +366,12 @@ function buildSlabHTML(p) {
       <button class="copy-btn" type="button" id="slabCopy">Copy</button>
     </div>
 
+    <div class="slab-links">
+      <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
+      <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
+      <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
+    </div>
+
     <div class="slab-grid">
       <div class="slab-col">
         <div class="slab-col-head">Benchmarks (ops/s)</div>
@@ -398,17 +382,10 @@ function buildSlabHTML(p) {
         <div id="slabSizes"></div>
       </div>
     </div>
-
-    <div class="slab-links">
-      <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
-      <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
-      <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
-    </div>
   `;
 }
 
 function animateSlab(p) {
-  const cmd = '$ npm install @amigo-labs/' + p.name;
   const cmdText = 'npm install @amigo-labs/' + p.name;
 
   typeInto($('#slabSpeedup'), p.speedup, 18);
@@ -486,8 +463,6 @@ function renderSizes(pkg) {
     host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No size data.</div>';
     return;
   }
-  const amigoKey = '@amigo-labs/' + pkg.name;
-  const amigoSize = sizes[amigoKey]?.installSize || 0;
   const entries = Object.entries(sizes);
   const maxSize = Math.max(...entries.map(([, v]) => v.installSize || 0), 1);
 

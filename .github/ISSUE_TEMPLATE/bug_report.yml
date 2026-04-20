@@ -1,0 +1,85 @@
+name: Bug report
+description: A shipped @amigo-labs/* package misbehaves
+title: "[bug] <package>: <one-line summary>"
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please include a minimal reproduction — we'll
+        ask for one anyway. For perf regressions, use a benchmark script that
+        we can run locally.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which `@amigo-labs/*` package is affected?
+      options:
+        - argon2
+        - bcrypt
+        - commonmark
+        - csv
+        - deepmerge
+        - encoding
+        - file-type
+        - inflate
+        - jose
+        - jwt
+        - nanoid
+        - sanitize-html
+        - slugify
+        - tiktoken
+        - xxhash
+        - zip
+        - other / multiple
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: Output of `npm ls @amigo-labs/<pkg>` or the version in your lockfile.
+      placeholder: "0.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: "v20.12.1"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: OS / architecture
+      placeholder: "macOS 14.4 arm64"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Paste a script or link to a repo. Include the input that triggers the bug.
+      render: ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs. actual
+      description: What did you expect? What did you get? If relevant, include the output of the equivalent JS library on the same input.
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Stack traces, `NAPI_DEBUG=1` output, benchmark numbers — anything helpful.
