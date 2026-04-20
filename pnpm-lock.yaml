@@ -158,6 +158,9 @@ importers:
       '@napi-rs/cli':
         specifier: ^3.5.0
         version: 3.6.1(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
+      commonmark-spec:
+        specifier: ^0.31.2
+        version: 0.31.2
       fast-check:
         specifier: ^3.23.0
         version: 3.23.2
@@ -1564,6 +1567,9 @@ packages:
 
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
+
+  commonmark-spec@0.31.2:
+    resolution: {integrity: sha512-vXKxmclzJPymhOJYD26G0oBjVmIcKC8p5m2DvHIq1A1btr1m0r0dT/PzRA5/nwxUbCAPedMNPEoiQE+zvuOcOw==}
 
   css-tree@3.2.1:
     resolution: {integrity: sha512-X7sjQzceUhu1u7Y/ylrRZFU2FS6LRiFVp6rKLPg23y3x3c3DOKAwuXGDp+PAGjh6CSnCjYeAul8pcT8bAl+lSA==}
@@ -3054,6 +3060,8 @@ snapshots:
       typanion: 3.14.0
 
   colorette@2.0.20: {}
+
+  commonmark-spec@0.31.2: {}
 
   css-tree@3.2.1:
     dependencies:

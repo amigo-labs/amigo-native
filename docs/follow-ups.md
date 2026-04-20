@@ -22,26 +22,47 @@ of dropping non-numbers. Conformance tests in `__conformance__/upstream.spec.ts`
 cross-verify the string path against upstream `jsonwebtoken` for four
 representative durations. Root README **Drop-in** label is now honest.
 
-## 3. Conformance docs — partially done
+## 3. ~~Conformance docs — partially done~~ ✅ Done
 
-Every shipped crate now has a `__conformance__/README.md` and
-`divergences.md` describing the parity scope, plus `parity.spec.ts` and
-`fuzz.spec.ts` covering it. What's still missing is a vendored **upstream**
-test suite (`upstream.spec.ts` running the package's own tests against our
-binding) for most crates.
+Every shipped crate now has `__conformance__/README.md`,
+`divergences.md`, `parity.spec.ts` (or table-driven equivalent),
+`fuzz.spec.ts`, **and an `upstream.spec.ts`** that runs either the
+upstream package's own tests or the spec's canonical test vectors
+against our binding.
 
-Only nanoid has this today. Priority order for adding one to other crates:
+Per-crate provenance:
 
-1. **commonmark** — CommonMark spec tests are a standard corpus; run them
-   against `render()`.
-2. **jwt** — `jsonwebtoken` has a structured test suite; vendoring it
-   would force the `expiresIn`-string question above (item 2).
-3. **csv** — `csv-parse` has extensive fixture tests we could redirect.
-4. **everything else** — nice to have, not blocking.
-
-**Done when:** a crate's `package.json` has `test:upstream` alongside
-`test:conformance` and the `audit-crates` skill reports it as fully
-conforming.
+- **commonmark** — full CommonMark 0.31.2 spec (652 cases via the
+  `commonmark-spec` npm package). 630 pass; 22 documented divergences
+  marked `it.fails` in the spec runner and summarised by section in
+  `__conformance__/divergences.md`.
+- **jose** — RFC 7638 §3.1 (RSA JWK thumbprint) + RFC 8037 §A.3
+  (Ed25519 JWK thumbprint) canonical vectors, plus thumbprint
+  determinism invariants.
+- **jwt** — cross-verified against upstream `jsonwebtoken` across
+  HS/RS/ES/PS/EdDSA sign/verify and the `expiresIn` string-duration
+  matrix (see item 2).
+- **xxhash** — canonical XXH32/XXH64 vectors from the xxHash v0.8.2
+  reference, plus corpus cross-verification against both
+  `xxhash-wasm` (reference C via WASM) and `xxhashjs` (pure-JS port).
+- **tiktoken** — hardcoded OpenAI reference encodings for cl100k and
+  o200k, model-lookup mappings, and `countTokens` / `encodeOrdinary`
+  invariants.
+- **argon2** — fixed-salt PHC strings produced by upstream `argon2`
+  npm verify under our binding, full parameter-matrix cross-verify,
+  PHC structural invariants.
+- **bcrypt** — pinned OpenWall crypt_blowfish test vectors, full
+  corpus cross-verify against both `bcrypt` and `bcryptjs`, 72-byte
+  truncation invariants.
+- **csv** — RFC 4180 §2.1–§2.7 fixtures + UTF-8 and CRLF cases,
+  parity against `csv-parse/sync` on matching option sets,
+  `parseWithHeaders ↔ { columns: true }` parity, round-trip tests.
+- **slugify** — README-documented examples + corpus parity against
+  `slugify({ lower: true, strict: true })`, separator matrix.
+- **sanitize-html / nanoid / deepmerge / encoding / file-type /
+  inflate / zip** — already had `upstream.spec.ts` from earlier work;
+  only docs needed topping up (sanitize-html + slugify README +
+  divergences added in the same batch).
 
 ## 4. ~~`@amigo-labs/nanoid` — missing `index.d.ts`~~ ✅ Not actually missing
 
