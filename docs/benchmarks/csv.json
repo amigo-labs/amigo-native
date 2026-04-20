@@ -1,7 +1,7 @@
 {
   "crate": "csv",
-  "generatedAt": "2026-04-19T18:17:41.941Z",
-  "commit": "d1004d6",
+  "generatedAt": "2026-04-20T19:47:00.302Z",
+  "commit": "0d460e2",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,27 +11,27 @@
       "entries": [
         {
           "name": "@amigo-labs/csv",
-          "hz": 12087.69,
-          "rme": 0.75,
-          "samples": 6044
+          "hz": 11892.3,
+          "rme": 1.56,
+          "samples": 5947
         },
         {
           "name": "@amigo-labs/csv (parseToJson)",
-          "hz": 12496.2,
-          "rme": 0.31,
-          "samples": 6249
+          "hz": 12394.51,
+          "rme": 0.28,
+          "samples": 6198
         },
         {
           "name": "csv-parse (sync)",
-          "hz": 5010.09,
-          "rme": 0.58,
-          "samples": 2506
+          "hz": 4967.76,
+          "rme": 0.53,
+          "samples": 2484
         },
         {
           "name": "papaparse",
-          "hz": 7857.71,
-          "rme": 12.81,
-          "samples": 4003
+          "hz": 7831.52,
+          "rme": 12.18,
+          "samples": 3916
         }
       ]
     },
@@ -41,26 +41,26 @@
       "entries": [
         {
           "name": "@amigo-labs/csv",
-          "hz": 181.07,
-          "rme": 1.93,
-          "samples": 91
+          "hz": 177.3,
+          "rme": 1.68,
+          "samples": 89
         },
         {
           "name": "@amigo-labs/csv (parseToJson)",
-          "hz": 180.66,
-          "rme": 1.86,
-          "samples": 91
+          "hz": 177.72,
+          "rme": 1.65,
+          "samples": 89
         },
         {
           "name": "csv-parse (sync)",
-          "hz": 45.4588,
-          "rme": 0.92,
+          "hz": 45.2851,
+          "rme": 0.73,
           "samples": 23
         },
         {
           "name": "papaparse",
-          "hz": 99.509,
-          "rme": 11.75,
+          "hz": 97.2449,
+          "rme": 14.05,
           "samples": 52
         }
       ]
@@ -71,27 +71,27 @@
       "entries": [
         {
           "name": "@amigo-labs/csv",
-          "hz": 10.2956,
-          "rme": 1.74,
-          "samples": 103
+          "hz": 10.3718,
+          "rme": 1.6,
+          "samples": 104
         },
         {
           "name": "@amigo-labs/csv (parseToJson)",
-          "hz": 10.3338,
-          "rme": 1.59,
+          "hz": 10.3542,
+          "rme": 1.62,
           "samples": 104
         },
         {
           "name": "csv-parse (sync)",
-          "hz": 1.9888,
-          "rme": 1.03,
+          "hz": 1.988,
+          "rme": 0.91,
           "samples": 20
         },
         {
           "name": "papaparse",
-          "hz": 5.481,
-          "rme": 2.19,
-          "samples": 55
+          "hz": 5.507,
+          "rme": 1.54,
+          "samples": 56
         }
       ]
     }

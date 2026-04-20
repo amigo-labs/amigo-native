@@ -1,7 +1,7 @@
 {
   "crate": "sanitize-html",
-  "generatedAt": "2026-04-19T18:17:41.941Z",
-  "commit": "d1004d6",
+  "generatedAt": "2026-04-20T19:47:00.302Z",
+  "commit": "0d460e2",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,27 +11,27 @@
       "entries": [
         {
           "name": "sanitize-html (npm)",
-          "hz": 36415.78,
-          "rme": 9.8,
-          "samples": 18208
+          "hz": 35524.99,
+          "rme": 9.88,
+          "samples": 17763
         },
         {
           "name": "regex-wrapper + amigo",
-          "hz": 25351.24,
-          "rme": 3.21,
-          "samples": 12676
+          "hz": 25923.09,
+          "rme": 2.45,
+          "samples": 12962
         },
         {
           "name": "tokenizer-wrapper + amigo",
-          "hz": 24871.43,
-          "rme": 2.33,
-          "samples": 12436
+          "hz": 25409.04,
+          "rme": 1.66,
+          "samples": 12705
         },
         {
           "name": "amigo (baseline, no transform)",
-          "hz": 27588.97,
-          "rme": 0.12,
-          "samples": 13795
+          "hz": 27669.34,
+          "rme": 0.11,
+          "samples": 13835
         }
       ]
     },
@@ -41,27 +41,27 @@
       "entries": [
         {
           "name": "sanitize-html (npm)",
-          "hz": 1702.62,
-          "rme": 13.56,
-          "samples": 852
+          "hz": 1820.93,
+          "rme": 10.37,
+          "samples": 911
         },
         {
           "name": "regex-wrapper + amigo",
-          "hz": 4680.79,
-          "rme": 1.58,
-          "samples": 2341
+          "hz": 4737.34,
+          "rme": 0.88,
+          "samples": 2369
         },
         {
           "name": "tokenizer-wrapper + amigo",
-          "hz": 2971.13,
-          "rme": 0.34,
-          "samples": 1486
+          "hz": 3031.94,
+          "rme": 0.35,
+          "samples": 1516
         },
         {
           "name": "amigo (baseline, no transform)",
-          "hz": 5941.35,
-          "rme": 0.14,
-          "samples": 2971
+          "hz": 5910.23,
+          "rme": 0.13,
+          "samples": 2956
         }
       ]
     },
@@ -71,25 +71,25 @@
       "entries": [
         {
           "name": "sanitize-html (npm)",
-          "hz": 281.43,
-          "rme": 10.75,
-          "samples": 141
+          "hz": 283.35,
+          "rme": 11.69,
+          "samples": 142
         },
         {
           "name": "regex-wrapper + amigo",
-          "hz": 584.67,
-          "rme": 2.28,
-          "samples": 293
+          "hz": 602.29,
+          "rme": 1.13,
+          "samples": 302
         },
         {
           "name": "tokenizer-wrapper + amigo",
-          "hz": 175.49,
-          "rme": 0.46,
-          "samples": 88
+          "hz": 178.7,
+          "rme": 0.49,
+          "samples": 90
         },
         {
           "name": "amigo (baseline, no transform)",
-          "hz": 783.36,
+          "hz": 782.31,
           "rme": 0.1,
           "samples": 392
         }
@@ -101,15 +101,15 @@
       "entries": [
         {
           "name": "sanitize-html (npm)",
-          "hz": 191.25,
-          "rme": 14.07,
-          "samples": 96
+          "hz": 186.62,
+          "rme": 15.27,
+          "samples": 94
         },
         {
           "name": "tokenizer-wrapper + amigo",
-          "hz": 171.55,
-          "rme": 7.15,
-          "samples": 86
+          "hz": 167.56,
+          "rme": 3.03,
+          "samples": 84
         }
       ]
     },
@@ -119,21 +119,21 @@
       "entries": [
         {
           "name": "@amigo-labs/sanitize-html",
-          "hz": 46080.55,
-          "rme": 0.2,
-          "samples": 23041
+          "hz": 45747.35,
+          "rme": 1.52,
+          "samples": 22874
         },
         {
           "name": "sanitize-html (npm)",
-          "hz": 28710.85,
-          "rme": 11.65,
-          "samples": 14356
+          "hz": 28031.73,
+          "rme": 11.81,
+          "samples": 14016
         },
         {
           "name": "isomorphic-dompurify",
-          "hz": 1194.75,
-          "rme": 10.58,
-          "samples": 599
+          "hz": 1157.15,
+          "rme": 10.81,
+          "samples": 600
         }
       ]
     },
@@ -143,21 +143,21 @@
       "entries": [
         {
           "name": "@amigo-labs/sanitize-html",
-          "hz": 10169.75,
-          "rme": 0.11,
-          "samples": 5085
+          "hz": 10320.03,
+          "rme": 0.12,
+          "samples": 5161
         },
         {
           "name": "sanitize-html (npm)",
-          "hz": 3984.59,
-          "rme": 8.45,
-          "samples": 1993
+          "hz": 3927.99,
+          "rme": 8.39,
+          "samples": 1964
         },
         {
           "name": "isomorphic-dompurify",
-          "hz": 216.64,
-          "rme": 8.1,
-          "samples": 109
+          "hz": 226.65,
+          "rme": 9.18,
+          "samples": 114
         }
       ]
     },
@@ -167,20 +167,20 @@
       "entries": [
         {
           "name": "@amigo-labs/sanitize-html",
-          "hz": 374.3,
-          "rme": 2.29,
+          "hz": 375.53,
+          "rme": 2.42,
           "samples": 188
         },
         {
           "name": "sanitize-html (npm)",
-          "hz": 90.5599,
-          "rme": 20.13,
-          "samples": 47
+          "hz": 90.492,
+          "rme": 19.82,
+          "samples": 48
         },
         {
           "name": "isomorphic-dompurify",
-          "hz": 9.5086,
-          "rme": 2.98,
+          "hz": 9.492,
+          "rme": 4.6,
           "samples": 10
         }
       ]
