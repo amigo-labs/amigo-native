@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/amigo-labs/amigo-native/discussions
+    about: General questions, design discussions, or perf chats that aren't bugs or feature requests.
+  - name: Security report
+    url: https://github.com/amigo-labs/amigo-native/security/advisories/new
+    about: Privately report a security vulnerability via GitHub Security Advisories.

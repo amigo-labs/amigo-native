@@ -1,0 +1,120 @@
+# Declarative label set for amigo-labs/amigo-native.
+#
+# Sync with: gh label create / gh label edit, or via an action like
+# crazy-max/ghaction-github-labeler. This file is the source of truth —
+# don't edit labels directly in the GitHub UI.
+
+# --- Type ------------------------------------------------------------------
+- name: bug
+  color: d73a4a
+  description: Something isn't working
+
+- name: enhancement
+  color: a2eeef
+  description: New feature, API addition, or behaviour extension
+
+- name: documentation
+  color: 0075ca
+  description: Docs, READMEs, site, or inline comments
+
+- name: perf
+  color: ff8800
+  description: Benchmark regression, Green↔Yellow↔Red shift, or a speed improvement
+
+- name: parity
+  color: 5319e7
+  description: Divergence from the upstream JS package this crate replaces
+
+- name: security
+  color: b60205
+  description: Security issue or hardening work
+
+- name: new-package
+  color: 1d76db
+  description: Proposal to port a new npm package to @amigo-labs
+
+# --- Status ----------------------------------------------------------------
+- name: needs-triage
+  color: fbca04
+  description: Awaiting an initial look from a maintainer
+
+- name: needs-repro
+  color: fbca04
+  description: Report is missing a reproduction we can run
+
+- name: blocked
+  color: b60205
+  description: Waiting on an upstream fix, dependency bump, or external decision
+
+- name: wontfix
+  color: ffffff
+  description: Out of scope — see comment for rationale
+
+- name: duplicate
+  color: cfd3d7
+  description: Already tracked elsewhere — link provided
+
+- name: invalid
+  color: e4e669
+  description: Doesn't apply or isn't actionable as filed
+
+# --- Contributor affordances ------------------------------------------------
+- name: good first issue
+  color: 7057ff
+  description: A self-contained task suitable for a first contribution
+
+- name: help wanted
+  color: 008672
+  description: Extra attention is welcome
+
+# --- Scope (non-crate) ------------------------------------------------------
+- name: "scope: ci"
+  color: c5def5
+  description: GitHub Actions, release pipeline, cross-compile targets
+
+- name: "scope: site"
+  color: c5def5
+  description: docs/ dashboard (docs/app.js, styles.css, index.html)
+
+- name: "scope: registry"
+  color: c5def5
+  description: sync-registry.mjs / package.json amigo blocks / root README table
+
+- name: "scope: benchmarks"
+  color: c5def5
+  description: Benchmark harness, measurement methodology, bench-results schema
+
+# --- Scope (per-crate) ------------------------------------------------------
+# One label per shipped package. Apply whichever matches the PR/issue.
+- name: "pkg: argon2"
+  color: ededed
+- name: "pkg: bcrypt"
+  color: ededed
+- name: "pkg: commonmark"
+  color: ededed
+- name: "pkg: csv"
+  color: ededed
+- name: "pkg: deepmerge"
+  color: ededed
+- name: "pkg: encoding"
+  color: ededed
+- name: "pkg: file-type"
+  color: ededed
+- name: "pkg: inflate"
+  color: ededed
+- name: "pkg: jose"
+  color: ededed
+- name: "pkg: jwt"
+  color: ededed
+- name: "pkg: nanoid"
+  color: ededed
+- name: "pkg: sanitize-html"
+  color: ededed
+- name: "pkg: slugify"
+  color: ededed
+- name: "pkg: tiktoken"
+  color: ededed
+- name: "pkg: xxhash"
+  color: ededed
+- name: "pkg: zip"
+  color: ededed

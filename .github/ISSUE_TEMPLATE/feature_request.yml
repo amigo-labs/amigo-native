@@ -1,0 +1,65 @@
+name: Feature request / new package
+description: Propose a new API on an existing package, or a new port candidate
+title: "[feat] <package or new-package>: <one-line summary>"
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Two kinds of requests live here:
+
+        1. **Extend an existing crate** — a new method, a new option, a new
+           batch shape.
+        2. **Port a new package** — proposing a new `@amigo-labs/*` crate. Read
+           [`BACKLOG.md`](../../BACKLOG.md) first; many common npm packages are
+           already ruled out with rationale.
+
+        Requests that don't meet the Green-verdict gate (measurably faster
+        than the JS alternative on realistic inputs) will be closed with a
+        pointer to `docs/perf-review.md`.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Extend an existing package
+        - Port a new package
+    validations:
+      required: true
+
+  - type: input
+    id: package
+    attributes:
+      label: Package name
+      description: Existing `@amigo-labs/<name>`, or the npm name of the package you want ported.
+      placeholder: "e.g. xxhash — or: hnswlib-node"
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: What are you trying to do that the current surface (or the existing JS package) doesn't let you do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: shape
+    attributes:
+      label: Proposed API shape
+      description: Function signature or JS snippet. For new ports, describe the FFI shape — a single call per operation with bulk input/output, or one FFI call per tiny value? See `docs/BASELINE.md` for why this matters.
+      render: ts
+
+  - type: textarea
+    id: perf
+    attributes:
+      label: Expected perf win
+      description: Rough order-of-magnitude estimate vs. the best JS alternative, and why. Sub-µs per-call work is a structural no-go regardless of Rust speed.
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Upstream test suite & parity
+      description: Does upstream have a conformance corpus we can vendor? Are there known spec quirks that make drop-in parity expensive? (Optional for API-extensions on existing crates.)
