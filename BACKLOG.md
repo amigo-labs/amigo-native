@@ -12,6 +12,15 @@ New category, not yet ruled out. Each entry is subject to a `rust-check` candida
 - **pdf-parse** (~1M, text-extraction path). Per-document parsing via `pdf-extract` / `lopdf`. Parity on edge-case PDFs is the main risk.
 - **wink-bm25-text-search** / **bm25** (~30k combined). Index build + scoring over a corpus; amortized FFI. Index as NAPI class.
 
+## Under investigation — Document / report generation
+
+Server-side PDF/document generation candidates. Same gate as above: `rust-check` review before scheduling.
+
+### Predicted Green (≥2× at median, FFI-shape viable)
+
+- **typst** (as library, not an npm drop-in target). Markup-language-based typesetting → PDF via `krilla`. Bytes-in (source + JSON data), bytes-out (PDF buffer) — same FFI shape as `commonmark`/`inflate`. Novel capability: no npm package offers native-speed Typst compilation; competes against Puppeteer (Chromium overhead) and `pdfmake` (pure JS, weak typography). Predicted 5–50× vs. Puppeteer on batch report runs. Main risks are binary size (~15–25 MB per target × 6 targets) and cold-start cost (font + core-library load, amortized via a stateful `TypstCompiler` NAPI class). Full review: `docs/perf-review/typst.md`.
+- **printpdf** (as library, pairs with `@amigo-labs/pdf` — the new-package path from the `pdfkit` review). Low-level PDF builder for label/ticket/receipt workloads; document-as-data API, explicitly not a `pdfkit` drop-in. Full review: `docs/perf-review/pdfkit.md`. Listed here as the sibling of `typst` so future report-gen candidate scans see both paths in one place — `typst` covers business reports (tables, multi-page, typography), `printpdf` covers labels (high-volume batch, trivial layout). Non-overlapping.
+
 ### Predicted Yellow (green on large inputs, marginal on small)
 
 - **@langchain/textsplitters** (~2M). Recursive character + token-aware splitters via `unicode-segmentation` plus custom logic. Green on RAG-scale documents, Red on tweet-sized chunks — must bench small bucket before committing.
