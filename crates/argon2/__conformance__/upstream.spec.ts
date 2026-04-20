@@ -25,10 +25,6 @@ import { hash, verify, hashSync, verifySync } from '../index.js'
 // We pin these outputs so a future `argon2` npm bump that changes output
 // shape (versioning, defaults) is caught. The hashes must verify under us.
 
-type PinnedHash = { pw: string; phc: string }
-
-// Each hash is shaped: $argon2id$v=19$m=65536,t=3,p=4$<salt>$<hash>
-// Salts are 16-byte (22-char base64). Hashes verify under upstream argon2.
 // We derive these lazily because argon2 npm uses random salts — the fixed
 // construction below forces a deterministic output.
 const FIXED = {

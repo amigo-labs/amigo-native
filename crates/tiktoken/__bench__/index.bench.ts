@@ -122,7 +122,7 @@ describe('tiktoken countTokens — fast-path vs. encode.length', () => {
   })
 
   bench('@amigo-labs/tiktoken encode(...).length (medium)', () => {
-    amigoEnc.encode(MEDIUM).length
+    void amigoEnc.encode(MEDIUM).length
   })
 
   if (gptTokenizer && 'countTokens' in gptTokenizer) {

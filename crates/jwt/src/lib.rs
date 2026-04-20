@@ -116,9 +116,7 @@ fn parse_duration_to_seconds(s: &str) -> Result<i64> {
     // Split numeric prefix from unit suffix. Allow optional sign and decimal.
     let num_end = s
         .char_indices()
-        .find(|&(i, c)| {
-            !(c.is_ascii_digit() || c == '.' || (i == 0 && (c == '+' || c == '-')))
-        })
+        .find(|&(i, c)| !(c.is_ascii_digit() || c == '.' || (i == 0 && (c == '+' || c == '-'))))
         .map(|(i, _)| i)
         .unwrap_or(s.len());
     let (num_str, unit) = s.split_at(num_end);
