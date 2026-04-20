@@ -49,7 +49,7 @@ Nach den Optimierungs-Sprints und dem Deprecation-Sweep:
 
 **Net (Stand nach den 4 post-Sprint-Shipments bcrypt / commonmark / jose / tiktoken):** 5 Green → **12 Green** + 1 faktisch-Green (nanoid). 7 Yellow → **3 Yellow** (argon2, inflate, bcrypt — alle drei algorithmisch/Backend-limitiert, 2× Gate strukturell nicht erreichbar). 3 Red → 3 Deprecated (3-Monats-Window). Portfolio-Total: 16 shipped.
 
-**Update 2026-04-19 (Perf-Sprint)**: encoding von Yellow → Green nach shift_jis Re-Messung (1,17× statt 0,65×). Inflate bleibt Yellow mit laufendem Backend-Spike (`docs/perf-review/inflate-backend-spike.md`); zusätzlich `decompress_bulk` ohne Zero-Init-Output-Buffer (erwartet +5–15 % auf 10 MB Inflate). Neue additive APIs im Portfolio: `xxh3_128Bytes`, `renderFast`/`renderBytesFast` — jeweils Option-Unmarshalling-frei für FFI-floor-dominierte Cases. file-type async bounded copy auf 4 KB Prefix (vorher: voller Buffer).
+**Update 2026-04-19 (Perf-Sprint)**: encoding von Yellow → Green nach shift_jis Re-Messung (1,17× statt 0,65×). Inflate bleibt Yellow mit laufendem Backend-Spike (`docs/perf-review/inflate-backend-spike.md`); zusätzlich `decompress_bulk` ohne Zero-Init-Output-Buffer (erwartet +5–15 % auf 10 MB Inflate). Neue additive APIs im Portfolio: `renderFast`/`renderBytesFast` — jeweils Option-Unmarshalling-frei für FFI-floor-dominierte Cases. file-type async bounded copy auf 4 KB Prefix (vorher: voller Buffer).
 
 Die 8-Green-Packages sind alle netto-schneller-als-JS auf jedem gemessenen Szenario. Das ist die Qualitätsgarantie für das Portfolio: keine Footguns mehr, keine "works well for X but slow for Y"-Überraschungen in den Green-Packages.
 

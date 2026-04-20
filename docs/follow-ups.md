@@ -70,14 +70,12 @@ nanoid is pure-JS and ships with `wrapper.js` + `wrapper.d.ts` (see
 `crates/nanoid/package.json` — `"types": "wrapper.d.ts"`). The first audit
 misread this; the type surface is complete.
 
-## Minor / harmless
+## Minor / harmless — all resolved ✅
 
-These are **not** scheduled — captured only so a future audit doesn't
-re-discover them as "new":
-
-- `docs/app.js` `updateIndicator()` runs against a `display: none` element
-  (one `getBoundingClientRect` per active change). Dead-but-cheap. Delete if
-  the mobile picker ever gets restructured.
-- `docs/perf-review.md:48` references `xxh3_128Bytes` as a shipped additive
-  API; the crate exports `xxh3_128` only. Either rename in the review doc
-  or add the `Bytes` variant.
+- `docs/app.js` — removed `updateIndicator()` and its one call site; the
+  `.picker-center-indicator` div was deleted from `index.html` and its two
+  `display: none` rules from `styles.css`. The flat-list picker has no
+  indicator to maintain.
+- `docs/perf-review.md` "Update 2026-04-19" paragraph — dropped the
+  `xxh3_128Bytes` mention (the API was never shipped; `xxh3_128` has been
+  in the public surface from day one, so it wasn't additive to list).

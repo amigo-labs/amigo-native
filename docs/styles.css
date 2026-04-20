@@ -197,7 +197,6 @@ a:hover { color: var(--text-primary); }
 }
 .picker li .arrow { opacity: 0; transition: opacity 0.2s; color: var(--accent); }
 .picker li.active .arrow { opacity: 1; }
-.picker-center-indicator { display: none; }
 
 /* SLAB */
 .slab {
@@ -414,7 +413,6 @@ a:hover { color: var(--text-primary); }
     padding: 8px 14px; font-size: 0.85rem;
   }
   .picker li.active { font-size: 0.95rem; border-bottom-color: var(--accent); }
-  .picker-center-indicator { display: none; }
 
   .slab { padding: 18px; overflow-x: hidden; overflow-y: visible; border-radius: 12px; min-width: 0; max-width: 100%; }
   .slab-head { gap: 10px; flex-wrap: wrap; max-width: 100%; }

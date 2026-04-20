@@ -327,24 +327,6 @@ function updateActiveClass() {
     if (isActive) activeId = li.id;
   });
   picker.setAttribute('aria-activedescendant', activeId);
-  updateIndicator();
-}
-
-function updateIndicator() {
-  const picker = $('#picker');
-  if (!picker) return;
-  const indicator = picker.parentElement.querySelector('.picker-center-indicator');
-  if (!indicator) return;
-  const activeLi = picker.querySelector('li.active');
-  if (!activeLi) return;
-  // wait for the next frame so font-size change on .active has applied
-  requestAnimationFrame(() => {
-    const h = activeLi.offsetHeight;
-    if (h > 0) {
-      indicator.style.height = h + 'px';
-      indicator.style.marginTop = -(h / 2) + 'px';
-    }
-  });
 }
 
 function updateHash() {
