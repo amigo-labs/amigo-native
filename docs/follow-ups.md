@@ -6,16 +6,11 @@ decision or real engineering work — not a mechanical rewrite.
 
 Each item lists the concrete artefact that proves it's fixed.
 
-## 1. `docs/perf-review.md` — missing post-ship verdicts
+## 1. ~~`docs/perf-review.md` — missing post-ship verdicts~~ ✅ Done
 
-The "Nach-Sprint-Stand" table (lines ~28–45) predates bcrypt, commonmark,
-jose, and tiktoken. Each of those has a standalone review under
-`docs/perf-review/<name>.md`. The summary table needs one row per package
-with its current Green/Yellow/Red/Black verdict, the benchmark range, and
-a one-line rationale.
-
-**Done when:** all 16 shipped packages appear in the "Nach-Sprint-Stand" table
-and the "Net:" tally one paragraph below matches.
+Added rows for bcrypt, commonmark, jose, and tiktoken to the "Nach-Sprint-Stand"
+table and updated the "Net:" tally. Portfolio is now **12 Green + 3 Yellow +
+1 faktisch-Green (nanoid)** out of 16 shipped crates.
 
 ## 2. `@amigo-labs/jwt` — drop-in claim vs. `expiresIn` string limitation
 
@@ -34,40 +29,32 @@ Resolution is a product call between:
 **Done when:** one of (a) or (b) is shipped and the root README table, the
 jwt README, and `MIGRATION.md` all agree on the label.
 
-## 3. Missing conformance suites for drop-in crates
+## 3. Conformance docs — partially done
 
-Six packages ship with a "Drop-in" or equivalent status but have no
-`__conformance__/upstream.spec.ts` substantiating the claim: argon2, bcrypt,
-csv, nanoid, tiktoken, xxhash. The modern pattern (see e.g.
-`crates/commonmark/__conformance__/`) is a vendored upstream test suite plus
-a `divergences.md` listing the known skips.
+Every shipped crate now has a `__conformance__/README.md` and
+`divergences.md` describing the parity scope, plus `parity.spec.ts` and
+`fuzz.spec.ts` covering it. What's still missing is a vendored **upstream**
+test suite (`upstream.spec.ts` running the package's own tests against our
+binding) for most crates.
 
-Two are the most urgent:
+Only nanoid has this today. Priority order for adding one to other crates:
 
-- **xxhash**: official test vectors (xxhsum corpus) would let us prove every
-  `*_64`/`*_128` output matches bit-for-bit. Add
-  `__conformance__/vectors.spec.ts` from the xxhash repo's test vectors.
-- **jose**: RFC 7638 thumbprints and Ed25519 JWK import/export have IETF
-  test vectors. Add `__conformance__/rfc7638.spec.ts` + `rfc8037.spec.ts`.
+1. **commonmark** — CommonMark spec tests are a standard corpus; run them
+   against `render()`.
+2. **jwt** — `jsonwebtoken` has a structured test suite; vendoring it
+   would force the `expiresIn`-string question above (item 2).
+3. **csv** — `csv-parse` has extensive fixture tests we could redirect.
+4. **everything else** — nice to have, not blocking.
 
-The remaining four (argon2, bcrypt, csv, nanoid) have upstream test suites
-that can be vendored via the same shape as the existing
-`crates/*/​__conformance__/upstream/` directories.
+**Done when:** a crate's `package.json` has `test:upstream` alongside
+`test:conformance` and the `audit-crates` skill reports it as fully
+conforming.
 
-**Done when:** each crate's `package.json` registers a `test:conformance`
-script and the `audit-crates` skill reports no gaps for these six.
+## 4. ~~`@amigo-labs/nanoid` — missing `index.d.ts`~~ ✅ Not actually missing
 
-## 4. `@amigo-labs/nanoid` — missing `index.d.ts`
-
-The napi-rs auto-generated `index.d.ts` for nanoid is not checked in.
-TypeScript consumers get no signatures for `nanoid(size?: number): string` or
-`customAlphabet(alphabet: string, size?: number): () => string`. Fix is to
-run `pnpm build` in the crate and commit the resulting file, or to hand-write
-it if the crate is pure-JS (per
-[`docs/perf-review.md:41`](./perf-review.md) nanoid shifted to pure-JS).
-
-**Done when:** `crates/nanoid/index.d.ts` exists and covers every exported
-symbol.
+nanoid is pure-JS and ships with `wrapper.js` + `wrapper.d.ts` (see
+`crates/nanoid/package.json` — `"types": "wrapper.d.ts"`). The first audit
+misread this; the type surface is complete.
 
 ## Minor / harmless
 
