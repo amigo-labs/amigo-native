@@ -1,6 +1,6 @@
 # Perf-Review
 
-> Ehrliche Klassifizierung der 15 publizierten `@amigo-labs/*`-Packages
+> Ehrliche Klassifizierung der 16 publizierten `@amigo-labs/*`-Packages
 > gegen ihre jeweiligen JS-Alternativen. Entscheidungsgrundlage:
 > `npm run bench` Zahlen aus `bench-results.json` (gemessen
 > 2026-04-18, Node v22.22.2 linux/x64) und der FFI-Overhead-Baseline in

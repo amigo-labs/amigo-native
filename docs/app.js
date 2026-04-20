@@ -239,6 +239,9 @@ function renderPicker() {
   updatePadding();
   window.addEventListener('resize', () => {
     updatePadding();
+    // mobile's horizontal picker needs to re-center on the active item when the
+    // layout flips across the 900px breakpoint; desktop's flat list is a no-op
+    snapTo(state.activeIdx, false);
   });
 
   // click to select
