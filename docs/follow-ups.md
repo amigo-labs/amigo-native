@@ -12,22 +12,15 @@ Added rows for bcrypt, commonmark, jose, and tiktoken to the "Nach-Sprint-Stand"
 table and updated the "Net:" tally. Portfolio is now **12 Green + 3 Yellow +
 1 faktisch-Green (nanoid)** out of 16 shipped crates.
 
-## 2. `@amigo-labs/jwt` — drop-in claim vs. `expiresIn` string limitation
+## 2. ~~`@amigo-labs/jwt` — drop-in claim vs. `expiresIn` string limitation~~ ✅ Done
 
-Root [`README.md`](../README.md) marks jwt **Drop-in**, but
-[`crates/jwt/MIGRATION.md`](../crates/jwt/MIGRATION.md) documents that string
-durations (`"2h"`, `"1d"`) aren't parsed — only numeric seconds. Callers
-migrating from `jsonwebtoken` with `{ expiresIn: "1h" }` will fail at runtime.
-
-Resolution is a product call between:
-
-- **(a)** Implement string duration parsing (e.g. via `humantime`) to make
-  the drop-in label honest.
-- **(b)** Demote the status label to **Compatible** and keep the numeric-only
-  contract. Root README cell + package table update.
-
-**Done when:** one of (a) or (b) is shipped and the root README table, the
-jwt README, and `MIGRATION.md` all agree on the label.
+Implemented option (a): `expiresIn` and `notBefore` now accept both numeric
+seconds and `ms`-package-compatible strings (`"1h"`, `"2 days"`, `"1.5
+hours"`, unit-less = milliseconds). Parser lives in `crates/jwt/src/lib.rs`
+(`parse_duration_to_seconds`); `wrapper.js` forwards the raw value instead
+of dropping non-numbers. Conformance tests in `__conformance__/upstream.spec.ts`
+cross-verify the string path against upstream `jsonwebtoken` for four
+representative durations. Root README **Drop-in** label is now honest.
 
 ## 3. Conformance docs — partially done
 

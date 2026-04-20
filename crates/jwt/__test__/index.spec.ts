@@ -49,6 +49,37 @@ describe('jwt', () => {
     await expect(verify(token, SECRET)).rejects.toThrow()
   })
 
+  it('expiresIn accepts ms-style duration strings', async () => {
+    const before = Math.floor(Date.now() / 1000)
+    const token = await sign({ a: 1 }, SECRET, { expiresIn: '1h' })
+    const payload = decode(token) as Record<string, unknown>
+    // 1h = 3600 s; allow a few seconds of execution drift.
+    expect(payload.exp as number).toBeGreaterThanOrEqual(before + 3599)
+    expect(payload.exp as number).toBeLessThanOrEqual(before + 3605)
+  })
+
+  it('expiresIn string with long unit', async () => {
+    const before = Math.floor(Date.now() / 1000)
+    const token = await sign({ a: 1 }, SECRET, { expiresIn: '2 days' })
+    const payload = decode(token) as Record<string, unknown>
+    expect(payload.exp as number).toBeGreaterThanOrEqual(before + 2 * 86400 - 2)
+    expect(payload.exp as number).toBeLessThanOrEqual(before + 2 * 86400 + 4)
+  })
+
+  it('notBefore accepts duration strings', async () => {
+    const before = Math.floor(Date.now() / 1000)
+    const token = await sign({ a: 1 }, SECRET, { notBefore: '30s' })
+    const payload = decode(token) as Record<string, unknown>
+    expect(payload.nbf as number).toBeGreaterThanOrEqual(before + 29)
+    expect(payload.nbf as number).toBeLessThanOrEqual(before + 32)
+    // Token is not yet active.
+    await expect(verify(token, SECRET)).rejects.toThrow()
+  })
+
+  it('invalid duration string throws', async () => {
+    await expect(sign({ a: 1 }, SECRET, { expiresIn: 'never' })).rejects.toThrow()
+  })
+
   it('audience and issuer are enforced', async () => {
     const token = await sign({ a: 1 }, SECRET, { audience: 'app-1', issuer: 'me' })
     await expect(verify(token, SECRET, { audience: 'app-1', issuer: 'me' })).resolves.toMatchObject(

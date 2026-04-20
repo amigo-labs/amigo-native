@@ -64,10 +64,11 @@ fn to_decoding_key(alg: Algorithm, secret: &[u8]) -> Result<DecodingKey> {
 pub struct SignOptions {
     /// "HS256" (default), "HS384", "HS512", "RS256", etc.
     pub algorithm: Option<String>,
-    /// Seconds from now until token expires. Maps to `exp` claim.
-    pub expires_in: Option<i64>,
-    /// Seconds from now when the token becomes valid. Maps to `nbf` claim.
-    pub not_before: Option<i64>,
+    /// Until-expiry. Seconds as a number (`3600`), or an `ms`-package-compatible
+    /// string (`"1h"`, `"2 days"`, `"1500"` for 1500 ms). Maps to `exp` claim.
+    pub expires_in: Option<Value>,
+    /// Becomes-valid. Same shape as `expiresIn`. Maps to `nbf` claim.
+    pub not_before: Option<Value>,
     pub audience: Option<String>,
     pub issuer: Option<String>,
     pub subject: Option<String>,
@@ -99,6 +100,66 @@ fn current_timestamp() -> i64 {
         .unwrap_or(0)
 }
 
+/// Parse a duration string the same way the `ms` npm package does — the
+/// format `jsonwebtoken` accepts for `expiresIn` / `notBefore`. Returns
+/// seconds (floor of milliseconds / 1000), matching jsonwebtoken-node's
+/// `timespan()`.
+///
+/// Examples: `"100"` → 0 s (100 ms), `"1s"` → 1, `"2h"` → 7200,
+/// `"1.5 days"` → 129600, `"2 weeks"` → 1209600.
+fn parse_duration_to_seconds(s: &str) -> Result<i64> {
+    let s = s.trim();
+    if s.is_empty() {
+        return Err(Error::from_reason("duration string is empty"));
+    }
+
+    // Split numeric prefix from unit suffix. Allow optional sign and decimal.
+    let num_end = s
+        .char_indices()
+        .find(|&(i, c)| {
+            !(c.is_ascii_digit() || c == '.' || (i == 0 && (c == '+' || c == '-')))
+        })
+        .map(|(i, _)| i)
+        .unwrap_or(s.len());
+    let (num_str, unit) = s.split_at(num_end);
+    let num: f64 = num_str
+        .parse()
+        .map_err(|_| Error::from_reason(format!("invalid duration: {s:?}")))?;
+    let unit = unit.trim().to_ascii_lowercase();
+
+    let ms_per_unit: f64 = match unit.as_str() {
+        "" | "ms" | "msec" | "msecs" | "millisecond" | "milliseconds" => 1.0,
+        "s" | "sec" | "secs" | "second" | "seconds" => 1000.0,
+        "m" | "min" | "mins" | "minute" | "minutes" => 60_000.0,
+        "h" | "hr" | "hrs" | "hour" | "hours" => 3_600_000.0,
+        "d" | "day" | "days" => 86_400_000.0,
+        "w" | "week" | "weeks" => 604_800_000.0,
+        "y" | "yr" | "yrs" | "year" | "years" => 31_557_600_000.0, // 365.25 d
+        other => {
+            return Err(Error::from_reason(format!(
+                "unknown duration unit: {other:?}"
+            )));
+        }
+    };
+
+    Ok(((num * ms_per_unit) / 1000.0).floor() as i64)
+}
+
+fn duration_opt_to_seconds(d: Option<Value>) -> Result<Option<i64>> {
+    match d {
+        None => Ok(None),
+        Some(Value::Null) => Ok(None),
+        Some(Value::Number(n)) => n
+            .as_i64()
+            .map(Some)
+            .ok_or_else(|| Error::from_reason("duration number must be an integer (seconds)")),
+        Some(Value::String(s)) => Ok(Some(parse_duration_to_seconds(&s)?)),
+        Some(other) => Err(Error::from_reason(format!(
+            "duration must be a number or string, got {other}"
+        ))),
+    }
+}
+
 #[napi]
 pub fn sign_sync(payload: Value, secret: Buffer, options: Option<SignOptions>) -> Result<String> {
     let opts = options.unwrap_or_default();
@@ -115,10 +176,10 @@ pub fn sign_sync(payload: Value, secret: Buffer, options: Option<SignOptions>) -
     };
 
     let now = current_timestamp();
-    if let Some(exp_in) = opts.expires_in {
+    if let Some(exp_in) = duration_opt_to_seconds(opts.expires_in)? {
         claims.insert("exp".into(), Value::Number((now + exp_in).into()));
     }
-    if let Some(nbf_in) = opts.not_before {
+    if let Some(nbf_in) = duration_opt_to_seconds(opts.not_before)? {
         claims.insert("nbf".into(), Value::Number((now + nbf_in).into()));
     }
     if let Some(a) = opts.audience {

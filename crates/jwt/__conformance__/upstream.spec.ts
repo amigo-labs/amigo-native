@@ -52,6 +52,17 @@ describe('jwt — parity with jsonwebtoken@9: HS256', () => {
     expect(typeof p2.exp).toBe('number')
     expect(Math.abs((p1.exp as number) - (p2.exp as number))).toBeLessThan(5)
   })
+
+  it.each([['1h'], ['2 days'], ['30s'], ['1.5h']])(
+    'expiresIn string %s matches upstream',
+    async (duration) => {
+      const t1 = await amigo.sign({ a: 1 }, HS_SECRET, { expiresIn: duration })
+      const t2 = jsonwebtoken.sign({ a: 1 }, HS_SECRET, { expiresIn: duration })
+      const p1 = (await amigo.verify(t1, HS_SECRET)) as Record<string, unknown>
+      const p2 = jsonwebtoken.verify(t2, HS_SECRET) as Record<string, unknown>
+      expect(Math.abs((p1.exp as number) - (p2.exp as number))).toBeLessThan(5)
+    },
+  )
 })
 
 describe('jwt — parity: RS256', () => {

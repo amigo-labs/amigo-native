@@ -14,8 +14,13 @@ export type Algorithm =
 
 export interface SignOptions {
   algorithm?: Algorithm
-  expiresIn?: number
-  notBefore?: number
+  /**
+   * Until-expiry. Either seconds as a number (`3600`) or an `ms`-package-compatible
+   * string (`"1h"`, `"2 days"`, `"1500"` for 1500 ms). Maps to the `exp` claim.
+   */
+  expiresIn?: number | string
+  /** Becomes-valid. Same shape as `expiresIn`. Maps to the `nbf` claim. */
+  notBefore?: number | string
   audience?: string
   issuer?: string
   subject?: string

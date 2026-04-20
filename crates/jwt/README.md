@@ -17,7 +17,7 @@ const secret = Buffer.from('super-secret')
 
 const token = await sign({ sub: 'user-42' }, secret, {
   algorithm: 'HS256',
-  expiresIn: 3600,
+  expiresIn: '1h', // or a number of seconds: `expiresIn: 3600`
 })
 
 const { payload, header } = await verify(token, secret)

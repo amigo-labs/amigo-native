@@ -7,10 +7,13 @@ export declare function sign(payload: any, secret: Buffer, options?: SignOptions
 export interface SignOptions {
   /** "HS256" (default), "HS384", "HS512", "RS256", etc. */
   algorithm?: string
-  /** Seconds from now until token expires. Maps to `exp` claim. */
-  expiresIn?: number
-  /** Seconds from now when the token becomes valid. Maps to `nbf` claim. */
-  notBefore?: number
+  /**
+   * Until-expiry. Seconds as a number (`3600`), or an `ms`-package-compatible
+   * string (`"1h"`, `"2 days"`, `"1500"` for 1500 ms). Maps to `exp` claim.
+   */
+  expiresIn?: any
+  /** Becomes-valid. Same shape as `expiresIn`. Maps to `nbf` claim. */
+  notBefore?: any
   audience?: string
   issuer?: string
   subject?: string
