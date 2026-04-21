@@ -14,7 +14,7 @@
   "description": "Prebuilt binary for @amigo-labs/tiktoken on linux-x64-musl",
   "license": "MIT",
   "engines": {
-    "node": ">= 18"
+    "node": ">= 22"
   },
   "repository": {
     "type": "git",

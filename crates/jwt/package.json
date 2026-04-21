@@ -55,7 +55,7 @@
     "directory": "crates/jwt"
   },
   "engines": {
-    "node": ">= 18"
+    "node": ">= 22"
   },
   "amigo": {
     "title": "JWT",

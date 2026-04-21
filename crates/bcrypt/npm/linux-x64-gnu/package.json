@@ -14,7 +14,7 @@
   "description": "Prebuilt binary for @amigo-labs/bcrypt on linux-x64-gnu",
   "license": "MIT",
   "engines": {
-    "node": ">= 18"
+    "node": ">= 22"
   },
   "repository": {
     "type": "git",
