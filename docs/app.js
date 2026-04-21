@@ -357,9 +357,6 @@ function buildSlabHTML(p) {
     <p class="slab-desc" id="slabDesc"></p>
 
     <div class="slab-install">
-      <div class="dots" aria-hidden="true">
-        <span class="dot"></span><span class="dot"></span><span class="dot hot"></span>
-      </div>
       <span class="prefix">$</span>
       <span class="cmd" id="slabCmd"></span><span class="caret" aria-hidden="true"></span>
       <button class="copy-btn" type="button" id="slabCopy">Copy</button>

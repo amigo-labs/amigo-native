@@ -253,9 +253,6 @@ a:hover { color: var(--text-primary); }
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9rem; flex-wrap: wrap;
 }
-.slab-install .dots { display: flex; gap: 6px; margin-right: 4px; }
-.slab-install .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-hover); }
-.slab-install .dot.hot { background: var(--accent); }
 .slab-install .prefix { color: var(--text-tertiary); }
 .slab-install .cmd { color: var(--text-primary); flex: 1; min-width: 0; }
 .slab-install .caret {
