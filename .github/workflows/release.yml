@@ -12,10 +12,21 @@ on:
         type: choice
         options:
           - argon2
+          - bcrypt
+          - commonmark
           - csv
+          - deepmerge
+          - encoding
+          - file-type
+          - inflate
+          - jose
+          - jwt
+          - nanoid
           - sanitize-html
           - slugify
+          - tiktoken
           - xxhash
+          - zip
       version:
         description: Version to publish (e.g. 0.1.0)
         required: true

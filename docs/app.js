@@ -126,7 +126,6 @@ async function boot() {
   renderPicker();
   wireSortChips();
   cycleHeroTagline();
-  wireCursorGlow();
   wireKeyboard();
   wireWheel();
 
@@ -500,15 +499,6 @@ function renderSizes(pkg) {
       countUp(el, 0, to, 500, v => formatBytes(v));
     });
   });
-}
-
-// --- cursor glow ---
-function wireCursorGlow() {
-  const glow = $('#cursorGlow');
-  if (!glow) return;
-  document.addEventListener('mousemove', e => {
-    glow.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
-  }, { passive: true });
 }
 
 // --- keyboard ---

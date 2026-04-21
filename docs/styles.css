@@ -49,14 +49,6 @@ a:hover { color: var(--text-primary); }
   0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
   100% { transform: translate(-50%, -60%) scale(1.2); opacity: 1; }
 }
-.cursor-glow {
-  position: fixed; width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-  top: 0; left: 0; transform: translate(-50%, -50%);
-  pointer-events: none; z-index: -1; transition: opacity 0.3s ease;
-  mix-blend-mode: screen;
-}
-
 .app {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
