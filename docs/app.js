@@ -462,6 +462,7 @@ function renderSizes(pkg) {
     host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No size data.</div>';
     return;
   }
+  const amigoKey = '@amigo-labs/' + pkg.name;
   const entries = Object.entries(sizes);
   const maxSize = Math.max(...entries.map(([, v]) => v.installSize || 0), 1);
 
