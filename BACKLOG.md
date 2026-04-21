@@ -1,33 +1,10 @@
 # Backlog — Maybe in Future
 
-Packages considered in earlier planning iterations and ruled out for now due to parity risk, excessive scope, or insufficient payoff. Any of these can be re-evaluated later if the calculus changes.
+This file tracks **permanent NO-GO decisions** on npm packages we evaluated but chose not to port, organized by rejection reason. Future candidate scans should consult this list before reconsidering any of these packages — if the calculus has genuinely changed (V8 major bump, new Rust crate, etc.), re-reviews go through `rust-check` and update the corresponding `docs/perf-review/<pkg>.md`.
 
-## Under investigation — AI / RAG preprocessing
+**Candidates with GO verdicts pending implementation** are tracked via their review docs in `docs/perf-review/` and surface in the main `docs/perf-review.md` table once they ship. They are not listed here until a final decision is reached.
 
-New category, not yet ruled out. Each entry is subject to a `rust-check` candidate review before a port is scheduled. Download numbers are rough Q1 2026 estimates.
-
-### Predicted Green (≥2× at median, FFI-shape viable)
-
-- **pdf-parse** (~1M, text-extraction path). Per-document parsing via `pdf-extract` / `lopdf`. Parity on edge-case PDFs is the main risk. Full review: `docs/perf-review/pdf-parse.md`.
-- **wink-bm25-text-search** / **bm25** (~15k combined). Index build + scoring over a corpus; amortized FFI. Index as NAPI class. Full review: `docs/perf-review/wink-bm25-text-search.md`.
-
-## Under investigation — Document / report generation
-
-Server-side PDF/document generation candidates. Same gate as above: `rust-check` review before scheduling.
-
-### Predicted Green (≥2× at median, FFI-shape viable)
-
-- **typst** (as library, not an npm drop-in target). Markup-language-based typesetting → PDF via `krilla`. Bytes-in (source + JSON data), bytes-out (PDF buffer) — same FFI shape as `commonmark`/`inflate`. Novel capability: no npm package offers native-speed Typst compilation; competes against Puppeteer (Chromium overhead) and `pdfmake` (pure JS, weak typography). Predicted 5–50× vs. Puppeteer on batch report runs. Main risks are binary size (~15–25 MB per target × 6 targets) and cold-start cost (font + core-library load, amortized via a stateful `TypstCompiler` NAPI class). Full review: `docs/perf-review/typst.md`.
-- **printpdf** (as library, pairs with `@amigo-labs/pdf` — the new-package path from the `pdfkit` review). Low-level PDF builder for label/ticket/receipt workloads; document-as-data API, explicitly not a `pdfkit` drop-in. Full review: `docs/perf-review/pdfkit.md`. Listed here as the sibling of `typst` so future report-gen candidate scans see both paths in one place — `typst` covers business reports (tables, multi-page, typography), `printpdf` covers labels (high-volume batch, trivial layout). Non-overlapping.
-
-### Predicted Yellow (green on large inputs, marginal on small)
-
-- **@langchain/textsplitters** (~2M). Recursive character + token-aware splitters via `unicode-segmentation` plus custom logic. Green on RAG-scale documents, Red on tweet-sized chunks — must bench small bucket before committing.
-- **natural** — Porter/Snowball batch surface only (~300k total). `rust-stemmers`. Single-word-per-call path is a Red trap; port requires deliberately *not* exposing the one-word API.
-- **franc** / **cld** — language detection (~500k combined). `whatlang` / `lingua-rs`. Paragraph-size green, short-string red — gate on realistic median string length.
-- **sbd** — sentence boundary detection (~200k). `pragmatic_segmenter`-style Rust. Parity with Pragmatic's abbreviation rules is real work but tractable.
-
-### Ruled out — AI-category (FFI-shape or structural)
+## Ruled out — AI-category (FFI-shape or structural)
 
 - **compute-cosine-similarity** & siblings (~500k). Two small arrays in, one float out — marshalling drowns SIMD. Same lesson as `deep-equal`.
 - **string-similarity** / **leven** / **fastest-levenshtein** (~10M combined). Short-string dominant corpus — repeats the `levenshtein` failure exactly (see `docs/perf-review/levenshtein.md`).
@@ -37,19 +14,6 @@ Server-side PDF/document generation candidates. Same gate as above: `rust-check`
 - **openai** / **@anthropic-ai/sdk** / **cohere-ai** (~30M+ combined). HTTP + JSON clients — zero compute surface, pure I/O.
 - **langchain** / **langchain-core** (~4M). Callback-graph orchestration with unbounded async surface — parity tail never ends.
 
-## Under investigation — General utilities
-
-Non-themed candidates awaiting `rust-check` review. Added 2026-04-21; no review doc yet.
-
-### Predicted Green (≥2× at median, FFI-shape viable)
-
-- **minisearch** (~100k). In-memory BM25 + fuzzy + autosuggest. Same Green-shape as `wink-bm25-text-search` (long-lived NAPI-class index, corpus-build + query). Likely shares Rust core with `@amigo-labs/bm25` — port them together, two npm packages over one crate. Referenced as category baseline in `docs/perf-review/wink-bm25-text-search.md`.
-- **turndown** (~1M). HTML → Markdown converter, rule-engine over parsed HTML tree. Rust `html2md` or custom via `html5ever`. Substantial compute on non-trivial HTML, Buffer-in/String-out. Risk: `.addRule(customFilter)` user-callback API is the `xml` / callback-boundary antipattern — drop-in must expose pre-baked rule enums and accept scope loss on custom-rule users.
-
-### Predicted Yellow (green on large inputs, marginal on small)
-
-- **diff** (~200M). Text/line/char diff via Myers or Patience. Rust `similar` / `difference`. Bimodal shape: short-line diffs sit in FFI-floor territory, multi-KB document diffs are clear Green. Output is `Vec<Hunk>` — offset-based `diffToOffsets` hot-path likely needed, same lever as proposed for `sbd` (`docs/perf-review/sbd.md`).
-
 ## Parity too expensive
 
 - **js-yaml** (156M downloads). Spec-compliant YAML parity via `saphyr` is realistic, but `js-yaml` has years of legacy custom tags and Ruby Psych compat quirks. Could ship as a "CommonMark-YAML" alternative — not as a drop-in.
@@ -58,8 +22,8 @@ Non-themed candidates awaiting `rust-check` review. Added 2026-04-21; no review 
 - **handlebars** (35M). `handlebars-rust` ships with documented divergences; helper callbacks across the FFI boundary would be expensive.
 - **parse5** / **htmlparser2** (combined 192M). `html5ever` is excellent, but reaching `parse5`-level error-recovery parity plus two separate adapter APIs is too much.
 - **marked** (~30M). `marked`'s GFM interpretation ≠ `pulldown-cmark`'s GFM.
-- **remark** / `unified` ecosystem (~8M). Core mdast parser is CommonMark+GFM — already covered by `@amigo-labs/commonmark`. The value-prop of remark is the 100+ `remark-*` transformer plugins, each a JS callback walking the AST. Drop-in without plugins duplicates commonmark; with plugins is the `langchain` callback-graph antipattern across the FFI boundary.
-- **cheerio** (~10M). Server-side jQuery (parse + CSS selectors + mutation chain). Backend is `parse5` or `htmlparser2` — both already flagged above. The `.find().attr().html()` mutation chain is the `xml` / `graphlib` antipattern: each chain step is an FFI crossing. Bytes-in / bytes-out redesign isn't a drop-in and breaks the primary usage pattern.
+- **remark** / `unified` ecosystem (~8M core, ~50M ecosystem). Core mdast parse is CommonMark+GFM — already covered by `@amigo-labs/commonmark` (🟢 3.5×–8.1×). Value-prop is the 100+ `remark-*` plugins walking the AST in JS callbacks. Drop-in without plugins duplicates commonmark; with plugin-bridge requires AST marshalling across FFI = `xml` antipattern (measured Red, archived). Same lesson as `langchain`, `handlebars`, `ejs`. Full review: `docs/perf-review/remark.md`.
+- **cheerio** (~10M). Server-side jQuery: `parse5`/`htmlparser2` backend (both flagged above) + 70+ chain-methods + mutation-chain API. Every `.find().attr().text()` step is an FFI crossing with intermediate Cheerio-collection marshalling — same shape as archived `xml`. Drop-in without the chain API isn't a drop-in; a separate bytes-in/bytes-out `@amigo-labs/html-extract` is a different market (not reviewed). Full review: `docs/perf-review/cheerio.md`.
 
 ## Scope too large
 
@@ -71,7 +35,7 @@ Non-themed candidates awaiting `rust-check` review. Added 2026-04-21; no review 
 - **mime** / **mime-types** (combined 343M). Pure hashmap lookups in JS — calling through NAPI would be slower than the JS baseline.
 - **dotenv** (91M). Parser is ~50 lines of JS.
 - **cosmiconfig** (143M). Mostly filesystem I/O, not CPU.
-- **semver** (~150M). Per-call work is microseconds of V8-JIT'd parse + range-compare. Rust `semver` crate is faster per-se but the 109 ns FFI floor plus UTF-conversion eats any gain on typical `satisfies()` calls. Users call it scattered-single-call (package manager hot paths), not batched. Same trap as `mime` — real compute is just short enough that NAPI boundary cannot pay for itself.
+- **semver** (~150M). Per-call work is microseconds of V8-JIT'd parse + range-compare. Rust `semver` crate is faster per-se (~2–3× isolated) but 109 ns FFI floor plus UTF-conversion eats the gain on typical `satisfies()` calls — realistic end-to-end ~1.2×. Package-manager resolvers use scattered-single-call pattern; no batch ecosystem. Same trap as `mime`/`dotenv`/`deep-equal`. Full review: `docs/perf-review/semver.md`.
 
 ## Needs a JS engine
 
