@@ -1,0 +1,68 @@
+{
+  "name": "@amigo-labs/stemmer",
+  "version": "0.1.0",
+  "description": "Porter/Snowball stemmer — batch-only, 18 languages, integrates with @amigo-labs/bm25.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "stemmer",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "natural": "^8.0.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/stemmer"
+  },
+  "keywords": [
+    "stemmer",
+    "porter",
+    "snowball",
+    "nlp",
+    "natural",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Stemmer",
+    "description": "Porter/Snowball stemming via rust-stemmers. Batch-only API — single-word calls are intentionally not exposed.",
+    "tableDescription": "Porter/Snowball stemmer (batch-only) via `rust-stemmers`",
+    "replaces": "natural (stemmer subset)",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Alternative",
+    "competitors": ["natural@8"]
+  }
+}
