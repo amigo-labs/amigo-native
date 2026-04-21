@@ -10,7 +10,9 @@ on:
         description: Package to release
         required: true
         type: choice
+        # List synced from crates/ by scripts/sync-registry.mjs (CI enforces via --check).
         options:
+          # PACKAGES:START
           - argon2
           - bcrypt
           - commonmark
@@ -27,6 +29,7 @@ on:
           - tiktoken
           - xxhash
           - zip
+          # PACKAGES:END
       version:
         description: Version to publish (e.g. 0.1.0)
         required: true
