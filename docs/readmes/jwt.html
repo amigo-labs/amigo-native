@@ -1,0 +1,25 @@
+<h1 id="amigo-labs-jwt">@amigo-labs/jwt</h1>
+<blockquote>
+<p>JWT sign, verify, and decode via the <code>jsonwebtoken</code> Rust crate. Drop-in for <a href="https://www.npmjs.com/package/jsonwebtoken"><code>jsonwebtoken</code></a>, compiled via NAPI-RS.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/jwt
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { sign, verify, signSync, verifySync, decodeToken } from '@amigo-labs/jwt'
+
+const secret = Buffer.from('super-secret')
+
+const token = await sign({ sub: 'user-42' }, secret, {
+  algorithm: 'HS256',
+  expiresIn: '1h', // or a number of seconds: `expiresIn: 3600`
+})
+
+const { payload, header } = await verify(token, secret)
+
+// No signature check — inspect structure only
+const peek = decodeToken(token)
+</code></pre>
+<p>Supported algorithms: <code>HS256</code>, <code>HS384</code>, <code>HS512</code>, <code>RS256</code>, <code>RS384</code>, <code>RS512</code>, <code>ES256</code>, <code>ES384</code>, <code>PS256</code>, <code>PS384</code>, <code>PS512</code>.</p>
+<h2 id="parity">Parity</h2>
+<p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run the upstream <code>jsonwebtoken</code> test suite against this implementation. See <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for documented differences.</p>

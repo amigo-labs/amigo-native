@@ -1,0 +1,31 @@
+<h1 id="amigo-labs-slugify">@amigo-labs/slugify</h1>
+<p><a href="https://www.npmjs.com/package/@amigo-labs/slugify"><img src="https://img.shields.io/npm/v/@amigo-labs/slugify" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@amigo-labs/slugify"><img src="https://img.shields.io/npm/dm/@amigo-labs/slugify" alt="npm downloads" /></a>
+<a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/slugify" alt="license" /></a></p>
+<p>Blazing fast slugify powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. Converts any string into a URL-friendly slug with Unicode support.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install @amigo-labs/slugify
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { slugify, slugifyWithSeparator } from "@amigo-labs/slugify";
+
+slugify("Hello World!"); // "hello-world"
+slugify("Schöne Grüße"); // "schone-grusse"
+slugify("日本語テスト"); // "ri-ben-yu-tesuto"
+
+// With custom separator
+slugifyWithSeparator("Hello World!", "_"); // "hello_world"
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="slugify-input-string"><code>slugify(input): string</code></h3>
+<p>Converts a string into a URL-friendly slug using <code>-</code> as separator.</p>
+<h3 id="slugifywithseparator-input-separator-string"><code>slugifyWithSeparator(input, separator): string</code></h3>
+<p>Converts a string into a URL-friendly slug using a custom separator.</p>
+<h2 id="supported-platforms">Supported Platforms</h2>
+<table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
+<tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>
+<tr><td>macOS</td><td>x64, arm64</td></tr>
+<tr><td>Windows</td><td>x64</td></tr>
+</tbody></table>
+<h2 id="license">License</h2>
+<p>MIT</p>

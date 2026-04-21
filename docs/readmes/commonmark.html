@@ -1,0 +1,87 @@
+<h1 id="amigo-labs-commonmark">@amigo-labs/commonmark</h1>
+<p>Blazing-fast native CommonMark + GFM renderer. Powered by Rust and <a href="https://crates.io/crates/pulldown-cmark"><code>pulldown-cmark</code></a>, delivered as prebuilt binaries via NAPI-RS.</p>
+<blockquote>
+<p><strong>Not a drop-in for <code>marked</code> or <code>markdown-it</code>.</strong> This package targets the <a href="https://spec.commonmark.org/0.30/">CommonMark 0.30 spec</a> plus standard <a href="https://github.github.com/gfm/">GFM extensions</a>. Output is not byte-identical to either <code>marked</code> or GitHub’s renderer — see <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/commonmark
+</code></pre>
+<p>The correct prebuilt binary for your platform is selected automatically. Supported: Linux x64 (glibc+musl), Linux arm64, macOS x64, macOS arm64, Windows x64.</p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { render, renderMany, Renderer } from '@amigo-labs/commonmark'
+
+// One-shot
+render('# Hello, **world**')
+// → '&lt;h1 id="hello-world"&gt;Hello, &lt;strong&gt;world&lt;/strong&gt;&lt;/h1&gt;\n'
+
+// Batch (site builder shape)
+renderMany(['# Page 1', '# Page 2', '# Page 3'])
+// → ['&lt;h1 id="page-1"&gt;Page 1&lt;/h1&gt;\n', …]
+
+// Reusable renderer (same options across many calls)
+const r = new Renderer({ gfm: true, unsafeHtml: false })
+r.render('## Section')
+
+// Buffer-input overload — skips V8 UTF-16 → UTF-8 copy on the FFI boundary.
+// Measurably faster on small inputs; parity on medium/large where
+// rendering dominates.
+import { renderBytes } from '@amigo-labs/commonmark'
+renderBytes(Buffer.from('# fast'))
+</code></pre>
+<h2 id="options">Options</h2>
+<p>All options are optional.</p>
+<table><thead><tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>gfm</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Enable GFM extensions: tables, strikethrough, task lists, autolinks.</td></tr>
+<tr><td><code>footnotes</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Enable footnote syntax (<code>[^1]</code>).</td></tr>
+<tr><td><code>smartPunctuation</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Convert <code>--</code> → en-dash, <code>...</code> → ellipsis, straight quotes → curly.</td></tr>
+<tr><td><code>unsafeHtml</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Allow raw HTML blocks in Markdown. <strong>Disabled by default</strong> — raw HTML is dropped silently.</td></tr>
+<tr><td><code>headingIds</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Auto-generate ASCII slug IDs for headings (<code># Hello World</code> → <code>&lt;h1 id="hello-world"&gt;</code>).</td></tr>
+</tbody></table>
+<h2 id="safety">Safety</h2>
+<p>The default (<code>unsafeHtml: false</code>) drops raw HTML blocks and inline HTML. This is the right choice for <strong>untrusted input</strong> (user-submitted Markdown). It is <strong>not</strong> a full XSS sanitizer — link scheme filtering (<code>javascript:</code>, <code>data:</code>, etc.) is not applied. For fully-sanitized output, chain with <a href="../sanitize-html"><code>@amigo-labs/sanitize-html</code></a>:</p>
+<pre><code class="language-ts">import { render } from '@amigo-labs/commonmark'
+import { sanitize } from '@amigo-labs/sanitize-html'
+
+const unsafe_but_html_free = render(userMarkdown)
+const safe = sanitize(unsafe_but_html_free)
+</code></pre>
+<h2 id="when-to-choose-this-package">When to choose this package</h2>
+<ul>
+<li><strong>You control the Markdown source</strong> (docs, README files, CMS authored by trusted editors) and want faster site builds.</li>
+<li><strong>Your app renders Markdown in a hot path</strong> (AI chat responses, realtime editor preview) and FFI overhead is amortized.</li>
+<li><strong>You can accept CommonMark+GFM-spec output</strong> and don’t depend on <code>marked</code>-specific rendering quirks.</li>
+</ul>
+<h2 id="when-not-to-choose-this-package">When <em>not</em> to choose this package</h2>
+<ul>
+<li>You rely on <code>marked</code>’s tight-vs-loose list heuristics, plugin API, or raw-HTML passthrough.</li>
+<li>You need <code>markdown-it</code>’s plugin ecosystem (anchors, containers, footnote styles, custom tokenizers).</li>
+<li>You need output byte-identical to GitHub’s renderer (usernames, issue refs, SHA autolinks).</li>
+</ul>
+<h2 id="performance">Performance</h2>
+<p>Measured on Linux x64 with <code>pnpm bench</code> (Vitest). Best of <code>render</code>, <code>renderBytes</code>, and <code>render({ headingIds: false, unsafeHtml: true })</code>:</p>
+<table><thead><tr><th>Size</th><th style="text-align: right">vs <code>marked</code></th><th style="text-align: right">vs <code>markdown-it</code></th></tr></thead><tbody>
+<tr><td>Small (~0.1 KB)</td><td style="text-align: right"><strong>8.05×</strong></td><td style="text-align: right">5.19×</td></tr>
+<tr><td>Medium (~2.8 KB)</td><td style="text-align: right"><strong>10.73×</strong></td><td style="text-align: right">7.63×</td></tr>
+<tr><td>Large (~81 KB)</td><td style="text-align: right"><strong>9.36×</strong></td><td style="text-align: right">7.56×</td></tr>
+<tr><td>Batch (500 × medium, <code>renderMany</code>)</td><td style="text-align: right"><strong>51.79×</strong></td><td style="text-align: right">42.65×</td></tr>
+</tbody></table>
+<p>Notes on the options that drive these numbers:</p>
+<ul>
+<li><code>renderBytes(Buffer)</code> avoids the V8 UTF-16 → UTF-8 copy on input — about 5% faster than <code>render(string)</code> on small inputs; roughly parity once rendering dominates.</li>
+<li><code>{ headingIds: false, unsafeHtml: true }</code> enables the streaming fast-path: no event collection, no filter pass. ~1.23–1.37× faster than default options.</li>
+<li><code>renderMany</code> parallelises across cores via <code>rayon</code> for batches ≥ 8 docs where at least one doc is ≥ 512 bytes. On a 500-doc batch it’s <strong>5.45×</strong> faster than calling <code>render</code> in a per-call loop.</li>
+</ul>
+<p>Numbers are re-published in <a href="../../docs/data.json"><code>docs/data.json</code></a> after each release.</p>
+<h2 id="conformance">Conformance</h2>
+<ul>
+<li>Spec compliance: <a href="https://spec.commonmark.org/0.30/">CommonMark 0.30</a> + <a href="https://github.github.com/gfm/">GFM</a> as per <code>pulldown-cmark</code>’s test suite.</li>
+<li>Safety invariants verified via property-based fuzzing (<code>fast-check</code>).</li>
+<li>Divergences from other renderers documented in <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</li>
+</ul>
+<pre><code class="language-bash">pnpm test             # unit tests
+pnpm test:conformance # parity + upstream + fuzz
+pnpm test:all         # everything
+pnpm bench            # vs marked + markdown-it
+</code></pre>
+<h2 id="license">License</h2>
+<p>MIT</p>

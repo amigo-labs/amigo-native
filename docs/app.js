@@ -378,6 +378,11 @@ function buildSlabHTML(p) {
         <div id="slabSizes"></div>
       </div>
     </div>
+
+    <details class="slab-readme" id="slabReadmeHost">
+      <summary>README <span class="readme-hint">rendered by @amigo-labs/commonmark</span></summary>
+      <div class="readme-body" id="slabReadme"></div>
+    </details>
   `;
 }
 
@@ -398,6 +403,26 @@ function animateSlab(p) {
 
   renderBench(p);
   renderSizes(p);
+  wireReadme(p);
+}
+
+function wireReadme(pkg) {
+  const details = $('#slabReadmeHost');
+  const host = $('#slabReadme');
+  if (!details || !host) return;
+  let loaded = false;
+  details.addEventListener('toggle', async () => {
+    if (!details.open || loaded) return;
+    host.innerHTML = '<div class="readme-loading">Loading…</div>';
+    try {
+      const res = await fetch(`readmes/${pkg.name}.html`);
+      if (!res.ok) throw new Error(res.statusText);
+      host.innerHTML = await res.text();
+      loaded = true;
+    } catch {
+      host.innerHTML = '<div class="readme-error">Could not load README.</div>';
+    }
+  });
 }
 
 function renderBench(pkg) {

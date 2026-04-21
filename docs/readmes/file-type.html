@@ -1,0 +1,20 @@
+<h1 id="amigo-labs-file-type">@amigo-labs/file-type</h1>
+<blockquote>
+<p>Magic-byte file-type detection powered by the Rust <code>infer</code> crate. Alternative to <a href="https://www.npmjs.com/package/file-type"><code>file-type</code></a>, compiled via NAPI-RS.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/file-type
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { fileTypeFromBuffer, fileTypeFromBufferSync } from '@amigo-labs/file-type'
+
+const result = await fileTypeFromBuffer(buffer)
+if (result) {
+  console.log(result.ext, result.mime)    // 'png', 'image/png'
+}
+
+const sync = fileTypeFromBufferSync(buffer)
+</code></pre>
+<p>Returns <code>null</code> when the magic signature isn’t recognised. <code>infer</code> covers ~70 formats (images, audio/video, archives, fonts, documents) — see <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for the coverage gap vs <code>file-type</code>.</p>
+<h2 id="parity">Parity</h2>
+<p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run a representative subset of the upstream <code>file-type</code> test suite against this implementation.</p>
