@@ -1,44 +1,44 @@
 # Candidate review: `parse5`
 
-> **Status:** NO-GO · **Predicted:** 🟡 Yellow (Perf) / 🔴 Red (Scope) · **Reviewed:** 2026-04-19
+> **Status:** NO-GO · **Predicted:** 🟡 Yellow (perf) / 🔴 Red (scope) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
-`html5ever` kann schnell HTML parsen — aber `parse5` ist nicht nur ein Parser, sondern ein Tree-Adapter-Framework. Parity zu `parse5-htmlparser2-tree-adapter`, `parse5-serializer`, Error-Recovery und dem WHATWG-Testsuite-Verhalten ist mehr Oberfläche als Perf-Gewinn rechtfertigt.
+`html5ever` can parse HTML fast — but `parse5` isn't just a parser, it's a tree-adapter framework. Parity with `parse5-htmlparser2-tree-adapter`, `parse5-serializer`, error recovery, and WHATWG testsuite behavior is more surface than the perf win justifies.
 
 ## JS package
 
 - **npm:** `parse5`
-- **Downloads:** ~130M/Woche
-- **Exports / API surface:** `parse`, `parseFragment`, `serialize`, Tree-Adapter (default + htmlparser2-kompat), Location-Tracking, Custom Document-Types
-- **Typical input:** HTML-Dokument 5 KB – 5 MB
-- **Typical output:** Tree (Document/Element/TextNode) über Adapter-API
-- **Realistic median use-case:** Web-Scraper parst Response (~50 KB), traversiert danach über `parse5-querystring` / cheerio
+- **Downloads:** ~130M/week
+- **Exports / API surface:** `parse`, `parseFragment`, `serialize`, tree adapter (default + htmlparser2-compat), location tracking, custom document types
+- **Typical input:** HTML document 5 KB – 5 MB
+- **Typical output:** tree (Document/Element/TextNode) over adapter API
+- **Realistic median use-case:** web scraper parsing a response (~50 KB), traversing afterwards via `parse5-querystring` / cheerio
 
 ## Rust replacement
 
 - **Candidate crate(s):** `html5ever` + `markup5ever`
-- **Maintenance / license:** aktiv (Servo-Team), Apache/MIT
-- **Known gotchas / divergences:** `html5ever` liefert RcDom; Tree-Traversal über NAPI-Boundary wäre pro Node eine FFI-Kreuzung (`deep-equal`-Shape). Location-Tracking anders
+- **Maintenance / license:** active (Servo team), Apache/MIT
+- **Known gotchas / divergences:** `html5ever` produces RcDom; tree traversal across the NAPI boundary would be an FFI crossing per node (`deep-equal` shape). Location tracking different
 
 ## BACKLOG check
 
-BACKLOG: *Parity too expensive* (kombiniert mit `htmlparser2`) — bestätigt.
+BACKLOG: *Parity too expensive* (combined with `htmlparser2`) — confirmed.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | HTML-Parse ist CPU-intensiv: 100 KB HTML ~2 ms in JS, `html5ever` ~500 µs → 4× Potenzial |
-| Input size distribution | Bytes-in, `Buffer`-overload → FFI-Input billig |
-| Output size distribution | **Tree-Materialisierung ist der Killer**: 100 KB HTML → ~10K Nodes → jede Node als JS-Object kostet NAPI-Calls für jedes Field |
-| Reusable setup (stateful potential) | Niedrig — Parser ist stateless pro Call |
-| Batch-usage realism | Niedrig (ein Dokument pro Call) |
-| FFI-share estimate vs. Rust work | Output dominiert ab ~1K Nodes; 4×-Parse-Win verpufft vollständig |
+| Per-call algorithmic work | HTML parse is CPU-intensive: 100 KB HTML ~2 ms in JS, `html5ever` ~500 µs → 4× potential |
+| Input size distribution | Bytes-in, `Buffer` overload → FFI input cheap |
+| Output size distribution | **Tree materialization is the killer**: 100 KB HTML → ~10K nodes → every node as a JS object costs NAPI calls for every field |
+| Reusable setup (stateful potential) | Low — parser is stateless per call |
+| Batch-usage realism | Low (one document per call) |
+| FFI-share estimate vs. Rust work | Output dominates from ~1K nodes; the 4× parse win evaporates completely |
 
 ## Classification reasoning
 
-Der Parse-Schritt wäre ein klarer Win. Aber niemand parst HTML und wirft das Tree weg. Tree-Materialisierung über NAPI ist exakt der `deep-equal`-Shape: pro Node ~5–10 FFI-Kreuzungen für Tag, Attribute, Children-Array. Bei 10K Nodes = 50–100K Kreuzungen × 109 ns Floor = 5–10 ms — mehr als das JS-Baseline-Parse komplett braucht. Alternative: Tree im Rust halten, Zugriff on-demand (cheerio-Wrapper-Pattern) — aber dann ist das kein `parse5`-Drop-in. Zweiter Killer: `parse5` hat zwei Adapter-APIs (default + htmlparser2-kompat) + `serialize` + `parseFragment`; das ist ein eigenes Crate-Ökosystem, kein einzelnes Paket.
+The parse step would be a clear win. But no one parses HTML and throws the tree away. Tree materialization over NAPI is exactly the `deep-equal` shape: ~5–10 FFI crossings per node for tag, attributes, children array. At 10K nodes = 50–100K crossings × 109 ns floor = 5–10 ms — more than the JS baseline parse needs end-to-end. Alternative: keep the tree in Rust, access it on-demand (cheerio-wrapper pattern) — but then it isn't a `parse5` drop-in. Second killer: `parse5` has two adapter APIs (default + htmlparser2-compat) + `serialize` + `parseFragment`; that's its own crate ecosystem, not a single package.
 
 ## If NO-GO — BACKLOG entry
 

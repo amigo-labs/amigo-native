@@ -4,41 +4,41 @@
 
 ## Verdict
 
-`ajv` ist ein Codegen: aus einem JSON-Schema wird spezialisiertes JS, das V8 in perfekt monomorphe Inlining-Pfade optimiert. Ein Rust-Port wäre ein Interpreter — architektonisch unterlegen bei genau dem Metrik, für die `ajv` existiert.
+`ajv` is a codegen: a JSON schema is turned into specialized JS that V8 optimizes into perfectly monomorphic inlining paths. A Rust port would be an interpreter — architecturally inferior at exactly the metric `ajv` exists for.
 
 ## JS package
 
 - **npm:** `ajv`
-- **Downloads:** ~120M/Woche (Gesamt-Ökosystem inkl. `ajv-formats`, `ajv-keywords` ~200M)
-- **Exports / API surface:** `new Ajv(options)`, `compile(schema) → validate(data)`, `addKeyword`, `addFormat`, `addSchema`, async-Validation, `$ref`-Auflösung, Custom-Error-Reporter
-- **Typical input:** JSON-Schema-Draft-07/2019-09/2020-12 (einmalig) + validierte JS-Objekte (hot loop)
-- **Typical output:** `boolean` + `validate.errors` Array
-- **Realistic median use-case:** API-Request-Body-Validation — ein Schema, 10K+ Payloads/s, typisch 1 KB pro Payload
+- **Downloads:** ~120M/week (total ecosystem incl. `ajv-formats`, `ajv-keywords` ~200M)
+- **Exports / API surface:** `new Ajv(options)`, `compile(schema) → validate(data)`, `addKeyword`, `addFormat`, `addSchema`, async validation, `$ref` resolution, custom error reporter
+- **Typical input:** JSON Schema Draft-07/2019-09/2020-12 (once) + validated JS objects (hot loop)
+- **Typical output:** `boolean` + `validate.errors` array
+- **Realistic median use-case:** API request body validation — one schema, 10K+ payloads/s, typically 1 KB per payload
 
 ## Rust replacement
 
 - **Candidate crate(s):** `jsonschema` (Dmitry Dygalo), `boon`
-- **Maintenance / license:** aktiv, MIT
-- **Known gotchas / divergences:** Interpretation vs. Codegen; kein Inlining durch LLVM für das spezifische Schema. Custom-Keywords müssten als JS-Callbacks über NAPI-Boundary — teuer. Error-Format parity ist nicht-trivial
+- **Maintenance / license:** active, MIT
+- **Known gotchas / divergences:** interpretation vs. codegen; no LLVM inlining for the specific schema. Custom keywords would have to be JS callbacks across the NAPI boundary — expensive. Error-format parity is non-trivial
 
 ## BACKLOG check
 
-BACKLOG: *Parity too expensive* — bestätigt, aber der härtere Grund ist heute *Architektonisch unterlegen*: `ajv` generiert pro Schema spezialisierten JS-Code, der V8 perfekt JITtet.
+BACKLOG: *Parity too expensive* — confirmed, but the stronger reason today is *Architecturally inferior*: `ajv` generates specialized JS code per schema that V8 JITs perfectly.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Pro Validation sehr klein: ein paar Property-Zugriffe auf bekanntem Shape. `ajv` nutzt V8-Hidden-Classes perfekt |
-| Input size distribution | Typisch <2 KB JSON, häufig <200 B. Direkt im FFI-Trap-Bereich |
-| Output size distribution | `boolean` + optional Error-Array (meist leer) |
-| Reusable setup (stateful potential) | **Hoch** — compiled Validator als NAPI-Class wäre der einzige sinnvolle API-Shape |
-| Batch-usage realism | Hoch, aber `ajv` wird bereits per-call in Express/Fastify gerufen |
-| FFI-share estimate vs. Rust work | Siehe `deep-equal`: JS-Objekt-Traversal über `get_named_property` = FFI pro Field. Dominiert gegenüber Rust-Arbeit |
+| Per-call algorithmic work | Very small per validation: a handful of property accesses on a known shape. `ajv` uses V8 hidden classes perfectly |
+| Input size distribution | Typically <2 KB JSON, often <200 B. Right in the FFI trap zone |
+| Output size distribution | `boolean` + optional error array (usually empty) |
+| Reusable setup (stateful potential) | **High** — a compiled validator as a NAPI class would be the only sensible API shape |
+| Batch-usage realism | High, but `ajv` is already called per-call in Express/Fastify |
+| FFI-share estimate vs. Rust work | See `deep-equal`: JS object traversal via `get_named_property` = FFI per field. Dominates over the Rust work |
 
 ## Classification reasoning
 
-Der Post-Mortem-Shape ist exakt `deep-equal`: kleine Inputs, viele Property-Zugriffe pro Call, V8 JITtet das JS-Äquivalent auf Maschinencode-Niveau. `ajv`s compile-Schritt ist dabei der entscheidende Trick — das kompilierte JS ist monomorphisch, hat keine Dispatch-Tabelle, und V8 inlined Property-Lookups. Ein Rust-Interpreter müsste pro Keyword eine Match-Dispatch-Tabelle durchgehen und gleichzeitig JS-Werte pro Property über FFI abholen. Das gewinnt weder bei kleinen Payloads (FFI-Floor) noch bei großen (Object-Traversal). Custom Keywords als JS-Callbacks wären nochmal 1000+ns Overhead pro Aufruf.
+The post-mortem shape is exactly `deep-equal`: small inputs, many property accesses per call, V8 JITs the JS equivalent down to machine-code level. `ajv`'s compile step is the decisive trick — the compiled JS is monomorphic, has no dispatch table, and V8 inlines the property lookups. A Rust interpreter would have to walk a match-dispatch table per keyword and at the same time fetch JS values per property across the FFI. That doesn't win at small payloads (FFI floor) and doesn't win at large ones (object traversal). Custom keywords as JS callbacks would be another 1000+ ns overhead per call.
 
 ## If NO-GO — BACKLOG entry
 

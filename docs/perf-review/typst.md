@@ -1,75 +1,75 @@
 # Candidate review: `typst`
 
-> **Status:** GO (als neues Paket, kein Drop-in) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-20
+> **Status:** GO (as a new package, not a drop-in) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-20
 
 ## Verdict
 
-`typst` als Library ist ein Lehrbuch-Green-Shape, strukturell analog zu `commonmark` und `inflate`: **Markup-String + optionale JSON-Daten in → PDF-Bytes out, ein FFI-Crossing pro Dokument**. Die teure Arbeit (Parsing, Layout, Font-Resolution, PDF-Emission via `krilla`) läuft komplett Rust-seitig. Kein Callback-Boundary, kein Object-Traversal über die Grenze, kein Chain-API-Trap wie bei `pdfkit`.
+`typst` as a library is a textbook Green shape, structurally analogous to `commonmark` and `inflate`: **markup string + optional JSON data in → PDF bytes out, one FFI crossing per document**. The expensive work (parsing, layout, font resolution, PDF emission via `krilla`) runs entirely Rust-side. No callback boundary, no object traversal across the boundary, no chain-API trap like with `pdfkit`.
 
-Dies ist ein **neues Paket**, kein Drop-in. Die JS-Alternativen für mehrseitige Business-Reports mit Tabellen (Rechnungen, Statements, Dashboards) sind Puppeteer (Chromium-Prozess) oder `pdfmake` / `html-pdf-node` — ersteres hat hunderte MB Overhead und startet einen Browser pro Request, letzteres ist pures JS ohne ernsthafte Typesetting-Engine. Gegen beide ist ≥2× trivial erreichbar, gegen Puppeteer eher 10–50×.
+This is a **new package**, not a drop-in. The JS alternatives for multi-page business reports with tables (invoices, statements, dashboards) are Puppeteer (a Chromium process) or `pdfmake` / `html-pdf-node` — the former has hundreds of MB of overhead and starts a browser per request, the latter is pure JS without a serious typesetting engine. Against both, ≥2× is trivially reachable; against Puppeteer more like 10–50×.
 
-Parity ist kein Ziel: Typst ist ein eigenes Markup-Sprachen-Ökosystem — das ist das Produkt, nicht der Kompromiss.
+Parity is not a goal: Typst is its own markup-language ecosystem — that's the product, not the compromise.
 
 ## JS package
 
-- **npm:** kein direkter Drop-in-Kandidat — dieses Paket ist ein **neues Produkt**. Vergleichs-Alternativen in JS für Business-Report-Generation:
-  - `puppeteer` (~5M/Woche) — HTML→PDF via Chromium, höchste Fidelity aber massiver Prozess-Overhead
-  - `pdfmake` (~400k/Woche) — pure-JS document-as-data-API, mit Tabellen + Page-Breaks
-  - `html-pdf-node` / `html-pdf-chrome` (~150k/Woche) — Wrapper um Chromium/Puppeteer
-  - `jsreport` / `carbone` — höhere Abstraktion, verwenden intern oft LibreOffice oder Puppeteer
-- **Downloads:** n/a (Neuling; `typst-js` npm-Paket mit ~5k/Woche ist ein WASM-Build von Typst-CLI, nicht als Lib konsumierbar)
-- **Exports / API surface:** klein gehalten — `compile(source, data?) → Buffer`, stateful `TypstCompiler`-Class für wiederholte Calls mit geteiltem Font- und Package-Cache
-- **Typical input:** Typst-Source 2–50 KB + optionales JSON-Data-Objekt 100 B – 500 KB (Rechnungs-Positionen, Report-Kennzahlen)
-- **Typical output:** PDF-Bytes 20 KB – 5 MB, je nach Seitenzahl und eingebetteten Assets
-- **Realistic median use-case:** Server-seitige Rechnungs-/Statement-Generation, 10–500 Dokumente pro Request, jedes 2–20 Seiten, Templates werden einmal geschrieben und viele Male mit variablen Daten gerendert
+- **npm:** no direct drop-in candidate — this package is a **new product**. Comparison alternatives in JS for business-report generation:
+  - `puppeteer` (~5M/week) — HTML→PDF via Chromium, highest fidelity but massive process overhead
+  - `pdfmake` (~400k/week) — pure-JS document-as-data API, with tables + page breaks
+  - `html-pdf-node` / `html-pdf-chrome` (~150k/week) — wrappers around Chromium/Puppeteer
+  - `jsreport` / `carbone` — higher-level abstraction, often use LibreOffice or Puppeteer internally
+- **Downloads:** n/a (newcomer; the `typst-js` npm package at ~5k/week is a WASM build of the Typst CLI, not consumable as a library)
+- **Exports / API surface:** kept small — `compile(source, data?) → Buffer`, stateful `TypstCompiler` class for repeated calls with shared font and package cache
+- **Typical input:** Typst source 2–50 KB + optional JSON data object 100 B – 500 KB (invoice line items, report KPIs)
+- **Typical output:** PDF bytes 20 KB – 5 MB, depending on page count and embedded assets
+- **Realistic median use-case:** server-side invoice/statement generation, 10–500 documents per request, each 2–20 pages, templates written once and rendered many times with variable data
 
 ## Rust replacement
 
-- **Candidate crate(s):** `typst` (primär — die Core-Library des Typst-Ökosystems, enthält Parser, Compiler, Layout-Engine) zusammen mit `typst-pdf` (PDF-Export über `krilla`) und `typst-kit` (Font- und Package-Resolution-Helpers für Library-Einbettung).
-- **Maintenance / license:** Sehr aktiv (typst GmbH, breites OSS-Umfeld), Apache-2.0, saubere Library-Trennung ab 0.11+. Keine bekannten ABI-Bruch-Probleme pro Release in der `typst`-Crate selbst, API zwischen Major-Versionen stabiler als bei `krilla` oder `pdf-writer` solo.
+- **Candidate crate(s):** `typst` (primary — the core library of the Typst ecosystem, contains parser, compiler, layout engine) together with `typst-pdf` (PDF export via `krilla`) and `typst-kit` (font and package-resolution helpers for library embedding).
+- **Maintenance / license:** very active (typst GmbH, broad OSS surroundings), Apache-2.0, clean library separation from 0.11+. No known ABI-break issues per release in the `typst` crate itself; the API between major versions is more stable than `krilla` or `pdf-writer` alone.
 - **Known gotchas / divergences:**
-  - **Font-Strategie muss explizit entschieden sein** — typst löst Fonts nicht out-of-the-box: Entweder bundlen wir einen Default-Set (Libertinus + Fira + New Computer Modern, ~15–20 MB), oder wir akzeptieren Caller-provided TTF-Buffers, oder wir resolven von Disk. Die Wahl prägt Binary-Size und Portabilität.
-  - **Package-Resolution** (`#import "@preview/…"`) geht online gegen den Typst-Package-Index. Default muss **offline-only** sein (Supply-Chain-Risiko, Sandboxing) — opt-in später, falls überhaupt.
-  - **Cold-Start:** erster `compile()`-Call lädt Fonts, parst Core-Library, kostet 50–200 ms. Nur via `TypstCompiler`-Class amortisierbar.
-  - **Binary-Size:** Typst bringt substantielle Deps mit (Rust-Regex-Engine, ICU-Teile, `krilla`, Font-Parser). Release-Build mit `lto` + `strip` geschätzt ~15–25 MB pro Plattform-Target — das verdoppelt ungefähr das aktuelle größte Paket im Repo. Muss explizit gegen die Policy gehalten werden.
-  - **Kein Pixel-Parity-Ziel** gegen Puppeteer/LibreOffice — wie bei `commonmark` gegen `marked`: eigene Positionierung als spec-konformer Typst-Renderer.
+  - **Font strategy must be explicitly decided** — typst doesn't resolve fonts out of the box: either we bundle a default set (Libertinus + Fira + New Computer Modern, ~15–20 MB), or we accept caller-provided TTF buffers, or we resolve from disk. The choice shapes binary size and portability.
+  - **Package resolution** (`#import "@preview/…"`) goes online against the Typst package index. Default must be **offline-only** (supply-chain risk, sandboxing) — opt-in later, if at all.
+  - **Cold start:** first `compile()` call loads fonts, parses the core library, costs 50–200 ms. Only amortizable via a `TypstCompiler` class.
+  - **Binary size:** Typst brings substantial deps (Rust regex engine, ICU parts, `krilla`, font parser). Release build with `lto` + `strip` estimated at ~15–25 MB per platform target — roughly doubles the largest current package in the repo. Must be weighed explicitly against the policy.
+  - **No pixel-parity goal** vs. Puppeteer/LibreOffice — same as `commonmark` vs. `marked`: own positioning as a spec-conformant Typst renderer.
 
 ## BACKLOG check
 
-Kein bestehender `typst`-Eintrag in `BACKLOG.md`. Der einzige PDF-Bezug in `BACKLOG.md:12` ist `pdf-parse` (Text-Extraction via `pdf-extract` / `lopdf`) — das ist der Read-Pfad, nicht der Write-Pfad. Kein Overlap.
+No existing `typst` entry in `BACKLOG.md`. The only PDF-related reference in `BACKLOG.md:12` is `pdf-parse` (text extraction via `pdf-extract` / `lopdf`) — that's the read path, not the write path. No overlap.
 
-Abgrenzung zu bestehenden Reviews:
-- `docs/perf-review/pdfkit.md` (2026-04-20) empfiehlt `printpdf` für den **Label-/Ticket-Use-Case** (~2–20 KB, High-Volume-Batch, triviales Layout). Die dortige Analyse schließt explizit Text-Wrapping und Tabellen vom v1-Scope aus. Der vorliegende typst-Review adressiert den komplementären Use-Case — mehrseitige Dokumente mit Tabellen, berechneten Summen, richtiger Typografie. Die beiden Pakete kollidieren nicht; sie decken unterschiedliche Shapes.
-- `docs/post-mortems/xml.md` ist die Warnung gegen Object-Traversal über die FFI-Grenze — typst vermeidet das per Design (Bytes-in, Bytes-out).
+Delineation to existing reviews:
+- `docs/perf-review/pdfkit.md` (2026-04-20) recommends `printpdf` for the **label/ticket use-case** (~2–20 KB, high-volume batch, trivial layout). That analysis explicitly excludes text wrapping and tables from v1 scope. This typst review addresses the complementary use-case — multi-page documents with tables, computed totals, proper typography. The two packages don't collide; they cover different shapes.
+- `docs/post-mortems/xml.md` is the warning against object traversal across the FFI boundary — typst avoids that by design (bytes-in, bytes-out).
 
-Kein Eintrag in `docs/packages.json`.
+No entry in `docs/packages.json`.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Substantiell.** 10-seitige Rechnung mit Tabelle ~8–25 ms Rust-Compute (Parse + Layout + PDF-Emit). 50-seitiger Report mit Math/Charts ~80–300 ms. Relative zur FFI-Fixkostenbasis (~110 ns) ist das um Größenordnungen Headroom. |
-| Input size distribution | Typst-Source 2–50 KB + JSON-Daten 0.1–500 KB. Via `Buffer` Input (wie `renderBytes` in `commonmark`) ist FFI-Input-Kost ~flat 180 ns unabhängig von der Größe (siehe `docs/BASELINE.md:28–30`). Für String-Input bis 50 KB wäre es ~20 µs UTF-16→UTF-8 — vernachlässigbar gegenüber Compute. |
-| Output size distribution | PDF-Bytes 20 KB – 5 MB. `Buffer`-Return ist flat ~180 ns bis 10 MB (BASELINE.md:30) — Output-FFI-Kost ist ein Rauschen im Budget. |
-| Reusable setup (stateful potential) | **Hoch.** Font-Parsing + Package-Cache kostet 50–200 ms cold pro Font-Set. Ein `TypstCompiler`-NAPI-Class cached Fonts, geparste Core-Library-Module, und (wenn aktiviert) geladene Packages. Bei 500 Rechnungen mit gleichem Template + gleichem Font-Set ist das der Unterschied zwischen 25 s und 4 s Gesamt-Wall-Clock. |
-| Batch-usage realism | **Hoch.** Rechnungslauf, Monats-Statement-Batch, Report-Generation für Dashboard — der Default ist Batch, nicht Einzel-Request. `compileMany(jobs)` über `rayon::par_iter` kollabiert die FFI-Crossings und nutzt mehrere Cores — siehe `crates/commonmark/src/lib.rs:183–194` als Referenz-Pattern. |
-| FFI-share estimate vs. Rust work | <1% bei 10+-seitigen Reports (einmal FFI-in, 10+ ms Rust-Compute, einmal FFI-out). Selbst bei 2-seitigen Rechnungen <5%. Die Compute-Seite dominiert strukturell. |
+| Per-call algorithmic work | **Substantial.** 10-page invoice with a table ~8–25 ms Rust compute (parse + layout + PDF emit). 50-page report with math/charts ~80–300 ms. Relative to the FFI fixed-cost baseline (~110 ns), that's orders of magnitude of headroom. |
+| Input size distribution | Typst source 2–50 KB + JSON data 0.1–500 KB. Via `Buffer` input (like `renderBytes` in `commonmark`), FFI input cost is ~flat 180 ns regardless of size (see `docs/BASELINE.md:28–30`). For string input up to 50 KB it would be ~20 µs UTF-16→UTF-8 — negligible next to compute. |
+| Output size distribution | PDF bytes 20 KB – 5 MB. `Buffer` return is flat ~180 ns up to 10 MB (BASELINE.md:30) — output FFI cost is noise in the budget. |
+| Reusable setup (stateful potential) | **High.** Font parsing + package cache costs 50–200 ms cold per font set. A `TypstCompiler` NAPI class caches fonts, parsed core-library modules, and (if enabled) loaded packages. On 500 invoices with the same template + same font set, that's the difference between 25 s and 4 s total wall-clock. |
+| Batch-usage realism | **High.** Invoice runs, monthly statement batches, report generation for dashboards — the default is batch, not single request. `compileMany(jobs)` via `rayon::par_iter` collapses the FFI crossings and uses multiple cores — see `crates/commonmark/src/lib.rs:183–194` as a reference pattern. |
+| FFI-share estimate vs. Rust work | <1% for 10+-page reports (one FFI-in, 10+ ms Rust compute, one FFI-out). Even for 2-page invoices <5%. The compute side dominates structurally. |
 
 ## Classification reasoning
 
-Der Shape matcht exakt die bestehenden Green-Packages `commonmark`, `inflate`, `zip`, `sanitize-html`: **Bytes-in, substantielle Compute, Bytes-out, kein Callback-Boundary, kein Object-Traversal**. Die Rust-Seite macht genug echte Arbeit pro Byte, dass die FFI-Fixkosten unsichtbar werden. Per `docs/BASELINE.md:25–33` ist der relevante Floor (109 ns noop, 180 ns Buffer-Return, ~35 µs pro 100 KB String-Input) um drei Größenordnungen kleiner als die erwartete Compute-Zeit (mehrere ms pro Dokument) — struktureller Headroom ist also vorhanden.
+The shape matches the existing Green packages `commonmark`, `inflate`, `zip`, `sanitize-html` exactly: **bytes-in, substantial compute, bytes-out, no callback boundary, no object traversal**. The Rust side does enough real work per byte that the FFI fixed costs go invisible. Per `docs/BASELINE.md:25–33`, the relevant floor (109 ns noop, 180 ns buffer return, ~35 µs per 100 KB string input) is three orders of magnitude smaller than the expected compute time (several ms per document) — so structural headroom is there.
 
-Die eigentliche Green-Bedingung ist der kleinste realistische Input: **eine 1-seitige Rechnung, kein Batch, Cold-Start inklusive**. Cold wird das ~100–200 ms (Font-Load dominiert) — hier verliert typst gegen `pdfmake` (~30–50 ms für ein einfaches Dokument in pure-JS). Hot, mit `TypstCompiler`-Class, läuft dieselbe Rechnung in ~5–10 ms — dann 3–6× schneller als `pdfmake` bei besserer Typografie. Der 2×-Kleinster-Input-Gate hält **nur** im Hot-Path. Das muss in der Dokumentation transparent sein — es ist dieselbe Nuance wie bei `commonmark`'s `Renderer`-Class.
+The actual Green condition is the smallest realistic input: **a 1-page invoice, no batch, cold start included**. Cold that's ~100–200 ms (font load dominates) — typst loses against `pdfmake` there (~30–50 ms for a simple document in pure JS). Hot, with the `TypstCompiler` class, the same invoice runs in ~5–10 ms — then 3–6× faster than `pdfmake` with better typography. The 2×-at-smallest-input gate holds **only** on the hot path. That has to be transparent in the docs — it's the same nuance as with `commonmark`'s `Renderer` class.
 
-Gegen Puppeteer/`html-pdf-node` gewinnt typst bei jedem Input strukturell, weil diese einen Browser-Prozess starten oder einen persistenten behalten (Memory-Overhead ~100–300 MB pro Worker). Für serverseitige Rechnungs-Generation ist das ein harter Kostenvorteil, nicht nur Wall-Clock.
+Against Puppeteer/`html-pdf-node`, typst wins structurally on every input, because those start a browser process or hold one persistent (memory overhead ~100–300 MB per worker). For server-side invoice generation, that's a hard cost advantage, not just wall-clock.
 
-Ein `Parser-`/`handlebars-Shape-Trap` existiert nicht: typst hat keine Callback-Erweiterungspunkte über die FFI. Daten kommen als JSON (ein Blob, ein Marshal), Template-Module kommen als Strings (ein Blob, ein Marshal). Keine `--include-helper=function`-Escape-Hatches.
+A `parser-`/`handlebars`-shape trap does not exist: typst has no callback extension points across the FFI. Data comes in as JSON (one blob, one marshal), template modules come in as strings (one blob, one marshal). No `--include-helper=function` escape hatches.
 
-**Benchmark-Gap-Flag:** Prediction ist qualitativ. Vor Green-Gate müssen die vier Szenarien unten gemessen werden — ohne Zahlen bleibt das Paket auf 🟡 Yellow, wie bei `pdfkit.md`.
+**Benchmark gap flag:** the prediction is qualitative. Before the Green gate, the four scenarios below must be measured — without numbers the package stays at 🟡 Yellow, as with `pdfkit.md`.
 
 ## If GO — proposed port
 
-- **Recommended crate-name:** `@amigo-labs/typst`
+- **Recommended crate name:** `@amigo-labs/typst`
 - **Primary API sketch:**
   ```ts
   type FontSpec = { name?: string; data: Buffer };
@@ -99,35 +99,35 @@ Ein `Parser-`/`handlebars-Shape-Trap` existiert nicht: typst hat keine Callback-
     compileMany(jobs: CompileOptions[]): Buffer[];
   }
   ```
-  Explizit **nicht** Puppeteer- oder `pdfmake`-kompatibel. Die Eingabesprache *ist* Typst-Markup — das ist bewusstes Produktangebot.
+  Explicitly **not** compatible with Puppeteer or `pdfmake`. The input language *is* Typst markup — that's a deliberate product offering.
 
 - **Must-have benchmark scenarios:**
-  - **small-cold:** 1-seitige Rechnung, einmaliger `compile()`-Call, gegen `pdfmake` + `puppeteer`. Cold-Start-Kosten transparent ausweisen.
-  - **small-hot:** 1-seitige Rechnung via `TypstCompiler.compile()` nach Warm-up, gegen dieselbe Baseline. Das ist der eigentliche Green-Gate.
-  - **batch-500:** `compileMany` mit 500 Rechnungen, identisches Template, variable Daten. Gegen Puppeteer (Worker-Pool mit 4 Workers) und `pdfmake` (Single-Thread). Der Hauptgewinn-Case.
-  - **long-report:** 50-seitiger Geschäftsbericht mit Tabellen, Charts (als SVG/PNG), Titelseite, Inhaltsverzeichnis. Gegen Puppeteer-mit-ChartJS-HTML. Prüft Layout-Skalierung.
-  - **realistic median:** 5-seitiges Monats-Statement mit 50-Zeilen-Tabelle, einem eingebetteten Chart und berechneten Summen.
+  - **small-cold:** 1-page invoice, single `compile()` call, against `pdfmake` + `puppeteer`. Report cold-start cost transparently.
+  - **small-hot:** 1-page invoice via `TypstCompiler.compile()` after warm-up, against the same baseline. This is the actual Green gate.
+  - **batch-500:** `compileMany` with 500 invoices, identical template, variable data. Against Puppeteer (worker pool with 4 workers) and `pdfmake` (single-thread). The main win case.
+  - **long-report:** 50-page business report with tables, charts (as SVG/PNG), title page, table of contents. Against Puppeteer + ChartJS HTML. Tests layout scaling.
+  - **realistic median:** 5-page monthly statement with 50-row table, an embedded chart, and computed totals.
 
 - **Acceptance thresholds (Green gate):**
   - small-hot ≥ **2×** `pdfmake`
-  - batch-500 ≥ **5×** `pdfmake` und ≥ **10×** `puppeteer` (wall-clock inkl. Prozess-Startup bei Puppeteer)
-  - long-report ≥ **2×** `puppeteer` (hier ist Puppeteer mit HTML+Chart-Libs durchaus schnell — das Ziel ist konservativ)
-  - small-cold darf schlechter sein als `pdfmake` — muss aber dokumentiert werden, und der `compile()`-Standalone-Path sollte im README explizit als "für One-Shot-Usage, Warm-Path nutzt `TypstCompiler`" positioniert sein
-  - Cold-Start-Kosten (erster `TypstCompiler.compile()` inkl. Font-Load) müssen ausgewiesen werden — Transparenz-Anforderung analog `pdfkit.md`.
+  - batch-500 ≥ **5×** `pdfmake` and ≥ **10×** `puppeteer` (wall-clock incl. process startup for Puppeteer)
+  - long-report ≥ **2×** `puppeteer` (Puppeteer + HTML chart libs is actually fast here — the target is conservative)
+  - small-cold is allowed to be worse than `pdfmake` — but must be documented, and the `compile()` standalone path should be explicitly positioned in the README as "for one-shot usage, warm path uses `TypstCompiler`"
+  - Cold-start cost (first `TypstCompiler.compile()` incl. font load) has to be reported — transparency requirement analogous to `pdfkit.md`.
 
 - **Risks:**
-  - **Binary-Size-Explosion.** Typst + fonts + krilla + pdf-writer ergeben geschätzt 15–25 MB pro NAPI-Target. Sechs Targets = 90–150 MB npm-Artefakt-Gesamtgröße. Muss gegen Repo-Policy gehalten werden. Mitigation: optional ein `@amigo-labs/typst-fonts`-Peer-Paket für die Default-Fonts, `@amigo-labs/typst` selbst bleibt fontfrei.
-  - **Font-Resolution-Komplexität.** Drei plausible Strategien (bundled / user-TTFs / disk-resolve) und alle drei werden von verschiedenen User-Klassen gewollt. v1 muss eine wählen und die anderen dokumentiert zurückstellen, sonst läuft das API-Design in drei Richtungen gleichzeitig auseinander.
-  - **Typst-API-Churn.** Die Library-API von `typst` + `typst-pdf` + `typst-kit` ist ab 0.11 vergleichsweise stabil, aber nicht 1.0. Major-Upgrades alle ~6 Monate, manche mit API-Shifts. Wir committen uns auf ein Version-Pin und aktive Wartung des Upgrades.
-  - **User-Erwartungshaltung "LaTeX-in-JS".** Typst ist nicht LaTeX, kennt nicht jede LaTeX-Konvention. Wird Support-Issues erzeugen, die nur mit "Das ist Typst, nicht LaTeX — siehe typst.app" beantwortbar sind. README muss das Upfront machen.
-  - **Baseline-Nuancierung:** `docs/BASELINE.md` misst kein Typst-Compute. FFI-Share-Schätzung oben ist aus Crate-eigenen Benchmarks der Typst-Community abgeleitet, nicht in unserem Harness gemessen. Nach Port sollte der `_ffi-bench`-Harness um einen `compilePdfJob`-Case erweitert werden.
+  - **Binary-size explosion.** Typst + fonts + krilla + pdf-writer estimate to 15–25 MB per NAPI target. Six targets = 90–150 MB total npm artifact size. Has to be weighed against the repo policy. Mitigation: optionally a `@amigo-labs/typst-fonts` peer package for the default fonts, `@amigo-labs/typst` itself stays font-free.
+  - **Font-resolution complexity.** Three plausible strategies (bundled / user TTFs / disk-resolve) and all three are wanted by different user classes. v1 has to pick one and push the others into documented follow-ups, otherwise the API design diverges in three directions at once.
+  - **Typst API churn.** The library API of `typst` + `typst-pdf` + `typst-kit` is comparatively stable from 0.11, but not 1.0. Major upgrades every ~6 months, some with API shifts. We're committing to a version pin and active maintenance of upgrades.
+  - **User expectation "LaTeX-in-JS".** Typst is not LaTeX, doesn't know every LaTeX convention. Will produce support issues that can only be answered with "That's Typst, not LaTeX — see typst.app". The README has to make this upfront.
+  - **Baseline nuance:** `docs/BASELINE.md` doesn't measure Typst compute. The FFI-share estimate above is derived from Typst community's own benchmarks, not measured in our harness. After the port, extend the `_ffi-bench` harness with a `compilePdfJob` case.
 
 ## If NO-GO — BACKLOG entry
 
-Falls das Binary-Size-Budget (90–150 MB Gesamt für sechs Targets) als Showstopper bewertet wird, oder falls der Use-Case als zu schmal für ein eigenes Paket eingestuft wird:
+If the binary-size budget (90–150 MB total for six targets) is judged a showstopper, or if the use-case is deemed too narrow for its own package:
 
 ```markdown
-- **typst (als Library)** (nicht auf npm, ~5k/Woche als WASM-Build). Evaluiert in `docs/perf-review/typst.md`. FFI-Shape ist Lehrbuch-Green (bytes-in, bytes-out, keine Callbacks), Compute-Gewinn gegen Puppeteer/pdfmake substantiell (prognostiziert 5–50× je Use-Case). Zurückgestellt wegen Binary-Size (~15–25 MB pro Plattform × 6 Targets = 90–150 MB npm-Artefakt) und Scope-Frage: Business-Report-Generation ist ein enges Vertical, das einen signifikanten Teil der Repo-Download-Größe beansprucht. Re-Evaluation, sobald Typst ein schlankeres Embedding-Profil bietet oder das Binary-Size-Budget des Repos erweitert wird.
+- **typst (as library)** (not on npm, ~5k/week as WASM build). Evaluated in `docs/perf-review/typst.md`. FFI shape is textbook Green (bytes-in, bytes-out, no callbacks), compute win against Puppeteer/pdfmake substantial (predicted 5–50× depending on use-case). Deferred due to binary size (~15–25 MB per platform × 6 targets = 90–150 MB npm artifact) and scope question: business-report generation is a narrow vertical that claims a significant share of the repo's download size. Re-evaluate once Typst offers a slimmer embedding profile or the repo's binary-size budget expands.
 ```
 
-Section in `BACKLOG.md`: **Parity too expensive** (passt nicht — ist kein Parity-Problem) → eher neue Sektion oder **Scope too large**.
+Section in `BACKLOG.md`: **Parity too expensive** (doesn't fit — it's not a parity problem) → rather a new section or **Scope too large**.

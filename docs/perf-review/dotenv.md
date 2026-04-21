@@ -4,45 +4,45 @@
 
 ## Verdict
 
-Parser ist ~50 Zeilen JS, einmaliger Call beim Prozessstart. FFI-Floor > Parse-Zeit für typische `.env`-Dateien (<1 KB). Kein Batch, kein State, kein Win.
+The parser is ~50 lines of JS, called once at process start. FFI floor > parse time for typical `.env` files (<1 KB). No batch, no state, no win.
 
 ## JS package
 
 - **npm:** `dotenv`
-- **Downloads:** ~91M/Woche
+- **Downloads:** ~91M/week
 - **Exports / API surface:** `config({ path, encoding, debug, override })`, `parse(src)`, `populate`
-- **Typical input:** `.env`-Datei, typisch 10 Zeilen / 200 B, maximal ein paar KB
+- **Typical input:** `.env` file, typically 10 lines / 200 B, at most a few KB
 - **Typical output:** `{ parsed: { KEY: value, … } }`
-- **Realistic median use-case:** **Einmal** beim Prozessstart — nicht in der Hot-Path
+- **Realistic median use-case:** **once** at process start — not on the hot path
 
 ## Rust replacement
 
 - **Candidate crate(s):** `dotenvy` (fork), `dotenv`
-- **Maintenance / license:** `dotenvy` aktiv, MIT
-- **Known gotchas / divergences:** Quoting-Semantik (`"foo\nbar"` vs. `'foo\nbar'`), Variable-Expansion (`$OTHER`), Multiline-Values (seit `dotenv@16`) — leichte Abweichungen möglich
+- **Maintenance / license:** `dotenvy` active, MIT
+- **Known gotchas / divergences:** quoting semantics (`"foo\nbar"` vs. `'foo\nbar'`), variable expansion (`$OTHER`), multiline values (since `dotenv@16`) — minor deviations possible
 
 ## BACKLOG check
 
-BACKLOG: *FFI overhead > gain* — bestätigt.
+BACKLOG: *FFI overhead > gain* — confirmed.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | 200 B Parse ~5 µs in JS (regex-ähnlich) |
-| Input size distribution | Typisch <1 KB |
-| Output size distribution | Kleines Object mit 5–30 Feldern — Object-Materialisierung ist hier der größte Posten |
-| Reusable setup (stateful potential) | Null |
-| Batch-usage realism | Null — `.env` wird einmal geladen |
-| FFI-share estimate vs. Rust work | >80%: einmaliger Call bei Start, fs-Read dominiert ohnehin |
+| Per-call algorithmic work | 200 B parse ~5 µs in JS (regex-like) |
+| Input size distribution | Typically <1 KB |
+| Output size distribution | Small object with 5–30 fields — object materialization is the largest item here |
+| Reusable setup (stateful potential) | Zero |
+| Batch-usage realism | Zero — `.env` is loaded once |
+| FFI-share estimate vs. Rust work | >80%: one call at startup, fs read already dominates |
 
 ## Classification reasoning
 
-Zwei Gründe, warum das selbst bei Rust-2×-Parse-Speedup nicht lohnt:
-1. **Frequenz**: `dotenv.config()` wird einmal gerufen, vor allen Requests. Selbst 10× schneller = 50 µs statt 500 µs → irrelevant im Prozess-Startup-Budget.
-2. **Output-Shape**: Object mit N Feldern via `get_named_property`/`set_named_property` = N FFI-Kreuzungen, dominiert die Rust-Arbeit (siehe `deep-equal`-Post-Mortem).
+Two reasons why, even at a 2× Rust parse speedup, this doesn't pay off:
+1. **Frequency**: `dotenv.config()` is called once, before all requests. Even 10× faster = 50 µs instead of 500 µs → irrelevant in the process-startup budget.
+2. **Output shape**: object with N fields via `get_named_property`/`set_named_property` = N FFI crossings, dominates the Rust work (see the `deep-equal` post-mortem).
 
-Keine Batch-API möglich (es gibt nur eine `.env`). Keine Stateful-API sinnvoll. Kein Hot-Path.
+No batch API possible (there is only one `.env`). No stateful API makes sense. No hot path.
 
 ## If NO-GO — BACKLOG entry
 

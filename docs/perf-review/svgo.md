@@ -1,70 +1,70 @@
 # Candidate review: `svgo`
 
-> **Status:** GO (Drop-in-orientiert mit Scope-Begrenzung) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-20
+> **Status:** GO (drop-in-oriented with scope limits) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-20
 
 ## Verdict
 
-`svgo` ist ein **SVG-Optimizer**: Parser → AST-Plugin-Pipeline → Serializer. Shape ist identisch zum bereits Green-shipped `sanitize-html` (und zu `commonmark`): Bytes-in / Bytes-out, substantielle Compute pro Byte, keine Callback-Grenze wenn die Plugin-Liste als statisches Config-Objekt (nicht als JS-Callbacks) übergeben wird. Rust hat bereits einen aktiv entwickelten und gegen `svgo` gebenchmarkten Konkurrenten: **`oxvg`** (Oxc-Team). Die Entscheidung ist hier nicht "ist Rust schnell genug", sondern "können wir oxvg/usvg sauber NAPI-wrappen mit genug Plugin-Parity".
+`svgo` is an **SVG optimizer**: parser → AST plugin pipeline → serializer. Shape is identical to the already-Green-shipped `sanitize-html` (and to `commonmark`): bytes-in / bytes-out, substantial compute per byte, no callback boundary if the plugin list is passed as a static config object (not as JS callbacks). Rust already has an actively developed competitor benchmarked against `svgo`: **`oxvg`** (Oxc team). The question here isn't "is Rust fast enough", it's "can we cleanly NAPI-wrap oxvg/usvg with enough plugin parity".
 
 ## JS package
 
-- **npm:** [`svgo`](https://www.npmjs.com/package/svgo) (~10 M/Woche, Q1 2026)
-- **Exports:** `optimize(svgString, config?) → { data, info }`, Plugin-Registry (`preset-default` mit ~30 Plugins, custom Plugins möglich), CLI
-- **Typical input:** SVG-String 0.5–500 KB (Icons: ~1–5 KB; Illustrations: 10–100 KB; exportierter Chart-Output oder Figma-SVG: bis MBs)
-- **Typical output:** minifizierter SVG-String, meist 30–70% kleiner als Input
-- **Realistic median use-case:** **Build-Time-Optimierung** von Icon-Sets und statischen SVG-Assets in Webpack/Vite/Rollup-Pipelines; **Runtime-Optimierung** in CMS/Editor-Uploads. Typisch: 100–10.000 SVGs pro Build, jedes 1–20 KB
+- **npm:** [`svgo`](https://www.npmjs.com/package/svgo) (~10M/week, Q1 2026)
+- **Exports:** `optimize(svgString, config?) → { data, info }`, plugin registry (`preset-default` with ~30 plugins, custom plugins possible), CLI
+- **Typical input:** SVG string 0.5–500 KB (icons: ~1–5 KB; illustrations: 10–100 KB; exported chart output or Figma SVG: up to MBs)
+- **Typical output:** minified SVG string, usually 30–70% smaller than input
+- **Realistic median use-case:** **build-time optimization** of icon sets and static SVG assets in Webpack/Vite/Rollup pipelines; **runtime optimization** in CMS/editor uploads. Typically: 100–10,000 SVGs per build, each 1–20 KB
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - **`oxvg`** (primär) — vom Oxc-Team (Bun/Oxlint), aktiv gepflegt, MIT, benchmarkt explizit gegen svgo, >30 Plugin-Parity als Ziel. Q1 2026 noch pre-1.0 aber produktiv gereift.
-  - `usvg` (sekundär, Baseline) — von resvg-Team, parst SVG → intermediate representation, fokussiert auf Rendering nicht Optimization. Nicht drop-in-tauglich, aber hochwertiger SVG-Parser falls oxvg-Parser nicht reicht.
-  - `svgcleaner` (obsolet, archiviert 2020) — nicht verwenden
-- **Maintenance / license:** `oxvg` MIT, aktiv, monatliche Releases. Supply-Chain-Risiko niedrig (Oxc-Ökosystem, gleicher Vendor wie Oxlint).
+  - **`oxvg`** (primary) — from the Oxc team (Bun/Oxlint), actively maintained, MIT, benchmarks explicitly against svgo, >30 plugin parity as a goal. Q1 2026 still pre-1.0 but productively matured.
+  - `usvg` (secondary, baseline) — from the resvg team, parses SVG → intermediate representation, focused on rendering not optimization. Not drop-in-capable, but a high-quality SVG parser if the oxvg parser isn't enough.
+  - `svgcleaner` (obsolete, archived 2020) — don't use
+- **Maintenance / license:** `oxvg` MIT, active, monthly releases. Supply-chain risk low (Oxc ecosystem, same vendor as Oxlint).
 - **Known gotchas / divergences:**
-  - Plugin-Parity: svgo hat ~30 Core-Plugins (preset-default) + Ökosystem-Plugins. oxvg deckt die wichtigsten ab (removeComments, removeMetadata, removeEmptyAttrs, cleanupNumericValues, mergePaths, convertColors, removeHiddenElems, etc.) aber nicht 100%. v1-Scope auf `preset-default` begrenzen.
-  - Custom-JS-Plugins: svgo erlaubt User-JS-Plugins (`fn visit(node) { ... }`). Das ist die **`ejs`-Falle** — wenn ein User-Plugin pro Node einen JS-Callback triggert, bricht der Green-Plan. v1 **nicht anbieten**; Config-Plugins (Built-ins mit Optionen) sind ausreichend für >95% der Nutzer.
-  - Output-Byte-Parity: oxvg's Serializer schreibt marginal anders (Attribut-Ordering, Whitespace). Build-Tools mit Hash-basiertem Caching (vite's asset-hash) müssen re-hashen. Dokumentieren, nicht fixen.
+  - Plugin parity: svgo has ~30 core plugins (preset-default) + ecosystem plugins. oxvg covers the most important ones (removeComments, removeMetadata, removeEmptyAttrs, cleanupNumericValues, mergePaths, convertColors, removeHiddenElems, etc.) but not 100%. Limit v1 scope to `preset-default`.
+  - Custom JS plugins: svgo allows user JS plugins (`fn visit(node) { ... }`). That's the **`ejs` trap** — if a user plugin triggers a JS callback per node, the Green plan breaks. Don't offer in v1; config plugins (built-ins with options) are sufficient for >95% of users.
+  - Output byte parity: oxvg's serializer writes marginally differently (attribute ordering, whitespace). Build tools with hash-based caching (vite's asset hash) have to re-hash. Document, don't fix.
 
 ## BACKLOG check
 
-Kein Eintrag in `BACKLOG.md`. Kein `docs/packages.json`-Entry. Shape-Nachbar ist `sanitize-html` (shipped Green).
+No entry in `BACKLOG.md`. No `docs/packages.json` entry. Shape neighbor is `sanitize-html` (shipped Green).
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call work | Substantiell. Icon (~2 KB): 0.5–2 ms in svgo. Medium-SVG (~30 KB): 5–20 ms. Large-Export (~500 KB): 50–300 ms. Pro-Byte-Compute ist hoch (Parser + ~30 Plugin-Passes + Serializer). |
-| Input size | SVG-String 0.5 KB – 5 MB. Als `Buffer` oder UTF-8 `String` — beide flach via `docs/BASELINE.md` (<200 ns bis ~1 MB). |
-| Output size | Output meist 30–70% kleiner als Input. `String`/`Buffer`-Return flach. |
-| Stateful potential | **Hoch.** Plugin-Config + Compiled-Plugin-Chain könnte in `SvgOptimizer`-Klasse leben. Bei Build-Tools (10k Icons pro Build) spart das den Config-Parse pro Call. |
-| Batch realism | **Sehr hoch.** Build-Tools rufen `optimize()` in Schleife über alle SVG-Assets — `optimizeMany(svgs: string[], config)` kollabiert N FFI-Crossings zu einem und erlaubt Rayon-Parallelisierung über Workers. |
-| FFI-share | Single: ~5% bei Median-SVG (~10 ms Rust-Work, ~0.5 ms Input-Marshal). Batch-1000-Icons: <0.5%. |
+| Per-call work | Substantial. Icon (~2 KB): 0.5–2 ms in svgo. Medium SVG (~30 KB): 5–20 ms. Large export (~500 KB): 50–300 ms. Per-byte compute is high (parser + ~30 plugin passes + serializer). |
+| Input size | SVG string 0.5 KB – 5 MB. As `Buffer` or UTF-8 `String` — both flat via `docs/BASELINE.md` (<200 ns up to ~1 MB). |
+| Output size | Output usually 30–70% smaller than input. `String`/`Buffer` return flat. |
+| Stateful potential | **High.** Plugin config + compiled plugin chain could live in an `SvgOptimizer` class. For build tools (10k icons per build) that saves the config parse per call. |
+| Batch realism | **Very high.** Build tools call `optimize()` in a loop over all SVG assets — `optimizeMany(svgs: string[], config)` collapses N FFI crossings into one and allows Rayon parallelization across workers. |
+| FFI-share | Single: ~5% for median SVG (~10 ms Rust work, ~0.5 ms input marshal). Batch 1000 icons: <0.5%. |
 
 ## Classification reasoning
 
-`svgo` trifft den gleichen Green-Shape-Template-Satz wie `sanitize-html` / `commonmark`:
+`svgo` hits the same Green-shape template set as `sanitize-html` / `commonmark`:
 
-- ✅ **Bytes-in, Bytes-out** — kein Graph-Traversal über die FFI-Grenze
-- ✅ **Substantielle Compute pro Byte** — Parser + Plugin-Pipeline ist nicht trivial
-- ✅ **Keine Callback-Surface** (solange Custom-JS-Plugins ausgeschlossen bleiben)
-- ✅ **Stateful + Batch-natürlich** — Build-Tool-Use-Case liefert perfekte Amortisation
-- ✅ **Native Konkurrenz ist schwach** — svgo selbst ist pure-JS, keine nativen Bindings bisher gemainstreamed
-- ✅ **Rust-Äquivalent existiert und ist aktiv** — oxvg ist nicht hypothetisch
+- ✅ **Bytes-in, bytes-out** — no graph traversal across the FFI boundary
+- ✅ **Substantial compute per byte** — parser + plugin pipeline is not trivial
+- ✅ **No callback surface** (as long as custom JS plugins stay excluded)
+- ✅ **Stateful + batch-natural** — build-tool use-case gives perfect amortization
+- ✅ **Native competition is weak** — svgo itself is pure JS, no native bindings have been mainstreamed yet
+- ✅ **Rust equivalent exists and is active** — oxvg isn't hypothetical
 
-Der einzige strukturelle Fallstrick ist die **Custom-JS-Plugin-API**. svgo's public Contract erlaubt User-Code als Plugins (`{ name, fn(root) { ... } }`). Das ist der `ejs`-Killer — wenn wir das anbieten, triggert jede Node-Visit-Callback einen FFI-Roundtrip. v1 **darf das nicht exponieren**. Migration-Pfad für Power-User: entweder sie bleiben auf svgo, oder wir exponieren später `svgo-compat`-Plugin, das svgo als Fallback für custom-Plugin-Fälle lädt (analog zum `canvg`-Pattern für chart.js-Kompat).
+The only structural pitfall is the **custom JS plugin API**. svgo's public contract allows user code as plugins (`{ name, fn(root) { ... } }`). That's the `ejs` killer — if we offer that, every node-visit callback triggers an FFI roundtrip. v1 **must not expose it**. Migration path for power users: either they stay on svgo, or we later expose an `svgo-compat` plugin that loads svgo as a fallback for custom-plugin cases (analogous to the `canvg` pattern for chart.js compat).
 
-**Shape-Match:**
-- ✅ Wie `sanitize-html` (shipped Green): Parser + Transform + Serializer, bytes-in/bytes-out
-- ✅ Wie `commonmark`: Parser + Pipeline + Serializer, Batch-amortisierbar
-- ❌ **Nicht** wie `mime` / `deep-equal` (kein Short-Input-Hot-Loop, kein Trivial-Compute)
-- ❌ **Nicht** wie `chart.js` (keine Runtime-Abhängigkeit, keine Animations-Callbacks)
+**Shape match:**
+- ✅ Like `sanitize-html` (shipped Green): parser + transform + serializer, bytes-in/bytes-out
+- ✅ Like `commonmark`: parser + pipeline + serializer, batch-amortizable
+- ❌ **Not** like `mime` / `deep-equal` (no short-input hot loop, no trivial compute)
+- ❌ **Not** like `chart.js` (no runtime dependency, no animation callbacks)
 
-**Benchmark-Gap-Flag:** Green-Prediction braucht oxvg-Parity-Verifikation vor Shipping. Falls oxvg wichtige Plugins noch nicht hat (z.B. `mergePaths` oder `convertPathData` — die teuersten und gewinnträchtigsten), muss entweder auf oxvg-PRs gewartet oder custom-Port gebaut werden. Vor Port-Start: Cross-Check der oxvg-Plugin-Matrix gegen svgo's `preset-default`.
+**Benchmark gap flag:** the Green prediction needs oxvg parity verification before shipping. If oxvg is missing important plugins (e.g. `mergePaths` or `convertPathData` — the most expensive and most win-bearing), we either wait for oxvg PRs or build a custom port. Before the port starts: cross-check the oxvg plugin matrix against svgo's `preset-default`.
 
 ## If GO — proposed port
 
-- **Recommended crate-name:** `@amigo-labs/svgo` (Drop-in-orientiert, weil oxvg bereits diesen Contract anvisiert — Naming unterstützt Migration-Positionierung)
+- **Recommended crate name:** `@amigo-labs/svgo` (drop-in-oriented, because oxvg already targets this contract — naming supports migration positioning)
 - **Primary API sketch:**
   ```ts
   type SvgoPlugin =
@@ -80,13 +80,13 @@ Der einzige strukturelle Fallstrick ist die **Custom-JS-Plugin-API**. svgo's pub
     | { name: SvgoPlugin; params?: Record<string, unknown> };
 
   type SvgoConfig = {
-    plugins?: SvgoPlugin[];        // default: preset-default-äquivalent
+    plugins?: SvgoPlugin[];        // default: preset-default equivalent
     multipass?: boolean;           // default: false
     floatPrecision?: number;       // default: 3
   };
 
   type SvgoResult = {
-    data: string;                  // optimierter SVG
+    data: string;                  // optimized SVG
     info: { inputBytes: number; outputBytes: number; savedPercent: number };
   };
 
@@ -94,7 +94,7 @@ Der einzige strukturelle Fallstrick ist die **Custom-JS-Plugin-API**. svgo's pub
   export function optimizeMany(
     svgs: Array<string | Buffer>,
     config?: SvgoConfig
-  ): SvgoResult[];        // intern mit Rayon über N Cores parallelisiert
+  ): SvgoResult[];        // internally parallelized with Rayon across N cores
 
   export class SvgOptimizer {
     constructor(config?: SvgoConfig);
@@ -102,27 +102,27 @@ Der einzige strukturelle Fallstrick ist die **Custom-JS-Plugin-API**. svgo's pub
     optimizeMany(svgs: Array<string | Buffer>): SvgoResult[];
   }
   ```
-  **Nicht** angeboten: Custom-Function-Plugins. Dokumentiert als expliziter v1-Scope-Cut.
+  **Not** offered: custom function plugins. Documented as an explicit v1 scope cut.
 - **Must-have benchmark scenarios:**
-  - **Icon (2 KB):** 2-KB-Figma-Export-Icon, preset-default. Green-Gate: ≥ 2×.
-  - **Medium (30 KB):** Illustrations-SVG. Green-Gate: ≥ 3×.
-  - **Large (500 KB):** komplexes Chart-/Diagramm-SVG mit hunderten Paths. Green-Gate: ≥ 3×.
-  - **Batch-1000-Icons:** `optimizeMany(1000 × 2-KB-Icon)`. Green-Gate: ≥ 5× (Rayon-Parallelisierung über Cores).
-  - **Stateful-Reuse (100 Optimize-Calls auf gleicher `SvgOptimizer`-Instance):** misst Config-Cache-Hebel. Green-Gate: ≥ 1.1× Fresh-Instance-Baseline (moderat, nur Config-Parse-Ersparnis).
-- **Green gate:** alle fünf Szenarien + Plugin-Parity-Matrix für `preset-default` zu ≥95%.
+  - **Icon (2 KB):** 2 KB Figma-export icon, preset-default. Green gate: ≥ 2×.
+  - **Medium (30 KB):** illustration SVG. Green gate: ≥ 3×.
+  - **Large (500 KB):** complex chart/diagram SVG with hundreds of paths. Green gate: ≥ 3×.
+  - **Batch 1000 icons:** `optimizeMany(1000 × 2 KB icon)`. Green gate: ≥ 5× (Rayon parallelization across cores).
+  - **Stateful reuse (100 optimize calls on the same `SvgOptimizer` instance):** measures the config-cache lever. Green gate: ≥ 1.1× fresh-instance baseline (modest, only config-parse saving).
+- **Green gate:** all five scenarios + plugin-parity matrix for `preset-default` ≥95%.
 - **Risks:**
-  - **Plugin-Parity-Tail:** svgo's Plugin-Set ist das Produkt von 10 Jahren Community-Iteration. oxvg hat ~25 der 30 Core-Plugins. Die fehlenden 5 sind meist Edge-Case-Optimierungen (`reusePaths`, `sortAttrs`), die Gewinn < 2% bringen — können als "v1 not supported, pass through unchanged" dokumentiert werden.
-  - **Custom-Plugin-Surface:** Manche Enterprise-User haben eigene svgo-Plugins. Migration-Path: sie bleiben auf svgo, oder wir shippen `@amigo-labs/svgo` mit explizitem `externalPlugins: false`-Contract und sie entscheiden sich bewusst.
-  - **Output-Byte-Parity:** oxvg's Serializer optimiert anders als svgo's. Build-Tools mit Hash-basiertem Caching sehen einen einmaligen Cache-Invalidation-Spike beim Migration. Dokumentieren als Breaking-Change in v1.
-  - **oxvg-Maturity:** Q1 2026 pre-1.0. Falls oxvg nicht stabil genug ist für amigo's Release-Cadence, Option B: direkt auf `usvg`-Parser aufbauen und eigene Plugin-Pipeline schreiben (~2000 Zeilen Rust). Scope-Entscheidung vor Port-Start.
-  - **Baseline-Nuance:** SVG-String-Input ist UTF-8 — `String`-Argument triggert V8-UTF-16→UTF-8-Conversion. Für große SVGs (>100 KB) messbar. `Buffer`-Overload als primärer API-Pfad, `String` als Convenience-Shim. `docs/BASELINE.md:echoBuffer` deckt das.
+  - **Plugin-parity tail:** svgo's plugin set is the product of 10 years of community iteration. oxvg has ~25 of the 30 core plugins. The missing 5 are mostly edge-case optimizations (`reusePaths`, `sortAttrs`) that yield < 2% gain — can be documented as "v1 not supported, pass through unchanged".
+  - **Custom-plugin surface:** some enterprise users have their own svgo plugins. Migration path: they stay on svgo, or we ship `@amigo-labs/svgo` with an explicit `externalPlugins: false` contract and they opt in consciously.
+  - **Output byte parity:** oxvg's serializer optimizes differently from svgo's. Build tools with hash-based caching see a one-time cache-invalidation spike on migration. Document as a breaking change in v1.
+  - **oxvg maturity:** Q1 2026 pre-1.0. If oxvg isn't stable enough for amigo's release cadence, option B: build directly on the `usvg` parser and write our own plugin pipeline (~2000 lines of Rust). Scope decision before the port starts.
+  - **Baseline nuance:** SVG string input is UTF-8 — a `String` argument triggers V8's UTF-16 → UTF-8 conversion. Measurable for large SVGs (>100 KB). `Buffer` overload as the primary API path, `String` as a convenience shim. `docs/BASELINE.md:echoBuffer` covers this.
 
 ## If NO-GO — BACKLOG entry
 
-Nicht einschlägig — Prediction ist Green mit hoher Konfidenz (`sanitize-html`-Präzedenzfall). Falls Review nach Measurement doch Yellow wird:
+Not applicable — prediction is Green with high confidence (`sanitize-html` precedent). If review after measurement still turns Yellow:
 
 ```markdown
-- **svgo** (~10M/Woche). SVG-Optimizer. Shape-Green, aber oxvg-Plugin-Parity zu `preset-default` nicht ausreichend (<95% der Optimierungen angewendet, Output-Bytes nennenswert größer als svgo). Port eingefroren bis oxvg-1.0 oder Custom-Pipeline-Budget verfügbar. Siehe `docs/perf-review/svgo.md`.
+- **svgo** (~10M/week). SVG optimizer. Shape-Green, but oxvg plugin parity to `preset-default` insufficient (<95% of the optimizations applied, output bytes noticeably larger than svgo). Port frozen until oxvg-1.0 or a custom-pipeline budget is available. See `docs/perf-review/svgo.md`.
 ```
 
 Section: **Parity too expensive**.
