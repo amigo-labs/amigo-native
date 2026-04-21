@@ -1,7 +1,7 @@
 {
   "crate": "inflate",
-  "generatedAt": "2026-04-19T20:07:47.501Z",
-  "commit": "e678ac6",
+  "generatedAt": "2026-04-21T07:19:58.891Z",
+  "commit": "1c510c2",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,21 +11,21 @@
       "entries": [
         {
           "name": "@amigo-labs/inflate",
-          "hz": 76580.94,
-          "rme": 0.43,
-          "samples": 38291
+          "hz": 81132.76,
+          "rme": 0.39,
+          "samples": 40567
         },
         {
           "name": "pako",
-          "hz": 9658.71,
-          "rme": 3.23,
-          "samples": 4830
+          "hz": 10367.52,
+          "rme": 3.1,
+          "samples": 5184
         },
         {
           "name": "node:zlib",
-          "hz": 74855.75,
-          "rme": 6.64,
-          "samples": 37428
+          "hz": 78483.45,
+          "rme": 4.58,
+          "samples": 39242
         }
       ]
     },
@@ -35,21 +35,21 @@
       "entries": [
         {
           "name": "@amigo-labs/inflate",
-          "hz": 26057.2,
-          "rme": 0.09,
-          "samples": 13029
+          "hz": 26652.3,
+          "rme": 0.2,
+          "samples": 13327
         },
         {
           "name": "pako",
-          "hz": 993.77,
-          "rme": 1.54,
-          "samples": 497
+          "hz": 923.83,
+          "rme": 1.14,
+          "samples": 462
         },
         {
           "name": "node:zlib",
-          "hz": 4703.07,
-          "rme": 0.35,
-          "samples": 2352
+          "hz": 3104.43,
+          "rme": 0.96,
+          "samples": 1553
         }
       ]
     },
@@ -59,21 +59,21 @@
       "entries": [
         {
           "name": "@amigo-labs/inflate",
-          "hz": 18402.13,
-          "rme": 0.08,
-          "samples": 9202
+          "hz": 17818.93,
+          "rme": 0.16,
+          "samples": 8910
         },
         {
           "name": "pako",
-          "hz": 955.59,
-          "rme": 1.68,
-          "samples": 478
+          "hz": 891.27,
+          "rme": 1.2,
+          "samples": 446
         },
         {
           "name": "node:zlib",
-          "hz": 4292.59,
-          "rme": 1.01,
-          "samples": 2147
+          "hz": 2919.92,
+          "rme": 0.88,
+          "samples": 1460
         }
       ]
     },
@@ -83,21 +83,21 @@
       "entries": [
         {
           "name": "@amigo-labs/inflate",
-          "hz": 320.9,
-          "rme": 0.2,
-          "samples": 161
+          "hz": 353.19,
+          "rme": 0.98,
+          "samples": 177
         },
         {
           "name": "pako",
-          "hz": 9.2671,
-          "rme": 0.98,
+          "hz": 8.6573,
+          "rme": 1.81,
           "samples": 10
         },
         {
           "name": "node:zlib",
-          "hz": 45.2807,
-          "rme": 0.31,
-          "samples": 23
+          "hz": 32.3058,
+          "rme": 0.09,
+          "samples": 17
         }
       ]
     },
@@ -107,21 +107,21 @@
       "entries": [
         {
           "name": "@amigo-labs/inflate",
-          "hz": 301965.84,
-          "rme": 0.93,
-          "samples": 150983
+          "hz": 275732.21,
+          "rme": 4.76,
+          "samples": 137867
         },
         {
           "name": "pako",
-          "hz": 47775.81,
-          "rme": 2.91,
-          "samples": 23888
+          "hz": 49855.87,
+          "rme": 2.52,
+          "samples": 24928
         },
         {
           "name": "node:zlib",
-          "hz": 180771.4,
-          "rme": 10.29,
-          "samples": 90386
+          "hz": 198701.78,
+          "rme": 9.09,
+          "samples": 99351
         }
       ]
     },
@@ -131,21 +131,21 @@
       "entries": [
         {
           "name": "@amigo-labs/inflate",
-          "hz": 19866.56,
-          "rme": 2.44,
-          "samples": 9934
+          "hz": 18592.34,
+          "rme": 2.26,
+          "samples": 9297
         },
         {
           "name": "pako",
-          "hz": 3525.21,
-          "rme": 9.6,
-          "samples": 1763
+          "hz": 3543.27,
+          "rme": 17.39,
+          "samples": 1772
         },
         {
           "name": "node:zlib",
-          "hz": 17765.09,
-          "rme": 5.18,
-          "samples": 8883
+          "hz": 20051.3,
+          "rme": 4.56,
+          "samples": 10026
         }
       ]
     },
@@ -155,21 +155,21 @@
       "entries": [
         {
           "name": "@amigo-labs/inflate",
-          "hz": 252.01,
-          "rme": 2.97,
-          "samples": 127
+          "hz": 384.66,
+          "rme": 3.06,
+          "samples": 193
         },
         {
           "name": "pako",
-          "hz": 38.9612,
-          "rme": 3.51,
-          "samples": 20
+          "hz": 42.8749,
+          "rme": 3.6,
+          "samples": 22
         },
         {
           "name": "node:zlib",
-          "hz": 187.67,
-          "rme": 10.3,
-          "samples": 94
+          "hz": 232.73,
+          "rme": 11.69,
+          "samples": 117
         }
       ]
     }
