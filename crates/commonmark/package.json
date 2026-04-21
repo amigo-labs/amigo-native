@@ -55,7 +55,7 @@
     "directory": "crates/commonmark"
   },
   "engines": {
-    "node": ">= 18"
+    "node": ">= 22"
   },
   "amigo": {
     "title": "CommonMark",

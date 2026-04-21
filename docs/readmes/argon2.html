@@ -1,0 +1,49 @@
+<h1 id="amigo-labs-argon2">@amigo-labs/argon2</h1>
+<p><a href="https://www.npmjs.com/package/@amigo-labs/argon2"><img src="https://img.shields.io/npm/v/@amigo-labs/argon2" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@amigo-labs/argon2"><img src="https://img.shields.io/npm/dm/@amigo-labs/argon2" alt="npm downloads" /></a>
+<a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/argon2" alt="license" /></a></p>
+<p>Fast Argon2id password hashing powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. A native Node.js binding to the <a href="https://crates.io/crates/argon2">argon2</a> crate.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install @amigo-labs/argon2
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { hash, verify } from "@amigo-labs/argon2";
+
+// Hash a password (async)
+const hashed = await hash("my-password");
+
+// Verify a password (async)
+const valid = await verify(hashed, "my-password"); // true
+
+// With custom options
+const hashed2 = await hash("my-password", {
+  memoryCost: 65536,
+  timeCost: 3,
+  parallelism: 4,
+});
+</code></pre>
+<p>Synchronous variants <code>hashSync</code> and <code>verifySync</code> are also available.</p>
+<h2 id="api">API</h2>
+<h3 id="hash-password-options-promise-string"><code>hash(password, options?): Promise&lt;string&gt;</code></h3>
+<p>Hashes a password using Argon2id and returns a PHC-formatted string.</p>
+<h3 id="hashsync-password-options-string"><code>hashSync(password, options?): string</code></h3>
+<p>Synchronous version of <code>hash</code>.</p>
+<h3 id="verify-hash-password-promise-boolean"><code>verify(hash, password): Promise&lt;boolean&gt;</code></h3>
+<p>Verifies a password against an Argon2id hash.</p>
+<h3 id="verifysync-hash-password-boolean"><code>verifySync(hash, password): boolean</code></h3>
+<p>Synchronous version of <code>verify</code>.</p>
+<h3 id="options">Options</h3>
+<table><thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>memoryCost</code></td><td><code>number</code></td><td>Memory size in KiB (default: 19456)</td></tr>
+<tr><td><code>timeCost</code></td><td><code>number</code></td><td>Number of iterations (default: 2)</td></tr>
+<tr><td><code>parallelism</code></td><td><code>number</code></td><td>Degree of parallelism (default: 1)</td></tr>
+<tr><td><code>outputLen</code></td><td><code>number</code></td><td>Length of the hash output in bytes</td></tr>
+</tbody></table>
+<h2 id="supported-platforms">Supported Platforms</h2>
+<table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
+<tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>
+<tr><td>macOS</td><td>x64, arm64</td></tr>
+<tr><td>Windows</td><td>x64</td></tr>
+</tbody></table>
+<h2 id="license">License</h2>
+<p>MIT</p>

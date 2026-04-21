@@ -1,0 +1,28 @@
+<h1 id="amigo-labs-zip">@amigo-labs/zip</h1>
+<blockquote>
+<p>ZIP archive read/write via the <code>zip</code> Rust crate. Alternative to <a href="https://www.npmjs.com/package/yauzl"><code>yauzl</code></a>, <a href="https://www.npmjs.com/package/adm-zip"><code>adm-zip</code></a>, and <a href="https://www.npmjs.com/package/jszip"><code>jszip</code></a>, compiled via NAPI-RS.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/zip
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { ZipReader, ZipWriter } from '@amigo-labs/zip'
+
+// Read
+const reader = ZipReader.fromPath('./archive.zip')
+for (const entry of reader.entries()) {
+  if (!entry.isDir) {
+    const bytes = reader.read(entry.name)
+    console.log(entry.name, entry.size, bytes.length)
+  }
+}
+
+// Write
+const writer = new ZipWriter()
+writer.add('hello.txt', Buffer.from('hello world'), { compression: 'deflate', level: 9 })
+writer.add('data.bin', someBuffer, { compression: 'stored' })
+const archive = writer.finalize()   // Buffer
+</code></pre>
+<p>Compression methods: <code>deflate</code> (default) and <code>stored</code>. Deflate level is <code>0</code>–<code>9</code> (default <code>6</code>).</p>
+<h2 id="parity">Parity</h2>
+<p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run a representative subset of the upstream <code>yauzl</code>/<code>adm-zip</code> test suites against this implementation. See <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for documented differences.</p>

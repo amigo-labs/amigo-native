@@ -126,7 +126,6 @@ async function boot() {
   renderPicker();
   wireSortChips();
   cycleHeroTagline();
-  wireCursorGlow();
   wireKeyboard();
   wireWheel();
 
@@ -358,9 +357,6 @@ function buildSlabHTML(p) {
     <p class="slab-desc" id="slabDesc"></p>
 
     <div class="slab-install">
-      <div class="dots" aria-hidden="true">
-        <span class="dot"></span><span class="dot"></span><span class="dot hot"></span>
-      </div>
       <span class="prefix">$</span>
       <span class="cmd" id="slabCmd"></span><span class="caret" aria-hidden="true"></span>
       <button class="copy-btn" type="button" id="slabCopy">Copy</button>
@@ -382,6 +378,11 @@ function buildSlabHTML(p) {
         <div id="slabSizes"></div>
       </div>
     </div>
+
+    <details class="slab-readme" id="slabReadmeHost">
+      <summary>README <span class="readme-hint">rendered by @amigo-labs/commonmark</span></summary>
+      <div class="readme-body" id="slabReadme"></div>
+    </details>
   `;
 }
 
@@ -402,6 +403,26 @@ function animateSlab(p) {
 
   renderBench(p);
   renderSizes(p);
+  wireReadme(p);
+}
+
+function wireReadme(pkg) {
+  const details = $('#slabReadmeHost');
+  const host = $('#slabReadme');
+  if (!details || !host) return;
+  let loaded = false;
+  details.addEventListener('toggle', async () => {
+    if (!details.open || loaded) return;
+    host.innerHTML = '<div class="readme-loading">Loading…</div>';
+    try {
+      const res = await fetch(`readmes/${pkg.name}.html`);
+      if (!res.ok) throw new Error(res.statusText);
+      host.innerHTML = await res.text();
+      loaded = true;
+    } catch {
+      host.innerHTML = '<div class="readme-error">Could not load README.</div>';
+    }
+  });
 }
 
 function renderBench(pkg) {
@@ -463,6 +484,7 @@ function renderSizes(pkg) {
     host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No size data.</div>';
     return;
   }
+  const amigoKey = '@amigo-labs/' + pkg.name;
   const entries = Object.entries(sizes);
   const maxSize = Math.max(...entries.map(([, v]) => v.installSize || 0), 1);
 
@@ -500,15 +522,6 @@ function renderSizes(pkg) {
       countUp(el, 0, to, 500, v => formatBytes(v));
     });
   });
-}
-
-// --- cursor glow ---
-function wireCursorGlow() {
-  const glow = $('#cursorGlow');
-  if (!glow) return;
-  document.addEventListener('mousemove', e => {
-    glow.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
-  }, { passive: true });
 }
 
 // --- keyboard ---

@@ -1,0 +1,24 @@
+<h1 id="amigo-labs-inflate">@amigo-labs/inflate</h1>
+<blockquote>
+<p>zlib deflate/inflate/gzip via <code>flate2</code> (backed by zlib-rs). Drop-in for <a href="https://www.npmjs.com/package/pako"><code>pako</code></a>, compiled via NAPI-RS.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/inflate
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { deflate, inflate, gzip, ungzip, deflateRaw, inflateRaw } from '@amigo-labs/inflate'
+
+const compressed = deflate(Buffer.from('hello world'))
+const original = inflate(compressed)        // Buffer 'hello world'
+
+// Gzip with custom level
+const gz = gzip(Buffer.from(largeText), { level: 9 })
+const text = ungzip(gz).toString('utf-8')
+
+// Raw deflate (no zlib header)
+const raw = deflateRaw(data)
+const out = inflateRaw(raw)
+</code></pre>
+<p>Compression level is <code>0</code>–<code>9</code> (default <code>6</code>), matching pako.</p>
+<h2 id="parity">Parity</h2>
+<p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run the upstream <code>pako</code> test suite against this implementation. See <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for documented differences.</p>

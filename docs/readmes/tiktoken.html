@@ -1,0 +1,99 @@
+<h1 id="amigo-labs-tiktoken">@amigo-labs/tiktoken</h1>
+<p><a href="https://www.npmjs.com/package/@amigo-labs/tiktoken"><img src="https://img.shields.io/npm/v/@amigo-labs/tiktoken" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@amigo-labs/tiktoken"><img src="https://img.shields.io/npm/dm/@amigo-labs/tiktoken" alt="npm downloads" /></a>
+<a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/tiktoken" alt="license" /></a></p>
+<p>Fast BPE tokenization for OpenAI models, powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. A native Node.js binding to the <a href="https://crates.io/crates/tiktoken-rs">tiktoken-rs</a> crate.</p>
+<p>Drop-in replacement for <a href="https://www.npmjs.com/package/tiktoken"><code>tiktoken</code></a> (the WASM package) and <a href="https://www.npmjs.com/package/js-tiktoken"><code>js-tiktoken</code></a> (pure-JS). <strong>Not</strong> a replacement for <a href="https://www.npmjs.com/package/gpt-tokenizer"><code>gpt-tokenizer</code></a> — see <a href="#positioning">Positioning</a> below.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install @amigo-labs/tiktoken
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { Tiktoken } from '@amigo-labs/tiktoken'
+
+// Load an encoder by name
+const enc = Tiktoken.getEncoding('cl100k_base')
+
+// Or by model
+const gpt4o = Tiktoken.encodingForModel('gpt-4o')
+
+// Encode / decode
+const tokens = enc.encode('Hello, world!')  // Uint32Array
+const text = enc.decode(tokens)              // string
+
+// Fast count without allocating the Uint32Array
+const count = enc.countTokens('Hello, world!')
+
+// Budget gating
+if (!enc.isWithinTokenLimit(prompt, 4096)) throw new Error('Too long')
+
+// RAG batch encoding — amortises NAPI calls over many chunks
+const chunks = enc.encodeMany(['chunk 1', 'chunk 2', '...'])
+
+// Chat-completion token count (ChatML framing included)
+const billedTokens = gpt4o.countChatCompletionTokens(
+  [
+    { role: 'system', content: 'You are helpful.' },
+    { role: 'user', content: 'Hi!' },
+  ],
+  'gpt-4o',
+)
+</code></pre>
+<h2 id="supported-encodings">Supported encodings</h2>
+<table><thead><tr><th>Encoding</th><th>Models</th></tr></thead><tbody>
+<tr><td><code>cl100k_base</code></td><td><code>gpt-3.5-turbo</code>, <code>gpt-4</code>, <code>text-embedding-*</code></td></tr>
+<tr><td><code>o200k_base</code></td><td><code>gpt-4o</code>, <code>o1</code>, <code>o3</code>, <code>o4</code>, <code>gpt-5</code></td></tr>
+<tr><td><code>o200k_harmony</code></td><td><code>gpt-oss</code> open-weight models</td></tr>
+<tr><td><code>p50k_base</code></td><td><code>text-davinci-002/003</code>, code models</td></tr>
+<tr><td><code>p50k_edit</code></td><td>Edit models</td></tr>
+<tr><td><code>r50k_base</code>, <code>gpt2</code></td><td><code>gpt-3</code></td></tr>
+</tbody></table>
+<p>Model → encoding mapping via <code>Tiktoken.encodingForModel('gpt-4o')</code> matches the upstream Python <code>tiktoken.encoding_for_model</code>.</p>
+<h2 id="api">API</h2>
+<h3 id="tiktoken-getencoding-name-tiktoken"><code>Tiktoken.getEncoding(name): Tiktoken</code></h3>
+<p>Loads a BPE encoder by name. The underlying merge table is lazily initialised once per process and reused across all calls.</p>
+<h3 id="tiktoken-encodingformodel-model-tiktoken"><code>Tiktoken.encodingForModel(model): Tiktoken</code></h3>
+<p>Resolves a model name to its encoding and loads it.</p>
+<h3 id="encode-text-uint32array"><code>encode(text): Uint32Array</code></h3>
+<p>Encode with all special tokens interpreted (<code>&lt;|endoftext|&gt;</code> etc. become their IDs). Matches <code>tiktoken</code> npm’s <code>encode(text, "all")</code> and upstream Python’s <code>encode_with_all_special_tokens</code>.</p>
+<h3 id="encodeordinary-text-uint32array"><code>encodeOrdinary(text): Uint32Array</code></h3>
+<p>Encode with special tokens treated as literal text. Matches <code>tiktoken</code> npm’s <code>encode_ordinary</code>.</p>
+<h3 id="decode-tokens-uint32array-string"><code>decode(tokens: Uint32Array): string</code></h3>
+<p>Decode token IDs back to the original text. Returns UTF-8; throws if the token sequence doesn’t produce valid UTF-8.</p>
+<h3 id="counttokens-text-number"><code>countTokens(text): number</code></h3>
+<p>Same result as <code>encodeOrdinary(text).length</code> but without allocating the <code>Uint32Array</code>.</p>
+<h3 id="iswithintokenlimit-text-limit-boolean"><code>isWithinTokenLimit(text, limit): boolean</code></h3>
+<p>Returns <code>countTokens(text) &lt;= limit</code>. Currently performs a full encode — there’s no early-exit fast path because <code>tiktoken-rs</code> doesn’t expose one. Drop-in for <code>gpt-tokenizer</code>’s API of the same name.</p>
+<h3 id="encodemany-texts-uint32array"><code>encodeMany(texts): Uint32Array[]</code></h3>
+<p>Batch-encode an array of texts. Amortises NAPI call overhead when encoding many small chunks (e.g. RAG document chunking).</p>
+<h3 id="encodechat-messages-model-tokens-count"><code>encodeChat(messages, model): { tokens, count }</code></h3>
+<p>Returns the concatenated content tokens plus the full ChatML-framed count. The <code>count</code> field is what OpenAI bills.</p>
+<h3 id="countchatcompletiontokens-messages-model-number"><code>countChatCompletionTokens(messages, model): number</code></h3>
+<p>Full ChatML token count including per-message framing and the assistant-reply priming tokens. Matches <code>gpt-tokenizer</code>’s method of the same name.</p>
+<h2 id="positioning">Positioning</h2>
+<p>Benchmarks (Node 22, Linux x64, <code>cl100k_base</code>):</p>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/tiktoken</th><th style="text-align: right">tiktoken (WASM)</th><th style="text-align: right">js-tiktoken</th><th style="text-align: right">gpt-tokenizer</th></tr></thead><tbody>
+<tr><td>encode 10 B</td><td style="text-align: right"><strong>164 k hz</strong></td><td style="text-align: right">7 k hz</td><td style="text-align: right">74 k hz</td><td style="text-align: right">586 k hz</td></tr>
+<tr><td>encode ~2 KB</td><td style="text-align: right"><strong>6.0 k hz</strong></td><td style="text-align: right">1.4 k hz</td><td style="text-align: right">1.7 k hz</td><td style="text-align: right">14.9 k hz</td></tr>
+<tr><td>encode ~90 KB</td><td style="text-align: right"><strong>126 hz</strong></td><td style="text-align: right">38 hz</td><td style="text-align: right">28 hz</td><td style="text-align: right">269 hz</td></tr>
+<tr><td>encode loop 100 × 10 B</td><td style="text-align: right"><strong>1.47 k hz</strong></td><td style="text-align: right">67 hz</td><td style="text-align: right">—</td><td style="text-align: right">4.4 k hz</td></tr>
+</tbody></table>
+<p><strong>Against <code>tiktoken</code> (WASM) and <code>js-tiktoken</code>: clear win</strong> — 3-23× faster across all sizes. If you use either of these, switch.</p>
+<p><strong>Against <code>gpt-tokenizer</code>: we lose</strong> — 2-3× slower across the board. <code>gpt-tokenizer</code>’s LRU merge cache plus V8 JIT optimisations beat our FFI’d Rust core on this workload. If you use <code>gpt-tokenizer</code>, stay.</p>
+<p>Two things we still offer over <code>gpt-tokenizer</code>:</p>
+<ul>
+<li>Zero runtime dependencies (gpt-tokenizer bundles pricing tables and encoding rules)</li>
+<li>Prebuilt binaries, no pure-JS parse step at startup</li>
+</ul>
+<p>Two things we don’t offer:</p>
+<ul>
+<li>Generator / streaming APIs (<code>encodeGenerator</code>, <code>decodeAsyncGenerator</code>)</li>
+<li>Built-in <code>estimateCost</code> (pricing drifts; compute it yourself with <code>countTokens()</code>)</li>
+</ul>
+<h2 id="supported-platforms">Supported Platforms</h2>
+<table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
+<tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>
+<tr><td>macOS</td><td>x64, arm64</td></tr>
+<tr><td>Windows</td><td>x64</td></tr>
+</tbody></table>
+<h2 id="license">License</h2>
+<p>MIT</p>

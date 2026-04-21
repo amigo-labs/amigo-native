@@ -1,0 +1,77 @@
+<h1 id="amigo-labs-xxhash">@amigo-labs/xxhash</h1>
+<p><a href="https://www.npmjs.com/package/@amigo-labs/xxhash"><img src="https://img.shields.io/npm/v/@amigo-labs/xxhash" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@amigo-labs/xxhash"><img src="https://img.shields.io/npm/dm/@amigo-labs/xxhash" alt="npm downloads" /></a>
+<a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/xxhash" alt="license" /></a></p>
+<p>Blazing fast non-cryptographic hashing (XXHash) powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. A native Node.js binding to the <a href="https://crates.io/crates/xxhash-rust">xxhash-rust</a> crate.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install @amigo-labs/xxhash
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { xxh3_64, xxh64, xxh32, Xxh3Hasher } from "@amigo-labs/xxhash";
+
+const buf = Buffer.from("hello world");
+
+// XXH3 (fastest, recommended)
+xxh3_64(buf); // bigint
+
+// Classic variants
+xxh64(buf);   // bigint
+xxh32(buf);   // number
+
+// 128-bit hash (returned as hex string)
+import { xxh3_128 } from "@amigo-labs/xxhash";
+xxh3_128(buf); // "a5dfc8621c..." (hex)
+
+// Streaming hasher
+const hasher = new Xxh3Hasher();
+hasher.update(Buffer.from("hello "));
+hasher.update(Buffer.from("world"));
+hasher.digest();    // bigint
+hasher.digestHex(); // hex string
+
+// Batch hashing: one FFI call, flat Buffer in, flat Buffer out
+import { xxh3_64Many } from "@amigo-labs/xxhash";
+// 1000 fixed-size 64-byte chunks concatenated in a single Buffer:
+const input = Buffer.concat(chunks); // 1000 × 64 B = 64 000 B
+const out = xxh3_64Many(input, 64);  // Buffer of 1000 × 8 B = 8 000 B
+// out contains 1000 little-endian u64 hashes back-to-back
+const firstHash = out.readBigUInt64LE(0);
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="one-shot-functions">One-shot functions</h3>
+<table><thead><tr><th>Function</th><th>Returns</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>xxh3_64(input, seed?: bigint)</code></td><td><code>bigint</code></td><td>XXH3 64-bit hash</td></tr>
+<tr><td><code>xxh3_128(input, seed?: bigint)</code></td><td><code>string</code></td><td>XXH3 128-bit hash (hex)</td></tr>
+<tr><td><code>xxh64(input, seed?: bigint)</code></td><td><code>bigint</code></td><td>Classic XXH64 hash</td></tr>
+<tr><td><code>xxh32(input, seed?: number)</code></td><td><code>number</code></td><td>Classic XXH32 hash</td></tr>
+</tbody></table>
+<h3 id="batch-functions-flat-buffer-in-flat-buffer-out">Batch functions (flat <code>Buffer</code> in, flat <code>Buffer</code> out)</h3>
+<p>Single FFI call over the whole input, avoiding per-item array marshalling. The input is a single <code>Buffer</code> containing <code>N × chunkSize</code> bytes; the output is a flat <code>Buffer</code> of <code>N</code> hashes back-to-back (<code>u64</code> as 8 bytes LE for xxh3/xxh64, <code>u32</code> as 4 bytes LE for xxh32).</p>
+<table><thead><tr><th>Function</th><th>Returns</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>xxh3_64Many(input, chunkSize, seed?: bigint)</code></td><td><code>Buffer</code></td><td>XXH3 64-bit hashes for <code>input.length / chunkSize</code> fixed-size chunks</td></tr>
+<tr><td><code>xxh64Many(input, chunkSize, seed?: bigint)</code></td><td><code>Buffer</code></td><td>XXH64 hashes for fixed-size chunks</td></tr>
+<tr><td><code>xxh32Many(input, chunkSize, seed?: number)</code></td><td><code>Buffer</code></td><td>XXH32 hashes for fixed-size chunks</td></tr>
+</tbody></table>
+<h3 id="xxh3hasher-xxh64hasher-64-bit-streaming"><code>Xxh3Hasher</code> / <code>Xxh64Hasher</code> (64-bit streaming)</h3>
+<table><thead><tr><th>Method</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>new Xxh3Hasher(seed?: bigint)</code> / <code>new Xxh64Hasher(seed?: bigint)</code></td><td>Create a streaming hasher</td></tr>
+<tr><td><code>update(chunk: Buffer)</code></td><td>Feed data into the hasher</td></tr>
+<tr><td><code>digest(): bigint</code></td><td>Finalize and return hash as <code>bigint</code></td></tr>
+<tr><td><code>digestHex(): string</code></td><td>Finalize and return hash as hex <code>string</code></td></tr>
+<tr><td><code>reset(seed?)</code></td><td>Reset hasher for reuse (<code>Xxh3Hasher.reset()</code> takes no seed)</td></tr>
+</tbody></table>
+<h3 id="xxh32hasher-32-bit-streaming"><code>Xxh32Hasher</code> (32-bit streaming)</h3>
+<table><thead><tr><th>Method</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>new Xxh32Hasher(seed?: number)</code></td><td>Create a streaming hasher</td></tr>
+<tr><td><code>update(chunk: Buffer)</code></td><td>Feed data into the hasher</td></tr>
+<tr><td><code>digest(): number</code></td><td>Finalize and return hash as <code>number</code></td></tr>
+<tr><td><code>reset(seed?: number)</code></td><td>Reset hasher for reuse</td></tr>
+</tbody></table>
+<h2 id="supported-platforms">Supported Platforms</h2>
+<table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
+<tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>
+<tr><td>macOS</td><td>x64, arm64</td></tr>
+<tr><td>Windows</td><td>x64</td></tr>
+</tbody></table>
+<h2 id="license">License</h2>
+<p>MIT</p>

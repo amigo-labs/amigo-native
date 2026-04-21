@@ -1,0 +1,19 @@
+<h1 id="amigo-labs-deepmerge">@amigo-labs/deepmerge</h1>
+<blockquote>
+<p>Recursive object merge for JSON-safe values, compiled via NAPI-RS. Semantic-compatible with <a href="https://www.npmjs.com/package/deepmerge"><code>deepmerge</code></a>; the entry points are named <code>mergeJson</code> / <code>mergeAllJson</code> (not <code>deepmerge</code>/<code>deepmerge.all</code>) — see <a href="./MIGRATION.md"><code>MIGRATION.md</code></a>.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/deepmerge
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { mergeJson, mergeAllJson } from '@amigo-labs/deepmerge'
+
+mergeJson({ a: 1, nested: { x: 1 } }, { b: 2, nested: { y: 2 } })
+// { a: 1, b: 2, nested: { x: 1, y: 2 } }
+
+mergeAllJson([{ a: 1 }, { b: 2 }, { c: 3 }])
+// { a: 1, b: 2, c: 3 }
+</code></pre>
+<p>Array strategy defaults to <code>"concat"</code>; pass <code>{ arrayMerge: 'overwrite' }</code> to replace instead.</p>
+<h2 id="parity">Parity</h2>
+<p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run the upstream <code>deepmerge</code> test suite against this implementation. See <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for documented differences.</p>

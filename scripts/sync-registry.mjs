@@ -5,8 +5,9 @@
  *
  * Source of truth: `crates/<name>/package.json` → the `"amigo"` block.
  * Outputs:
- *   docs/packages.json — packages[] (sorted by crate name) + marquee PACKAGES count
- *   README.md          — the Packages table between <!-- PACKAGES_TABLE:START/END -->
+ *   docs/packages.json          — packages[] (sorted by crate name) + marquee PACKAGES count
+ *   README.md                   — the Packages table between <!-- PACKAGES_TABLE:START/END -->
+ *   .github/workflows/release.yml — the workflow_dispatch options between # PACKAGES:START/END
  *
  * The `speedup` field in docs/packages.json is preserved per entry, because it is
  * refreshed by scripts/generate-report.mjs from actual bench measurements. New
@@ -23,9 +24,12 @@ const root = process.cwd()
 const cratesDir = join(root, 'crates')
 const packagesJsonPath = join(root, 'docs', 'packages.json')
 const readmePath = join(root, 'README.md')
+const releaseYamlPath = join(root, '.github', 'workflows', 'release.yml')
 
 const README_START = '<!-- PACKAGES_TABLE:START -->'
 const README_END = '<!-- PACKAGES_TABLE:END -->'
+const RELEASE_START = '# PACKAGES:START'
+const RELEASE_END = '# PACKAGES:END'
 
 function loadJson(path) {
   return JSON.parse(readFileSync(path, 'utf-8'))
@@ -102,6 +106,22 @@ function renderReadmeTable(crates) {
   return [headerLine, sepLine, ...bodyLines].join('\n')
 }
 
+function updateReleaseYaml(yaml, crates) {
+  const startIdx = yaml.indexOf(RELEASE_START)
+  const endIdx = yaml.indexOf(RELEASE_END)
+  if (startIdx === -1 || endIdx === -1) {
+    throw new Error(
+      `release.yml markers missing. Add ${RELEASE_START} and ${RELEASE_END} around the workflow_dispatch options list.`,
+    )
+  }
+  const lineStart = yaml.lastIndexOf('\n', startIdx) + 1
+  const indent = yaml.slice(lineStart, startIdx)
+  const items = crates.map(({ dir }) => `${indent}- ${dir}`).join('\n')
+  const before = yaml.slice(0, startIdx + RELEASE_START.length)
+  const after = yaml.slice(endIdx)
+  return `${before}\n${items}\n${indent}${after}`
+}
+
 function updateReadme(readme, tableBlock) {
   const startIdx = readme.indexOf(README_START)
   const endIdx = readme.indexOf(README_END)
@@ -129,14 +149,18 @@ function main() {
   const readme = readFileSync(readmePath, 'utf-8')
   const table = renderReadmeTable(crates)
   const nextReadme = updateReadme(readme, table)
+  const releaseYaml = readFileSync(releaseYamlPath, 'utf-8')
+  const nextReleaseYaml = updateReleaseYaml(releaseYaml, crates)
   const pkgChanged = nextPkgStr !== existingPkgStr
   const readmeChanged = nextReadme !== readme
+  const releaseChanged = nextReleaseYaml !== releaseYaml
 
   if (check) {
-    if (pkgChanged || readmeChanged) {
+    if (pkgChanged || readmeChanged || releaseChanged) {
       console.error('sync-registry: outputs are stale. Run `node scripts/sync-registry.mjs` and commit the result.')
       if (pkgChanged) console.error('  - docs/packages.json')
       if (readmeChanged) console.error('  - README.md')
+      if (releaseChanged) console.error('  - .github/workflows/release.yml')
       process.exit(1)
     }
     console.log(`sync-registry: up to date (${crates.length} crates).`)
@@ -145,9 +169,11 @@ function main() {
 
   if (pkgChanged) writeFileSync(packagesJsonPath, nextPkgStr)
   if (readmeChanged) writeFileSync(readmePath, nextReadme)
+  if (releaseChanged) writeFileSync(releaseYamlPath, nextReleaseYaml)
   const summary = []
   if (pkgChanged) summary.push('docs/packages.json')
   if (readmeChanged) summary.push('README.md')
+  if (releaseChanged) summary.push('.github/workflows/release.yml')
   const tail = summary.length ? `wrote ${summary.join(', ')}` : 'no changes'
   console.log(`sync-registry: ${crates.length} crates — ${tail}.`)
 }

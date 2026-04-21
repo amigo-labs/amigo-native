@@ -1,0 +1,55 @@
+<h1 id="amigo-labs-sanitize-html">@amigo-labs/sanitize-html</h1>
+<p><a href="https://www.npmjs.com/package/@amigo-labs/sanitize-html"><img src="https://img.shields.io/npm/v/@amigo-labs/sanitize-html" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@amigo-labs/sanitize-html"><img src="https://img.shields.io/npm/dm/@amigo-labs/sanitize-html" alt="npm downloads" /></a>
+<a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/sanitize-html" alt="license" /></a></p>
+<p>Blazing fast HTML sanitization powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. A stream-based native Node.js sanitizer built directly on top of the <a href="https://crates.io/crates/html5ever"><code>html5ever</code></a> tokenizer — ~2–4× faster than the JS <code>sanitize-html</code> package on realistic inputs (2–100 KB).</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install @amigo-labs/sanitize-html
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { sanitize, isClean } from "@amigo-labs/sanitize-html";
+
+// Sanitize HTML (removes dangerous tags/attributes)
+const clean = sanitize('&lt;p&gt;Hello &lt;script&gt;alert("xss")&lt;/script&gt;&lt;/p&gt;');
+// "&lt;p&gt;Hello &lt;/p&gt;"
+
+// Check if HTML is already clean
+const safe = isClean("&lt;p&gt;Hello&lt;/p&gt;"); // true
+const unsafe = isClean('&lt;img onerror="alert(1)"&gt;'); // false
+
+// With custom options
+const result = sanitize("&lt;div class='foo'&gt;bar&lt;/div&gt;", {
+  allowedTags: ["div", "p", "b", "i"],
+  allowedAttributes: { div: ["class"] },
+});
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="sanitize-html-options-string"><code>sanitize(html, options?): string</code></h3>
+<p>Sanitizes HTML by removing dangerous tags and attributes. Returns the cleaned HTML string.</p>
+<h3 id="isclean-html-options-boolean"><code>isClean(html, options?): boolean</code></h3>
+<p>Returns <code>true</code> if the HTML contains no dangerous content (i.e. sanitization would not change it).</p>
+<h3 id="options">Options</h3>
+<table><thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>allowedTags</code></td><td><code>string[]</code></td><td>Tags to allow (default: a conservative safe set — see <code>DEFAULT_TAGS</code> in <code>src/v2.rs</code>)</td></tr>
+<tr><td><code>allowedAttributes</code></td><td><code>Record&lt;string, string[]&gt;</code></td><td>Attributes to allow per tag</td></tr>
+<tr><td><code>allowedClasses</code></td><td><code>Record&lt;string, string[]&gt;</code></td><td>CSS classes to allow per tag</td></tr>
+<tr><td><code>allowedSchemes</code></td><td><code>string[]</code></td><td>URL schemes accepted in <code>href</code>/<code>src</code>/… (default: http, https, mailto, ftp, tel, …)</td></tr>
+<tr><td><code>stripComments</code></td><td><code>boolean</code></td><td>Whether to strip HTML comments (default: true)</td></tr>
+<tr><td><code>linkRel</code></td><td><code>string</code></td><td>Value for <code>rel</code> attribute on <code>&lt;a href&gt;</code> (default: <code>"noopener noreferrer"</code>)</td></tr>
+</tbody></table>
+<h2 id="performance">Performance</h2>
+<p>Benchmarked against <code>sanitize-html</code> (npm) and <code>isomorphic-dompurify</code> (<code>npm run bench</code>):</p>
+<table><thead><tr><th>Input</th><th><code>@amigo-labs/sanitize-html</code></th><th>vs <code>sanitize-html</code> (npm)</th><th>vs <code>dompurify</code></th></tr></thead><tbody>
+<tr><td>small safe (~200 chars)</td><td>45,900 ops/s</td><td><strong>1.5×</strong> faster</td><td><strong>45×</strong> faster</td></tr>
+<tr><td>medium with XSS (~2 KB)</td><td>9,600 ops/s</td><td><strong>2.3×</strong> faster</td><td><strong>46×</strong> faster</td></tr>
+<tr><td>large doc (~100 KB)</td><td>360 ops/s</td><td><strong>3.9×</strong> faster</td><td><strong>36×</strong> faster</td></tr>
+</tbody></table>
+<p>The margin grows with input size because the streaming tokenizer avoids the DOM build cost that the JS alternatives pay.</p>
+<h2 id="supported-platforms">Supported Platforms</h2>
+<table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
+<tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>
+<tr><td>macOS</td><td>x64, arm64</td></tr>
+<tr><td>Windows</td><td>x64</td></tr>
+</tbody></table>
+<h2 id="license">License</h2>
+<p>MIT</p>
