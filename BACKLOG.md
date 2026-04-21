@@ -8,9 +8,8 @@ New category, not yet ruled out. Each entry is subject to a `rust-check` candida
 
 ### Predicted Green (≥2× at median, FFI-shape viable)
 
-- **hnswlib-node** (~50k). Approximate-nearest-neighbor search on f32 vectors via `hnsw_rs` / `instant-distance`. One call per query returns k results, index is long-lived state (NAPI class).
-- **pdf-parse** (~1M, text-extraction path). Per-document parsing via `pdf-extract` / `lopdf`. Parity on edge-case PDFs is the main risk.
-- **wink-bm25-text-search** / **bm25** (~30k combined). Index build + scoring over a corpus; amortized FFI. Index as NAPI class.
+- **pdf-parse** (~1M, text-extraction path). Per-document parsing via `pdf-extract` / `lopdf`. Parity on edge-case PDFs is the main risk. Full review: `docs/perf-review/pdf-parse.md`.
+- **wink-bm25-text-search** / **bm25** (~15k combined). Index build + scoring over a corpus; amortized FFI. Index as NAPI class. Full review: `docs/perf-review/wink-bm25-text-search.md`.
 
 ## Under investigation — Document / report generation
 
@@ -33,7 +32,7 @@ Server-side PDF/document generation candidates. Same gate as above: `rust-check`
 - **compute-cosine-similarity** & siblings (~500k). Two small arrays in, one float out — marshalling drowns SIMD. Same lesson as `deep-equal`.
 - **string-similarity** / **leven** / **fastest-levenshtein** (~10M combined). Short-string dominant corpus — repeats the `levenshtein` failure exactly (see `docs/perf-review/levenshtein.md`).
 - **stopword** (~1M). Hashset lookup per call — lookup-style FFI trap, same as `mime`.
-- **onnxruntime-node** (~400k), **faiss-node** (~10k). Already native bindings over C++ libraries — re-wrapping a wrapper adds maintenance without speedup.
+- **onnxruntime-node** (~400k), **faiss-node** (~10k), **hnswlib-node** (~50k). Already native bindings over C++ libraries — re-wrapping a wrapper adds maintenance without speedup. `hnswlib-node` specifically: Rust `hnsw_rs` vs. C++ `hnswlib` is native-vs-native (expected 0.9–1.4×), fails Green gate structurally. Re-categorized from "Under investigation" 2026-04-21. Full review: `docs/perf-review/hnswlib-node.md`.
 - **@xenova/transformers** (~500k). ORT-WASM based, spec-driven parity surface, bound by ORT not by us.
 - **openai** / **@anthropic-ai/sdk** / **cohere-ai** (~30M+ combined). HTTP + JSON clients — zero compute surface, pure I/O.
 - **langchain** / **langchain-core** (~4M). Callback-graph orchestration with unbounded async surface — parity tail never ends.
