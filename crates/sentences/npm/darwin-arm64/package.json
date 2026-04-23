@@ -1,0 +1,24 @@
+{
+  "name": "@amigo-labs/sentences-darwin-arm64",
+  "version": "0.1.0",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "sentences.darwin-arm64.node",
+  "files": [
+    "sentences.darwin-arm64.node"
+  ],
+  "description": "Prebuilt binary for @amigo-labs/sentences on darwin-arm64",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/sentences"
+  }
+}
