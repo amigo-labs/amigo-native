@@ -1,0 +1,1 @@
+{"commit":"81bfb27","date":"2026-04-23","runner":"linux-x64","node":"v22.22.2","suites":[{"name":"small (20 nodes)","amigo":1312.14,"best_competitor":141.29,"ratio":9.287},{"name":"medium (100 nodes)","amigo":66.3778,"best_competitor":15.9349,"ratio":4.166}]}

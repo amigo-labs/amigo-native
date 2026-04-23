@@ -75,7 +75,7 @@
       "name": "bm25",
       "title": "BM25",
       "description": "BM25 full-text search. Stateful NAPI class — build index once, query many times.",
-      "speedup": "TBD",
+      "speedup": "15× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bm25",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bm25",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bm25/README.md"
@@ -138,7 +138,7 @@
       "name": "force-layout",
       "title": "Force Layout",
       "description": "Force-directed graph simulation. Batch-mode d3-force replacement for SSR / precompute workloads.",
-      "speedup": "TBD",
+      "speedup": "4.2–9.3× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/force-layout",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/force-layout",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/force-layout/README.md"
@@ -147,7 +147,7 @@
       "name": "graph-layout",
       "title": "Graph Layout",
       "description": "Hierarchical (Sugiyama-style) DAG layout. Single-call spec → positions + edge routing.",
-      "speedup": "TBD",
+      "speedup": "51–76× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/graph-layout",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/graph-layout",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/graph-layout/README.md"
@@ -192,7 +192,7 @@
       "name": "minisearch",
       "title": "Minisearch",
       "description": "Tiny in-memory full-text search with prefix autocomplete. Shares Rust search-core with @amigo-labs/bm25.",
-      "speedup": "TBD",
+      "speedup": "up to 73× faster / 2.3× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/minisearch",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/minisearch",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/minisearch/README.md"
@@ -219,7 +219,7 @@
       "name": "pdf-parse",
       "title": "PDF Parse",
       "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
-      "speedup": "TBD",
+      "speedup": "up to 1.57× faster / 3.1× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/pdf-parse",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/pdf-parse",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf-parse/README.md"
@@ -264,7 +264,7 @@
       "name": "svgo",
       "title": "Svgo",
       "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
-      "speedup": "TBD",
+      "speedup": "14–22× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/svgo",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/svgo",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/svgo/README.md"
@@ -273,7 +273,7 @@
       "name": "text-splitters",
       "title": "Text Splitters",
       "description": "RAG text splitters (recursive-character + markdown-aware), with native tiktoken length.",
-      "speedup": "TBD",
+      "speedup": "up to 2.8× faster / 3.4× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/text-splitters",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/text-splitters",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/text-splitters/README.md"
@@ -291,7 +291,7 @@
       "name": "turndown",
       "title": "Turndown",
       "description": "HTML → Markdown via html5ever. Ships CommonMark + GFM tables/strikethrough.",
-      "speedup": "TBD",
+      "speedup": "8.5–12× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/turndown",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/turndown",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/turndown/README.md"
@@ -309,7 +309,7 @@
       "name": "xlsx",
       "title": "XLSX",
       "description": "XLSX read + write. Buffer in → rows out, rows in → Buffer out. Single-FFI-crossing.",
-      "speedup": "TBD",
+      "speedup": "2.2–3.5× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xlsx",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xlsx",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xlsx/README.md"

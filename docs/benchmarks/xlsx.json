@@ -1,0 +1,69 @@
+{
+  "crate": "xlsx",
+  "generatedAt": "2026-04-23T20:50:27.873Z",
+  "commit": "81bfb27",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/xlsx/__bench__/index.bench.ts",
+      "name": "read 100-row workbook",
+      "entries": [
+        {
+          "name": "@amigo-labs/xlsx readWorkbook",
+          "hz": 1772.37,
+          "rme": 1.43,
+          "samples": 887
+        },
+        {
+          "name": "xlsx (SheetJS)",
+          "hz": 510.09,
+          "rme": 2.16,
+          "samples": 256
+        }
+      ]
+    },
+    {
+      "file": "crates/xlsx/__bench__/index.bench.ts",
+      "name": "read 5000-row workbook",
+      "entries": [
+        {
+          "name": "@amigo-labs/xlsx readWorkbook",
+          "hz": 39.9772,
+          "rme": 3.55,
+          "samples": 20
+        },
+        {
+          "name": "xlsx (SheetJS)",
+          "hz": 17.7881,
+          "rme": 7.84,
+          "samples": 10
+        }
+      ]
+    },
+    {
+      "file": "crates/xlsx/__bench__/index.bench.ts",
+      "name": "write 100-row workbook",
+      "entries": [
+        {
+          "name": "@amigo-labs/xlsx writeWorkbook",
+          "hz": 723.86,
+          "rme": 1.13,
+          "samples": 362
+        }
+      ]
+    },
+    {
+      "file": "crates/xlsx/__bench__/index.bench.ts",
+      "name": "write 5000-row workbook",
+      "entries": [
+        {
+          "name": "@amigo-labs/xlsx writeWorkbook",
+          "hz": 23.9108,
+          "rme": 4.06,
+          "samples": 12
+        }
+      ]
+    }
+  ]
+}
