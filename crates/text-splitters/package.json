@@ -1,0 +1,68 @@
+{
+  "name": "@amigo-labs/text-splitters",
+  "version": "0.1.0",
+  "description": "RAG text splitters — recursive-character, markdown-aware, token-aware. Drop-in shape for @langchain/textsplitters.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "text-splitters",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@langchain/textsplitters": "^0.1.0",
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/text-splitters"
+  },
+  "keywords": [
+    "text-splitter",
+    "rag",
+    "langchain",
+    "tiktoken",
+    "markdown",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Text Splitters",
+    "description": "RAG text splitters (recursive-character + markdown-aware), with native tiktoken length.",
+    "tableDescription": "RAG splitters, tiktoken-aware",
+    "replaces": "@langchain/textsplitters",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Compatible",
+    "competitors": ["@langchain/textsplitters"]
+  }
+}

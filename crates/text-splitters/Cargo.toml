@@ -1,0 +1,16 @@
+[package]
+name = "amigo-text-splitters"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+text-splitter = { version = "0.24", features = ["markdown"] }
+tiktoken-rs = "0.11"
+
+[build-dependencies]
+napi-build = "2"
