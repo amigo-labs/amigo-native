@@ -4,41 +4,41 @@
 
 ## Verdict
 
-Helper-Callbacks sind der Normalfall bei Handlebars — jeder Helper ist ein JS-Funktionsaufruf. FFI-Roundtrip pro Helper-Call (Rust → V8 → Rust) eliminiert jeden Parse/Render-Gewinn, und `handlebars-rust` hat dokumentierte Abweichungen zum JS-Original.
+Helper callbacks are the normal case with Handlebars — every helper is a JS function call. An FFI roundtrip per helper call (Rust → V8 → Rust) eliminates any parse/render win, and `handlebars-rust` has documented divergences from the JS original.
 
 ## JS package
 
 - **npm:** `handlebars`
-- **Downloads:** ~35M/Woche
-- **Exports / API surface:** `Handlebars.compile(template) → (data) => string`, `registerHelper(name, fn)`, `registerPartial`, `SafeString`, Precompilation (`handlebars` CLI)
-- **Typical input:** Template-String (einmalig kompiliert) + Context-Object pro Render
-- **Typical output:** HTML-String
-- **Realistic median use-case:** E-Mail-/HTML-Template-Rendering mit ~5–20 Helpers, Render-Output 1–50 KB
+- **Downloads:** ~35M/week
+- **Exports / API surface:** `Handlebars.compile(template) → (data) => string`, `registerHelper(name, fn)`, `registerPartial`, `SafeString`, precompilation (`handlebars` CLI)
+- **Typical input:** template string (compiled once) + context object per render
+- **Typical output:** HTML string
+- **Realistic median use-case:** email/HTML template rendering with ~5–20 helpers, render output 1–50 KB
 
 ## Rust replacement
 
 - **Candidate crate(s):** `handlebars-rust`
-- **Maintenance / license:** aktiv, MIT
-- **Known gotchas / divergences:** [dokumentiert](https://docs.rs/handlebars/latest/handlebars/#differences-with-javascript-version) — u.a. Helper-Signaturen, `{{lookup}}`-Semantik, Whitespace-Control-Edge-Cases, kein JS-Expressions-Eval innerhalb `{{#if …}}`
+- **Maintenance / license:** active, MIT
+- **Known gotchas / divergences:** [documented](https://docs.rs/handlebars/latest/handlebars/#differences-with-javascript-version) — including helper signatures, `{{lookup}}` semantics, whitespace-control edge cases, no JS-expression eval inside `{{#if …}}`
 
 ## BACKLOG check
 
-BACKLOG: *Parity too expensive* — bestätigt. Der FFI-Callback-Winkel macht die Klassifikation sogar härter als dort notiert.
+BACKLOG: *Parity too expensive* — confirmed. The FFI-callback angle makes the classification even harder than what's noted there.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Template-Render ist linear zur Output-Größe. 10 KB Output → ~100 µs in JS (V8-JIT auf kompiliertem Template) |
-| Input size distribution | Context-Object beliebig komplex; Template-AST im Rust-State gehalten |
-| Output size distribution | String 1–50 KB; FFI-Output-Kosten ~0.35 ns/Byte laut BASELINE |
-| Reusable setup (stateful potential) | **Hoch** — compiled Template als NAPI-Class wäre die einzige Option |
-| Batch-usage realism | Variable: E-Mail-Versand batched, Web-Rendering nicht |
-| FFI-share estimate vs. Rust work | **Callbacks dominieren**: jeder `{{myHelper arg}}` braucht Rust → JS → Rust (~2 µs Overhead pro Helper-Call) |
+| Per-call algorithmic work | Template render is linear in output size. 10 KB output → ~100 µs in JS (V8 JIT on the compiled template) |
+| Input size distribution | Context object arbitrarily complex; template AST held in Rust state |
+| Output size distribution | String 1–50 KB; FFI output cost ~0.35 ns/byte per BASELINE |
+| Reusable setup (stateful potential) | **High** — compiled template as a NAPI class would be the only option |
+| Batch-usage realism | Variable: email sending batched, web rendering not |
+| FFI-share estimate vs. Rust work | **Callbacks dominate**: every `{{myHelper arg}}` needs Rust → JS → Rust (~2 µs overhead per helper call) |
 
 ## Classification reasoning
 
-Reales Handlebars-Template hat 5–20 Helper-Aufrufe pro Render. Jeder `{{helper}}` muss JS-Kontext zurück ins V8 propagieren, den Helper callen, das Ergebnis zurück nach Rust marshallen. Bei 10 Helpers à 2 µs = 20 µs reine FFI-Kosten, während der JS-Baseline-Render 100 µs ist. Rust-Parse-Zeit der Template-Ausdrücke selbst ist irrelevant, wenn der Bottleneck die Callbacks sind. Dazu: `handlebars-rust` weicht dokumentiert vom JS-Verhalten ab — die Parity-Lücke wäre spürbar in Tests existierender Nutzer. Genau der `ejs`/`handlebars`-Shape: Template-Engines mit eingebetteter Logik gehören in eine JS-Engine.
+A real Handlebars template has 5–20 helper calls per render. Every `{{helper}}` has to propagate the JS context back into V8, call the helper, and marshal the result back to Rust. At 10 helpers × 2 µs = 20 µs of pure FFI cost, while a JS baseline render is 100 µs. Rust parse time of the template expressions themselves is irrelevant if the bottleneck is the callbacks. On top of that: `handlebars-rust` deviates from the JS behavior in documented ways — the parity gap would be noticeable in existing users' tests. Exactly the `ejs`/`handlebars` shape: template engines with embedded logic belong in a JS engine.
 
 ## If NO-GO — BACKLOG entry
 

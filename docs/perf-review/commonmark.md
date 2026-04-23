@@ -1,52 +1,52 @@
 # Candidate review: `commonmark`
 
-> **Status:** GO (als neues Paket, kein Drop-in für `marked`) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-19
+> **Status:** GO (as a new package, not a drop-in for `marked`) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-19
 
 ## Verdict
 
-`pulldown-cmark` ist ein Lehrbuch-Green-Shape: bytes-in / bytes-out, substantielle Compute-Arbeit pro Byte, kein Object-Traversal, kein Callback-Boundary-Problem. Als *neues* Paket mit ehrlicher Positionierung (CommonMark+GFM spec-strict, nicht `marked`-kompatibel) umgeht es die Parity-Falle, die `marked` selbst blockiert.
+`pulldown-cmark` is a textbook Green shape: bytes-in / bytes-out, substantial compute work per byte, no object traversal, no callback-boundary problem. As a *new* package with honest positioning (CommonMark + GFM spec-strict, not `marked`-compatible) it sidesteps the parity trap that blocks `marked` itself.
 
 ## JS package
 
-- **npm:** kein direkter Kandidat als Drop-in-Ziel — dieses Paket ist ein **neues Produkt**. Vergleichs-Alternativen in JS: `marked` (~30M/Woche), `markdown-it` (~25M/Woche), `commonmark.js` (~2M/Woche)
-- **Downloads:** n/a (Neuling)
-- **Exports / API surface:** klein gehalten — `render(md: string, opts?): string`, evtl. `parse(md) → token-array` für Streaming-/Walk-Use-Cases
-- **Typical input:** Markdown-Dokument 1 KB – 1 MB
-- **Typical output:** HTML-String
-- **Realistic median use-case:** Site-Builder (Astro/Docusaurus-artige Tools) rendert 500–5000 Docs pro Build; CLI-README-Viewer; AI-Chat-UIs, die Markdown-Antworten serverseitig rendern
+- **npm:** no direct candidate as a drop-in target — this package is a **new product**. Comparison alternatives in JS: `marked` (~30M/week), `markdown-it` (~25M/week), `commonmark.js` (~2M/week)
+- **Downloads:** n/a (newcomer)
+- **Exports / API surface:** kept small — `render(md: string, opts?): string`, possibly `parse(md) → token-array` for streaming/walk use-cases
+- **Typical input:** Markdown document 1 KB – 1 MB
+- **Typical output:** HTML string
+- **Realistic median use-case:** site builders (Astro/Docusaurus-style tools) rendering 500–5000 docs per build; CLI README viewers; AI chat UIs that render Markdown responses server-side
 
 ## Rust replacement
 
-- **Candidate crate(s):** `pulldown-cmark` (primär — minimal, schnell, CommonMark-konform, GFM-Extensions via Feature-Flags), `comrak` (feature-reicher, mehr GFM-Parity mit GitHub, größerer Bundle)
-- **Maintenance / license:** `pulldown-cmark` aktiv (raphlinus + Mitwirkende), MIT; `comrak` aktiv, BSD-2
-- **Known gotchas / divergences:** CommonMark 0.30 spec als Baseline — wenn wir das sauber kommunizieren, ist "Divergence" kein Bug, sondern ein Feature
+- **Candidate crate(s):** `pulldown-cmark` (primary — minimal, fast, CommonMark-compliant, GFM extensions via feature flags), `comrak` (more feature-rich, more GFM parity with GitHub, larger bundle)
+- **Maintenance / license:** `pulldown-cmark` active (raphlinus + contributors), MIT; `comrak` active, BSD-2
+- **Known gotchas / divergences:** CommonMark 0.30 spec as the baseline — if we communicate that cleanly, "divergence" is not a bug but a feature
 
 ## BACKLOG check
 
-Kein bestehender BACKLOG-Eintrag. `marked` ist dort als Drop-in-NO-GO geführt — dieses Paket ist explizit **kein** `marked`-Ersatz, sondern ein eigenständiges Angebot.
+No existing BACKLOG entry. `marked` is listed there as a drop-in NO-GO — this package is explicitly **not** a `marked` replacement but a stand-alone offering.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Substantiell: 100 KB Markdown ~500 µs – 1 ms in `pulldown-cmark`, JS-Baseline `marked` ~5 ms → 5–10× Kopfraum |
-| Input size distribution | 1 KB – 1 MB, `Buffer`-input möglich → FFI-Input-Kosten vernachlässigbar |
-| Output size distribution | HTML-String ~1.5× Input-Größe; 0.35 ns/Byte FFI-Output-Kost = bei 150 KB Output ~50 µs — tolerabel |
-| Reusable setup (stateful potential) | Niedrig — Options sind klein, kein teures Setup |
-| Batch-usage realism | Hoch: Site-Builder rendert hunderte Docs pro Build; `renderMany(docs: string[])`-API ist sinnvoll |
-| FFI-share estimate vs. Rust work | <15% bei ≥10 KB Dokumenten; bei 1 KB ~40% aber Speedup immer noch ≥2× |
+| Per-call algorithmic work | Substantial: 100 KB Markdown ~500 µs – 1 ms in `pulldown-cmark`, JS baseline `marked` ~5 ms → 5–10× headroom |
+| Input size distribution | 1 KB – 1 MB, `Buffer` input possible → FFI input cost negligible |
+| Output size distribution | HTML string ~1.5× input size; 0.35 ns/byte FFI output cost = ~50 µs at 150 KB output — tolerable |
+| Reusable setup (stateful potential) | Low — options are small, no expensive setup |
+| Batch-usage realism | High: site builders render hundreds of docs per build; a `renderMany(docs: string[])` API makes sense |
+| FFI-share estimate vs. Rust work | <15% on documents ≥10 KB; ~40% at 1 KB but speedup is still ≥2× |
 
 ## Classification reasoning
 
-Der Shape matcht exakt `sanitize-html` und `inflate` aus dem Repo: bytes-in, substantielle Compute, bytes-out. Kein `deep-equal`-Shape (kein Object-Traversal), kein `handlebars`-Shape (keine Callbacks), kein `mime`-Shape (kein FFI-Trap). `pulldown-cmark` ist zudem ein Pull-Parser, streamt intern — Memory-Footprint ist gut.
+The shape matches `sanitize-html` and `inflate` in the repo exactly: bytes-in, substantial compute, bytes-out. Not a `deep-equal` shape (no object traversal), not a `handlebars` shape (no callbacks), not a `mime` shape (no FFI trap). `pulldown-cmark` is also a pull parser, streams internally — memory footprint is good.
 
-Die einzige Bedingung für Green statt Yellow: der kleinste realistische Input muss sauber performen. Bei 1 KB Markdown ist JS-`marked` ~50 µs, `pulldown-cmark` über FFI läuft auf geschätzt ~15–20 µs — über 2×. Bei 100 KB wird es 8–10×. Der 2×-Kleinster-Input-Gate hält.
+The single condition for Green instead of Yellow: the smallest realistic input has to perform cleanly. At 1 KB Markdown JS `marked` is ~50 µs, `pulldown-cmark` over FFI comes in at an estimated ~15–20 µs — above 2×. At 100 KB it becomes 8–10×. The 2×-at-smallest-input gate holds.
 
-GFM-Parity mit `pulldown-cmark` ist gut: Tables, Strikethrough, Task-Lists, Footnotes, Autolinks via Feature-Flags. Das ist nicht `marked`-kompatibel, aber es ist **spec-kompatibel** — und ein spec-kompatibles CommonMark/GFM ist eine ehrliche, verteidigbare Position.
+GFM parity with `pulldown-cmark` is good: tables, strikethrough, task lists, footnotes, autolinks via feature flags. It's not `marked`-compatible, but it is **spec-compatible** — and a spec-compatible CommonMark/GFM is an honest, defensible position.
 
 ## If GO — proposed port
 
-- **Recommended crate-name:** `@amigo-labs/commonmark`
+- **Recommended crate name:** `@amigo-labs/commonmark`
 - **Primary API sketch:**
   ```ts
   export interface CommonMarkOptions {
@@ -59,10 +59,10 @@ GFM-Parity mit `pulldown-cmark` ist gut: Tables, Strikethrough, Task-Lists, Foot
 
   export function render(markdown: string | Buffer, opts?: CommonMarkOptions): string;
 
-  // Batch-API für Site-Builder
+  // Batch API for site builders
   export function renderMany(docs: Array<string | Buffer>, opts?: CommonMarkOptions): string[];
 
-  // Optional: stateful Renderer-Class für wiederholte Calls mit gleichem Opts-Set
+  // Optional: stateful renderer class for repeated calls with the same opts set
   export class Renderer {
     constructor(opts?: CommonMarkOptions);
     render(markdown: string | Buffer): string;
@@ -70,24 +70,24 @@ GFM-Parity mit `pulldown-cmark` ist gut: Tables, Strikethrough, Task-Lists, Foot
   ```
 
 - **Must-have benchmark scenarios:**
-  - **small**: 1 KB Markdown (typischer Blog-Absatz) vs. `marked`, `markdown-it`
-  - **medium**: 50 KB (langer Blog-Post / README) vs. gleiche
-  - **large**: 500 KB (Docusaurus-API-Referenz) vs. gleiche
-  - **batch**: `renderMany(500 × 10KB-docs)` — Site-Build-Shape
-  - **realistic median**: AI-Chat-Response-Shape, 2–5 KB mit Code-Blocks + Inline-Formatting
+  - **small**: 1 KB Markdown (typical blog paragraph) vs. `marked`, `markdown-it`
+  - **medium**: 50 KB (long blog post / README) vs. same
+  - **large**: 500 KB (Docusaurus API reference) vs. same
+  - **batch**: `renderMany(500 × 10KB docs)` — site-build shape
+  - **realistic median**: AI chat response shape, 2–5 KB with code blocks + inline formatting
 
 - **Acceptance thresholds (Green gate):**
-  - ≥2× vs. `marked` bei 1 KB
-  - ≥5× bei 50 KB
-  - ≥8× bei 500 KB
-  - `renderMany`-Overhead pro Item ≤15% vs. Einzelaufruf (sonst kein Batch-Gain)
+  - ≥2× vs. `marked` at 1 KB
+  - ≥5× at 50 KB
+  - ≥8× at 500 KB
+  - `renderMany` per-item overhead ≤15% vs. single call (otherwise no batch gain)
 
 - **Risks:**
-  - **Feature-Request-Drift**: Nutzer wollen `marked`-Plugins oder `markdown-it`-Plugins portiert — klare Doku "spec-only, keine Plugin-API v1"
-  - **Heading-IDs / Slug-Verhalten**: `github-slugger` ist der De-facto-Standard in JS; müssen wir entweder `slug`/`slugify` reusen (wir haben `@amigo-labs/slugify`) oder ein neues `headingSlugger` einführen
-  - **HTML-Sanitizing-Interaktion**: `unsafeHtml: false` muss klar dokumentiert sein; Nutzer, die rohes HTML brauchen, werden es anschalten und dann einen XSS-Vorfall haben → README-Warnung, Link auf `@amigo-labs/sanitize-html` als empfohlene Kette
-  - **GFM-Edge-Cases vs. GitHub**: `pulldown-cmark`s GFM ≈ GitHubs GFM, aber nicht byte-identisch. Für die meisten Nutzer irrelevant, für GitHub-Rendering-Klone problematisch — in README dokumentieren
+  - **Feature-request drift**: users want `marked` plugins or `markdown-it` plugins ported — clearly document "spec-only, no plugin API in v1"
+  - **Heading IDs / slug behavior**: `github-slugger` is the de-facto standard in JS; we either have to reuse `slug`/`slugify` (we ship `@amigo-labs/slugify`) or introduce a new `headingSlugger`
+  - **HTML sanitizing interaction**: `unsafeHtml: false` must be clearly documented; users who need raw HTML will turn it on and then have an XSS incident → README warning, link to `@amigo-labs/sanitize-html` as the recommended chain
+  - **GFM edge cases vs. GitHub**: `pulldown-cmark`'s GFM ≈ GitHub's GFM, but not byte-identical. Irrelevant for most users, problematic for GitHub-rendering clones — document in the README
 
 ## If NO-GO — BACKLOG entry
 
-n/a — Empfehlung ist GO.
+n/a — recommendation is GO.

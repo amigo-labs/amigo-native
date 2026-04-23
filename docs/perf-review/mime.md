@@ -4,41 +4,41 @@
 
 ## Verdict
 
-Hashmap-Lookup. V8 macht das in <50 ns; FFI-Floor ist 109 ns. Strukturell nicht schlagbar — der Standard-FFI-Trap-Shape aus dem Post-Mortem-Katalog.
+Hashmap lookup. V8 does it in <50 ns; FFI floor is 109 ns. Structurally unbeatable — the standard FFI trap shape from the post-mortem catalog.
 
 ## JS package
 
 - **npm:** `mime`
-- **Downloads:** ~60M/Woche (zusammen mit `mime-types` ~343M)
+- **Downloads:** ~60M/week (together with `mime-types` ~343M)
 - **Exports / API surface:** `getType(path)`, `getExtension(type)`, `define(types, force?)`
-- **Typical input:** Dateipfad oder MIME-String, <100 B
-- **Typical output:** MIME-String oder Extension-String
-- **Realistic median use-case:** Static-File-Server bestimmt Content-Type pro Request
+- **Typical input:** file path or MIME string, <100 B
+- **Typical output:** MIME string or extension string
+- **Realistic median use-case:** static-file server determining content type per request
 
 ## Rust replacement
 
 - **Candidate crate(s):** `mime_guess`, `mime`
-- **Maintenance / license:** aktiv, MIT/Apache
-- **Known gotchas / divergences:** keine — Lookup-Tabelle ist im Wesentlichen identisch
+- **Maintenance / license:** active, MIT/Apache
+- **Known gotchas / divergences:** none — the lookup table is essentially identical
 
 ## BACKLOG check
 
-BACKLOG: *FFI overhead > gain* — bestätigt, Klassifikation Black (nicht Red), weil keine Input-Größe rettet.
+BACKLOG: *FFI overhead > gain* — confirmed, classification Black (not Red), because no input size rescues it.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | ~20–50 ns (String-Hash + HashMap-Lookup) in JS |
-| Input size distribution | Pfade <100 B |
-| Output size distribution | <50 B MIME-String |
-| Reusable setup (stateful potential) | Null — Hashmap ist statisch |
-| Batch-usage realism | Möglich, aber selten — meist ein Call pro Request |
-| FFI-share estimate vs. Rust work | **>90% FFI**: Floor 109 ns vs. JS 20–50 ns. Rust verliert im Grundzustand |
+| Per-call algorithmic work | ~20–50 ns (string hash + HashMap lookup) in JS |
+| Input size distribution | Paths <100 B |
+| Output size distribution | <50 B MIME string |
+| Reusable setup (stateful potential) | Zero — the hashmap is static |
+| Batch-usage realism | Possible, but rare — usually one call per request |
+| FFI-share estimate vs. Rust work | **>90% FFI**: floor 109 ns vs. JS 20–50 ns. Rust loses in the base case |
 
 ## Classification reasoning
 
-Baseline-Messung beantwortet es direkt: `echoString` mit 10 B Input kostet bereits 234 ns. Der eigentliche Lookup würde nochmal ~50 ns addieren. Das sind ~280 ns pro Call. JS macht das in ~50 ns, weil V8 die Lookup-Tabelle als Hidden-Class monomorphisch inlined. Selbst ein batch-API (`getTypes(paths: string[])`) rettet nichts: der `sumArray`-Baseline zeigt ~43 ns/Element für Array-Marshalling, das ist noch immer langsamer als der JS-Direct-Lookup. Klassischer `nanoid`/`mime`-Shape aus den Post-Mortems.
+The baseline measurement answers it directly: `echoString` with a 10 B input already costs 234 ns. The actual lookup would add another ~50 ns. That's ~280 ns per call. JS does it in ~50 ns, because V8 inlines the lookup table as a monomorphic hidden class. Even a batch API (`getTypes(paths: string[])`) doesn't rescue it: the `sumArray` baseline shows ~43 ns/element for array marshalling, still slower than the JS direct lookup. Classic `nanoid`/`mime` shape from the post-mortems.
 
 ## If NO-GO — BACKLOG entry
 

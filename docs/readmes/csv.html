@@ -1,0 +1,54 @@
+<h1 id="amigo-labs-csv">@amigo-labs/csv</h1>
+<p><a href="https://www.npmjs.com/package/@amigo-labs/csv"><img src="https://img.shields.io/npm/v/@amigo-labs/csv" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@amigo-labs/csv"><img src="https://img.shields.io/npm/dm/@amigo-labs/csv" alt="npm downloads" /></a>
+<a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/csv" alt="license" /></a></p>
+<p>Blazing fast CSV parsing and serialization powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. A native Node.js binding to the <a href="https://crates.io/crates/csv">csv</a> crate.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">npm install @amigo-labs/csv
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { parse, parseWithHeaders, stringify } from "@amigo-labs/csv";
+
+// Parse CSV to arrays
+const rows = parse(Buffer.from("name,age\nAlice,30\nBob,25"));
+// [["name", "age"], ["Alice", "30"], ["Bob", "25"]]
+
+// Parse CSV to objects (using first row as headers)
+const objects = parseWithHeaders(Buffer.from("name,age\nAlice,30\nBob,25"));
+// [{ name: "Alice", age: "30" }, { name: "Bob", age: "25" }]
+
+// Serialize arrays to CSV
+const csv = stringify([["name", "age"], ["Alice", "30"]]);
+// "name,age\nAlice,30\n"
+</code></pre>
+<h2 id="api">API</h2>
+<h3 id="parse-input-options-string"><code>parse(input, options?): string[][]</code></h3>
+<p>Parses CSV into an array of string arrays.</p>
+<h3 id="parsewithheaders-input-options-record-string-string"><code>parseWithHeaders(input, options?): Record&lt;string, string&gt;[]</code></h3>
+<p>Parses CSV using the first row as column headers, returning an array of objects.</p>
+<h3 id="parsetojson-input-options-string"><code>parseToJson(input, options?): string</code></h3>
+<p>Parses CSV and returns a flat JSON string. Avoids per-row FFI overhead. Use <code>JSON.parse()</code> on the result.</p>
+<h3 id="countrows-input-options-number"><code>countRows(input, options?): number</code></h3>
+<p>Counts rows without building JS arrays.</p>
+<h3 id="stringify-rows-options-string"><code>stringify(rows, options?): string</code></h3>
+<p>Serializes an array of string arrays to CSV.</p>
+<h3 id="stringifyobjects-rows-columns-options-string"><code>stringifyObjects(rows, columns?, options?): string</code></h3>
+<p>Serializes an array of objects to CSV. Optionally specify column order.</p>
+<h3 id="options">Options</h3>
+<table><thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>delimiter</code></td><td><code>number</code></td><td>Field delimiter byte (default: <code>,</code>)</td></tr>
+<tr><td><code>hasHeaders</code></td><td><code>boolean</code></td><td>Whether the first row is a header row (default: <code>true</code>)</td></tr>
+<tr><td><code>quoteChar</code></td><td><code>number</code></td><td>Quote character byte (default: <code>"</code>)</td></tr>
+<tr><td><code>escapeChar</code></td><td><code>number</code></td><td>Escape character byte</td></tr>
+<tr><td><code>comment</code></td><td><code>number</code></td><td>Comment prefix byte</td></tr>
+<tr><td><code>flexible</code></td><td><code>boolean</code></td><td>Allow records with varying field counts</td></tr>
+<tr><td><code>trimFields</code></td><td><code>boolean</code></td><td>Trim whitespace from fields</td></tr>
+</tbody></table>
+<h2 id="supported-platforms">Supported Platforms</h2>
+<table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
+<tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>
+<tr><td>macOS</td><td>x64, arm64</td></tr>
+<tr><td>Windows</td><td>x64</td></tr>
+</tbody></table>
+<h2 id="license">License</h2>
+<p>MIT</p>

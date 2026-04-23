@@ -10,12 +10,26 @@ on:
         description: Package to release
         required: true
         type: choice
+        # List synced from crates/ by scripts/sync-registry.mjs (CI enforces via --check).
         options:
+          # PACKAGES:START
           - argon2
+          - bcrypt
+          - commonmark
           - csv
+          - deepmerge
+          - encoding
+          - file-type
+          - inflate
+          - jose
+          - jwt
+          - nanoid
           - sanitize-html
           - slugify
+          - tiktoken
           - xxhash
+          - zip
+          # PACKAGES:END
       version:
         description: Version to publish (e.g. 0.1.0)
         required: true

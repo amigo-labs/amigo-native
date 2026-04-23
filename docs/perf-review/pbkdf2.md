@@ -1,66 +1,66 @@
 # Candidate review: `pbkdf2`
 
-> **Status:** NO-GO · **Predicted:** 🔴 Red (Adoption-bedingt) · **Reviewed:** 2026-04-19
+> **Status:** NO-GO · **Predicted:** 🔴 Red (adoption-driven) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
-Gleiches Problem wie scrypt, nur schärfer: **Node hat `crypto.pbkdf2` built-in als native C++-Implementierung** (sync + async, alle gängigen Hash-Algos). Die ~30 M weekly downloads des npm-Pakets `pbkdf2` sind **dominant Browser-/Bundler-Ökosystem** (`crypto-browserify`-Shim, Webpack/Browserify polyfills) — Server-Code in 2026 nutzt `crypto.pbkdf2` direkt. Unsere NAPI-Crate erreicht diese Bundler-User nicht (kein Browser-Target) und bietet Server-Usern keinen Grund, Node's built-in zu ersetzen. Speedup vs. Node-built-in vermutlich < 1,4×, gleicher Code-Path im Hintergrund (beide rufen OpenSSL-/RustCrypto-Implementierungen auf).
+Same problem as scrypt, only sharper: **Node has `crypto.pbkdf2` built-in as a native C++ implementation** (sync + async, all common hash algos). The ~30M weekly downloads of the npm package `pbkdf2` are **dominantly browser/bundler ecosystem** (`crypto-browserify` shim, Webpack/Browserify polyfills) — server code in 2026 uses `crypto.pbkdf2` directly. Our NAPI crate doesn't reach those bundler users (no browser target) and offers server users no reason to replace Node's built-in. Speedup vs. Node built-in is probably < 1.4×, same code path under the hood (both call OpenSSL/RustCrypto implementations).
 
 ## JS package
 
-- **npm:** `pbkdf2` (~30 M weekly) — pure JS Implementierung, primär als browserify-shim
-- **Downloads:** 30 M weekly, aber **Adoption-Quality niedrig** — fast ausschließlich transitive dep
+- **npm:** `pbkdf2` (~30M weekly) — pure JS implementation, primarily as a browserify shim
+- **Downloads:** 30M weekly, but **adoption quality low** — almost exclusively a transitive dep
 - **Exports / API surface:** `pbkdf2(password, salt, iterations, keyLen, digest, cb)`, `pbkdf2Sync(...)`
-- **Typical input:** Passwort + Salt; Iterations 100 000–600 000 (OWASP-2023-Empfehlung)
-- **Typical output:** Key-Bytes (typisch 32 Bytes für SHA-256-HMAC)
-- **Realistic median use-case:** Server Node: `crypto.pbkdf2` (built-in). Browser/Edge: `pbkdf2` npm (pure JS). Unsere Crate trifft nur den Server-Markt, also Konkurrenz = Node-built-in
+- **Typical input:** password + salt; iterations 100,000–600,000 (OWASP 2023 recommendation)
+- **Typical output:** key bytes (typically 32 bytes for SHA-256 HMAC)
+- **Realistic median use-case:** server Node: `crypto.pbkdf2` (built-in). Browser/edge: `pbkdf2` npm (pure JS). Our crate only hits the server market, so the competitor = Node built-in
 
 ## Rust replacement
 
 - **Candidate crate(s):** `pbkdf2` (RustCrypto)
-- **Maintenance / license:** RustCrypto, gut gepflegt, MIT/Apache
-- **Known gotchas / divergences:** Hash-Algo-Selection (SHA1/256/384/512) muss explizit Parität mit Node-Strings haben (`'sha256'` etc.)
+- **Maintenance / license:** RustCrypto, well maintained, MIT/Apache
+- **Known gotchas / divergences:** hash-algo selection (SHA1/256/384/512) must explicitly be parity with Node strings (`'sha256'` etc.)
 
 ## BACKLOG check
 
-Kein Eintrag.
+No entry.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | 1–50 ms bei 100k–600k Iter — FFI-Floor irrelevant |
-| Input size distribution | Klein (< 128 Bytes) |
-| Output size distribution | 32 Bytes |
-| Reusable setup (stateful potential) | Keine. HMAC-Key wird pro Call gesetzt |
+| Per-call algorithmic work | 1–50 ms at 100k–600k iter — FFI floor irrelevant |
+| Input size distribution | Small (< 128 bytes) |
+| Output size distribution | 32 bytes |
+| Reusable setup (stateful potential) | None. The HMAC key is set per call |
 | Batch-usage realism | N/A |
-| FFI-share estimate vs. Rust work | < 0,01 % |
+| FFI-share estimate vs. Rust work | < 0.01% |
 
-**Wieder kein FFI-Problem.** Reines Adoption-/Konkurrenz-Problem.
+**Again no FFI problem.** Pure adoption/competition problem.
 
 ## Classification reasoning
 
-Beide harten Regeln greifen:
+Both hard rules apply:
 
-1. **"Realistic median use-case":** Server-Node-Code nutzt `crypto.pbkdf2`. Punkt. Wer noch `pbkdf2`-npm direkt verwendet, ist entweder Browser-Bundle (für uns unerreichbar) oder Legacy-Code.
+1. **"Realistic median use-case":** server Node code uses `crypto.pbkdf2`. Period. Whoever still uses `pbkdf2` npm directly is either in a browser bundle (unreachable for us) or legacy code.
 
-2. **"No sunk-cost":** Selbst wenn wir 1,4× vs Node built-in messen würden — der Switching-Cost (`crypto.pbkdf2` → `@amigo-labs/pbkdf2`) ist für die meisten Codebases den Marginal-Gain nicht wert. Argon2 hat keinen built-in-Konkurrenten, das macht den Unterschied.
+2. **"No sunk-cost":** even if we measured 1.4× vs. Node built-in — the switching cost (`crypto.pbkdf2` → `@amigo-labs/pbkdf2`) is not worth the marginal gain for most codebases. Argon2 has no built-in competitor; that makes the difference.
 
-Klassifikation **Red** statt Yellow weil:
-- Adoption-Pfad nicht plausibel
-- 1,4×-Marginal-Gain wäre Argon2-Pattern, aber bei Argon2 gibt's keinen built-in als Default-Wahl
-- Unsere Bundle-Größe (~1 MB Binary + 6 Platform-Stubs) vs. Node-built-in (0 Bytes Install) ist ein No-Brainer
+Classification **Red** rather than Yellow because:
+- adoption path not plausible
+- a 1.4× marginal gain would be the argon2 pattern, but argon2 has no built-in as the default choice
+- our bundle size (~1 MB binary + 6 platform stubs) vs. Node built-in (0 bytes install) is a no-brainer
 
 ## If GO — proposed port
 
-**Nicht empfohlen.** Falls jemand zwingend will:
-- Pitch nur als "explizit getestete Cross-Plattform-Konsistenz" (Node-built-in nutzt OpenSSL-Variante des OS, RustCrypto ist deterministisch)
-- Bench-Gate: ≥1,8× vs. `crypto.pbkdf2` bei 100k Iter — sonst raus
+**Not recommended.** If someone insists:
+- pitch only as "explicitly tested cross-platform consistency" (Node built-in uses the OS's OpenSSL variant, RustCrypto is deterministic)
+- bench gate: ≥1.8× vs. `crypto.pbkdf2` at 100k iter — otherwise out
 
 ## If NO-GO — BACKLOG entry
 
 ```markdown
-- **pbkdf2** (~30M weekly). Node hat `crypto.pbkdf2` built-in als native OpenSSL-Implementierung (sync + async, alle Hash-Algos). 30M-Downloads-Zahl ist dominant Browser-Bundler-Shim (`crypto-browserify`), nicht reale Server-Adoption. Unsere NAPI-Crate erreicht weder Browser-User noch bietet Server-Usern Grund, Node-built-in zu ersetzen. Strukturell schwerer Pitch als scrypt (gleiche Logik aber pbkdf2-Server-Adoption ist noch klarer Built-in-dominiert).
+- **pbkdf2** (~30M weekly). Node has `crypto.pbkdf2` built-in as a native OpenSSL implementation (sync + async, all hash algos). The 30M downloads number is dominantly browser bundler shim (`crypto-browserify`), not real server adoption. Our NAPI crate reaches neither browser users nor gives server users a reason to replace Node's built-in. Structurally harder pitch than scrypt (same logic but pbkdf2 server adoption is even more clearly built-in-dominated).
 ```
 
-Section in `BACKLOG.md`: **FFI overhead > gain** (Variante: "Node-built-in dominiert; npm-Downloads sind Bundler-Shim")
+Section in `BACKLOG.md`: **FFI overhead > gain** (variant: "Node built-in dominates; npm downloads are bundler shim")

@@ -1,44 +1,44 @@
 # Candidate review: `tough-cookie`
 
-> **Status:** NO-GO · **Predicted:** 🟡 Yellow (Perf) / 🔴 Red (Scope) · **Reviewed:** 2026-04-19
+> **Status:** NO-GO · **Predicted:** 🟡 Yellow (perf) / 🔴 Red (scope) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
-Cookie-Parsing ist string-lastig und kurz — FFI-Trap-Shape für den Parse-Pfad. Der eigentliche Aufwand ist Cookie-Jar-State + Public Suffix List + IDN + RFC-6265-bis-Kompat; das ist ein Monatsprojekt für einen Yellow-Win.
+Cookie parsing is string-heavy and short — FFI-trap shape for the parse path. The actual work is cookie-jar state + Public Suffix List + IDN + RFC 6265-bis compatibility; that's a months-long project for a Yellow win.
 
 ## JS package
 
 - **npm:** `tough-cookie`
-- **Downloads:** ~157M/Woche
+- **Downloads:** ~157M/week
 - **Exports / API surface:** `Cookie`, `CookieJar`, `Store`, `MemoryCookieStore`, `parseDate`, `canonicalDomain`, `permuteDomain`, `getPublicSuffix`
-- **Typical input:** `Set-Cookie`-Header (~100–300 B) + Request-URL
-- **Typical output:** `Cookie`-Instanz oder Cookie-Liste bei Jar-Retrieval
-- **Realistic median use-case:** HTTP-Client speichert Cookie pro Response (eine Handvoll pro Request), liest sie pro Request; State-heavy, nicht Hot-Loop
+- **Typical input:** `Set-Cookie` header (~100–300 B) + request URL
+- **Typical output:** `Cookie` instance or cookie list on jar retrieval
+- **Realistic median use-case:** HTTP client stores cookie per response (a handful per request), reads them per request; state-heavy, not a hot loop
 
 ## Rust replacement
 
-- **Candidate crate(s):** `cookie` (parse/format), `publicsuffix` (PSL), `idna` (IDN). Kein direkter `tough-cookie`-Äquivalent als ein Crate
-- **Maintenance / license:** alle aktiv, MIT
-- **Known gotchas / divergences:** `tough-cookie` implementiert RFC 6265 + 6265-bis + WHATWG-Quirks (z.B. `same-site` eval, prefix-rules `__Host-`/`__Secure-`, `expires` Datumsformat-Heuristiken); Browser-Kompat-Tests sind umfangreich
+- **Candidate crate(s):** `cookie` (parse/format), `publicsuffix` (PSL), `idna` (IDN). No direct `tough-cookie` equivalent as a single crate
+- **Maintenance / license:** all active, MIT
+- **Known gotchas / divergences:** `tough-cookie` implements RFC 6265 + 6265-bis + WHATWG quirks (e.g. `same-site` eval, prefix rules `__Host-`/`__Secure-`, `expires` date format heuristics); browser-compat tests are extensive
 
 ## BACKLOG check
 
-BACKLOG: *Parity too expensive* — bestätigt. Seit der letzten Sichtung keine Änderung am Parity-Horizont.
+BACKLOG: *Parity too expensive* — confirmed. No change to the parity horizon since the last look.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Parse eines Cookie-Headers: ~500 ns – 2 µs in JS. FFI-Floor 109 ns = 5–20% Grundlast |
-| Input size distribution | 50–500 B Strings, direkt im FFI-Trap-Bereich |
-| Output size distribution | Einzelnes Cookie-Objekt mit ~10 Feldern — Object-Materialisierung über NAPI ist teuer |
-| Reusable setup (stateful potential) | PSL + Jar als NAPI-Class sinnvoll — aber JS `Jar` ist schon ein Objekt, der Win ist marginal |
-| Batch-usage realism | Niedrig (3–5 Cookies pro Request) |
-| FFI-share estimate vs. Rust work | Hoch — pro-Cookie FFI + Object-Output-Kosten essen Rust-Gain |
+| Per-call algorithmic work | Parse a cookie header: ~500 ns – 2 µs in JS. FFI floor 109 ns = 5–20% baseline cost |
+| Input size distribution | 50–500 B strings, directly in the FFI-trap zone |
+| Output size distribution | A single cookie object with ~10 fields — object materialization over NAPI is expensive |
+| Reusable setup (stateful potential) | PSL + jar as a NAPI class makes sense — but the JS `Jar` is already an object, the win is marginal |
+| Batch-usage realism | Low (3–5 cookies per request) |
+| FFI-share estimate vs. Rust work | High — per-cookie FFI + object output cost eat the Rust gain |
 
 ## Classification reasoning
 
-Selbst wenn der Rust-Parser 3× schneller wäre als `tough-cookie`, landet der Realworld-Call bei ~700 ns (FFI + Object-Materialisierung) vs. `tough-cookie` ~1.5 µs → 2× Win. Aber: PSL-Integration, IDN-Handling, `canonicalDomain`-Edge-Cases, Browser-Kompat-Suite = Wochen an Engineering. Und der Win verpufft, weil HTTP-Clients keine 100k Cookies/s parsen — sie parsen ~3 pro Request und warten dann auf Netzwerk. Die Perf-Rendite ist strukturell niedrig.
+Even if the Rust parser were 3× faster than `tough-cookie`, the real-world call lands at ~700 ns (FFI + object materialization) vs. `tough-cookie`'s ~1.5 µs → 2× win. But: PSL integration, IDN handling, `canonicalDomain` edge cases, browser-compat suite = weeks of engineering. And the win evaporates, because HTTP clients don't parse 100k cookies/s — they parse ~3 per request and then wait on the network. The perf return is structurally low.
 
 ## If NO-GO — BACKLOG entry
 

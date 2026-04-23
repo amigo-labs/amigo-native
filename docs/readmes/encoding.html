@@ -1,0 +1,19 @@
+<h1 id="amigo-labs-encoding">@amigo-labs/encoding</h1>
+<blockquote>
+<p>Character encoding conversion powered by Mozilla’s <code>encoding_rs</code>. Alternative to <a href="https://www.npmjs.com/package/iconv-lite"><code>iconv-lite</code></a>, compiled via NAPI-RS.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/encoding
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { encode, decode, encodingExists } from '@amigo-labs/encoding'
+
+const bytes = encode('héllo', 'latin1')
+const text = decode(bytes, 'latin1')       // 'héllo'
+
+encodingExists('shift_jis')                // true
+encodingExists('utf-42')                   // false
+</code></pre>
+<p>Supports the full WHATWG encoding set (UTF-8, Latin-1, Shift_JIS, GB18030, Big5, etc.).</p>
+<h2 id="parity">Parity</h2>
+<p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run a representative subset of the upstream <code>iconv-lite</code> test suite against this implementation. See <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for documented differences — notably encodings <code>iconv-lite</code> supports that <code>encoding_rs</code> doesn’t.</p>

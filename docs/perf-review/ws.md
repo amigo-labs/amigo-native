@@ -1,48 +1,48 @@
 # Candidate review: `ws`
 
-> **Status:** NO-GO · **Predicted:** 🔴 Red (Integration) / ⚫ Black (Shape) · **Reviewed:** 2026-04-19
+> **Status:** NO-GO · **Predicted:** 🔴 Red (integration) / ⚫ Black (shape) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
-`ws` ist Socket + Protocol + Event-Emitter, tief verzahnt mit Node's `net`/`tls`. Rust-WebSocket-Crates (`tungstenite`, `fastwebsockets`) sind schnell — aber sie in Nodes libuv-Event-Loop zu fädeln ohne Performance-Regression ist eine Eigen-Framework-Aufgabe, nicht ein NAPI-Binding.
+`ws` is socket + protocol + event emitter, deeply intertwined with Node's `net`/`tls`. Rust WebSocket crates (`tungstenite`, `fastwebsockets`) are fast — but threading them into Node's libuv event loop without a performance regression is a bespoke-framework task, not a NAPI binding.
 
 ## JS package
 
 - **npm:** `ws`
-- **Downloads:** ~204M/Woche
-- **Exports / API surface:** `WebSocket` (Client), `WebSocketServer`, Event-Emitter (`open`, `message`, `close`, `error`, `ping`, `pong`), Per-Message-Deflate, Fragmentation, Binary+Text-Modi
-- **Typical input:** TCP-Stream → Frames → Messages; pro-Message 10 B – 1 MB
-- **Typical output:** Events pro Frame/Message
-- **Realistic median use-case:** WebSocket-Server mit Event-Handlern auf allen Nachrichten
+- **Downloads:** ~204M/week
+- **Exports / API surface:** `WebSocket` (client), `WebSocketServer`, event emitter (`open`, `message`, `close`, `error`, `ping`, `pong`), per-message deflate, fragmentation, binary+text modes
+- **Typical input:** TCP stream → frames → messages; per message 10 B – 1 MB
+- **Typical output:** events per frame/message
+- **Realistic median use-case:** WebSocket server with event handlers on all messages
 
 ## Rust replacement
 
-- **Candidate crate(s):** `tungstenite` (sync), `tokio-tungstenite`, `fastwebsockets` (Deno-Team)
-- **Maintenance / license:** aktiv, MIT/Apache
-- **Known gotchas / divergences:** `ws` nutzt Nodes `net.Socket` direkt. Rust müsste entweder ein separates `tokio`-Runtime neben libuv fahren (Ressourcen-Duplication, Event-Loop-Integration) oder über NAPI auf den JS-Socket zugreifen — was jeden Frame einzeln über FFI schickt
+- **Candidate crate(s):** `tungstenite` (sync), `tokio-tungstenite`, `fastwebsockets` (Deno team)
+- **Maintenance / license:** active, MIT/Apache
+- **Known gotchas / divergences:** `ws` uses Node's `net.Socket` directly. Rust would have to either run a separate `tokio` runtime alongside libuv (resource duplication, event-loop integration) or access the JS socket via NAPI — which sends every frame individually across the FFI
 
 ## BACKLOG check
 
-BACKLOG: *Scope too large* — bestätigt.
+BACKLOG: *Scope too large* — confirmed.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Frame-Decode + Mask-XOR + optional Deflate; pro 1 KB Frame ~1–10 µs |
-| Input size distribution | Streaming, Frames beliebig |
-| Output size distribution | Event mit Payload-Buffer |
-| Reusable setup (stateful potential) | Connection-State = NAPI-Class — unumgänglich |
-| Batch-usage realism | Hoch im Protokoll, aber jede Message muss an JS-Handler = FFI-Callback |
-| FFI-share estimate vs. Rust work | **Callback pro Message**: genau der `htmlparser2`-Shape |
+| Per-call algorithmic work | Frame decode + mask XOR + optional deflate; per 1 KB frame ~1–10 µs |
+| Input size distribution | Streaming, frames arbitrary |
+| Output size distribution | Event with payload buffer |
+| Reusable setup (stateful potential) | Connection state = NAPI class — unavoidable |
+| Batch-usage realism | High in the protocol, but every message has to go to the JS handler = FFI callback |
+| FFI-share estimate vs. Rust work | **Callback per message**: exactly the `htmlparser2` shape |
 
 ## Classification reasoning
 
-Zwei unabhängige Killer:
-1. **Event-Loop-Integration**: `ws` leiht sich Nodes `net.Socket`. Rust kann nicht ohne Weiteres in diese Loop hineinlesen/-schreiben. Alternative ist eigene `tokio`-Runtime = zweiter Thread-Pool, Sync-Kosten zwischen Loops, doppelte Socket-Buffer.
-2. **Message-Callback-Shape**: Das Nutzerinterface ist `ws.on('message', (data) => …)`. Jede Message = FFI-Callback. Bei einem Chat-Server mit 10K msg/s × 2 µs FFI = 20 ms/s nur für Overhead.
+Two independent killers:
+1. **Event-loop integration**: `ws` borrows Node's `net.Socket`. Rust can't easily read from/write to this loop. The alternative is its own `tokio` runtime = a second thread pool, sync cost between loops, doubled socket buffers.
+2. **Message-callback shape**: the user interface is `ws.on('message', (data) => …)`. Every message = FFI callback. On a chat server with 10K msg/s × 2 µs FFI = 20 ms/s of pure overhead.
 
-`fastwebsockets` gewinnt gegenüber `ws` ~3–5× im Benchmark **bei direktem Rust-Client**, weil kein FFI. Im Rust-über-NAPI-Mix würde dieser Win an der Message-Grenze verloren. Post-Mortem-Muster: C.1-Input-Type hilft nicht (Buffer ist schon Zero-Copy bei `ws`), C.4-Stateful ist schon so, C.3-Batch ist nicht drop-in-machbar.
+`fastwebsockets` wins ~3–5× over `ws` in benchmarks **as a direct Rust client**, because no FFI. In a Rust-over-NAPI mix, that win would be lost at the message boundary. Post-mortem pattern: C.1 input-type doesn't help (Buffer is already zero-copy with `ws`), C.4 stateful is already how it works, C.3 batch is not feasible as a drop-in.
 
 ## If NO-GO — BACKLOG entry
 

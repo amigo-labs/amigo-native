@@ -71,7 +71,7 @@ pnpm bench     # performance benchmarks
 ### Prerequisites
 
 - Rust (edition 2024)
-- Node.js >= 20
+- Node.js >= 22
 - pnpm
 
 ### Build

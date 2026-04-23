@@ -4,43 +4,43 @@
 
 ## Verdict
 
-`ejs` ist "JavaScript in Templates": `<% if (user.admin) { %>…<% } %>` — Template-Code ist echter JS-Code, zur Render-Zeit ausgeführt. Ohne eingebettete JS-Engine (QuickJS/Boa) nicht portierbar, und die Engine-Integration würde den Win sofort vernichten.
+`ejs` is "JavaScript in templates": `<% if (user.admin) { %>…<% } %>` — template code is real JS code, executed at render time. Not portable without an embedded JS engine (QuickJS/Boa), and the engine integration would immediately wipe out the win.
 
 ## JS package
 
 - **npm:** `ejs`
-- **Downloads:** ~39M/Woche
-- **Exports / API surface:** `render(template, data, opts)`, `compile`, `renderFile`, `Template`-Class, Custom-Delimiters, Includes
-- **Typical input:** Template-String mit eingebettetem JS + Data-Object
-- **Typical output:** HTML-String
-- **Realistic median use-case:** Express-View-Rendering, 10–50 KB HTML-Output
+- **Downloads:** ~39M/week
+- **Exports / API surface:** `render(template, data, opts)`, `compile`, `renderFile`, `Template` class, custom delimiters, includes
+- **Typical input:** template string with embedded JS + data object
+- **Typical output:** HTML string
+- **Realistic median use-case:** Express view rendering, 10–50 KB HTML output
 
 ## Rust replacement
 
-- **Candidate crate(s):** keine, die JS-Expressions ausführen. `tera`, `askama`, `minijinja` haben eigene DSL, nicht JS
+- **Candidate crate(s):** none that execute JS expressions. `tera`, `askama`, `minijinja` have their own DSL, not JS
 - **Maintenance / license:** n/a
-- **Known gotchas / divergences:** ejs-Syntax ist nicht adaptierbar — Jede non-trivial Template nutzt `<%= someJsFunction() %>` oder `<% items.forEach(…) %>`
+- **Known gotchas / divergences:** ejs syntax is not adaptable — every non-trivial template uses `<%= someJsFunction() %>` or `<% items.forEach(…) %>`
 
 ## BACKLOG check
 
-BACKLOG: *Needs a JS engine* — bestätigt, Black-Klassifikation (nicht nur NO-GO — strukturell unmöglich).
+BACKLOG: *Needs a JS engine* — confirmed, Black classification (not just NO-GO — structurally impossible).
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Template-Compile ist trivial; **alle** Kosten liegen im JS-Expression-Eval zur Render-Zeit |
+| Per-call algorithmic work | Template compile is trivial; **all** cost is in JS expression eval at render time |
 | Input size distribution | Template 1–10 KB |
 | Output size distribution | HTML 10–100 KB |
-| Reusable setup (stateful potential) | Compiled Template Object — aber ohne JS-Eval wertlos |
+| Reusable setup (stateful potential) | Compiled template object — but worthless without JS eval |
 | Batch-usage realism | n/a |
-| FFI-share estimate vs. Rust work | 100% — entweder QuickJS embedden (massiver Bundle-Bloat, ~1 MB+, eigene GC) oder Callbacks pro Expression nach V8 zurück (`handlebars`-Shape × 100) |
+| FFI-share estimate vs. Rust work | 100% — either embed QuickJS (massive bundle bloat, ~1 MB+, its own GC) or callbacks per expression back to V8 (`handlebars` shape × 100) |
 
 ## Classification reasoning
 
-Zwei strukturell tödliche Optionen:
-1. **Callbacks für jede `<%= … %>`**: Wenn Rust parst und V8 eval'd, muss Rust für jeden Expression-Block einen Callback in JS auslösen. Bei 50 `<%= foo %>` in einem Template = 50 × 2 µs FFI = 100 µs zusätzlich, während JS-Baseline vielleicht 300 µs braucht. 33% Overhead minimum, vor jedem Rust-Work.
-2. **Embed QuickJS/Boa in Rust**: Ein zweiter JS-Interpreter neben V8. QuickJS ist ~500 KB Bundle, Boa ist reiner Interpreter (kein JIT), beide 5–20× langsamer als V8 für typischen JS-Code. Der "Rust-Gewinn" wäre also: "langsamere JS-Engine statt V8". Keine reale Nutzerbase würde das akzeptieren.
+Two structurally fatal options:
+1. **Callbacks for every `<%= … %>`**: if Rust parses and V8 evals, Rust has to fire a callback into JS for every expression block. At 50 `<%= foo %>` in a template = 50 × 2 µs FFI = 100 µs extra, while the JS baseline maybe needs 300 µs. 33% overhead minimum, before any Rust work.
+2. **Embed QuickJS/Boa in Rust**: a second JS interpreter alongside V8. QuickJS is ~500 KB bundle, Boa is a pure interpreter (no JIT), both 5–20× slower than V8 for typical JS code. So the "Rust win" would be: "a slower JS engine instead of V8". No real user base would accept that.
 
 Permanent Black.
 

@@ -83,6 +83,8 @@ jobs:
         with:
           name: napi-binaries
           path: crates/
+      - name: Check rendered READMEs are in sync
+        run: node scripts/render-readmes.mjs --check
       - name: Test all crates
         run: pnpm -r run test
       - name: Parity tests

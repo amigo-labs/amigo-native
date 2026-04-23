@@ -4,41 +4,41 @@
 
 ## Verdict
 
-`htmlparser2` ist SAX-style: der Caller übergibt Callbacks (`onopentag`, `ontext`, …). Jeder Token → Callback über FFI-Boundary. Event-getriebene Parser sind der Anti-Shape für NAPI.
+`htmlparser2` is SAX-style: the caller passes callbacks (`onopentag`, `ontext`, …). Every token → callback across the FFI boundary. Event-driven parsers are the anti-shape for NAPI.
 
 ## JS package
 
 - **npm:** `htmlparser2`
-- **Downloads:** ~62M/Woche
-- **Exports / API surface:** `Parser` mit Callback-Handler, `DomHandler`, `DomUtils`, Streaming-API
-- **Typical input:** HTML-Stream oder -Dokument, 1 KB – 5 MB
-- **Typical output:** Event-Stream (SAX) oder Tree (via `DomHandler`)
-- **Realistic median use-case:** Streaming-Scraper / cheerio-Backend, 100–500 KB HTML
+- **Downloads:** ~62M/week
+- **Exports / API surface:** `Parser` with callback handlers, `DomHandler`, `DomUtils`, streaming API
+- **Typical input:** HTML stream or document, 1 KB – 5 MB
+- **Typical output:** event stream (SAX) or tree (via `DomHandler`)
+- **Realistic median use-case:** streaming scraper / cheerio backend, 100–500 KB HTML
 
 ## Rust replacement
 
-- **Candidate crate(s):** `html5ever` (Tokenizer-Layer), `html5gum`
-- **Maintenance / license:** beide aktiv, MIT/Apache
-- **Known gotchas / divergences:** `htmlparser2` toleriert XML-Mode + HTML-Mode in einem Parser; kein direktes Rust-Äquivalent für XML-HTML-Dual
+- **Candidate crate(s):** `html5ever` (tokenizer layer), `html5gum`
+- **Maintenance / license:** both active, MIT/Apache
+- **Known gotchas / divergences:** `htmlparser2` tolerates XML mode + HTML mode in one parser; no direct Rust equivalent for XML-HTML dual
 
 ## BACKLOG check
 
-BACKLOG bündelt mit `parse5` — bestätigt. Für `htmlparser2` ist der Callback-Aspekt härter als der Adapter-Aspekt bei `parse5`.
+BACKLOG bundles with `parse5` — confirmed. For `htmlparser2` the callback aspect is harder than the adapter aspect for `parse5`.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Tokenize 100 KB ~ 1 ms in JS, Rust ~200 µs → 5× Potenzial |
-| Input size distribution | Bytes-in, okay |
-| Output size distribution | **Callback pro Token**: typisch ~50K Tokens bei 100 KB HTML |
-| Reusable setup (stateful potential) | Parser-Instanz als Class — möglich, aber der Callback-Kost bleibt |
-| Batch-usage realism | Streaming hebt batching auf — pro Chunk dieselbe FFI-Last |
-| FFI-share estimate vs. Rust work | Callbacks dominieren: 50K × ~2 µs Rust→JS→Rust = 100 ms — 100× langsamer als der JS-Baseline-Parse |
+| Per-call algorithmic work | Tokenize 100 KB ~ 1 ms in JS, Rust ~200 µs → 5× potential |
+| Input size distribution | Bytes-in, fine |
+| Output size distribution | **Callback per token**: typically ~50K tokens for 100 KB HTML |
+| Reusable setup (stateful potential) | Parser instance as a class — possible, but the callback cost stays |
+| Batch-usage realism | Streaming defeats batching — same FFI load per chunk |
+| FFI-share estimate vs. Rust work | Callbacks dominate: 50K × ~2 µs Rust → JS → Rust = 100 ms — 100× slower than the JS baseline parse |
 
 ## Classification reasoning
 
-Das ist der `handlebars`-Shape verstärkt: Parser emittiert Events, Caller entscheidet. Ohne Callbacks ist `htmlparser2` nicht `htmlparser2`, sondern ein Tree-Builder — und dann sind wir zurück beim `parse5`-Shape (Tree-Materialisierung). Einzige sinnvolle API wäre: "Rust parst, tokenisiert, sammelt im Rust-State ein typisiertes Event-Array, liefert es am Ende als eine große `Buffer`/`JsArray` zurück". Das wäre eine andere API als `htmlparser2`, mit anderer Semantik (kein echter Stream), und braucht die 2×-Schwelle nur bei sehr großen Dokumenten (~MB-Bereich). Für den Median-Use-Case (cheerio auf Scrape-Responses) verpufft der Win.
+This is the `handlebars` shape amplified: the parser emits events, the caller decides. Without callbacks `htmlparser2` isn't `htmlparser2`, it's a tree builder — and then we're back at the `parse5` shape (tree materialization). The only sensible API would be: "Rust parses, tokenizes, collects a typed event array in Rust state, returns it at the end as one big `Buffer`/`JsArray`". That would be a different API from `htmlparser2`, with different semantics (no real stream), and only clears the 2× threshold on very large documents (~MB range). For the median use-case (cheerio on scrape responses) the win evaporates.
 
 ## If NO-GO — BACKLOG entry
 
