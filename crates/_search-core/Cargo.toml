@@ -1,0 +1,12 @@
+[package]
+name = "amigo-search-core"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+# Internal-only. No cdylib — consumed by @amigo-labs/bm25 and
+# @amigo-labs/minisearch via [dependencies]. Pattern parallels
+# crates/_ffi-bench/.
+
+[dependencies]

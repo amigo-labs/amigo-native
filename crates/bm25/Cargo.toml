@@ -1,0 +1,15 @@
+[package]
+name = "amigo-bm25"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+amigo-search-core = { path = "../_search-core" }
+
+[build-dependencies]
+napi-build = "2"
