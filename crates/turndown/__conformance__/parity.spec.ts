@@ -51,8 +51,8 @@ describe('parity: direction-of-output matches', () => {
     const u = upstream('<ul><li>a</li></ul>')
     // Upstream uses multi-space indentation after the marker (`*   a`);
     // we use a single space (`* a`). Both are valid CommonMark bullets.
-    expect(o).toMatch(/^[\-*+]\s+a/)
-    expect(u).toMatch(/^[\-*+]\s+a/)
+    expect(o).toMatch(/^[-*+]\s+a/)
+    expect(u).toMatch(/^[-*+]\s+a/)
   })
 })
 

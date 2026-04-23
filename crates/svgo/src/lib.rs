@@ -135,11 +135,7 @@ const EDITOR_NS_PREFIXES: &[&str] = &[
     "graph:",
 ];
 
-const EDITOR_NS_DECLS: &[&str] = &[
-    "xmlns:sodipodi",
-    "xmlns:inkscape",
-    "xmlns:sketch",
-];
+const EDITOR_NS_DECLS: &[&str] = &["xmlns:sodipodi", "xmlns:inkscape", "xmlns:sketch"];
 
 fn is_editor_ns_name(name: &[u8]) -> bool {
     let s = std::str::from_utf8(name).unwrap_or("");
@@ -150,8 +146,16 @@ fn is_editor_ns_name(name: &[u8]) -> bool {
 }
 
 const CONTAINERS: &[&[u8]] = &[
-    b"svg", b"g", b"defs", b"symbol", b"clipPath", b"mask", b"pattern", b"a",
-    b"marker", b"switch",
+    b"svg",
+    b"g",
+    b"defs",
+    b"symbol",
+    b"clipPath",
+    b"mask",
+    b"pattern",
+    b"a",
+    b"marker",
+    b"switch",
 ];
 
 fn is_container(name: &[u8]) -> bool {
@@ -248,15 +252,15 @@ fn convert_color(v: &str) -> String {
     if lower.starts_with("rgb(") && lower.ends_with(')') {
         let inner = &lower[4..lower.len() - 1];
         let parts: Vec<_> = inner.split(',').map(|s| s.trim()).collect();
-        if parts.len() == 3 {
-            if let (Ok(r), Ok(g), Ok(b)) = (
+        if parts.len() == 3
+            && let (Ok(r), Ok(g), Ok(b)) = (
                 parts[0].parse::<i32>(),
                 parts[1].parse::<i32>(),
                 parts[2].parse::<i32>(),
-            ) {
-                let hex = format!("#{:02x}{:02x}{:02x}", r & 0xff, g & 0xff, b & 0xff);
-                return shorten_hex(&hex);
-            }
+            )
+        {
+            let hex = format!("#{:02x}{:02x}{:02x}", r & 0xff, g & 0xff, b & 0xff);
+            return shorten_hex(&hex);
         }
     }
     if lower.starts_with('#') {
@@ -269,7 +273,10 @@ fn shorten_hex(hex: &str) -> String {
     if hex.len() == 7 {
         let bytes = hex.as_bytes();
         if bytes[1] == bytes[2] && bytes[3] == bytes[4] && bytes[5] == bytes[6] {
-            return format!("#{}{}{}", bytes[1] as char, bytes[3] as char, bytes[5] as char);
+            return format!(
+                "#{}{}{}",
+                bytes[1] as char, bytes[3] as char, bytes[5] as char
+            );
         }
     }
     hex.to_string()
@@ -299,10 +306,7 @@ fn collect_attrs(e: &BytesStart<'_>) -> Vec<(Vec<u8>, Vec<u8>)> {
     out
 }
 
-fn transform_attrs(
-    attrs: Vec<(Vec<u8>, Vec<u8>)>,
-    cfg: &Resolved,
-) -> Vec<(Vec<u8>, Vec<u8>)> {
+fn transform_attrs(attrs: Vec<(Vec<u8>, Vec<u8>)>, cfg: &Resolved) -> Vec<(Vec<u8>, Vec<u8>)> {
     attrs
         .into_iter()
         .filter_map(|(k, v)| {
@@ -310,26 +314,26 @@ fn transform_attrs(
                 return None;
             }
             let mut val = v;
-            if cfg.cleanup_attrs {
-                if let Ok(s) = std::str::from_utf8(&val) {
-                    let collapsed = collapse_whitespace_in_attr(s);
-                    val = collapsed.into_bytes();
-                }
+            if cfg.cleanup_attrs
+                && let Ok(s) = std::str::from_utf8(&val)
+            {
+                let collapsed = collapse_whitespace_in_attr(s);
+                val = collapsed.into_bytes();
             }
             if cfg.remove_empty_attrs && val.is_empty() {
                 return None;
             }
-            if cfg.cleanup_numeric_values {
-                if let Ok(s) = std::str::from_utf8(&val) {
-                    val = cleanup_number_str(s, cfg.float_precision).into_bytes();
-                }
+            if cfg.cleanup_numeric_values
+                && let Ok(s) = std::str::from_utf8(&val)
+            {
+                val = cleanup_number_str(s, cfg.float_precision).into_bytes();
             }
             if cfg.convert_colors {
                 let kn = std::str::from_utf8(&k).unwrap_or("");
-                if COLOR_ATTRS.contains(&kn) {
-                    if let Ok(s) = std::str::from_utf8(&val) {
-                        val = convert_color(s).into_bytes();
-                    }
+                if COLOR_ATTRS.contains(&kn)
+                    && let Ok(s) = std::str::from_utf8(&val)
+                {
+                    val = convert_color(s).into_bytes();
                 }
             }
             Some((k, val))
@@ -400,16 +404,9 @@ fn parse(svg: &str, cfg: &Resolved) -> Vec<Node> {
     parse_until_end(&mut reader, None)
 }
 
-fn parse_until_end(
-    reader: &mut Reader<&[u8]>,
-    close: Option<&[u8]>,
-) -> Vec<Node> {
+fn parse_until_end(reader: &mut Reader<&[u8]>, close: Option<&[u8]>) -> Vec<Node> {
     let mut out = Vec::new();
-    loop {
-        let ev = match reader.read_event() {
-            Ok(e) => e,
-            Err(_) => break,
-        };
+    while let Ok(ev) = reader.read_event() {
         match ev {
             Event::Eof => break,
             Event::Start(e) => {
@@ -424,10 +421,10 @@ fn parse_until_end(
                 });
             }
             Event::End(e) => {
-                if let Some(c) = close {
-                    if e.name().as_ref() == c {
-                        return out;
-                    }
+                if let Some(c) = close
+                    && e.name().as_ref() == c
+                {
+                    return out;
                 }
             }
             Event::Empty(e) => {
@@ -508,10 +505,7 @@ fn transform(nodes: Vec<Node>, cfg: &Resolved) -> Vec<Node> {
                 let new_attrs = transform_attrs(attrs, cfg);
                 let new_children = transform(children, cfg);
 
-                if cfg.remove_useless_defs
-                    && name_str == "defs"
-                    && new_children.is_empty()
-                {
+                if cfg.remove_useless_defs && name_str == "defs" && new_children.is_empty() {
                     continue;
                 }
                 if cfg.remove_empty_containers
@@ -529,18 +523,17 @@ fn transform(nodes: Vec<Node>, cfg: &Resolved) -> Vec<Node> {
                     && name_str == "g"
                     && new_attrs.is_empty()
                     && new_children.len() == 1
+                    && matches!(&new_children[0], Node::Element { .. })
                 {
-                    if matches!(&new_children[0], Node::Element { .. }) {
-                        out.extend(new_children);
-                        continue;
-                    }
+                    out.extend(new_children);
+                    continue;
                 }
 
                 out.push(Node::Element {
                     name,
                     attrs: new_attrs,
                     children: new_children,
-                    empty: empty && true,
+                    empty,
                 });
             }
             other => out.push(other),
@@ -571,11 +564,9 @@ fn serialize_node(w: &mut Writer<Cursor<Vec<u8>>>, n: &Node) {
             name,
             attrs,
             children,
-            empty,
+            empty: _,
         } => {
-            if *empty && children.is_empty() {
-                write_empty(w, name, attrs);
-            } else if children.is_empty() {
+            if children.is_empty() {
                 write_empty(w, name, attrs);
             } else {
                 write_start(w, name, attrs);
@@ -591,7 +582,8 @@ fn serialize_node(w: &mut Writer<Cursor<Vec<u8>>>, n: &Node) {
         }
         Node::CData(bs) => {
             let s = std::str::from_utf8(bs).unwrap_or("");
-            w.write_event(Event::CData(quick_xml::events::BytesCData::new(s))).ok();
+            w.write_event(Event::CData(quick_xml::events::BytesCData::new(s)))
+                .ok();
         }
         Node::Comment(bs) => {
             let s = std::str::from_utf8(bs).unwrap_or("");
@@ -604,7 +596,8 @@ fn serialize_node(w: &mut Writer<Cursor<Vec<u8>>>, n: &Node) {
         }
         Node::PI(bs) => {
             let s = std::str::from_utf8(bs).unwrap_or("");
-            w.write_event(Event::PI(quick_xml::events::BytesPI::new(s))).ok();
+            w.write_event(Event::PI(quick_xml::events::BytesPI::new(s)))
+                .ok();
         }
         Node::DocType(bs) => {
             let s = std::str::from_utf8(bs).unwrap_or("");
@@ -695,8 +688,7 @@ mod tests {
     #[test]
     fn removes_metadata_title_desc() {
         let res = optimize(
-            "<svg><title>X</title><desc>d</desc><metadata>m</metadata><rect/></svg>"
-                .to_string(),
+            "<svg><title>X</title><desc>d</desc><metadata>m</metadata><rect/></svg>".to_string(),
             None,
         );
         assert!(!res.data.contains("title"));
@@ -752,19 +744,13 @@ mod tests {
 
     #[test]
     fn removes_useless_defs() {
-        let res = optimize(
-            "<svg><defs></defs><rect/></svg>".to_string(),
-            None,
-        );
+        let res = optimize("<svg><defs></defs><rect/></svg>".to_string(), None);
         assert!(!res.data.contains("defs"));
     }
 
     #[test]
     fn collapses_groups() {
-        let res = optimize(
-            "<svg><g><rect width=\"10\"/></g></svg>".to_string(),
-            None,
-        );
+        let res = optimize("<svg><g><rect width=\"10\"/></g></svg>".to_string(), None);
         assert!(!res.data.contains("<g>"));
         assert!(res.data.contains("rect"));
     }

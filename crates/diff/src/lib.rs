@@ -139,18 +139,14 @@ fn build_offsets<I: Iterator<Item = (ChangeTag, usize)>>(iter: I) -> Buffer {
     let mut run_old_start: u32 = 0;
     let mut run_new_start: u32 = 0;
 
-    let flush = |buf: &mut Vec<u8>,
-                     tag: u8,
-                     old_start: u32,
-                     old_end: u32,
-                     new_start: u32,
-                     new_end: u32| {
-        buf.extend_from_slice(&(tag as u32).to_le_bytes());
-        buf.extend_from_slice(&old_start.to_le_bytes());
-        buf.extend_from_slice(&old_end.to_le_bytes());
-        buf.extend_from_slice(&new_start.to_le_bytes());
-        buf.extend_from_slice(&new_end.to_le_bytes());
-    };
+    let flush =
+        |buf: &mut Vec<u8>, tag: u8, old_start: u32, old_end: u32, new_start: u32, new_end: u32| {
+            buf.extend_from_slice(&(tag as u32).to_le_bytes());
+            buf.extend_from_slice(&old_start.to_le_bytes());
+            buf.extend_from_slice(&old_end.to_le_bytes());
+            buf.extend_from_slice(&new_start.to_le_bytes());
+            buf.extend_from_slice(&new_end.to_le_bytes());
+        };
 
     for (tag, len) in iter {
         let tag_byte: u8 = match tag {
@@ -234,7 +230,11 @@ mod tests {
     fn diff_lines_identity() {
         let same = "hello\nworld\n";
         let hunks = diff_lines(same.to_string(), same.to_string());
-        assert!(hunks.iter().all(|h| h.added.is_none() && h.removed.is_none()));
+        assert!(
+            hunks
+                .iter()
+                .all(|h| h.added.is_none() && h.removed.is_none())
+        );
     }
 
     #[test]
@@ -254,10 +254,12 @@ mod tests {
 
     #[test]
     fn diff_trimmed_lines_ignores_trailing_whitespace() {
-        let hunks = diff_trimmed_lines(
-            "hello  \nworld\n".to_string(),
-            "hello\nworld\n".to_string(),
+        let hunks =
+            diff_trimmed_lines("hello  \nworld\n".to_string(), "hello\nworld\n".to_string());
+        assert!(
+            hunks
+                .iter()
+                .all(|h| h.added.is_none() && h.removed.is_none())
         );
-        assert!(hunks.iter().all(|h| h.added.is_none() && h.removed.is_none()));
     }
 }

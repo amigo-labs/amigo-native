@@ -151,10 +151,7 @@ pub fn read_sheet_as_objects(
         .map(|row| {
             let mut obj = HashMap::new();
             for (i, cell) in row.into_iter().enumerate() {
-                let key = headers
-                    .get(i)
-                    .cloned()
-                    .unwrap_or_else(|| format!("col{i}"));
+                let key = headers.get(i).cloned().unwrap_or_else(|| format!("col{i}"));
                 obj.insert(key, cell);
             }
             obj
@@ -204,8 +201,8 @@ pub fn write_workbook(sheets: Vec<WriteSheet>) -> Result<Buffer> {
                         ws.write_boolean(row_u, col_u, cell.bool_value.unwrap_or(false))
                             .map_err(|e| Error::from_reason(format!("write: {e}")))?;
                     }
-                    "empty" | _ => {
-                        // leave blank
+                    _ => {
+                        // "empty" plus anything unrecognised — leave blank.
                     }
                 }
             }

@@ -6,7 +6,7 @@
 use html5ever::driver::ParseOpts;
 use html5ever::parse_fragment;
 use html5ever::tendril::TendrilSink;
-use html5ever::{QualName, local_name, namespace_url, ns};
+use html5ever::{QualName, local_name, ns};
 use markup5ever_rcdom::{Handle, NodeData, RcDom};
 use napi_derive::napi;
 
@@ -46,7 +46,6 @@ struct Resolved {
     fence: String,
     em_delimiter: String,
     strong_delimiter: String,
-    link_style: String,
     gfm: bool,
     keep: Vec<String>,
     remove: Vec<String>,
@@ -71,7 +70,6 @@ impl Resolved {
                 .strong_delimiter
                 .clone()
                 .unwrap_or_else(|| "**".to_string()),
-            link_style: o.link_style.clone().unwrap_or_else(|| "inlined".to_string()),
             gfm: o.gfm.unwrap_or(false),
             keep: o.keep.clone().unwrap_or_default(),
             remove: o.remove.clone().unwrap_or_default(),
@@ -122,10 +120,6 @@ impl<'a> Writer<'a> {
                 self.out.push_str("\n\n");
             }
         }
-    }
-
-    fn current_list(&self) -> Option<&ListCtx> {
-        self.list_stack.last()
     }
 }
 
@@ -215,8 +209,8 @@ fn emit_element(w: &mut Writer, node: &Handle) {
     }
 
     match name_l.as_str() {
-        "html" | "body" | "head" | "section" | "article" | "main" | "nav"
-        | "header" | "footer" | "aside" | "figure" | "figcaption" => {
+        "html" | "body" | "head" | "section" | "article" | "main" | "nav" | "header" | "footer"
+        | "aside" | "figure" | "figcaption" => {
             walk(w, node);
         }
         "h1" | "h2" | "h3" | "h4" | "h5" | "h6" => {
@@ -549,8 +543,8 @@ fn escape_md_text(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
         match c {
-            '\\' | '`' | '*' | '_' | '{' | '}' | '[' | ']' | '(' | ')' | '#' | '+' | '-'
-            | '.' | '!' | '>' | '<' | '|' => {
+            '\\' | '`' | '*' | '_' | '{' | '}' | '[' | ']' | '(' | ')' | '#' | '+' | '-' | '.'
+            | '!' | '>' | '<' | '|' => {
                 // Conservative escape — only when at line start or
                 // it would otherwise form a Markdown construct. For
                 // v1 we pass through common characters; full

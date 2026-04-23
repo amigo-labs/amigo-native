@@ -153,10 +153,7 @@ pub fn split_text_batch(
 
 /// Markdown-aware splitter: respects heading/paragraph/list boundaries.
 #[napi(js_name = "splitMarkdown")]
-pub fn split_markdown(
-    text: String,
-    options: Option<SplitterOptions>,
-) -> Result<Vec<String>> {
+pub fn split_markdown(text: String, options: Option<SplitterOptions>) -> Result<Vec<String>> {
     let opts = options.unwrap_or_default();
     let (size, overlap, sizer) = resolved(&opts)?;
     let chunks = match sizer {
@@ -195,11 +192,7 @@ pub fn count_chars(text: String) -> u32 {
 /// Tiktoken token count with a named encoding.
 #[napi(js_name = "countTokens")]
 pub fn count_tokens(text: String, encoding: Option<String>) -> Result<u32> {
-    let sizer = Sizer::from_metric(
-        encoding
-            .as_deref()
-            .or(Some("tiktoken:cl100k_base")),
-    )?;
+    let sizer = Sizer::from_metric(encoding.as_deref().or(Some("tiktoken:cl100k_base")))?;
     Ok(sizer.count(&text) as u32)
 }
 

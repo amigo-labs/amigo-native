@@ -32,9 +32,10 @@ describe('parseSync', () => {
   it('max option caps page-separator count', () => {
     const full = parseSync(fixture('example.pdf'))
     const limited = parseSync(fixture('example.pdf'), { max: 1 })
-    // Page separator is \x0c; limited should have <= full pages
-    const fullFormFeeds = (full.text.match(/\x0c/g) || []).length
-    const limitedFormFeeds = (limited.text.match(/\x0c/g) || []).length
+    // Page separator is U+000C (form feed); limited should have <= full pages.
+    const FORM_FEED = String.fromCharCode(0x0c)
+    const fullFormFeeds = full.text.split(FORM_FEED).length - 1
+    const limitedFormFeeds = limited.text.split(FORM_FEED).length - 1
     expect(limitedFormFeeds).toBeLessThanOrEqual(fullFormFeeds)
   })
 

@@ -57,8 +57,8 @@ pub struct PdfElement {
 #[napi(object)]
 #[derive(Clone)]
 pub struct Page {
-    pub width: f64,    // mm
-    pub height: f64,   // mm
+    pub width: f64,  // mm
+    pub height: f64, // mm
     pub elements: Vec<PdfElement>,
 }
 
@@ -75,9 +75,10 @@ fn mm(v: f64) -> Mm {
 
 fn render_document(doc: Document) -> Result<Buffer> {
     let title = doc.title.unwrap_or_else(|| "amigo-pdf".to_string());
-    let first_page = doc.pages.first().ok_or_else(|| {
-        Error::from_reason("document must have at least one page")
-    })?;
+    let first_page = doc
+        .pages
+        .first()
+        .ok_or_else(|| Error::from_reason("document must have at least one page"))?;
     let (pdf, page1_idx, layer1_idx) = PdfDocument::new(
         &title,
         mm(first_page.width),
@@ -126,10 +127,7 @@ fn render_document(doc: Document) -> Result<Buffer> {
                             points: vec![
                                 (Point::new(mm(r.x), mm(r.y)), false),
                                 (Point::new(mm(r.x + r.width), mm(r.y)), false),
-                                (
-                                    Point::new(mm(r.x + r.width), mm(r.y + r.height)),
-                                    false,
-                                ),
+                                (Point::new(mm(r.x + r.width), mm(r.y + r.height)), false),
                                 (Point::new(mm(r.x), mm(r.y + r.height)), false),
                             ],
                             is_closed: true,

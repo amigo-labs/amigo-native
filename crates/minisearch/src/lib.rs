@@ -143,14 +143,14 @@ impl MiniSearch {
         }
 
         // Prefix-expansion for autocomplete.
-        if opts.prefix.unwrap_or(false) {
-            if let Some(last) = query_tokens.last().cloned() {
-                let expansions = prefix_match(&inner.index, &last);
-                query_tokens.pop();
-                query_tokens.extend(expansions);
-                if query_tokens.is_empty() {
-                    return Vec::new();
-                }
+        if opts.prefix.unwrap_or(false)
+            && let Some(last) = query_tokens.last().cloned()
+        {
+            let expansions = prefix_match(&inner.index, &last);
+            query_tokens.pop();
+            query_tokens.extend(expansions);
+            if query_tokens.is_empty() {
+                return Vec::new();
             }
         }
 
@@ -165,9 +165,7 @@ impl MiniSearch {
 
         scores
             .into_iter()
-            .filter(|(doc_idx, _)| {
-                !and_mode || inner.contains_all_tokens(*doc_idx, &query_tokens)
-            })
+            .filter(|(doc_idx, _)| !and_mode || inner.contains_all_tokens(*doc_idx, &query_tokens))
             .take(limit)
             .map(|(doc_idx, score)| MiniHit {
                 id: inner.index.docs[doc_idx].id.clone(),
@@ -196,7 +194,11 @@ impl MiniSearch {
                 }
             })
             .collect();
-        out.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+        out.sort_by(|a, b| {
+            b.score
+                .partial_cmp(&a.score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         let limit = limit.unwrap_or(10) as usize;
         out.truncate(limit);
         out

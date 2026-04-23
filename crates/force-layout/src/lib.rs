@@ -7,6 +7,12 @@
 //! centering, collision. See docs/perf-review/d3-force.md for the
 //! shape analysis.
 
+// The simulation loop indexes `nodes` from several inner loops
+// (`nodes[i]` / `nodes[j]` for pair interactions) — the typical
+// iterator rewrite would fight the borrow checker without any
+// speed-up, so we keep explicit indices here.
+#![allow(clippy::needless_range_loop)]
+
 use napi_derive::napi;
 use std::collections::HashMap;
 

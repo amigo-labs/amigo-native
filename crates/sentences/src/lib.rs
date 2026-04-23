@@ -1,6 +1,7 @@
-//! Sentence Boundary Detection (SBD). Rule-based — abbreviation table
-//! + quote/ellipsis/decimal handling + optional newline-boundaries.
-//! Multi-language via per-language abbreviation tables.
+//! Sentence Boundary Detection (SBD). Rule-based engine combining an
+//! abbreviation table, quote/ellipsis/decimal handling, and optional
+//! newline-paragraph boundaries. Multi-language via per-language
+//! abbreviation tables.
 //!
 //! Two output shapes: `split(text) → string[]` (compat form) and
 //! `splitToOffsets(text) → Buffer` (Uint32-packed byte offsets —
@@ -254,13 +255,7 @@ fn check_boundary_after(
     }
 }
 
-fn emit(
-    spans: &mut Vec<Span>,
-    sentence_start: &mut usize,
-    end: usize,
-    text: &str,
-    cfg: &Resolved,
-) {
+fn emit(spans: &mut Vec<Span>, sentence_start: &mut usize, end: usize, text: &str, cfg: &Resolved) {
     if end <= *sentence_start {
         return;
     }
@@ -325,10 +320,7 @@ pub fn split_batch(texts: Vec<String>, options: Option<SplitOptions>) -> Vec<Vec
 }
 
 #[napi(js_name = "splitBatchToOffsets")]
-pub fn split_batch_to_offsets(
-    texts: Vec<String>,
-    options: Option<SplitOptions>,
-) -> Vec<Buffer> {
+pub fn split_batch_to_offsets(texts: Vec<String>, options: Option<SplitOptions>) -> Vec<Buffer> {
     let cfg = Resolved::from_opts(options.as_ref());
     texts
         .into_iter()
@@ -440,10 +432,7 @@ mod tests {
 
     #[test]
     fn batch_split() {
-        let out = split_batch(
-            vec!["A. B.".to_string(), "C! D?".to_string()],
-            None,
-        );
+        let out = split_batch(vec!["A. B.".to_string(), "C! D?".to_string()], None);
         assert_eq!(out.len(), 2);
         assert_eq!(out[0].len(), 2);
         assert_eq!(out[1].len(), 2);

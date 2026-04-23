@@ -7,8 +7,7 @@
 //! supported; rebuild the index if documents change.
 
 use amigo_search_core::{
-    Bm25Params, Index, bm25_scores, en_stopwords_sorted, tokenize,
-    tokenize_with_stopwords,
+    Bm25Params, Index, bm25_scores, en_stopwords_sorted, tokenize, tokenize_with_stopwords,
 };
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -181,12 +180,10 @@ mod tests {
     fn limit_honored() {
         let idx = Bm25Index::new(None);
         for i in 0..10 {
-            idx.add_doc(format!("{i}"), "rust lang programming".into()).unwrap();
+            idx.add_doc(format!("{i}"), "rust lang programming".into())
+                .unwrap();
         }
-        let hits = idx.search(
-            "rust".into(),
-            Some(SearchOptions { limit: Some(3) }),
-        );
+        let hits = idx.search("rust".into(), Some(SearchOptions { limit: Some(3) }));
         assert_eq!(hits.len(), 3);
     }
 
@@ -197,7 +194,8 @@ mod tests {
             b: None,
             remove_stopwords: Some(true),
         }));
-        idx.add_doc("a".into(), "the quick brown fox".into()).unwrap();
+        idx.add_doc("a".into(), "the quick brown fox".into())
+            .unwrap();
         let hits = idx.search("the".into(), None);
         // "the" is stopword-filtered, so no hits.
         assert!(hits.is_empty());

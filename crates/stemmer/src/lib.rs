@@ -59,7 +59,7 @@ const EN_STOPWORDS: &[&str] = &[
 
 #[inline]
 fn is_en_stopword(tok: &str) -> bool {
-    EN_STOPWORDS.iter().any(|s| *s == tok)
+    EN_STOPWORDS.contains(&tok)
 }
 
 fn stem_one<'a>(stemmer: &InnerStemmer, word: &'a str) -> Cow<'a, str> {
@@ -98,8 +98,8 @@ impl Stemmer {
     /// JS-string marshalling.
     #[napi]
     pub fn stem_buffer(&self, buffer: Buffer) -> Result<Buffer> {
-        let input = std::str::from_utf8(buffer.as_ref())
-            .map_err(|e| Error::from_reason(e.to_string()))?;
+        let input =
+            std::str::from_utf8(buffer.as_ref()).map_err(|e| Error::from_reason(e.to_string()))?;
         let mut out = String::with_capacity(input.len());
         let mut first = true;
         for line in input.split('\n') {
@@ -117,16 +117,11 @@ impl Stemmer {
     /// crossing. This is the realistic hot-path — callers rarely have a
     /// pre-tokenised word list; they have documents.
     #[napi]
-    pub fn tokenize_and_stem(
-        &self,
-        text: String,
-        options: Option<TokenizeOptions>,
-    ) -> Vec<String> {
+    pub fn tokenize_and_stem(&self, text: String, options: Option<TokenizeOptions>) -> Vec<String> {
         let opts = options.unwrap_or_default();
         let lowercase = opts.lowercase.unwrap_or(true);
         let min_len = opts.min_token_length.unwrap_or(2) as usize;
-        let stopwords_en =
-            opts.stopwords_en.unwrap_or(false) && self.language == "english";
+        let stopwords_en = opts.stopwords_en.unwrap_or(false) && self.language == "english";
 
         text.unicode_words()
             .filter_map(|w| {
@@ -158,8 +153,7 @@ impl Stemmer {
         let opts = options.unwrap_or_default();
         let lowercase = opts.lowercase.unwrap_or(true);
         let min_len = opts.min_token_length.unwrap_or(2) as usize;
-        let stopwords_en =
-            opts.stopwords_en.unwrap_or(false) && self.language == "english";
+        let stopwords_en = opts.stopwords_en.unwrap_or(false) && self.language == "english";
 
         let mut out = String::with_capacity(text.len());
         let mut first = true;

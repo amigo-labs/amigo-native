@@ -9,14 +9,13 @@
 //! in v0.1 — imports are rejected with a clear error. Supply-chain
 //! risk isn't worth the opt-in in a library context.
 
-use comemo::Prehashed;
 use ecow::EcoString;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 use typst::diag::{FileError, FileResult, SourceDiagnostic};
-use typst::foundations::{Bytes, Datetime, Dict, IntoValue, Smart, Value};
+use typst::foundations::{Bytes, Datetime, Dict, Value};
 use typst::layout::PagedDocument;
 use typst::syntax::{FileId, Source, VirtualPath};
 use typst::text::{Font, FontBook};
@@ -24,20 +23,12 @@ use typst::utils::LazyHash;
 use typst::{Library, World};
 
 #[napi(object)]
+#[derive(Default)]
 pub struct CompileOptions {
     /// Optional JSON-serializable object injected as `sys.inputs`.
     pub data: Option<HashMap<String, String>>,
     /// Additional font TTF / OTF buffers to register.
     pub fonts: Option<Vec<Buffer>>,
-}
-
-impl Default for CompileOptions {
-    fn default() -> Self {
-        Self {
-            data: None,
-            fonts: None,
-        }
-    }
 }
 
 #[napi(object)]
@@ -54,22 +45,14 @@ pub struct CompileResult {
 
 // ───── shared font set ─────────────────────────────────────────────
 
-struct LoadedFont {
-    buffer: Bytes,
-    font: Font,
-}
-
-fn bundled_fonts() -> &'static [LoadedFont] {
-    static FONTS: OnceLock<Vec<LoadedFont>> = OnceLock::new();
+fn bundled_fonts() -> &'static [Font] {
+    static FONTS: OnceLock<Vec<Font>> = OnceLock::new();
     FONTS.get_or_init(|| {
         let mut out = Vec::new();
         for data in typst_assets::fonts() {
             let buffer = Bytes::new(data);
-            for font in Font::iter(buffer.clone()) {
-                out.push(LoadedFont {
-                    buffer: buffer.clone(),
-                    font,
-                });
+            for font in Font::iter(buffer) {
+                out.push(font);
             }
         }
         out
@@ -84,16 +67,12 @@ struct AmigoWorld {
     fonts: Vec<Font>,
     main_id: FileId,
     source: Source,
-    data: Dict,
 }
 
 impl AmigoWorld {
     fn build(source: String, data: Dict, extra_fonts: Vec<Vec<u8>>) -> Self {
         // Merge bundled fonts + caller-provided fonts.
-        let mut all_fonts: Vec<Font> = bundled_fonts()
-            .iter()
-            .map(|lf| lf.font.clone())
-            .collect();
+        let mut all_fonts: Vec<Font> = bundled_fonts().to_vec();
         for bytes in extra_fonts {
             let buf = Bytes::new(bytes);
             for font in Font::iter(buf) {
@@ -107,9 +86,7 @@ impl AmigoWorld {
         let source = Source::new(main_id, source);
 
         // Library with `sys.inputs` populated from `data`.
-        let library = Library::builder()
-            .with_inputs(data.clone())
-            .build();
+        let library = Library::builder().with_inputs(data).build();
 
         AmigoWorld {
             library: LazyHash::new(library),
@@ -117,7 +94,6 @@ impl AmigoWorld {
             fonts: all_fonts,
             main_id,
             source,
-            data,
         }
     }
 }
@@ -282,11 +258,7 @@ Hello #name
 
     #[test]
     fn batch_compile() {
-        let out = compile_many(
-            vec!["A".to_string(), "B".to_string()],
-            None,
-        )
-        .unwrap();
+        let out = compile_many(vec!["A".to_string(), "B".to_string()], None).unwrap();
         assert_eq!(out.len(), 2);
         for r in out {
             assert!(r.pdf.starts_with(b"%PDF-"));

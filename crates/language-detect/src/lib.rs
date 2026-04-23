@@ -134,7 +134,7 @@ pub fn detect_many(texts: Vec<String>, options: Option<DetectOptions>) -> Vec<St
 /// True iff `whatlang` recognises the given ISO-639-3 code (lowercase).
 #[napi(js_name = "languageExists")]
 pub fn language_exists(code: String) -> bool {
-    Lang::from_code(&code.to_ascii_lowercase()).is_some()
+    Lang::from_code(code.to_ascii_lowercase()).is_some()
 }
 
 #[cfg(test)]
@@ -143,7 +143,10 @@ mod tests {
 
     #[test]
     fn detects_english() {
-        let result = detect("The quick brown fox jumps over the lazy dog".to_string(), None);
+        let result = detect(
+            "The quick brown fox jumps over the lazy dog".to_string(),
+            None,
+        );
         assert_eq!(result, "eng");
     }
 

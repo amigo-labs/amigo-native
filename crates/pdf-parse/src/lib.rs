@@ -46,17 +46,15 @@ fn object_to_string(o: &Object) -> Option<String> {
 
 fn extract_info(doc: &Document) -> HashMap<String, String> {
     let mut out = HashMap::new();
-    if let Ok(trailer_info) = doc.trailer.get(b"Info") {
-        if let Ok(info_ref) = trailer_info.as_reference() {
-            if let Ok(info_obj) = doc.get_object(info_ref) {
-                if let Ok(dict) = info_obj.as_dict() {
-                    for (key, value) in dict.iter() {
-                        let k = String::from_utf8_lossy(key).to_string();
-                        if let Some(v) = object_to_string(value) {
-                            out.insert(k, v);
-                        }
-                    }
-                }
+    if let Ok(trailer_info) = doc.trailer.get(b"Info")
+        && let Ok(info_ref) = trailer_info.as_reference()
+        && let Ok(info_obj) = doc.get_object(info_ref)
+        && let Ok(dict) = info_obj.as_dict()
+    {
+        for (key, value) in dict.iter() {
+            let k = String::from_utf8_lossy(key).to_string();
+            if let Some(v) = object_to_string(value) {
+                out.insert(k, v);
             }
         }
     }
@@ -77,10 +75,9 @@ fn extract_metadata(doc: &Document) -> Option<String> {
 fn parse_impl(buf: Vec<u8>, options: PdfParseOptions) -> Result<PdfParseResult> {
     // First attempt: extract text via pdf-extract (handles complex
     // content-streams, font mapping, ligature expansion).
-    let text = std::panic::catch_unwind(|| {
-        pdf_extract::extract_text_from_mem(&buf).unwrap_or_default()
-    })
-    .unwrap_or_default();
+    let text =
+        std::panic::catch_unwind(|| pdf_extract::extract_text_from_mem(&buf).unwrap_or_default())
+            .unwrap_or_default();
 
     // Apply `max` page limit if requested. `pdf-extract` doesn't
     // expose per-page slicing; approximate by truncating on form-feed

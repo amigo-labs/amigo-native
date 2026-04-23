@@ -2,11 +2,12 @@
 //! @amigo-labs/minisearch. Internal-only crate (not published to npm).
 //!
 //! Contents:
-//!   - `tokenize()`        — unicode-safe word tokenizer with optional
-//!                           stemming stub and stopword filtering.
-//!   - `Index`             — per-field inverted index with document
-//!                           frequency, term frequency, and doc lengths.
-//!   - `bm25_scores()`     — BM25 ranking (k1=1.5, b=0.75 defaults).
+//!
+//!   - `tokenize()` — unicode-safe word tokenizer with optional
+//!     stemming stub and stopword filtering.
+//!   - `Index` — per-field inverted index with document frequency,
+//!     term frequency, and doc lengths.
+//!   - `bm25_scores()` — BM25 ranking (k1=1.5, b=0.75 defaults).
 //!
 //! Deliberately minimal: no I/O, no NAPI types. The public npm
 //! wrappers (`crates/bm25/`, `crates/minisearch/`) own the FFI
@@ -147,9 +148,8 @@ pub fn bm25_scores<Id: Clone>(
         for &(doc_idx, tf) in postings {
             let dl = index.doc_lengths[doc_idx] as f64;
             let tf = tf as f64;
-            let norm =
-                tf * (params.k1 + 1.0)
-                    / (tf + params.k1 * (1.0 - params.b + params.b * dl / index.avg_doc_len));
+            let norm = tf * (params.k1 + 1.0)
+                / (tf + params.k1 * (1.0 - params.b + params.b * dl / index.avg_doc_len));
             *scores.entry(doc_idx).or_insert(0.0) += idf * norm;
         }
     }
@@ -174,21 +174,131 @@ pub fn prefix_match<Id: Clone>(index: &Index<Id>, prefix: &str) -> Vec<String> {
 
 /// Built-in English stopwords, sorted for binary search.
 pub const EN_STOPWORDS: &[&str] = &[
-    "a", "about", "above", "after", "again", "against", "all", "am", "an",
-    "and", "any", "are", "as", "at", "be", "because", "been", "before",
-    "being", "below", "between", "both", "but", "by", "could", "did", "do",
-    "does", "doing", "down", "during", "each", "few", "for", "from",
-    "further", "had", "has", "have", "having", "he", "her", "here", "hers",
-    "herself", "him", "himself", "his", "how", "i", "if", "in", "into",
-    "is", "it", "its", "itself", "just", "me", "more", "most", "my",
-    "myself", "no", "nor", "not", "now", "of", "off", "on", "once", "only",
-    "or", "other", "our", "ours", "ourselves", "out", "over", "own", "same",
-    "she", "should", "so", "some", "such", "than", "that", "the", "their",
-    "theirs", "them", "themselves", "then", "there", "these", "they",
-    "this", "those", "through", "to", "too", "under", "until", "up", "very",
-    "was", "we", "were", "what", "when", "where", "which", "while", "who",
-    "whom", "why", "will", "with", "would", "you", "your", "yours",
-    "yourself", "yourselves",
+    "a",
+    "about",
+    "above",
+    "after",
+    "again",
+    "against",
+    "all",
+    "am",
+    "an",
+    "and",
+    "any",
+    "are",
+    "as",
+    "at",
+    "be",
+    "because",
+    "been",
+    "before",
+    "being",
+    "below",
+    "between",
+    "both",
+    "but",
+    "by",
+    "could",
+    "did",
+    "do",
+    "does",
+    "doing",
+    "down",
+    "during",
+    "each",
+    "few",
+    "for",
+    "from",
+    "further",
+    "had",
+    "has",
+    "have",
+    "having",
+    "he",
+    "her",
+    "here",
+    "hers",
+    "herself",
+    "him",
+    "himself",
+    "his",
+    "how",
+    "i",
+    "if",
+    "in",
+    "into",
+    "is",
+    "it",
+    "its",
+    "itself",
+    "just",
+    "me",
+    "more",
+    "most",
+    "my",
+    "myself",
+    "no",
+    "nor",
+    "not",
+    "now",
+    "of",
+    "off",
+    "on",
+    "once",
+    "only",
+    "or",
+    "other",
+    "our",
+    "ours",
+    "ourselves",
+    "out",
+    "over",
+    "own",
+    "same",
+    "she",
+    "should",
+    "so",
+    "some",
+    "such",
+    "than",
+    "that",
+    "the",
+    "their",
+    "theirs",
+    "them",
+    "themselves",
+    "then",
+    "there",
+    "these",
+    "they",
+    "this",
+    "those",
+    "through",
+    "to",
+    "too",
+    "under",
+    "until",
+    "up",
+    "very",
+    "was",
+    "we",
+    "were",
+    "what",
+    "when",
+    "where",
+    "which",
+    "while",
+    "who",
+    "whom",
+    "why",
+    "will",
+    "with",
+    "would",
+    "you",
+    "your",
+    "yours",
+    "yourself",
+    "yourselves",
 ];
 
 pub fn en_stopwords_sorted() -> Vec<String> {

@@ -7,7 +7,7 @@
 //! layout. See the `layout()` entry point.
 
 use napi_derive::napi;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, VecDeque};
 
 #[napi(object)]
 #[derive(Clone)]
@@ -93,7 +93,6 @@ struct Graph {
     radj: Vec<Vec<usize>>,
     minlen: HashMap<(usize, usize), u32>,
     edges: Vec<(usize, usize)>,
-    id_to_idx: HashMap<String, usize>,
 }
 
 fn build_graph(spec: &LayoutSpec) -> Graph {
@@ -137,7 +136,6 @@ fn build_graph(spec: &LayoutSpec) -> Graph {
         radj,
         minlen,
         edges,
-        id_to_idx,
     }
 }
 
@@ -149,10 +147,7 @@ fn assign_ranks(g: &Graph) -> Vec<u32> {
 
     // Topological ordering (Kahn's algorithm). Nodes participating in
     // cycles fall back to rank 0.
-    let mut indeg = vec![0usize; g.n];
-    for v in 0..g.n {
-        indeg[v] = g.radj[v].len();
-    }
+    let mut indeg: Vec<usize> = g.radj.iter().map(|l| l.len()).collect();
     let mut queue: VecDeque<usize> = (0..g.n).filter(|&v| indeg[v] == 0).collect();
     let mut visited = 0usize;
     while let Some(u) = queue.pop_front() {
@@ -203,12 +198,7 @@ fn reduce_crossings(g: &Graph, buckets: &mut [Vec<usize>]) {
     }
 }
 
-fn sort_by_barycenter(
-    g: &Graph,
-    buckets: &mut [Vec<usize>],
-    rank: usize,
-    use_predecessors: bool,
-) {
+fn sort_by_barycenter(g: &Graph, buckets: &mut [Vec<usize>], rank: usize, use_predecessors: bool) {
     // Position map: node -> index within its rank.
     let mut pos = vec![0usize; g.n];
     for (r_idx, bucket) in buckets.iter().enumerate() {
@@ -243,7 +233,11 @@ fn sort_by_barycenter(
 }
 
 fn barycentre(g: &Graph, node: usize, use_predecessors: bool, pos: &[usize]) -> f64 {
-    let neighbors = if use_predecessors { &g.radj[node] } else { &g.adj[node] };
+    let neighbors = if use_predecessors {
+        &g.radj[node]
+    } else {
+        &g.adj[node]
+    };
     if neighbors.is_empty() {
         return f64::INFINITY;
     }
@@ -264,10 +258,7 @@ fn assign_coordinates(
     let mut max_width = 0.0f64;
     for bucket in buckets.iter() {
         // Row height = max node height in this rank.
-        let row_h = bucket
-            .iter()
-            .map(|&i| g.heights[i])
-            .fold(0.0f64, f64::max);
+        let row_h = bucket.iter().map(|&i| g.heights[i]).fold(0.0f64, f64::max);
         let mut cur_x = opts.marginx;
         for &i in bucket.iter() {
             x[i] = cur_x + g.widths[i] / 2.0;
@@ -501,10 +492,7 @@ mod tests {
 
     #[test]
     fn edges_have_two_points() {
-        let spec = mk(
-            &[("a", 50.0, 30.0), ("b", 50.0, 30.0)],
-            &[("a", "b")],
-        );
+        let spec = mk(&[("a", 50.0, 30.0), ("b", 50.0, 30.0)], &[("a", "b")]);
         let r = layout(spec);
         assert_eq!(r.edges.len(), 1);
         assert_eq!(r.edges[0].points.len(), 2);
