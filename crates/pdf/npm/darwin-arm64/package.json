@@ -1,0 +1,16 @@
+{
+  "name": "@amigo-labs/pdf-darwin-arm64",
+  "version": "0.1.0",
+  "os": ["darwin"],
+  "cpu": ["arm64"],
+  "main": "pdf.darwin-arm64.node",
+  "files": ["pdf.darwin-arm64.node"],
+  "description": "Prebuilt binary for @amigo-labs/pdf on darwin-arm64",
+  "license": "MIT",
+  "engines": { "node": ">= 18" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/pdf"
+  }
+}
