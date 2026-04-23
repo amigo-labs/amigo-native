@@ -4,41 +4,41 @@
 
 ## Verdict
 
-Perf wäre wahrscheinlich Yellow/Green, aber `js-yaml` ist de facto ein YAML-1.1-Parser mit zehn Jahren Ruby-Psych-Kompat-Ballast — ein drop-in mit `saphyr` (YAML 1.2 strict) ist keine Kompat-Ersetzung, sondern ein anderes Paket.
+Perf would probably be Yellow/Green, but `js-yaml` is effectively a YAML-1.1 parser with ten years of Ruby-Psych compat ballast — a drop-in with `saphyr` (YAML 1.2 strict) isn't a compat replacement, it's a different package.
 
 ## JS package
 
 - **npm:** `js-yaml`
-- **Downloads:** ~156M/Woche
-- **Exports / API surface:** `load`, `loadAll`, `dump`, Custom-Types-System (`Type`, `Schema`, `DEFAULT_SCHEMA`, `CORE_SCHEMA`, `FAILSAFE_SCHEMA`), Error-Klassen
-- **Typical input:** UTF-8 YAML-Dokument, 100 B – 100 KB (CI-Configs, k8s-Manifeste)
-- **Typical output:** Beliebiger JS-Graph (Objects/Arrays/Primitives)
-- **Realistic median use-case:** einmalige Config-Datei beim Start eines Tools parsen; seltene Hot-Loops
+- **Downloads:** ~156M/week
+- **Exports / API surface:** `load`, `loadAll`, `dump`, custom-types system (`Type`, `Schema`, `DEFAULT_SCHEMA`, `CORE_SCHEMA`, `FAILSAFE_SCHEMA`), error classes
+- **Typical input:** UTF-8 YAML document, 100 B – 100 KB (CI configs, k8s manifests)
+- **Typical output:** arbitrary JS graph (objects/arrays/primitives)
+- **Realistic median use-case:** parse a config file once at tool startup; rarely a hot loop
 
 ## Rust replacement
 
-- **Candidate crate(s):** `saphyr` (YAML 1.2 strict), `serde_yaml` (deprecated), `yaml-rust2` (Nachfolger)
-- **Maintenance / license:** `saphyr` aktiv, MIT/Apache; `serde_yaml` archiviert (2024)
-- **Known gotchas / divergences:** YAML 1.1 vs. 1.2 (boolsches `yes`/`no`, Sexagesimal, Okt-Notation), Custom-Tags (`!!js/regexp`, `!!js/function`), Anchor-Aliasing-Semantik, Merge-Keys (`<<:`), Fehler-Positionen für Toolchains
+- **Candidate crate(s):** `saphyr` (YAML 1.2 strict), `serde_yaml` (deprecated), `yaml-rust2` (successor)
+- **Maintenance / license:** `saphyr` active, MIT/Apache; `serde_yaml` archived (2024)
+- **Known gotchas / divergences:** YAML 1.1 vs. 1.2 (boolean `yes`/`no`, sexagesimal, octal notation), custom tags (`!!js/regexp`, `!!js/function`), anchor-aliasing semantics, merge keys (`<<:`), error positions for toolchains
 
 ## BACKLOG check
 
-Aktuelle BACKLOG-Einordnung: *Parity too expensive* — 1:1 bestätigt. Die Entscheidung steht.
+Current BACKLOG classification: *Parity too expensive* — confirmed 1:1. The decision stands.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Substantiell ab ~10 KB; bei 1 KB Config vs. `js-yaml` V8-JIT nur ~1.5× denkbar |
-| Input size distribution | Bytes-in, `Buffer`-overload möglich → FFI-Kosten vernachlässigbar bei Median |
-| Output size distribution | Object-Graph-Materialisierung über NAPI ist teuer (`JsObject::set_named_property` pro Feld ist eine FFI-Kreuzung) |
-| Reusable setup (stateful potential) | Kein Schema-Cache nötig — Loader ist zustandslos |
-| Batch-usage realism | Typisch nicht gebatcht (eine Config pro Prozessstart) |
-| FFI-share estimate vs. Rust work | Output-Materialisierung dominiert, siehe `deep-equal`-Post-Mortem |
+| Per-call algorithmic work | Substantial from ~10 KB; at 1 KB config vs. `js-yaml`'s V8 JIT only ~1.5× conceivable |
+| Input size distribution | Bytes-in, `Buffer` overload possible → FFI cost negligible at the median |
+| Output size distribution | Object-graph materialization over NAPI is expensive (`JsObject::set_named_property` per field is an FFI crossing) |
+| Reusable setup (stateful potential) | No schema cache needed — the loader is stateless |
+| Batch-usage realism | Usually not batched (one config per process start) |
+| FFI-share estimate vs. Rust work | Output materialization dominates, see `deep-equal` post-mortem |
 
 ## Classification reasoning
 
-Perf-Seite alleine wäre Yellow: große YAMLs (k8s-Manifeste, CI-Matrizen) skalieren gut, aber der Median-Fall ist ≤1 KB und V8+`js-yaml` bewältigt das in ~50 µs — knapp über dem FFI-Floor. Entscheidender Killer ist Parity: `js-yaml` emuliert **YAML 1.1** (Default-Schema), akzeptiert Ruby-Psych-Custom-Tags und liefert extrem spezifische Fehlertypen/-positionen, gegen die Tools wie ESLint, Docusaurus, Webpack testen. `saphyr` ist strict 1.2. Das ist kein Drop-in — das ist ein anderes Paket mit denselben Nutzern.
+Perf side alone would be Yellow: large YAMLs (k8s manifests, CI matrices) scale well, but the median case is ≤1 KB and V8+`js-yaml` handles that in ~50 µs — just above the FFI floor. The decisive killer is parity: `js-yaml` emulates **YAML 1.1** (default schema), accepts Ruby-Psych custom tags, and produces very specific error types/positions that tools like ESLint, Docusaurus, Webpack test against. `saphyr` is strict 1.2. That isn't a drop-in — it's a different package with the same users.
 
 ## If NO-GO — BACKLOG entry
 

@@ -4,41 +4,41 @@
 
 ## Verdict
 
-`cosmiconfig` ist fs-Traversal: suche `.fooconfig.js`, `.fooconfig.json`, `foo.config.ts`, `package.json#foo` hoch durchs Dateisystem, bis gefunden. Bottleneck ist `fs.stat`/`fs.readFile`, nicht CPU. NAPI würde zwischen Rust und Nodes fs eine zusätzliche Kreuzung einfügen.
+`cosmiconfig` is fs traversal: search for `.fooconfig.js`, `.fooconfig.json`, `foo.config.ts`, `package.json#foo` up the filesystem until found. The bottleneck is `fs.stat`/`fs.readFile`, not CPU. NAPI would add an extra crossing between Rust and Node's fs.
 
 ## JS package
 
 - **npm:** `cosmiconfig`
-- **Downloads:** ~143M/Woche
+- **Downloads:** ~143M/week
 - **Exports / API surface:** `cosmiconfig(moduleName, options)` → `{ search(from), load(filepath), clearCaches() }`, async + sync
-- **Typical input:** Start-Directory, durchsucht bis zur Home-Directory
-- **Typical output:** `{ config, filepath }` oder `null`
-- **Realistic median use-case:** Tool-Start (ESLint, Prettier, Stylelint) sucht Config-Datei — einmal pro Lauf
+- **Typical input:** start directory, searched up to the home directory
+- **Typical output:** `{ config, filepath }` or `null`
+- **Realistic median use-case:** tool startup (ESLint, Prettier, Stylelint) searching for a config file — once per run
 
 ## Rust replacement
 
-- **Candidate crate(s):** kein direkter Ersatz. `figment`, `config-rs` sind andere Philosophie (explizite Sources)
+- **Candidate crate(s):** no direct replacement. `figment`, `config-rs` follow a different philosophy (explicit sources)
 - **Maintenance / license:** n/a
-- **Known gotchas / divergences:** `cosmiconfig` lädt `.ts`/`.mjs`/`.cjs`-Configs durch Node-Require-Hook — das muss JS machen, nicht Rust
+- **Known gotchas / divergences:** `cosmiconfig` loads `.ts`/`.mjs`/`.cjs` configs through Node's require hook — that has to be done by JS, not Rust
 
 ## BACKLOG check
 
-BACKLOG: *FFI overhead > gain* — bestätigt. Klassifikation: I/O-bound, nicht CPU-bound.
+BACKLOG: *FFI overhead > gain* — confirmed. Classification: I/O-bound, not CPU-bound.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Minimal — Pfad-String-Manipulation + fs-Calls |
-| Input size distribution | Pfade, klein |
-| Output size distribution | Config-Object (JSON-parsed) |
-| Reusable setup (stateful potential) | Cache für search-Ergebnisse — schon in JS implementiert |
-| Batch-usage realism | Null |
-| FFI-share estimate vs. Rust work | Rust müsste fs durch `std::fs` oder `tokio::fs` machen — eigene I/O-Implementierung parallel zu libuv, kein Gain |
+| Per-call algorithmic work | Minimal — path-string manipulation + fs calls |
+| Input size distribution | Paths, small |
+| Output size distribution | Config object (JSON-parsed) |
+| Reusable setup (stateful potential) | Cache for search results — already implemented in JS |
+| Batch-usage realism | Zero |
+| FFI-share estimate vs. Rust work | Rust would have to do fs via `std::fs` or `tokio::fs` — its own I/O implementation parallel to libuv, no gain |
 
 ## Classification reasoning
 
-`cosmiconfig` verbringt 99% der Zeit in `fs.stat` (existiert die Datei?) und `fs.readFile`. Diese Syscalls durchlaufen ohnehin den OS-Kernel — ob aufgerufen aus Rust oder JS ist egal, aber der Wechsel Rust→JS oder Rust-`std::fs`→Kernel spart nichts. Zusätzlich: Die killer-Feature von `cosmiconfig` — das Laden von `.ts`/`.mjs`-Configs — ist pure Node-Semantik (`require`/dynamic-import-Hook). Rust kann `.ts` nicht ausführen. Ein Rust-`cosmiconfig` wäre also zwingend ein Subset, wodurch Drop-in-Parity verloren geht.
+`cosmiconfig` spends 99% of its time in `fs.stat` (does the file exist?) and `fs.readFile`. These syscalls go through the OS kernel anyway — whether called from Rust or JS doesn't matter, but the switch Rust→JS or Rust `std::fs`→kernel saves nothing. On top of that: `cosmiconfig`'s killer feature — loading `.ts`/`.mjs` configs — is pure Node semantics (`require`/dynamic-import hook). Rust cannot execute `.ts`. A Rust `cosmiconfig` would therefore necessarily be a subset, and that breaks drop-in parity.
 
 ## If NO-GO — BACKLOG entry
 

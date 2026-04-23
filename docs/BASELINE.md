@@ -1,111 +1,110 @@
-# FFI-Overhead-Baseline
+# FFI Overhead Baseline
 
-> Was kostet ein `@amigo-labs/*`-Call, bevor irgendeine eigentliche
-> Arbeit passiert? Diese Zahlen sind der Referenzwert für jede andere
-> Perf-Diskussion in diesem Repo. Ein Package das pro Call weniger
-> echtes Work macht als diese Tabelle zeigt, kann die Alternative in JS
-> strukturell nicht schlagen — egal wie schnell der Rust-Code selbst
-> ist.
+> What does an `@amigo-labs/*` call cost before any actual work
+> happens? These numbers are the reference point for every other
+> perf discussion in this repo. A package that does less real work
+> per call than this table shows cannot structurally beat the JS
+> alternative — no matter how fast the Rust code itself is.
 
-## Messaufbau
+## Measurement Setup
 
-- Crate: `crates/_ffi-bench/` (nicht publiziert, `publish = false`)
-- Harness: `vitest bench` (`npm run bench` im Crate)
-- Release-Profil: `lto = true, codegen-units = 1, strip = "symbols", panic = "abort"`
-- Node: v22.22.2 auf linux/x64 (glibc)
+- Crate: `crates/_ffi-bench/` (not published, `publish = false`)
+- Harness: `vitest bench` (`npm run bench` inside the crate)
+- Release profile: `lto = true, codegen-units = 1, strip = "symbols", panic = "abort"`
+- Node: v22.22.2 on linux/x64 (glibc)
 
-Alle fünf Primitive machen pro Call **keine** eigentliche Arbeit — sie
-messen nur, was die N-API-Grenze an Fixkosten produziert.
+All five primitives perform **no** actual work per call — they only
+measure the fixed costs produced by the N-API boundary.
 
-## Messung
+## Measurements
 
 | Primitive | Ops/s | Per-Call | Interpretation |
 |---|---:|---:|---|
-| `noop()` | 9,15 M | **109 ns** | Der **harte Floor**. Jeder NAPI-Call zahlt das, Punkt. |
-| `echoString(s) → String`, 10 B | 4,28 M | ~234 ns | +125 ns: zwei Mini-UTF-16/UTF-8-Konvertierungen. |
-| `echoString` 1 KB | 1,28 M | ~780 ns | +670 ns ≈ 0,6 ns/byte Mehrkosten. |
-| `echoString` 100 KB | 28,8 k | ~34,7 µs | ~0,35 ns/byte, skaliert praktisch linear. |
-| `echoBuffer(b) → Buffer`, 1 KB | 5,56 M | ~180 ns | Nur +70 ns auf noop. |
-| `echoBuffer` 100 KB | 5,75 M | ~174 ns | **Flat**. |
-| `echoBuffer` 10 MB | 5,58 M | ~179 ns | **Flat auch bei 10 MB** — Buffer ist eine V8-Handle, kein memcpy. |
-| `sumArray(xs: Vec<u32>)`, 10 Elemente | 1,44 M | ~694 ns | ~58 ns pro u32 oben auf den Fixkosten. |
-| `sumArray` 1000 Elemente | 23,0 k | ~43,4 µs | **~43 ns pro u32** für Array-Marshalling. |
-| `sumArray` 100 000 Elemente | 233 | ~4,29 ms | ~43 ns pro u32 — skaliert linear. |
+| `noop()` | 9.15 M | **109 ns** | The **hard floor**. Every NAPI call pays this, period. |
+| `echoString(s) → String`, 10 B | 4.28 M | ~234 ns | +125 ns: two tiny UTF-16/UTF-8 conversions. |
+| `echoString` 1 KB | 1.28 M | ~780 ns | +670 ns ≈ 0.6 ns/byte of extra cost. |
+| `echoString` 100 KB | 28.8 k | ~34.7 µs | ~0.35 ns/byte, scales essentially linearly. |
+| `echoBuffer(b) → Buffer`, 1 KB | 5.56 M | ~180 ns | Only +70 ns on top of noop. |
+| `echoBuffer` 100 KB | 5.75 M | ~174 ns | **Flat**. |
+| `echoBuffer` 10 MB | 5.58 M | ~179 ns | **Flat even at 10 MB** — a Buffer is a V8 handle, not a memcpy. |
+| `sumArray(xs: Vec<u32>)`, 10 elements | 1.44 M | ~694 ns | ~58 ns per u32 on top of the fixed costs. |
+| `sumArray` 1000 elements | 23.0 k | ~43.4 µs | **~43 ns per u32** for array marshalling. |
+| `sumArray` 100,000 elements | 233 | ~4.29 ms | ~43 ns per u32 — scales linearly. |
 
-## Was das heißt
+## What This Means
 
-### 1. Der Floor ist 109 ns
+### 1. The Floor is 109 ns
 
-Für jedes Package im Repo gilt: **eine Rust-Funktion, die gerufen und
-ein Ergebnis zurückgibt, kostet mindestens 109 ns**. Wenn die JS-
-Alternative für denselben Input < 109 ns braucht — zum Beispiel weil
-sie nur auf einem vorberechneten Buffer arbeitet — hat Rust keine
-Chance. Bei `nanoid` war genau das der Befund: nanoid@5 braucht ~260
-ns pro Call; ein Rust-Binding kostete ~1500 ns (siehe Phase B unten
-für die Messung). Deswegen wurde `nanoid` auf pure-JS umgestellt.
+For every package in the repo: **a Rust function that gets called
+and returns a result costs at least 109 ns**. If the JS alternative
+needs < 109 ns for the same input — for example because it only
+operates on a precomputed buffer — Rust has no chance. With
+`nanoid` that was exactly the finding: nanoid@5 takes ~260 ns per
+call; a Rust binding cost ~1500 ns (see Phase B below for the
+measurement). That's why `nanoid` was switched to pure JS.
 
-### 2. Strings kosten je 100 KB etwa 35 µs
+### 2. Strings Cost About 35 µs per 100 KB
 
-Jedes `fn foo(s: String) -> String` zahlt an beiden Enden der FFI die
-UTF-16 ↔ UTF-8-Konvertierung. Bei großen Texten frisst das genug
-Zeit, dass jeder Algorithmus der weniger als ~0,5 ns/byte echten
-Compute macht, vom Konvertieren selbst überholt wird. Beobachtung:
-`encoding`'s UTF-8-encode-10MB war vor dem Fix 2,1× langsamer als
-`iconv-lite`, weil wir 10 MB zweimal durch den FFI-Konvertierer
-schickten (Input + Output) und noch einen `.into_owned()` obendrauf.
+Every `fn foo(s: String) -> String` pays the UTF-16 ↔ UTF-8
+conversion at both ends of the FFI. For large texts that eats up
+enough time that any algorithm doing less than ~0.5 ns/byte of real
+compute is overtaken by the conversion itself. Observation:
+`encoding`'s UTF-8-encode-10MB was 2.1× slower than `iconv-lite`
+before the fix, because we were sending 10 MB through the FFI
+converter twice (input + output) with an extra `.into_owned()` on
+top.
 
-**Faustregel:** Wenn der Rust-Code pro Byte weniger macht als ~1 ns
-echten Compute, entweder
-- den String-Input durch einen `Buffer`-Input ersetzen (Zero-Copy,
-  Caller hält die Bytes), oder
-- das Package in pure JS neu schreiben (wie `nanoid`), oder
-- erst gar nicht portieren.
+**Rule of thumb:** If the Rust code does less than ~1 ns per byte of
+real compute, either
+- replace the string input with a `Buffer` input (zero-copy, the
+  caller owns the bytes), or
+- rewrite the package in pure JS (like `nanoid`), or
+- don't port it in the first place.
 
-### 3. Buffer ist essentiell flat — das ist die schnelle Lane
+### 3. Buffers Are Essentially Flat — That's the Fast Lane
 
-`echoBuffer` ist **flach auf ~180 ns von 1 KB bis 10 MB**. Das ist der
-entscheidende Unterschied: N-API-Buffer sind V8-Handles, die beim
-Crossing nur eine Referenz hin und her reichen — keine Kopie. **10 MB
-kosten exakt so viel wie 1 KB**: 180 ns.
+`echoBuffer` is **flat at ~180 ns from 1 KB to 10 MB**. That's the
+decisive difference: N-API buffers are V8 handles that only pass a
+reference back and forth when crossing — no copy. **10 MB costs
+exactly as much as 1 KB**: 180 ns.
 
-Konsequenz für jedes neue Package: **Bytes-in-Bytes-out ist immer der
-billigste Pfad.** Wenn der Output eines Algorithmus ein Binärblob ist
-(Hash, komprimierte Daten, Bildpixel, UTF-8-Bytes), zurückgeben als
-`Buffer`, niemals als `String` oder `Vec<u8>`.
+Consequence for every new package: **bytes-in-bytes-out is always
+the cheapest path.** If the output of an algorithm is a binary blob
+(hash, compressed data, image pixels, UTF-8 bytes), return it as a
+`Buffer`, never as a `String` or `Vec<u8>`.
 
-### 4. `Vec<T>`-Arrays sind teuer — 43 ns pro Element
+### 4. `Vec<T>` Arrays Are Expensive — 43 ns per Element
 
-`sumArray(Vec<u32>)` kostet ~43 ns pro Element. Ein Array von 1000
-u32 frisst 43 µs an reinem Marshalling — **das gleiche Datenvolumen
-als Buffer reingereicht kostet 180 ns**. Faktor **240× teurer**.
+`sumArray(Vec<u32>)` costs ~43 ns per element. An array of 1000
+u32s eats 43 µs of pure marshalling — **the same data volume passed
+in as a Buffer costs 180 ns**. Factor **240× more expensive**.
 
-Konsequenz: wenn eine Package-Funktion eine Liste von Zahlen oder
-Bytes verarbeitet, soll sie `Buffer` bzw. `Uint8Array` annehmen, nie
-`Vec<T>` von Primitives. Für u16/u32/f64 entsprechend `TypedArray`.
+Consequence: if a package function processes a list of numbers or
+bytes, it should accept a `Buffer` or `Uint8Array`, never `Vec<T>`
+of primitives. For u16/u32/f64 use the corresponding `TypedArray`.
 
-Beispiel aus dem Repo: `xxhash batch 1000 × 64 bytes` war 4,8 bis 5,7×
-langsamer als xxhash-wasm. Vermutung (zu verifizieren): Die Batch-API
-gibt Hashes als `Vec<BigInt>` zurück. Das sind 1000 BigInt-
-Konstruktionen + Array-Marshalling = ein großer Teil der Laufzeit. Ein
-zurückgegebener `Buffer` (1000 × 8 Bytes = 8 KB) wäre ~180 ns
-konstant.
+Example from the repo: `xxhash batch 1000 × 64 bytes` was 4.8 to
+5.7× slower than xxhash-wasm. Hypothesis (to be verified): the
+batch API returns hashes as `Vec<BigInt>`. That's 1000 BigInt
+constructions + array marshalling = a large chunk of the runtime.
+A returned `Buffer` (1000 × 8 bytes = 8 KB) would be ~180 ns flat.
 
-### 5. Was kriegt man für diese Fixkosten "zurück"?
+### 5. What Do You Get "Back" for These Fixed Costs?
 
-Damit ein Rust-Port sich lohnt, muss die Differenz zwischen
-**(Rust-Work + FFI-Overhead)** und **(JS-Work)** signifikant werden.
-Daumenregel:
+For a Rust port to pay off, the difference between **(Rust work +
+FFI overhead)** and **(JS work)** has to become significant. Rule
+of thumb:
 
-- JS-Work < 1 µs pro Call → Rust-Port lohnt sich nur mit Batch-API
-  oder wenn der Rust-Algorithmus dramatisch (10×+) schneller ist.
-- JS-Work 1–10 µs → 2× Speedup realistisch, wenn Rust-Algorithmus
-  messbar schneller ist und die FFI keine Vec-Marshalling-Falle hat.
-- JS-Work > 10 µs → FFI-Overhead unter 10 %, voller Rust-Gewinn
-  geht durch.
+- JS work < 1 µs per call → a Rust port only pays off with a batch
+  API or if the Rust algorithm is dramatically (10×+) faster.
+- JS work 1–10 µs → a 2× speedup is realistic if the Rust algorithm
+  is measurably faster and the FFI has no Vec-marshalling trap.
+- JS work > 10 µs → FFI overhead is under 10%, the full Rust win
+  comes through.
 
-Diese Zahlen hängen an deiner Hardware + Node-Version, aber die
-Größenordnungen bleiben stabil. Aktualisieren, wenn sich die Toolchain
-ändert (Node-Major-Bump, V8-Major-Bump, napi-rs-Major-Bump).
+These numbers depend on your hardware + Node version, but the
+orders of magnitude stay stable. Update them when the toolchain
+changes (Node major bump, V8 major bump, napi-rs major bump).
 
 ## Reproducing
 

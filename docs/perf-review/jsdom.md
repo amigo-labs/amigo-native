@@ -4,41 +4,41 @@
 
 ## Verdict
 
-`jsdom` ist eine komplette Browser-DOM + Fetch + XHR + Worker + Canvas + CSSOM-Implementierung in JS. Kein Rust-Crate existiert dafür, und die Oberfläche ist strukturell unvereinbar mit NAPI-Klassen: alles ist Object-Graph-Traversal mit JS-Callback-Semantik.
+`jsdom` is a complete browser DOM + Fetch + XHR + Worker + Canvas + CSSOM implementation in JS. No Rust crate exists for this, and the surface is structurally incompatible with NAPI classes: everything is object-graph traversal with JS callback semantics.
 
 ## JS package
 
 - **npm:** `jsdom`
-- **Downloads:** ~76M/Woche
-- **Exports / API surface:** `JSDOM`, `window`, `document`, vollständige DOM-Level-4 + HTML-Spec-Surface, `ResourceLoader`, `VirtualConsole`, teilweise Web-APIs (Fetch, XHR, Canvas-2D via `canvas`-Optional, Web-Workers-Stub)
-- **Typical input:** HTML-Dokument + optional Resource-Loader
-- **Typical output:** `window`/`document`-Objekt mit vollem DOM-API-Zugriff
-- **Realistic median use-case:** Test-Environment (`vitest`/`jest` mit `jsdom`), SSR-Hilfe für Libraries, Scraping mit JS-Execution
+- **Downloads:** ~76M/week
+- **Exports / API surface:** `JSDOM`, `window`, `document`, complete DOM Level 4 + HTML spec surface, `ResourceLoader`, `VirtualConsole`, partial web APIs (Fetch, XHR, Canvas 2D via optional `canvas`, web workers stub)
+- **Typical input:** HTML document + optional resource loader
+- **Typical output:** `window`/`document` object with full DOM API access
+- **Realistic median use-case:** test environment (`vitest`/`jest` with `jsdom`), SSR helper for libraries, scraping with JS execution
 
 ## Rust replacement
 
-- **Candidate crate(s):** keine. `html5ever` parst, aber kein Rust-Crate implementiert `window`, Event-Loop, DOM-Mutations-APIs, CSSOM, Computed-Styles
+- **Candidate crate(s):** none. `html5ever` parses, but no Rust crate implements `window`, event loop, DOM mutation APIs, CSSOM, computed styles
 - **Maintenance / license:** n/a
-- **Known gotchas / divergences:** `jsdom` braucht JS-Engine (V8) für Script-Execution — selbst wenn DOM in Rust wäre, müsste alles zurück nach V8
+- **Known gotchas / divergences:** `jsdom` needs a JS engine (V8) for script execution — even if the DOM were in Rust, everything would have to go back to V8
 
 ## BACKLOG check
 
-BACKLOG: *Scope too large* — bestätigt, Klassifikation hochgestuft auf Black (strukturell inkompatibel).
+BACKLOG: *Scope too large* — confirmed, classification upgraded to Black (structurally incompatible).
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | Jedes Attribut, jeder Selector, jede Event-Dispatch = FFI-Kreuzung |
-| Input size distribution | Irrelevant — Shape ist fundamental inkompatibel |
-| Output size distribution | DOM-Tree mit zehntausenden Properties |
-| Reusable setup (stateful potential) | Hoch, aber der Caller-Code ruft `document.querySelector` → `.innerHTML = …` in Hot-Loops |
-| Batch-usage realism | Null |
-| FFI-share estimate vs. Rust work | 100% FFI für typische Test-Workloads |
+| Per-call algorithmic work | Every attribute, every selector, every event dispatch = FFI crossing |
+| Input size distribution | Irrelevant — shape is fundamentally incompatible |
+| Output size distribution | DOM tree with tens of thousands of properties |
+| Reusable setup (stateful potential) | High, but the caller code invokes `document.querySelector` → `.innerHTML = …` in hot loops |
+| Batch-usage realism | Zero |
+| FFI-share estimate vs. Rust work | 100% FFI for typical test workloads |
 
 ## Classification reasoning
 
-`jsdom`s Nutzer rufen `document.querySelector('div').textContent = 'x'` — das sind drei Property-Accesses, eine Setter-Invocation, ein DOM-Mutation-Observer-Callback. Jeder einzelne dieser Schritte wäre eine FFI-Kreuzung. Selbst wenn der gesamte DOM-Core in Rust wäre, würde jeder Test-Case tausende FFI-Kreuzungen pro Millisekunde auslösen. Das ist das Lookup-Workload-Black-Szenario aus der Klassifikationstabelle. Hinzu kommt: Script-Execution (ein großer Teil von `jsdom`) braucht V8; das kann Rust nicht leisten. Permanenter NO-GO.
+`jsdom` users call `document.querySelector('div').textContent = 'x'` — that's three property accesses, one setter invocation, one DOM mutation observer callback. Every single one of those steps would be an FFI crossing. Even if the entire DOM core were in Rust, every test case would trigger thousands of FFI crossings per millisecond. That's the lookup-workload Black scenario from the classification table. On top of that: script execution (a large part of `jsdom`) needs V8; Rust can't provide that. Permanent NO-GO.
 
 ## If NO-GO — BACKLOG entry
 

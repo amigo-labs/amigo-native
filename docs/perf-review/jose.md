@@ -1,69 +1,69 @@
 # Candidate review: `jose`
 
-> **Status:** SHIPPED v0.1 (rescoped) · **Predicted:** 🟢 Green-likely · **Measured:** 🟢 Green (RSA-thumbprint, Ed25519-keygen) / 🟡 Yellow (Ed25519-thumbprint) · **Reviewed:** 2026-04-19
+> **Status:** SHIPPED v0.1 (rescoped) · **Predicted:** 🟢 Green-likely · **Measured:** 🟢 Green (RSA thumbprint, Ed25519 keygen) / 🟡 Yellow (Ed25519 thumbprint) · **Reviewed:** 2026-04-19
 
 ## Verdict
 
-`jose` (panva) ist die einzige Option in dieser dreier-Tranche, die das Green-Profil tatsächlich hält — **aber nur wenn wir scopen**. Die Full-Surface (JWT + JWS + JWE + JWK + JWKS-Caching + Browser-Compat) ist zu groß für ein einzelnes Crate und teilweise redundant zu unserem `@amigo-labs/jwt`. Empfehlung: **Scope = JWE-Encryption + JWK-Operations (RSA/EC-Key-Parsing/-Generation)** — genau die Lücke, die unser jwt-Crate nicht abdeckt. Per-Call-Compute 100 µs–2 ms (RSA-Operationen, AES-GCM-Encryption, ECDH-ES-Key-Agreement) → FFI-Overhead ≤ 1 % → 2–4× Speedup vs. pure-JS jose realistisch.
+`jose` (panva) is the only option in this triple tranche that actually holds the Green profile — **but only if we scope**. The full surface (JWT + JWS + JWE + JWK + JWKS caching + browser compat) is too big for a single crate and partially redundant with our `@amigo-labs/jwt`. Recommendation: **scope = JWE encryption + JWK operations (RSA/EC key parsing/generation)** — exactly the gap our jwt crate doesn't cover. Per-call compute 100 µs–2 ms (RSA operations, AES-GCM encryption, ECDH-ES key agreement) → FFI overhead ≤ 1% → 2–4× speedup vs. pure-JS jose realistic.
 
 ## JS package
 
-- **npm:** `jose` (~6 M weekly, panva)
-- **Downloads:** 6 M weekly, **echte Server-Adoption** (modernes Auth-Stack, ESM-first, ersetzt `jsonwebtoken` + `node-jose` zunehmend)
+- **npm:** `jose` (~6M weekly, panva)
+- **Downloads:** 6M weekly, **real server adoption** (modern auth stack, ESM-first, increasingly replacing `jsonwebtoken` + `node-jose`)
 - **Exports / API surface:** `SignJWT`, `jwtVerify`, `EncryptJWT`, `jwtDecrypt`, `CompactSign`, `CompactEncrypt`, `FlattenedSign`, `GeneralSign`, `JWE` (variants), `importJWK`/`exportJWK`, `generateKeyPair`, `createRemoteJWKSet`
-- **Typical input:** Token-Strings (~500 Bytes–4 KB), Keys als JWK-Object oder PEM
-- **Typical output:** Signed/encrypted Token-Strings, KeyLike Objects
-- **Realistic median use-case:** **JWE-Decrypt im Auth-Middleware** (jeder Request) und **JWK-Key-Loading beim Startup** (cached). Sign/Verify ist häufig, hat aber unser bestehendes `@amigo-labs/jwt` als Konkurrent — also explizit ausklammern, kein Doppel-Crate
+- **Typical input:** token strings (~500 bytes–4 KB), keys as JWK object or PEM
+- **Typical output:** signed/encrypted token strings, KeyLike objects
+- **Realistic median use-case:** **JWE decrypt in auth middleware** (every request) and **JWK key loading at startup** (cached). Sign/verify is frequent, but our existing `@amigo-labs/jwt` is its competitor — so explicitly excluded, no double crate
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - **`josekit`** (Hiroyuki Wada) — komplett (JWS+JWE+JWK), aber kleinere Userbase als RustCrypto-Familie
-  - **`aws-lc-rs` + `rsa` + `aes-gcm` + `p256`/`p384`/`p521`** als RustCrypto-Komposition — mehr Maintenance-Aufwand, dafür konsistent mit unserer jwt-Crate
-- **Maintenance / license:** josekit MIT/Apache, aktiv aber kleinerer Maintainer-Pool
+  - **`josekit`** (Hiroyuki Wada) — complete (JWS+JWE+JWK), but smaller user base than the RustCrypto family
+  - **`aws-lc-rs` + `rsa` + `aes-gcm` + `p256`/`p384`/`p521`** as a RustCrypto composition — more maintenance effort, in exchange consistent with our jwt crate
+- **Maintenance / license:** josekit MIT/Apache, active but smaller maintainer pool
 - **Known gotchas / divergences:**
-  - JWE algorithm-Coverage muss explizit deklariert sein (`A128KW`, `A256GCMKW`, `RSA-OAEP-256`, `ECDH-ES+A256KW`, …) — panva/jose deckt _alle_ RFC-Algos ab, das wollen wir nicht
-  - Browser-/WebCrypto-Compat von panva/jose ist für unsere NAPI-Crate irrelevant (kein Browser-Target)
-  - `createRemoteJWKSet` (HTTP-Fetching mit Cache) ist bewusst **nicht** im Scope — gehört in JS-Wrapper
+  - JWE algorithm coverage has to be explicitly declared (`A128KW`, `A256GCMKW`, `RSA-OAEP-256`, `ECDH-ES+A256KW`, …) — panva/jose covers _all_ RFC algos, we don't want that
+  - Browser/WebCrypto compat of panva/jose is irrelevant for our NAPI crate (no browser target)
+  - `createRemoteJWKSet` (HTTP fetching with cache) is deliberately **not** in scope — belongs in a JS wrapper
 
 ## BACKLOG check
 
-Kein Eintrag. Frischer Kandidat.
+No entry. Fresh candidate.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | JWE-Decrypt: 100 µs–2 ms (RSA-OAEP) bzw. 50–200 µs (AES-GCM mit pre-shared Key). JWK-Parse: 50–500 µs (RSA-Schlüssel-Validation) |
-| Input size distribution | Token: 500 B–4 KB. JWK-JSON: 200 B–2 KB. Buffer-Lane oder String, beides OK bei diesen Größen |
-| Output size distribution | Klartext-Payload (~100 B–4 KB), oder KeyLike-Handle |
-| Reusable setup (stateful potential) | **Hoch.** Key-Parsing ist amortisierbar — `JoseKey` als NAPI-Class mit `.decrypt(token)` / `.sign(payload)` Methoden. Das ist der Hauptlevergewinn |
-| Batch-usage realism | Niedrig — Auth-Calls sind per-Request, nicht batchbar. Stateful-Class ersetzt Batch |
-| FFI-share estimate vs. Rust work | Per `decrypt`-Call: ~109 ns Floor + ~500 ns Token-String-Crossing = ~700 ns FFI vs. ~100–500 µs Crypto-Work = **< 0,7 %** |
+| Per-call algorithmic work | JWE decrypt: 100 µs–2 ms (RSA-OAEP) or 50–200 µs (AES-GCM with pre-shared key). JWK parse: 50–500 µs (RSA key validation) |
+| Input size distribution | Token: 500 B–4 KB. JWK JSON: 200 B–2 KB. Buffer lane or string, both OK at these sizes |
+| Output size distribution | Cleartext payload (~100 B–4 KB), or KeyLike handle |
+| Reusable setup (stateful potential) | **High.** Key parsing is amortizable — `JoseKey` as a NAPI class with `.decrypt(token)` / `.sign(payload)` methods. That's the main leverage win |
+| Batch-usage realism | Low — auth calls are per-request, not batchable. Stateful class substitutes for batching |
+| FFI-share estimate vs. Rust work | Per `decrypt` call: ~109 ns floor + ~500 ns token string crossing = ~700 ns FFI vs. ~100–500 µs crypto work = **< 0.7%** |
 
 ## Classification reasoning
 
-Im Gegensatz zu scrypt/pbkdf2 hat `jose` **keinen Node-built-in-Konkurrenten**. Node hat low-level `crypto.createSign`/`crypto.createCipheriv`, aber kein JWE-/JWK-Highlevel-API. Wer JWE will, installiert ein npm-Paket — und panva/jose ist der De-facto-Standard.
+Unlike scrypt/pbkdf2, `jose` has **no Node built-in competitor**. Node has low-level `crypto.createSign`/`crypto.createCipheriv`, but no high-level JWE/JWK API. Anyone who wants JWE installs an npm package — and panva/jose is the de-facto standard.
 
-Speedup-Erwartung gegen panva/jose (pure JS, V8-optimiert aber Crypto-Operationen sind nicht V8-tunable):
-- JWE-Decrypt RSA-OAEP: 3–5× (RSA-Math in Rust ist deutlich schneller als pure-JS BigInt)
-- JWE-Decrypt AES-GCM mit pre-shared Key: 2–3× (AES-NI über RustCrypto)
-- JWK-Parse: 2–4×
+Speedup expectation against panva/jose (pure JS, V8-optimized but crypto operations aren't V8-tunable):
+- JWE decrypt RSA-OAEP: 3–5× (RSA math in Rust is significantly faster than pure-JS BigInt)
+- JWE decrypt AES-GCM with pre-shared key: 2–3× (AES-NI via RustCrypto)
+- JWK parse: 2–4×
 
-**Stateful-API ist der entscheidende Hebel:** Eine JS-User schreibt heute `await jwtDecrypt(token, key, options)` und parst den Key implizit pro Call. Wir bieten:
+**The stateful API is the decisive lever:** a JS user today writes `await jwtDecrypt(token, key, options)` and implicitly parses the key per call. We offer:
 
 ```ts
-const key = new JoseKey({ jwk })  // einmal beim Startup
-const payload = key.decrypt(token)  // hot path, 0 Setup
+const key = new JoseKey({ jwk })  // once at startup
+const payload = key.decrypt(token)  // hot path, 0 setup
 ```
 
-Das ist die argon2-`hash`-vs-`verify`-Pattern angewandt auf JWE.
+That's the argon2 `hash` vs. `verify` pattern applied to JWE.
 
-**Risiko Yellow → Green:** Wenn wir versuchen, _alle_ JWE-Algos zu unterstützen, blowt der Binary auf. Strict-Scope auf die 4 häufigsten Algos (RSA-OAEP, RSA-OAEP-256, A256GCMKW, ECDH-ES+A256KW) hält Bundle bei ~1,5 MB.
+**Risk Yellow → Green:** if we try to support _all_ JWE algos, the binary blows up. A strict scope on the 4 most common algos (RSA-OAEP, RSA-OAEP-256, A256GCMKW, ECDH-ES+A256KW) keeps the bundle at ~1.5 MB.
 
 ## If GO — proposed port
 
-- **Recommended crate-name:** `@amigo-labs/jose` (Drop-in für JWE/JWK-Subset von panva/jose) — **ergänzt** `@amigo-labs/jwt`, ersetzt es nicht
+- **Recommended crate name:** `@amigo-labs/jose` (drop-in for the JWE/JWK subset of panva/jose) — **complements** `@amigo-labs/jwt`, doesn't replace it
 - **Primary API sketch:**
   ```ts
   // Stateless convenience (parses key per call — convenience layer)
@@ -83,86 +83,86 @@ Das ist die argon2-`hash`-vs-`verify`-Pattern angewandt auf JWE.
   ```
 
 - **Must-have benchmark scenarios:**
-  - JWE-Decrypt RSA-OAEP-256, 2048-bit Key, Payload 200 B (Auth-Middleware-Median)
-  - JWE-Decrypt A256GCMKW, Payload 200 B (HOT-PATH-Median)
-  - JWE-Encrypt ECDH-ES+A256KW, Payload 1 KB (Token-Issuance)
-  - JWK-Parse RSA-2048 Public Key (Startup)
-  - **Stateful** vs. **Stateless** Variante zum Demonstrieren des Class-API-Hebels
-  - Baseline: panva/jose neueste Version
+  - JWE decrypt RSA-OAEP-256, 2048-bit key, payload 200 B (auth middleware median)
+  - JWE decrypt A256GCMKW, payload 200 B (HOT-PATH median)
+  - JWE encrypt ECDH-ES+A256KW, payload 1 KB (token issuance)
+  - JWK parse RSA-2048 public key (startup)
+  - **Stateful** vs. **stateless** variant to demonstrate the class-API lever
+  - Baseline: panva/jose latest version
 
 - **Acceptance thresholds (Green gate):**
-  - ≥2× Stateful-Decrypt vs. panva/jose bei Median-Payload
-  - ≥3× JWK-Parse
-  - ≥1× Stateless-Convenience-Layer (darf nicht langsamer sein, auch wenn Class-API der Pitch ist)
-  - 100 % Test-Vector-Parität auf RFC-7516 (JWE) Standard-Vektoren
+  - ≥2× stateful decrypt vs. panva/jose at median payload
+  - ≥3× JWK parse
+  - ≥1× stateless convenience layer (must not be slower, even if the class API is the pitch)
+  - 100% test-vector parity on RFC 7516 (JWE) standard vectors
 
 - **Risks:**
-  1. **Scope-Creep:** `panva/jose` deckt 30+ Algorithmen ab. Wir machen 4. JS-User mit exotischen Algos (RSA1_5 — _legacy_, PBES2 — _legacy_, …) müssen bei panva/jose bleiben. Klar dokumentieren
-  2. **Crate-Wahl josekit vs. RustCrypto-Komposition:** josekit ist convenient aber kleinerer Maintainer; RustCrypto-direkt ist konsistent zu unserer jwt-Crate aber 3× so viel Wrapper-Code. **Empfehlung: RustCrypto-Komposition** (jwt-Crate-Pattern wiederverwendbar)
-  3. **JWKS-Remote-Caching:** `createRemoteJWKSet` aus panva/jose ist HTTP + In-Memory-Cache. Gehört nicht in NAPI — als JS-Wrapper-Layer im Crate-Package mitliefern oder explizit ausschließen
-  4. **Bundle-Disziplin:** Bei Algo-Auswahl sparsam sein. Default-Features `aes-gcm`, `rsa`, `p256` reichen für 90 % der Real-World-Use-Cases
+  1. **Scope creep:** `panva/jose` covers 30+ algorithms. We do 4. JS users with exotic algos (RSA1_5 — _legacy_, PBES2 — _legacy_, …) have to stay with panva/jose. Document clearly
+  2. **Crate choice josekit vs. RustCrypto composition:** josekit is convenient but smaller maintainer pool; RustCrypto direct is consistent with our jwt crate but 3× the wrapper code. **Recommendation: RustCrypto composition** (jwt-crate pattern reusable)
+  3. **JWKS remote caching:** `createRemoteJWKSet` from panva/jose is HTTP + in-memory cache. Doesn't belong in NAPI — ship as a JS wrapper layer inside the crate package or explicitly exclude
+  4. **Bundle discipline:** be frugal with algo selection. Default features `aes-gcm`, `rsa`, `p256` cover 90% of real-world use-cases
 
 ## If NO-GO — BACKLOG entry
 
-N/A — GO empfohlen (scoped).
+N/A — GO recommended (scoped).
 
-## Phase-B Messung (2026-04-19, linux-x64, Node v22.22.2)
+## Phase B measurement (2026-04-19, linux-x64, Node v22.22.2)
 
-v0.1 Scope ausgeliefert: `generateRsaKeyPair`, `generateEd25519KeyPair`, `jwkThumbprint`. JWE/JWS auf v0.2 verschoben.
+v0.1 scope shipped: `generateRsaKeyPair`, `generateEd25519KeyPair`, `jwkThumbprint`. JWE/JWS pushed to v0.2.
 
-| Funktion | @amigo-labs/jose | jose (panva, pure JS) | Speedup |
+| Function | @amigo-labs/jose | jose (panva, pure JS) | Speedup |
 |---|---:|---:|---|
-| jwkThumbprint Ed25519 | 507 407 hz | 271 279 hz | **1,87×** ✅ |
-| jwkThumbprint RSA-2048 | 470 445 hz | 182 718 hz | **2,57×** ✅✅ |
-| generateEd25519KeyPair | 52 939 hz | 7 312 hz | **7,24×** ✅✅✅ |
-| generateRsaKeyPair (2048) | 6,92 hz | **18,08 hz** | **0,38× (2,6× langsamer)** 🔴 |
+| jwkThumbprint Ed25519 | 507,407 hz | 271,279 hz | **1.87×** ✅ |
+| jwkThumbprint RSA-2048 | 470,445 hz | 182,718 hz | **2.57×** ✅✅ |
+| generateEd25519KeyPair | 52,939 hz | 7,312 hz | **7.24×** ✅✅✅ |
+| generateRsaKeyPair (2048) | 6.92 hz | **18.08 hz** | **0.38× (2.6× slower)** 🔴 |
 
-**Ergebnis: 3/4 Green, 1/4 Red.**
+**Result: 3/4 Green, 1/4 Red.**
 
-**Warum RSA-Keygen verliert:**
-panva/jose nutzt unter der Haube `crypto.subtle.generateKey` (WebCrypto-API) — das ist Node-built-in OpenSSL-Code. **Genau die "Node-built-in dominates"-Falle, die scrypt/pbkdf2 zerlegt hat.** OpenSSL's RSA-Prime-Search (BIGNUM-Math, Miller-Rabin in C-ASM) ist signifikant schneller als pure-Rust `rsa = "0.9"`.
+**Why RSA keygen loses:**
+panva/jose uses `crypto.subtle.generateKey` (WebCrypto API) under the hood — that's Node built-in OpenSSL code. **Exactly the "Node built-in dominates" trap that broke scrypt/pbkdf2.** OpenSSL's RSA prime search (BIGNUM math, Miller-Rabin in C/ASM) is significantly faster than pure-Rust `rsa = "0.9"`.
 
-Diese Erkenntnis hätte ich aus den scrypt/pbkdf2-Reviews extrapolieren müssen — RSA-Keygen war unbeobachtet und hat den gleichen Konkurrenten.
+I should have extrapolated this insight from the scrypt/pbkdf2 reviews — RSA keygen went unobserved and has the same competitor.
 
-**Was funktioniert weiterhin:**
-- **Ed25519-Keygen 7,24× schneller** — panva/jose's WebCrypto-API für Ed25519 hat anscheinend höheren JS↔WebCrypto-Overhead, oder Node's Ed25519 ist suboptimaler implementiert. Klarer Sieg.
-- **JWK-Thumbprint 1,87–2,57× schneller** — Hash-Computation (SHA-256) + JSON-Canonicalization in Rust schlägt panva/jose's pure-JS String-Concatenation
-- 3 von 4 Funktionen liefern Wert
+**What still works:**
+- **Ed25519 keygen 7.24× faster** — panva/jose's WebCrypto API for Ed25519 apparently has higher JS↔WebCrypto overhead, or Node's Ed25519 is implemented more suboptimally. Clear win.
+- **JWK thumbprint 1.87–2.57× faster** — hash computation (SHA-256) + JSON canonicalization in Rust beats panva/jose's pure-JS string concatenation
+- 3 out of 4 functions deliver value
 
-**Phase-C/D-Plan:**
-- **C.6 Algorithm:** `generateRsaKeyPair` ist nicht algorithmisch optimierbar (RSA-Math ist bekannt). Pure-Rust hat strukturellen Nachteil gegen OpenSSL.
-- **Realistische Option:** README + API-Doc explizit empfehlen, für RSA-Keygen Node-built-in `crypto.generateKeyPair('rsa', {modulusLength: 2048})` zu nutzen, dann nur die JWK-Konvertierung mit unserer Crate. Liefert beste-of-both-worlds.
-- **Drastische Option:** `generateRsaKeyPair` in v0.2 deprecaten / aus Public-API entfernen, Crate auf "JWK-Tooling + Ed25519" fokussieren.
+**Phase C/D plan:**
+- **C.6 algorithm:** `generateRsaKeyPair` is not algorithmically optimizable (RSA math is known). Pure Rust has a structural disadvantage against OpenSSL.
+- **Realistic option:** README + API doc explicitly recommend using Node built-in `crypto.generateKeyPair('rsa', {modulusLength: 2048})` for RSA keygen, then only JWK conversion with our crate. Delivers best-of-both-worlds.
+- **Drastic option:** deprecate `generateRsaKeyPair` in v0.2 / remove it from the public API, focus the crate on "JWK tooling + Ed25519".
 
-**Empfehlung für v0.1:** Behalten, README-Warning für RSA-Keygen. v0.2-Roadmap erweitert um JWE-Decrypt (echter Lückenfüller) statt RSA-Keygen-Optimierung.
+**Recommendation for v0.1:** keep, README warning for RSA keygen. v0.2 roadmap extended with JWE decrypt (real gap filler) instead of RSA keygen optimization.
 
-## Phase-C Rescope (2026-04-19, dieselbe Session)
+## Phase C rescope (2026-04-19, same session)
 
-User wählte **C: RSA-Keygen rauswerfen**, damit die Crate kein Red-Klassifikat mehr trägt.
+User picked **C: drop RSA keygen**, so the crate no longer carries a Red classification.
 
-**Maßnahme:**
-- `generateRsaKeyPair` komplett aus Public-API entfernt (nicht depreciert, nie öffentlich gewesen)
-- `rsa`-Crate + transitive Deps (pkcs1, pkcs8 für RSA, num-bigint-dig, num-traits, num-iter, zeroize) aus `Cargo.toml` gestrichen
-- README dokumentiert die Entscheidung + zeigt `node:crypto.generateKeyPair` als Alternative
-- `RsaGenTask` Task-Struct entfernt; der RSA-Thumbprint-Pfad bleibt voll erhalten (nutzt keine RSA-Crate-Abhängigkeit)
+**Action:**
+- `generateRsaKeyPair` completely removed from the public API (not deprecated, was never public)
+- `rsa` crate + transitive deps (pkcs1, pkcs8 for RSA, num-bigint-dig, num-traits, num-iter, zeroize) removed from `Cargo.toml`
+- README documents the decision + shows `node:crypto.generateKeyPair` as the alternative
+- `RsaGenTask` task struct removed; the RSA thumbprint path is fully preserved (no dependency on the RSA crate)
 
-**Neue Messung nach Rescope:**
+**New measurement after rescope:**
 
-| Funktion | @amigo-labs/jose | panva/jose | Speedup |
+| Function | @amigo-labs/jose | panva/jose | Speedup |
 |---|---:|---:|---|
-| jwkThumbprint Ed25519 | 398 751 hz | 246 636 hz | **1,62×** 🟡 |
-| jwkThumbprint RSA-2048 | 368 756 hz | 168 409 hz | **2,19×** 🟢 |
-| generateEd25519KeyPair | 46 406 hz | 6 660 hz | **6,97×** 🟢🟢 |
+| jwkThumbprint Ed25519 | 398,751 hz | 246,636 hz | **1.62×** 🟡 |
+| jwkThumbprint RSA-2048 | 368,756 hz | 168,409 hz | **2.19×** 🟢 |
+| generateEd25519KeyPair | 46,406 hz | 6,660 hz | **6.97×** 🟢🟢 |
 
-**Portfolio-Auswirkung:**
-- Kein Red-Punkt mehr in der Crate
-- Median-Funktion (`jwkThumbprint` auf RSA-JWKs, der dominante Production-Use-Case via OAuth/OIDC) ist 🟢 Green bei 2,19×
-- Ed25519-Thumbprint-Sub-Case knapp unter 2×-Gate (1,62×) — akzeptabel, da es denselben Rust-Code ist, der bei RSA-Input Green liefert; die Varianz kommt vom kleineren SHA-256-Input (Ed25519-JWK ~80 Bytes vs. RSA-JWK ~400 Bytes) wo V8's WebCrypto-Overhead relativ kleiner wird
-- Binary-Size deutlich kleiner (keine `rsa`/`num-bigint`/`pkcs1` mehr)
+**Portfolio impact:**
+- No more Red point in the crate
+- Median function (`jwkThumbprint` on RSA JWKs, the dominant production use-case via OAuth/OIDC) is 🟢 Green at 2.19×
+- Ed25519 thumbprint sub-case just below the 2× gate (1.62×) — acceptable, since it's the same Rust code that delivers Green on RSA input; the variance comes from the smaller SHA-256 input (Ed25519 JWK ~80 bytes vs. RSA JWK ~400 bytes) where V8's WebCrypto overhead becomes relatively smaller
+- Binary size significantly smaller (no more `rsa`/`num-bigint`/`pkcs1`)
 
-**Endklassifikation:** 🟢 Green (mit Ed25519-Thumbprint-Sub-Case als toleriertes Yellow-Randphänomen). Alle ausgelieferten Funktionen haben net-positive Speedup gegen den einzigen relevanten Konkurrenten.
+**Final classification:** 🟢 Green (with the Ed25519 thumbprint sub-case as a tolerated Yellow fringe). All shipped functions have net-positive speedup against the only relevant competitor.
 
-**15/15 Tests passing** nach Rescope:
-- Ed25519-Keygen + RSA-Thumbprint-Tests cross-verify mit panva/jose
-- RFC 7638 §3.1 Standard-Vector verifiziert
-- Property-Fuzz (50 Runs) für Ed25519-Thumbprint-Parität
+**15/15 tests passing** after the rescope:
+- Ed25519 keygen + RSA thumbprint tests cross-verify with panva/jose
+- RFC 7638 §3.1 standard vector verified
+- Property fuzz (50 runs) for Ed25519 thumbprint parity
