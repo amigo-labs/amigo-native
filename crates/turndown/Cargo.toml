@@ -1,0 +1,17 @@
+[package]
+name = "amigo-turndown"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+html5ever = "0.35"
+markup5ever = "0.35"
+markup5ever_rcdom = "=0.35.0+unofficial"
+
+[build-dependencies]
+napi-build = "2"
