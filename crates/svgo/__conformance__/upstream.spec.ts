@@ -9,7 +9,7 @@ import { optimize } from '../index.js'
 
 describe('upstream preset-default surface', () => {
   const fixtures: Array<[string, string, (out: string) => boolean]> = [
-    ['removeComments', '<svg><!-- c --><rect/></svg>', (s) => !s.includes('c ')],
+    ['removeComments', '<svg><!-- c --><rect/></svg>', (s) => !s.includes('<!--') && !s.includes('-->')],
     ['removeDoctype', '<!DOCTYPE svg><svg><rect/></svg>', (s) => !s.includes('DOCTYPE')],
     ['removeMetadata', '<svg><metadata>m</metadata><rect/></svg>', (s) => !s.includes('metadata')],
     ['removeTitle', '<svg><title>t</title><rect/></svg>', (s) => !s.includes('title')],

@@ -10,9 +10,12 @@ describe('sbd-README-example parity', () => {
     const out = split(
       'Dr. Jones went to see Mr. Smith at 3 p.m. He was tired.',
     )
-    // sbd produces 2 sentences; we should too (p.m. and Mr./Dr.
-    // abbreviations all recognized).
-    expect(out.length).toBeLessThanOrEqual(2)
+    // Dr., Mr., and p.m. are all recognised abbreviations, so none
+    // of them is a sentence boundary. This stays one sentence.
+    // (sbd splits after "p.m." because its heuristic is stricter on
+    // abbrev-plus-capital; we follow pragmatic-segmenter — see
+    // divergences.md.)
+    expect(out).toHaveLength(1)
   })
 
   it('handles URLs reasonably', () => {

@@ -24,30 +24,48 @@ const results = optimizeMany(svgs)
 
 ## Config
 
-All plugins are on by default. Disable any of them individually:
+All plugins are on by default. Pass `false` for any you want to
+skip; `floatPrecision` and `multipass` control numeric rounding and
+fixpoint iteration.
 
 ```js
 optimize(svg, {
-  removeComments: true,
-  removeMetadata: true,
-  removeTitle: true,
-  removeDesc: true,
-  removeDoctype: true,
-  removeXmlProcInst: true,
-  removeEditorsNsData: true,
-  removeEmptyAttrs: true,
-  removeEmptyText: true,
-  removeEmptyContainers: true,
-  removeHiddenElems: true,
-  removeUselessDefs: true,
-  cleanupNumericValues: true,
-  cleanupAttrs: true,
-  collapseGroups: true,
-  convertColors: true,
-  collapseWhitespace: true,
-  floatPrecision: 3,
-  multipass: false,
+  // disable a specific plugin while keeping the rest of the
+  // preset-default on:
+  convertColors: false,
+
+  // tune numeric rounding (default 3):
+  floatPrecision: 4,
+
+  // run the pipeline until the output stabilises (default false):
+  multipass: true,
 })
+```
+
+Full option surface (all booleans default to `true`):
+
+```ts
+interface SvgoConfig {
+  removeComments?: boolean
+  removeMetadata?: boolean
+  removeTitle?: boolean
+  removeDesc?: boolean
+  removeDoctype?: boolean
+  removeXmlProcInst?: boolean
+  removeEditorsNsData?: boolean
+  removeEmptyAttrs?: boolean
+  removeEmptyText?: boolean
+  removeEmptyContainers?: boolean
+  removeHiddenElems?: boolean
+  removeUselessDefs?: boolean
+  cleanupNumericValues?: boolean
+  cleanupAttrs?: boolean
+  collapseGroups?: boolean
+  convertColors?: boolean
+  collapseWhitespace?: boolean
+  floatPrecision?: number    // default 3
+  multipass?: boolean        // default false
+}
 ```
 
 ## Scope

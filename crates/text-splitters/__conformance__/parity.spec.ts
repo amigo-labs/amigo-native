@@ -36,11 +36,13 @@ describe('parity: chunk-size budget is respected', () => {
   })
 })
 
-describe('parity: reassembly', () => {
-  it('chunk concatenation covers the input content (best-effort)', async () => {
+describe('self-invariant: reassembly covers input content', () => {
+  // Not a parity claim — upstream langchain's overlap semantics
+  // differ from ours, so we only assert on our chunks. See
+  // divergences.md for upstream-parity notes.
+  it('every source token appears in at least one chunk', () => {
     const text = 'alpha beta gamma delta epsilon zeta eta theta'
     const ourChunks = splitText(text, { chunkSize: 20, chunkOverlap: 5 })
-    // All tokens should appear in at least one chunk.
     for (const tok of text.split(' ')) {
       expect(ourChunks.some((c) => c.includes(tok))).toBe(true)
     }

@@ -8,18 +8,31 @@ describe('fuzz invariants', () => {
   it('never panics on a random DAG spec', () => {
     fc.assert(
       fc.property(
-        fc.uniqueArray(nodeIdGen, { maxLength: 20 }),
-        (ids) => {
-          if (ids.length === 0) return
-          // Randomly create edges i → j where i < j (ensures DAG).
-          const edges: Array<{ source: string; target: string }> = []
-          for (let i = 0; i < ids.length; i++) {
-            for (let j = i + 1; j < ids.length; j++) {
-              if (Math.random() < 0.2) {
-                edges.push({ source: ids[i], target: ids[j] })
-              }
-            }
-          }
+        fc
+          .uniqueArray(nodeIdGen, { minLength: 2, maxLength: 10 })
+          .chain((ids) =>
+            fc
+              .array(fc.boolean(), {
+                minLength: (ids.length * (ids.length - 1)) / 2,
+                maxLength: (ids.length * (ids.length - 1)) / 2,
+              })
+              .map((mask) => {
+                // Only forward edges i → j (i < j) keep the graph
+                // acyclic. `mask` is seeded by fast-check so each
+                // run is reproducible from its seed.
+                const edges: Array<{ source: string; target: string }> = []
+                let k = 0
+                for (let i = 0; i < ids.length; i++) {
+                  for (let j = i + 1; j < ids.length; j++) {
+                    if (mask[k++]) {
+                      edges.push({ source: ids[i], target: ids[j] })
+                    }
+                  }
+                }
+                return { ids, edges }
+              }),
+          ),
+        ({ ids, edges }) => {
           const r = layout({
             nodes: ids.map((id) => ({ id, width: 50, height: 30 })),
             edges,

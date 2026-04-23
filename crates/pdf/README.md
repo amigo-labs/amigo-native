@@ -50,8 +50,8 @@ const buffers = generateMany(labelSpecs)
 ```ts
 type PdfElement =
   | { kind: 'text'; text: { x: number; y: number; text: string; fontSize?: number } }
-  | { kind: 'line'; line: { x1, y1, x2, y2: number; thickness?: number } }
-  | { kind: 'rect'; rect: { x, y, width, height: number; filled?: boolean } }
+  | { kind: 'line'; line: { x1: number; y1: number; x2: number; y2: number; thickness?: number } }
+  | { kind: 'rect'; rect: { x: number; y: number; width: number; height: number; filled?: boolean } }
 ```
 
 ## Scope (v0.1)
