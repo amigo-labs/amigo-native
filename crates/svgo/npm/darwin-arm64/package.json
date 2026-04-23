@@ -1,0 +1,24 @@
+{
+  "name": "@amigo-labs/svgo-darwin-arm64",
+  "version": "0.1.0",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "svgo.darwin-arm64.node",
+  "files": [
+    "svgo.darwin-arm64.node"
+  ],
+  "description": "Prebuilt binary for @amigo-labs/svgo on darwin-arm64",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/svgo"
+  }
+}
