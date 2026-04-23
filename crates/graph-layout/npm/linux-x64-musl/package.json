@@ -1,0 +1,16 @@
+{
+  "name": "@amigo-labs/graph-layout-linux-x64-musl",
+  "version": "0.1.0",
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "main": "graph-layout.linux-x64-musl.node",
+  "files": ["graph-layout.linux-x64-musl.node"],
+  "description": "Prebuilt binary for @amigo-labs/graph-layout on linux-x64-musl",
+  "license": "MIT",
+  "engines": { "node": ">= 18" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/graph-layout"
+  }
+}

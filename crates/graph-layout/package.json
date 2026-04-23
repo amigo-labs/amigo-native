@@ -1,0 +1,68 @@
+{
+  "name": "@amigo-labs/graph-layout",
+  "version": "0.1.0",
+  "description": "Hierarchical (Sugiyama) graph layout — positions and edge routing for directed graphs.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "graph-layout",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@dagrejs/dagre": "^1.1.4",
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/graph-layout"
+  },
+  "keywords": [
+    "graph",
+    "layout",
+    "sugiyama",
+    "dagre",
+    "dag",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Graph Layout",
+    "description": "Hierarchical (Sugiyama-style) DAG layout. Single-call spec → positions + edge routing.",
+    "tableDescription": "Hierarchical DAG layout, spec in, positions out",
+    "replaces": "dagre",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Compatible",
+    "competitors": ["dagre", "@dagrejs/dagre"]
+  }
+}
