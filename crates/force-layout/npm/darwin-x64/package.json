@@ -1,0 +1,16 @@
+{
+  "name": "@amigo-labs/force-layout-darwin-x64",
+  "version": "0.1.0",
+  "os": ["darwin"],
+  "cpu": ["x64"],
+  "main": "force-layout.darwin-x64.node",
+  "files": ["force-layout.darwin-x64.node"],
+  "description": "Prebuilt binary for @amigo-labs/force-layout on darwin-x64",
+  "license": "MIT",
+  "engines": { "node": ">= 18" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/force-layout"
+  }
+}
