@@ -1,6 +1,8 @@
 # Candidate review: `d3-force`
 
 > **Status:** GO (als neues Paket `@amigo-labs/force-layout`, kein Drop-in) · **Predicted:** 🟡 Yellow leaning 🟢 Green · **Reviewed:** 2026-04-20
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 

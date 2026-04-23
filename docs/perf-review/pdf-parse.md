@@ -1,6 +1,8 @@
 # Candidate review: `pdf-parse`
 
 > **Status:** GO (als neues Paket, scoped auf Text-Extraction) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-21
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 

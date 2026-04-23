@@ -1,6 +1,8 @@
 # Candidate review: `turndown`
 
 > **Status:** GO (Drop-in-orientiert, Custom-Rule-API bewusst out-of-scope) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-21
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 

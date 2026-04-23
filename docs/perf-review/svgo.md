@@ -1,6 +1,8 @@
 # Candidate review: `svgo`
 
 > **Status:** GO (Drop-in-orientiert mit Scope-Begrenzung) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-20
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 

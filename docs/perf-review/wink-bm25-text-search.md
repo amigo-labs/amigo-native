@@ -1,6 +1,8 @@
 # Candidate review: `wink-bm25-text-search` / `bm25`
 
 > **Status:** GO (als neues Paket `@amigo-labs/bm25`, kein 1:1-Drop-in) · **Predicted:** 🟢 Green (Index-Build) / 🟡 Yellow leaning 🟢 (Query) · **Reviewed:** 2026-04-21
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 

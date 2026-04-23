@@ -1,6 +1,8 @@
 # Candidate review: `sbd` — Sentence Boundary Detection
 
 > **Status:** GO (als neues Paket `@amigo-labs/sentences`, mit offset-basierter Zero-Copy-API als Kernhebel) · **Predicted:** 🟡 Yellow leaning 🟢 (bei Offset-API), 🟡 Yellow (bei Strings-Array-API) · **Reviewed:** 2026-04-21
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 

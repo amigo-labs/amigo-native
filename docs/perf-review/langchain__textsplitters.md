@@ -1,6 +1,8 @@
 # Candidate review: `@langchain/textsplitters`
 
 > **Status:** GO (als neues Paket, API-inspiriert von langchain) · **Predicted:** 🟡 Yellow (Green auf RAG-Scale, Yellow auf tweets) · **Reviewed:** 2026-04-21
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 

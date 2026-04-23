@@ -1,6 +1,8 @@
 # Candidate review: `minisearch`
 
 > **Status:** GO (als neues Paket, zusammen mit `@amigo-labs/bm25` aus geteiltem Rust-Core) · **Predicted:** 🟢 Green (Build + Fuzzy-Search) / 🟡→🟢 (Exact-Query) · **Reviewed:** 2026-04-21
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
+
 
 ## Verdict
 
