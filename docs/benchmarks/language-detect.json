@@ -1,0 +1,63 @@
+{
+  "crate": "language-detect",
+  "generatedAt": "2026-04-24T06:10:11.262Z",
+  "commit": "40fbc6c",
+  "runner": "linux-x64",
+  "nodeVersion": "v24.14.1",
+  "suites": [
+    {
+      "file": "crates/language-detect/__bench__/index.bench.ts",
+      "name": "language-detect — tweet (50 B)",
+      "entries": [
+        {
+          "name": "@amigo-labs/language-detect",
+          "hz": 20622.89,
+          "rme": 0.21,
+          "samples": 10312
+        },
+        {
+          "name": "franc",
+          "hz": 6826.87,
+          "rme": 0.28,
+          "samples": 3414
+        }
+      ]
+    },
+    {
+      "file": "crates/language-detect/__bench__/index.bench.ts",
+      "name": "language-detect — paragraph (~300 B)",
+      "entries": [
+        {
+          "name": "@amigo-labs/language-detect",
+          "hz": 17370.37,
+          "rme": 0.12,
+          "samples": 8686
+        },
+        {
+          "name": "franc",
+          "hz": 1094.41,
+          "rme": 0.29,
+          "samples": 548
+        }
+      ]
+    },
+    {
+      "file": "crates/language-detect/__bench__/index.bench.ts",
+      "name": "language-detect — article (~11 KB)",
+      "entries": [
+        {
+          "name": "@amigo-labs/language-detect",
+          "hz": 6858.2,
+          "rme": 0.24,
+          "samples": 3430
+        },
+        {
+          "name": "franc",
+          "hz": 822.72,
+          "rme": 0.66,
+          "samples": 412
+        }
+      ]
+    }
+  ]
+}

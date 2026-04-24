@@ -1,1 +1,2 @@
 {"commit":"81bfb27","date":"2026-04-23","runner":"linux-x64","node":"v22.22.2","suites":[{"name":"icon (~200 bytes)","amigo":158612.73,"best_competitor":7275.6,"ratio":21.801},{"name":"medium (~5 KB, 50 paths)","amigo":6219.85,"best_competitor":447.73,"ratio":13.892}]}
+{"commit":"40fbc6c","date":"2026-04-24","runner":"linux-x64","node":"v24.14.1","suites":[{"name":"icon (~200 bytes)","amigo":152081.28,"best_competitor":5714.36,"ratio":26.614},{"name":"medium (~5 KB, 50 paths)","amigo":6402.75,"best_competitor":431.46,"ratio":14.84}]}
