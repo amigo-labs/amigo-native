@@ -381,12 +381,6 @@ pub fn layout_many(specs: Vec<LayoutSpec>) -> Vec<LayoutResult> {
     specs.into_iter().map(layout).collect()
 }
 
-// Expose id_to_idx for tests to avoid dead_code warnings.
-#[cfg(test)]
-fn _lookup_helper(g: &Graph, id: &str) -> Option<usize> {
-    g.id_to_idx.get(id).copied()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

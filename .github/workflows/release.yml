@@ -15,18 +15,33 @@ on:
           # PACKAGES:START
           - argon2
           - bcrypt
+          - bm25
           - commonmark
           - csv
           - deepmerge
+          - diff
           - encoding
           - file-type
+          - force-layout
+          - graph-layout
           - inflate
           - jose
           - jwt
+          - language-detect
+          - minisearch
           - nanoid
+          - pdf
+          - pdf-parse
           - sanitize-html
+          - sentences
           - slugify
+          - stemmer
+          - svgo
+          - text-splitters
           - tiktoken
+          - turndown
+          - typst
+          - xlsx
           - xxhash
           - zip
           # PACKAGES:END

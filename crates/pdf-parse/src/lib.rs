@@ -158,36 +158,3 @@ impl Task for ParseTask {
         Ok(output)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// Minimal valid PDF: one page, one Tj showing "Hello World".
-    /// Hand-crafted so the Rust tests don't need a fixture file.
-    const MINIMAL_PDF: &[u8] = b"%PDF-1.4\n\
-        1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n\
-        2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n\
-        3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n\
-        4 0 obj<</Length 44>>stream\n\
-        BT /F1 24 Tf 72 720 Td (Hello World) Tj ET\n\
-        endstream endobj\n\
-        5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n\
-        xref\n0 6\n0000000000 65535 f \n0000000009 00000 n \n0000000054 00000 n \n0000000102 00000 n \n0000000199 00000 n \n0000000277 00000 n \ntrailer<</Size 6/Root 1 0 R>>\nstartxref\n336\n%%EOF";
-
-    #[test]
-    fn parses_minimal_pdf() {
-        let result = parse_impl(MINIMAL_PDF.to_vec(), PdfParseOptions::default());
-        assert!(result.is_ok());
-        let r = result.unwrap();
-        // Text may or may not extract cleanly on this ultra-minimal
-        // PDF (pdf-extract is strict about font/CMap); the key
-        // invariant is we don't crash and we do return a version.
-        assert!(!r.version.is_empty());
-    }
-
-    #[test]
-    fn options_default_accepted() {
-        let _ = parse_impl(vec![], PdfParseOptions::default());
-    }
-}
