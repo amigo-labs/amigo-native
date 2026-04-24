@@ -1,0 +1,66 @@
+<h1 id="amigo-labs-bm25">@amigo-labs/bm25</h1>
+<blockquote>
+<p>BM25 full-text search for Node.js — stateful native index, pure-Rust
+tokenizer + inverted postings. Build once, query many.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/bm25
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { Bm25Index } from '@amigo-labs/bm25'
+
+const idx = new Bm25Index({ k1: 1.5, b: 0.75 })
+idx.addAll([
+  { id: 'a', text: 'rust programming language' },
+  { id: 'b', text: 'javascript development guide' },
+  { id: 'c', text: 'rust web assembly' },
+])
+
+idx.search('rust')
+// [
+//   { id: 'a', score: 0.87 },
+//   { id: 'c', score: 0.82 },
+// ]
+
+// Add a single doc incrementally:
+idx.addDoc('d', 'rust cli tooling')
+
+// Limit results:
+idx.search('rust', { limit: 2 })
+
+// Strip English stopwords at both index- and query-time:
+new Bm25Index({ removeStopwords: true })
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">interface IndexOptions {
+  k1?: number                 // default 1.5
+  b?: number                  // default 0.75
+  removeStopwords?: boolean   // default false, English list
+}
+
+interface SearchOptions {
+  limit?: number              // default 10
+}
+</code></pre>
+<h2 id="shape">Shape</h2>
+<ul>
+<li><strong>Stateful</strong> — an index is an opaque native object. Build it once
+in the constructor, query many times.</li>
+<li><strong>Thread-safe</strong> inside a single index (Mutex-protected).</li>
+<li><strong>Single-FFI-crossing corpus ingest</strong> via <code>addAll(docs)</code>.</li>
+<li><strong>Shared Rust core</strong> with
+<a href="../minisearch/"><code>@amigo-labs/minisearch</code></a> (both wrap an internal
+<code>_search-core</code> crate).</li>
+</ul>
+<h2 id="scope-cuts">Scope cuts</h2>
+<ul>
+<li>No multi-field weighted index (v0.2). Concatenate boosted text if
+needed.</li>
+<li>No per-doc boost (<code>fldWeights</code>-style).</li>
+<li>No save / load — rebuild on startup.</li>
+<li>No stemming. For corpora requiring Porter stemmer, stay on
+<code>wink-bm25-text-search</code>.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

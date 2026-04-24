@@ -1,0 +1,45 @@
+<h1 id="amigo-labs-stemmer">@amigo-labs/stemmer</h1>
+<blockquote>
+<p>Porter/Snowball stemmer powered by <a href="https://crates.io/crates/rust-stemmers"><code>rust-stemmers</code></a> — <strong>batch-only</strong> API. Single-word stemming is intentionally not exposed.</p>
+</blockquote>
+<p>18 languages (Arabic, Danish, Dutch, English, Finnish, French, German,
+Greek, Hungarian, Italian, Norwegian, Portuguese, Romanian, Russian,
+Spanish, Swedish, Tamil, Turkish).</p>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/stemmer
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { Stemmer, stemOnce } from '@amigo-labs/stemmer'
+
+const s = new Stemmer('english')
+
+// Stem a list of words in a single FFI crossing.
+s.stemMany(['running', 'cats', 'jumping'])
+// ['run', 'cat', 'jump'] (Porter output)
+
+// Tokenize and stem in one call — the realistic RAG / search hot-path.
+s.tokenizeAndStem('The quick brown fox jumps over the lazy dog', {
+  lowercase: true,
+  minTokenLength: 2,
+  stopwordsEn: true,
+})
+// ['quick', 'brown', 'fox', 'jump', 'lazi', 'dog']
+
+// Buffer in, Buffer out — zero-copy for pipelines that stay in Rust.
+s.tokenizeAndStemToBuffer('running quickly jumping')
+// &lt;Buffer 72 75 6e ...&gt; → "run\nquickli\njump"
+</code></pre>
+<h2 id="why-no-stem-word">Why no <code>stem(word)</code>?</h2>
+<p>Single-word stemming in JavaScript is ~30 ns of work. The NAPI FFI
+floor alone is ~109 ns — you’d pay 3× the algorithm’s cost just to
+cross the boundary. Calling <code>stemMany(['word'])</code> loops with no FFI
+crossing, which is the correct shape. See
+<code>docs/post-mortems/levenshtein.md</code> for the measured precedent.</p>
+<p><code>stemOnce(lang, word)</code> exists for ad-hoc usage (tests, REPL) and is
+explicitly documented as a slow path.</p>
+<h2 id="migration-from-natural">Migration from <code>natural</code></h2>
+<p>See <a href="./MIGRATION.md"><code>MIGRATION.md</code></a>. The stemmer subset of <code>natural</code>
+is nearly drop-in, but single-word <code>PorterStemmer.stem(word)</code> is not
+supported by design.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

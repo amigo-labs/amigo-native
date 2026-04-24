@@ -1,0 +1,70 @@
+<h1 id="amigo-labs-pdf">@amigo-labs/pdf</h1>
+<blockquote>
+<p>PDF generation — document-as-data API. One FFI call per document,
+no fluent-chain pattern. Backed by
+<a href="https://crates.io/crates/printpdf"><code>printpdf</code></a>.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/pdf
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { generate, generateMany } from '@amigo-labs/pdf'
+
+// Single document — one FFI crossing:
+const buf = generate({
+  title: 'Invoice',
+  pages: [
+    {
+      width: 210,        // A4 width in mm
+      height: 297,       // A4 height in mm
+      elements: [
+        {
+          kind: 'text',
+          text: { x: 20, y: 275, text: 'Invoice', fontSize: 24 },
+        },
+        {
+          kind: 'line',
+          line: { x1: 20, y1: 265, x2: 190, y2: 265, thickness: 0.5 },
+        },
+        {
+          kind: 'rect',
+          rect: { x: 20, y: 100, width: 170, height: 50, filled: false },
+        },
+      ],
+    },
+  ],
+})
+fs.writeFileSync('invoice.pdf', buf)
+
+// Batch — one FFI crossing for the whole label-printing job:
+const buffers = generateMany(labelSpecs)
+</code></pre>
+<h2 id="element-shapes">Element shapes</h2>
+<pre><code class="language-ts">type PdfElement =
+  | { kind: 'text'; text: { x: number; y: number; text: string; fontSize?: number } }
+  | { kind: 'line'; line: { x1: number; y1: number; x2: number; y2: number; thickness?: number } }
+  | { kind: 'rect'; rect: { x: number; y: number; width: number; height: number; filled?: boolean } }
+</code></pre>
+<h2 id="scope-v0-1">Scope (v0.1)</h2>
+<ul>
+<li>Built-in Helvetica font (size only).</li>
+<li>Lines and rectangles (outlined / filled, black only).</li>
+<li>Multi-page documents.</li>
+<li><code>generateMany(docs)</code> for batch label-printing.</li>
+</ul>
+<h2 id="scope-cuts">Scope cuts</h2>
+<ul>
+<li><strong>No fluent chain API.</strong> Per-call callbacks would multiply FFI
+crossings — see
+<a href="../../docs/perf-review/pdfkit.md"><code>docs/perf-review/pdfkit.md</code></a>.</li>
+<li><strong>No custom fonts.</strong> Fast-follow.</li>
+<li><strong>No images</strong> (JPEG / PNG embedding). Fast-follow.</li>
+<li><strong>No text layout</strong> (word-wrap, flowing text). You provide
+coordinates.</li>
+<li><strong>No curves / arbitrary vector paths.</strong></li>
+<li><strong>Origin is bottom-left</strong>, units are <strong>mm</strong>. Flip Y if migrating
+from pdfkit.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

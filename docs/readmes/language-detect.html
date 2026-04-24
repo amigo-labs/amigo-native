@@ -1,0 +1,57 @@
+<h1 id="amigo-labs-language-detect">@amigo-labs/language-detect</h1>
+<blockquote>
+<p>Language detection via <a href="https://crates.io/crates/whatlang"><code>whatlang</code></a> — ISO-639-3 codes out, <code>franc</code>-compatible shape.</p>
+</blockquote>
+<p>Paragraph-sized Latin/Cyrillic/CJK detection is clear Green; short strings
+(&lt;50 B) fall back to <code>'und'</code> by design because no trigram detector is
+reliable there. See <code>docs/perf-review/franc.md</code> for the full shape analysis.</p>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/language-detect
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import {
+  detect,
+  detectIfLong,
+  detectAll,
+  detectMany,
+  languageExists,
+} from '@amigo-labs/language-detect'
+
+detect('The quick brown fox jumps over the lazy dog')
+// 'eng'
+
+detect('Der schnelle braune Fuchs springt über den faulen Hund')
+// 'deu'
+
+detect('hi')
+// 'und' — below default minLength (10 bytes)
+
+detectIfLong('hi')
+// null — prefer this over 'und' in pipelines that branch on result
+
+detectAll('Le chat dort sur le tapis rouge')
+// [{ lang: 'fra', confidence: 0.92 }]
+
+detectMany([
+  'The quick brown fox…',
+  'Der schnelle braune Fuchs…',
+  'hi',
+])
+// ['eng', 'deu', 'und']
+
+languageExists('eng') // true
+languageExists('xyz') // false
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">type DetectOptions = {
+  minLength?: number  // default 10 bytes
+  only?: string[]     // ISO-639-3 allow-list
+  ignore?: string[]   // ISO-639-3 deny-list, applied after `only`
+}
+</code></pre>
+<h2 id="migration-from-franc">Migration from <code>franc</code></h2>
+<p>See <code>MIGRATION.md</code> — nearly drop-in on common cases; the confidence
+scale is <code>[0, 1]</code> instead of <code>franc</code>’s internal range, and rare
+<code>franc-all</code> languages return <code>'und'</code> here (bundle-size trade-off).</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

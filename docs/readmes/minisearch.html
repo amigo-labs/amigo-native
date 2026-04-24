@@ -1,0 +1,68 @@
+<h1 id="amigo-labs-minisearch">@amigo-labs/minisearch</h1>
+<blockquote>
+<p>Tiny native in-memory full-text search with prefix autocomplete.
+Drop-in-shape for the <a href="https://www.npmjs.com/package/minisearch"><code>minisearch</code></a>
+npm package, single-field version.</p>
+</blockquote>
+<p>Shares a Rust search-core crate with
+<a href="../bm25/"><code>@amigo-labs/bm25</code></a> — one tokenizer, one scorer, two
+focused JS surfaces.</p>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/minisearch
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { MiniSearch } from '@amigo-labs/minisearch'
+
+const m = new MiniSearch()
+m.addAll([
+  { id: '1', text: 'rust programming language' },
+  { id: '2', text: 'javascript programming' },
+  { id: '3', text: 'python programming' },
+])
+
+// Standard search:
+m.search('rust')
+// [{ id: '1', score: 0.87 }, ...]
+
+// Autocomplete via prefix:
+m.search('rus', { prefix: true })
+
+// AND semantics (default is OR):
+m.search('rust programming', { operator: 'AND' })
+
+// Autosuggest: list of matching terms ranked by document frequency
+m.autoSuggest('rus')
+// [{ suggestion: 'rust', score: 1 }]
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">interface MiniOptions {
+  k1?: number
+  b?: number
+  removeStopwords?: boolean
+  defaultOperator?: 'OR' | 'AND'
+}
+
+interface SearchOptions {
+  limit?: number
+  prefix?: boolean
+  operator?: 'OR' | 'AND'
+}
+</code></pre>
+<h2 id="scope">Scope</h2>
+<ul>
+<li><strong>Single-field, flat</strong> document shape (<code>{ id, text }</code>).</li>
+<li><strong>Prefix match</strong> for autocomplete.</li>
+<li><strong>AND / OR</strong> combinator.</li>
+<li><strong>English stopwords</strong> (opt-in at construction).</li>
+<li><strong>Stateful NAPI class</strong> — build once, query many.</li>
+</ul>
+<h2 id="scope-cuts">Scope cuts</h2>
+<ul>
+<li>No multi-field / weighted index (upstream’s <code>fields</code> + <code>boost</code>).</li>
+<li>No <code>storeFields</code> — we return <code>{ id, score }</code> only.</li>
+<li>No <code>fuzzy</code> (Levenshtein) — use prefix-match instead.</li>
+<li>No <code>toJSON</code> / <code>loadJSON</code> persistence.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>
