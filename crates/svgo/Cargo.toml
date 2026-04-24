@@ -1,0 +1,15 @@
+[package]
+name = "amigo-svgo"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { workspace = true }
+napi-derive = { workspace = true }
+quick-xml = { version = "0.36", features = ["serialize"] }
+
+[build-dependencies]
+napi-build = "2"

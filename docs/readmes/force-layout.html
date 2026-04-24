@@ -1,0 +1,71 @@
+<h1 id="amigo-labs-force-layout">@amigo-labs/force-layout</h1>
+<blockquote>
+<p>Force-directed graph layout — batch-mode simulation (many-body +
+spring + centre + collision). Replaces
+<a href="https://www.npmjs.com/package/d3-force"><code>d3-force</code></a> for SSR /
+precompute workloads where you don’t need per-tick callbacks.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/force-layout
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { simulate } from '@amigo-labs/force-layout'
+
+const { nodes } = simulate(
+  [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+  [
+    { source: 'a', target: 'b', distance: 60 },
+    { source: 'b', target: 'c', distance: 60 },
+  ],
+  { iterations: 300, charge: -30, centerStrength: 0.1 },
+)
+
+// nodes → [{ id, x, y, vx, vy }, ...]
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">interface SimulationOptions {
+  iterations?: number      // default 300
+  charge?: number          // many-body strength (negative = repulsion). default -30
+  collideRadius?: number   // collision radius (0 disables). default 0
+  centerX?: number          // default 0
+  centerY?: number          // default 0
+  centerStrength?: number  // default 0.1
+  alpha?: number           // default 1
+  alphaDecay?: number      // default ≈ computed from iterations
+  velocityDecay?: number   // default 0.4
+}
+
+interface NodeSpec {
+  id: string
+  x?: number      // starting x (default phyllotaxis spiral)
+  y?: number      // starting y
+  fixed?: boolean // pin to (x, y) — skip forces
+}
+
+interface EdgeSpec {
+  source: string
+  target: string
+  distance?: number    // target link length. default 30
+  strength?: number    // spring strength in [0,1]. default 1 / min(inDeg, outDeg)
+}
+</code></pre>
+<h2 id="scope">Scope</h2>
+<ul>
+<li>Many-body (repulsion) — O(V²) brute-force.</li>
+<li>Link (Hooke spring with degree-weighted bias).</li>
+<li>Centering.</li>
+<li>Collision (hard-sphere overlap resolution).</li>
+<li>Pinned nodes.</li>
+</ul>
+<h2 id="scope-cuts">Scope cuts</h2>
+<ul>
+<li><strong>No tick callback.</strong> One-shot <code>simulate()</code> returns final
+positions. Animation loops stay on d3.</li>
+<li><strong>No force composition</strong>. <code>simulate()</code> takes a fixed force stack.</li>
+<li><strong>No per-node / per-link strength functions</strong>. Constants only.</li>
+<li><strong>O(V²)</strong> many-body — at &gt;1000 nodes the Barnes-Hut wins. v0.2
+will add a quadtree.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

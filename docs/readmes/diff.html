@@ -1,0 +1,57 @@
+<h1 id="amigo-labs-diff">@amigo-labs/diff</h1>
+<blockquote>
+<p>Myers/Patience text diff via <a href="https://crates.io/crates/similar"><code>similar</code></a> — jsdiff-compatible hunk-array shape, plus an offset-packed hot-path for large or char-level diffs.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/diff
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import {
+  diffLines,
+  diffWords,
+  diffChars,
+  diffTrimmedLines,
+  diffLinesToOffsets,
+  diffCharsToOffsets,
+  createPatch,
+} from '@amigo-labs/diff'
+
+diffLines('alpha\nbeta\n', 'alpha\nBETA\n')
+// [
+//   { value: 'alpha\n' },
+//   { value: 'beta\n', removed: true },
+//   { value: 'BETA\n', added: true },
+// ]
+
+createPatch('file.txt', oldContent, newContent)
+// --- file.txt
+// +++ file.txt
+// @@ -1,3 +1,3 @@
+//  alpha
+// -beta
+// +BETA
+//  gamma
+</code></pre>
+<h2 id="offset-packed-hot-path">Offset-packed hot-path</h2>
+<p>For large documents or char-level diffs, the hunk-array shape spends
+most of its time on <code>Vec&lt;String&gt;</code> FFI marshalling. Switch to the
+offset-packed API to keep the crossing flat:</p>
+<pre><code class="language-js">const buf = diffLinesToOffsets(oldStr, newStr)
+// Uint32Array-style packed layout: [tag, oldStart, oldEnd, newStart, newEnd, …]
+// tag: 0 = equal, 1 = added, 2 = removed
+
+const view = new Uint32Array(buf.buffer, buf.byteOffset, buf.length / 4)
+for (let i = 0; i &lt; view.length; i += 5) {
+  const [tag, oldStart, oldEnd, newStart, newEnd] = view.slice(i, i + 5)
+  const segment =
+    tag === 2 ? oldStr.slice(oldStart, oldEnd) : newStr.slice(newStart, newEnd)
+  // ... render
+}
+</code></pre>
+<h2 id="migration-from-diff">Migration from <code>diff</code></h2>
+<p>Nearly drop-in for the hunk-array entry points (<code>diffLines</code>,
+<code>diffWords</code>, <code>diffChars</code>, <code>diffTrimmedLines</code>, <code>createPatch</code>). See
+<a href="./MIGRATION.md"><code>MIGRATION.md</code></a> for the scope cuts — primarily
+<code>applyPatch</code>, <code>diffJson</code>, <code>diffCss</code>, and callback-based <code>diffArrays</code>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

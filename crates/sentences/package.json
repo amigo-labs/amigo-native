@@ -1,0 +1,68 @@
+{
+  "name": "@amigo-labs/sentences",
+  "version": "0.1.0",
+  "description": "Multi-language sentence boundary detection with an offset-packed zero-copy hot-path.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "sentences",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "sbd": "^1.0.19",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/sentences"
+  },
+  "keywords": [
+    "nlp",
+    "sentence-boundary",
+    "sbd",
+    "pragmatic-segmenter",
+    "tokenize",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Sentences",
+    "description": "Multi-language sentence boundary detection. String or offset-packed output for hot paths.",
+    "tableDescription": "Sentence splitter, multi-language + offset hot-path",
+    "replaces": "sbd",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Compatible",
+    "competitors": ["sbd"]
+  }
+}

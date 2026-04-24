@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -E '\\.rs$' | { read -r f; [ -n \"$f\" ] && rustfmt --edition 2024 \"$f\"; } 2>/dev/null || true",
+            "timeout": 15,
+            "statusMessage": "rustfmt"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "OUT=$(pnpm lint 2>&1); if [ $? -ne 0 ]; then jq -n --arg r \"$OUT\" '{decision:\"block\", reason:$r}'; fi",
+            "timeout": 300,
+            "statusMessage": "pnpm lint"
+          }
+        ]
+      }
+    ]
+  }
+}

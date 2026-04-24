@@ -1,0 +1,1 @@
+{"commit":"81bfb27","date":"2026-04-23","runner":"linux-x64","node":"v22.22.2","suites":[{"name":"simple label","amigo":17460.54,"best_competitor":null,"ratio":null},{"name":"A4 multi-page report","amigo":1120.7,"best_competitor":null,"ratio":null},{"name":"batch 100 labels","amigo":190.25,"best_competitor":null,"ratio":null}]}

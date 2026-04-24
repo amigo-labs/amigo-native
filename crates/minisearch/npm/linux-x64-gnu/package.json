@@ -1,0 +1,16 @@
+{
+  "name": "@amigo-labs/minisearch-linux-x64-gnu",
+  "version": "0.1.0",
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "main": "minisearch.linux-x64-gnu.node",
+  "files": ["minisearch.linux-x64-gnu.node"],
+  "description": "Prebuilt binary for @amigo-labs/minisearch on linux-x64-gnu",
+  "license": "MIT",
+  "engines": { "node": ">= 18" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/minisearch"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "name": "@amigo-labs/pdf-parse",
+  "version": "0.1.0",
+  "description": "PDF text + metadata extraction via pdf-extract / lopdf. Drop-in shape for pdf-parse.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "pdf-parse",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "pdf-parse": "^1.1.1",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/pdf-parse"
+  },
+  "keywords": [
+    "pdf",
+    "pdf-parse",
+    "text-extraction",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "PDF Parse",
+    "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
+    "tableDescription": "PDF text + metadata extraction",
+    "replaces": "pdf-parse",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Compatible",
+    "competitors": ["pdf-parse"]
+  }
+}

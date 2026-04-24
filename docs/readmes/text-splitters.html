@@ -1,0 +1,64 @@
+<h1 id="amigo-labs-text-splitters">@amigo-labs/text-splitters</h1>
+<blockquote>
+<p>RAG text splitters — <code>RecursiveCharacterTextSplitter</code> and
+<code>MarkdownTextSplitter</code> equivalents, with tiktoken-aware length as
+a built-in length metric (no JS callback round-trips).</p>
+<p>Backed by <a href="https://crates.io/crates/text-splitter"><code>text-splitter</code></a>
+for the segmentation engine and
+<a href="https://crates.io/crates/tiktoken-rs"><code>tiktoken-rs</code></a> for BPE
+encoding.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/text-splitters
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import {
+  splitText,
+  splitTextBatch,
+  splitMarkdown,
+  countTokens,
+} from '@amigo-labs/text-splitters'
+
+splitText('your long document…', { chunkSize: 1000, chunkOverlap: 200 })
+
+// Token-aware chunking (for LLM context budgeting):
+splitText(doc, {
+  chunkSize: 512,
+  chunkOverlap: 64,
+  lengthMetric: 'tiktoken:cl100k_base',
+})
+
+// Markdown-aware (keeps headings/code-blocks intact when they fit):
+splitMarkdown(doc, { chunkSize: 1000 })
+
+// Batch one FFI crossing for N documents:
+splitTextBatch([doc1, doc2, doc3], { chunkSize: 1000 })
+
+countTokens('hello world', 'tiktoken:cl100k_base')
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">interface SplitterOptions {
+  chunkSize?: number       // default 1000
+  chunkOverlap?: number    // default 0
+  lengthMetric?:
+    | 'chars'                    // default
+    | 'tiktoken:cl100k_base'     // GPT-3.5 / GPT-4
+    | 'tiktoken:o200k_base'      // GPT-4o
+}
+</code></pre>
+<h2 id="scope">Scope</h2>
+<ul>
+<li><code>RecursiveCharacterTextSplitter</code> via <code>splitText</code>.</li>
+<li><code>MarkdownTextSplitter</code> via <code>splitMarkdown</code> (preserves headings,
+code-blocks, list-items when possible).</li>
+<li><code>TokenTextSplitter</code> replaced by <code>lengthMetric: 'tiktoken:*'</code>.</li>
+<li>Batch helpers.</li>
+</ul>
+<p><strong>Not</strong> exposed: <code>lengthFunction</code> callback, custom <code>separators</code>,
+<code>HTMLTextSplitter</code> / <code>LatexTextSplitter</code> as distinct classes, and
+<code>createDocuments</code> / <code>splitDocuments</code> (do those in JS after the
+split).</p>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>
+for the why.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

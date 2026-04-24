@@ -1,0 +1,87 @@
+<h1 id="amigo-labs-typst">@amigo-labs/typst</h1>
+<blockquote>
+<p>Typst document compilation in-process. Source in → PDF out,
+one FFI crossing per document. Bundled Libertinus Serif, Mono,
+and New Computer Modern (math) fonts — no system-font fallback,
+deterministic output.</p>
+<p>Replaces CLI invocations (<code>typst compile</code>), Puppeteer-based
+PDF generators, and <code>pdfmake</code> for structured multi-page output
+where typography matters.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/typst
+</code></pre>
+<blockquote>
+<p>Note: this package is larger than the rest of the portfolio
+(~15 MB per platform binary) because Libertinus + NCM + Fira
+fonts are bundled for deterministic output. See
+<a href="../../docs/perf-review/typst.md"><code>docs/perf-review/typst.md</code></a>.</p>
+</blockquote>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { compile, compileMany } from '@amigo-labs/typst'
+
+const { pdf, warnings } = compile(`
+= Invoice
+
+#table(
+  columns: (1fr, auto, auto),
+  [*Item*], [*Qty*], [*Amount*],
+  [Consulting], [20 h], [\$2000],
+)
+`)
+fs.writeFileSync('invoice.pdf', pdf)
+
+// Inject data via sys.inputs:
+const { pdf: templated } = compile(
+  `Dear #sys.inputs.at("name", default: "Friend"), …`,
+  { data: { name: 'Alice' } },
+)
+
+// Batch:
+const outputs = compileMany([source1, source2, source3], { data })
+</code></pre>
+<h2 id="api">API</h2>
+<pre><code class="language-ts">interface CompileOptions {
+  data?: Record&lt;string, string&gt;  // exposed in sys.inputs
+  fonts?: Buffer[]               // additional TTF / OTF font buffers
+}
+
+interface Diagnostic {
+  severity: 'error' | 'warning' | 'hint'
+  message: string
+}
+
+interface CompileResult {
+  pdf: Buffer
+  warnings: Diagnostic[]
+}
+
+function compile(source: string, options?: CompileOptions): CompileResult
+function compileMany(sources: string[], options?: CompileOptions): CompileResult[]
+</code></pre>
+<h2 id="scope-v0-1">Scope (v0.1)</h2>
+<ul>
+<li>Single-source-file documents.</li>
+<li>Bundled font set (Libertinus + NCM + DejaVu).</li>
+<li>Caller-provided extra fonts (CJK, brand fonts).</li>
+<li><code>sys.inputs</code> via the <code>data</code> option.</li>
+<li>All Typst scripting: <code>#let</code>, <code>#if</code>, <code>#for</code>, <code>#show</code>, <code>#set</code>,
+math typesetting, tables, lists, user functions.</li>
+</ul>
+<h2 id="scope-cuts">Scope cuts</h2>
+<ul>
+<li><strong>No <code>@preview/*</code> package resolution.</strong> Supply-chain risk; stay
+offline. Inline the module source instead.</li>
+<li><strong>No multi-file imports</strong>. Single-string source only. Use
+<code>#let</code>/<code>#show</code> for modularity.</li>
+<li><strong>No TypstCompiler class in v0.1.</strong> Every <code>compile()</code> call
+rebuilds the world (~50–200 ms cold). For hot-path server
+workloads where you compile many documents with the same font
+set, batch via <code>compileMany()</code>. A stateful class is
+fast-follow.</li>
+<li><strong>No disk font resolution.</strong> Deterministic bundle only.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT (the Typst compiler itself is Apache-2.0; bundled fonts have
+their own licenses — Libertinus SIL OFL, NCM GFL, Fira OFL).</p>

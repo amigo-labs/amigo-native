@@ -1,0 +1,49 @@
+<h1 id="amigo-labs-turndown">@amigo-labs/turndown</h1>
+<blockquote>
+<p>HTML → Markdown via <a href="https://github.com/servo/html5ever"><code>html5ever</code></a>
+plus a bespoke rule walker. Ships CommonMark defaults + GFM tables /
+strikethrough / task-lists behind a single flag.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/turndown
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { turndown, turndownBatch } from '@amigo-labs/turndown'
+
+turndown('&lt;h1&gt;Hello&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;Bold&lt;/strong&gt;.&lt;/p&gt;')
+// '# Hello\n\n**Bold**.'
+
+// GFM tables + strikethrough:
+turndown('&lt;table&gt;...&lt;/table&gt;', { gfm: true })
+
+// Batch-convert in one FFI crossing:
+turndownBatch([html1, html2, html3])
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">interface TurndownOptions {
+  headingStyle?: 'setext' | 'atx'       // default 'atx'
+  hr?: string                            // default '* * *'
+  bulletListMarker?: '*' | '-' | '+'     // default '*'
+  codeBlockStyle?: 'indented' | 'fenced' // default 'indented'
+  fence?: '```' | '~~~'                   // default '```'
+  emDelimiter?: '_' | '*'                // default '_'
+  strongDelimiter?: '__' | '**'          // default '**'
+  linkStyle?: 'inlined' | 'referenced'   // default 'inlined'
+  gfm?: boolean                          // default false
+  keep?: string[]                         // tag names to preserve as raw HTML
+  remove?: string[]                       // tag names to drop entirely
+}
+</code></pre>
+<h2 id="scope">Scope</h2>
+<ul>
+<li>Covers CommonMark defaults + GFM tables, strikethrough, task-lists.</li>
+<li><strong>Not</strong> exposed: <code>.addRule()</code>, <code>.use(plugin)</code>, and keep/remove by
+function. Each per-visit callback would cost a FFI crossing — see
+<a href="../../docs/perf-review/turndown.md"><code>docs/perf-review/turndown.md</code></a>
+for rationale.</li>
+<li>Power users with custom rules stay on upstream <code>turndown</code>.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>
+for byte-level differences.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

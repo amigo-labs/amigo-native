@@ -1,0 +1,45 @@
+{
+  "crate": "graph-layout",
+  "generatedAt": "2026-04-23T20:50:27.873Z",
+  "commit": "81bfb27",
+  "runner": "linux-x64",
+  "nodeVersion": "v22.22.2",
+  "suites": [
+    {
+      "file": "crates/graph-layout/__bench__/index.bench.ts",
+      "name": "small (20 nodes, 25 edges)",
+      "entries": [
+        {
+          "name": "@amigo-labs/graph-layout",
+          "hz": 7981.4,
+          "rme": 1.07,
+          "samples": 3991
+        },
+        {
+          "name": "@dagrejs/dagre",
+          "hz": 155.37,
+          "rme": 3.87,
+          "samples": 78
+        }
+      ]
+    },
+    {
+      "file": "crates/graph-layout/__bench__/index.bench.ts",
+      "name": "medium (100 nodes, 140 edges)",
+      "entries": [
+        {
+          "name": "@amigo-labs/graph-layout",
+          "hz": 1686.61,
+          "rme": 1.32,
+          "samples": 844
+        },
+        {
+          "name": "@dagrejs/dagre",
+          "hz": 22.3007,
+          "rme": 6.57,
+          "samples": 12
+        }
+      ]
+    }
+  ]
+}

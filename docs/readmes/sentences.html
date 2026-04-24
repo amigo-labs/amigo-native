@@ -1,0 +1,57 @@
+<h1 id="amigo-labs-sentences">@amigo-labs/sentences</h1>
+<blockquote>
+<p>Multi-language rule-based sentence boundary detection. String-array
+compat form plus an offset-packed zero-copy hot-path for NLP
+pipelines that don’t need substring allocation.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/sentences
+</code></pre>
+<h2 id="usage">Usage</h2>
+<h3 id="compat-drop-in-shape-for-sbd">Compat (drop-in-shape for <code>sbd</code>)</h3>
+<pre><code class="language-js">import { split } from '@amigo-labs/sentences'
+
+split('Hello world. How are you?')
+// → ['Hello world.', 'How are you?']
+
+split('Das ist z.B. gut. Super!', { language: 'de' })
+// → ['Das ist z.B. gut.', 'Super!']
+</code></pre>
+<h3 id="zero-copy-hot-path">Zero-copy hot-path</h3>
+<p>For pipelines that downstream embed, translate or classify sentences,
+the offset-packed API avoids the O(N) string allocation.</p>
+<pre><code class="language-js">import { splitToOffsets } from '@amigo-labs/sentences'
+
+const text = 'First. Second. Third.'
+const buf = splitToOffsets(text)
+const view = new Uint32Array(buf.buffer, buf.byteOffset, buf.length / 4)
+for (let i = 0; i &lt; view.length; i += 2) {
+  const [start, end] = [view[i], view[i + 1]]
+  // text.slice(start, end) is the i-th sentence.
+}
+</code></pre>
+<h3 id="batch">Batch</h3>
+<pre><code class="language-js">import { splitBatch, splitBatchToOffsets } from '@amigo-labs/sentences'
+
+splitBatch([doc1, doc2, doc3])
+// → Array&lt;string[]&gt;
+
+splitBatchToOffsets([doc1, doc2, doc3])
+// → Array&lt;Buffer&gt;
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">type SbdLanguage = 'en' | 'de' | 'fr' | 'es' | 'it' | 'pt' | 'nl'
+
+interface SplitOptions {
+  language?: SbdLanguage            // default 'en'
+  newlineBoundaries?: boolean        // treat \n\n as hard break, default false
+  preserveWhitespace?: boolean       // default false (sentences are trimmed)
+  customAbbreviations?: string[]     // merged into per-language table
+}
+</code></pre>
+<h2 id="parity">Parity</h2>
+<p>We target <strong>Pragmatic Segmenter</strong> behaviour, not bit-exact <code>sbd</code>. See
+<a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>
+for documented gaps.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

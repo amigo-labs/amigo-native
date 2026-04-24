@@ -1,0 +1,61 @@
+<h1 id="amigo-labs-pdf-parse">@amigo-labs/pdf-parse</h1>
+<blockquote>
+<p>PDF text + metadata extraction via
+<a href="https://crates.io/crates/pdf-extract"><code>pdf-extract</code></a> and
+<a href="https://crates.io/crates/lopdf"><code>lopdf</code></a>. No pdf.js, no browser
+render pipeline — just content-stream tokenisation.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/pdf-parse
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { parse, parseSync } from '@amigo-labs/pdf-parse'
+
+// Drop-in shape for upstream pdf-parse:
+const result = await parse(fs.readFileSync('doc.pdf'))
+console.log(result.text)        // plaintext
+console.log(result.numpages)    // 42
+console.log(result.info.Title)  // 'My Whitepaper'
+console.log(result.version)     // '1.7'
+
+// Sync path for small PDFs (&lt; ~500 KB):
+const sync = parseSync(buf)
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">interface PdfParseOptions {
+  max?: number         // process at most N pages
+  password?: string    // RC4 / AES-128 standard security
+}
+</code></pre>
+<h2 id="result">Result</h2>
+<pre><code class="language-ts">interface PdfParseResult {
+  text: string                          // extracted plaintext
+  numpages: number                       // total page count
+  info: Record&lt;string, string&gt;           // Title, Author, Creator, ...
+  metadata?: string                      // XMP metadata (if any)
+  version: string                        // PDF spec version (e.g. "1.7")
+}
+</code></pre>
+<h2 id="scope">Scope</h2>
+<ul>
+<li><strong>Text extraction</strong> — the 95% use-case of <code>pdf-parse</code>.</li>
+<li><strong>Document metadata</strong> — <code>/Info</code> dict and XMP stream.</li>
+<li><strong>Page count + PDF version.</strong></li>
+<li>Encrypted PDFs via <code>password</code> option (RC4, AES-128).</li>
+</ul>
+<h2 id="scope-cuts">Scope cuts</h2>
+<ul>
+<li>No <code>pagerender(pageData)</code> callback. Per-page JS callbacks would
+cost an FFI crossing each — see
+<a href="../../docs/perf-review/pdf-parse.md"><code>docs/perf-review/pdf-parse.md</code></a>.
+Post-process <code>text.split('\x0c')</code> to iterate pages.</li>
+<li>No Public-Key-Security. <code>pdf-extract</code> only implements standard
+security handlers.</li>
+<li>No malformed-PDF recovery on the scale of pdf.js. Scanner-output
+or very old Adobe files may fail — fall back to upstream in a
+try/catch pipeline.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>
+for detailed differences.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

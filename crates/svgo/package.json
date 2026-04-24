@@ -1,0 +1,67 @@
+{
+  "name": "@amigo-labs/svgo",
+  "version": "0.1.0",
+  "description": "Fast SVG optimizer — quick-xml-powered subset of svgo's preset-default plugins.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "svgo",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "svgo": "^3.3.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/svgo"
+  },
+  "keywords": [
+    "svg",
+    "optimize",
+    "minify",
+    "svgo",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Svgo",
+    "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
+    "tableDescription": "SVG optimizer, 8 preset-default plugins",
+    "replaces": "svgo",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Subset",
+    "competitors": ["svgo@3"]
+  }
+}

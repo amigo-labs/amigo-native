@@ -1,0 +1,67 @@
+{
+  "name": "@amigo-labs/diff",
+  "version": "0.1.0",
+  "description": "Myers/Patience text diff via the similar crate — with offset-packed hot-path.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "diff",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "diff": "^5.2.0",
+    "fast-check": "^3.23.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/diff"
+  },
+  "keywords": [
+    "diff",
+    "myers",
+    "patience",
+    "text-diff",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "Diff",
+    "description": "Myers/Patience diff via `similar`. Drop-in-shape with an offset-packed hot-path for char-level and large-input cases.",
+    "tableDescription": "Text diff via `similar`, offset-packed hot-path",
+    "replaces": "diff",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Compatible",
+    "competitors": ["diff@5"]
+  }
+}

@@ -1,0 +1,1 @@
+{"commit":"81bfb27","date":"2026-04-23","runner":"linux-x64","node":"v22.22.2","suites":[{"name":"example.pdf (~580 bytes)","amigo":652.44,"best_competitor":1999.25,"ratio":0.326},{"name":"unicode.pdf (~3.9 KB)","amigo":1335.45,"best_competitor":848.76,"ratio":1.573}]}

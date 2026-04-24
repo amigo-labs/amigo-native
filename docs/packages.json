@@ -33,7 +33,7 @@
     },
     {
       "k": "PACKAGES",
-      "v": "16"
+      "v": "31"
     },
     {
       "k": "NODE",
@@ -72,6 +72,15 @@
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bcrypt/README.md"
     },
     {
+      "name": "bm25",
+      "title": "BM25",
+      "description": "BM25 full-text search. Stateful NAPI class — build index once, query many times.",
+      "speedup": "15× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bm25",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bm25",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bm25/README.md"
+    },
+    {
       "name": "commonmark",
       "title": "CommonMark",
       "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
@@ -99,6 +108,15 @@
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deepmerge/README.md"
     },
     {
+      "name": "diff",
+      "title": "Diff",
+      "description": "Myers/Patience diff via `similar`. Drop-in-shape with an offset-packed hot-path for char-level and large-input cases.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/diff",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/diff",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/diff/README.md"
+    },
+    {
       "name": "encoding",
       "title": "Encoding",
       "description": "Character encoding conversion powered by Mozilla's encoding_rs.",
@@ -115,6 +133,24 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/file-type",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/file-type",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/file-type/README.md"
+    },
+    {
+      "name": "force-layout",
+      "title": "Force Layout",
+      "description": "Force-directed graph simulation. Batch-mode d3-force replacement for SSR / precompute workloads.",
+      "speedup": "4.2–9.3× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/force-layout",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/force-layout",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/force-layout/README.md"
+    },
+    {
+      "name": "graph-layout",
+      "title": "Graph Layout",
+      "description": "Hierarchical (Sugiyama-style) DAG layout. Single-call spec → positions + edge routing.",
+      "speedup": "51–76× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/graph-layout",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/graph-layout",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/graph-layout/README.md"
     },
     {
       "name": "inflate",
@@ -144,6 +180,24 @@
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jwt/README.md"
     },
     {
+      "name": "language-detect",
+      "title": "Language Detect",
+      "description": "Language detection powered by whatlang. Paragraph-size Green, short-string Red by design.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/language-detect",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/language-detect",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/language-detect/README.md"
+    },
+    {
+      "name": "minisearch",
+      "title": "Minisearch",
+      "description": "Tiny in-memory full-text search with prefix autocomplete. Shares Rust search-core with @amigo-labs/bm25.",
+      "speedup": "up to 73× faster / 2.3× slower",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/minisearch",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/minisearch",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/minisearch/README.md"
+    },
+    {
       "name": "nanoid",
       "title": "NanoID",
       "description": "Fast crypto-safe URL-friendly ID generator with pool-amortised entropy. Pure JS — the NAPI FFI boundary was bigger than the entire ID-generation path.",
@@ -151,6 +205,24 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/nanoid",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/nanoid",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/nanoid/README.md"
+    },
+    {
+      "name": "pdf",
+      "title": "PDF",
+      "description": "PDF generation — one FFI call per document. Labels / tickets / simple reports.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/pdf",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/pdf",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf/README.md"
+    },
+    {
+      "name": "pdf-parse",
+      "title": "PDF Parse",
+      "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
+      "speedup": "up to 1.57× faster / 3.1× slower",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/pdf-parse",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/pdf-parse",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf-parse/README.md"
     },
     {
       "name": "sanitize-html",
@@ -162,6 +234,15 @@
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sanitize-html/README.md"
     },
     {
+      "name": "sentences",
+      "title": "Sentences",
+      "description": "Multi-language sentence boundary detection. String or offset-packed output for hot paths.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sentences",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sentences",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sentences/README.md"
+    },
+    {
       "name": "slugify",
       "title": "Slugify",
       "description": "Unicode-aware slugification. Wraps deunicode + unicode-normalization.",
@@ -171,6 +252,33 @@
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/slugify/README.md"
     },
     {
+      "name": "stemmer",
+      "title": "Stemmer",
+      "description": "Porter/Snowball stemming via rust-stemmers. Batch-only API — single-word calls are intentionally not exposed.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/stemmer",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/stemmer",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/stemmer/README.md"
+    },
+    {
+      "name": "svgo",
+      "title": "Svgo",
+      "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
+      "speedup": "14–22× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/svgo",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/svgo",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/svgo/README.md"
+    },
+    {
+      "name": "text-splitters",
+      "title": "Text Splitters",
+      "description": "RAG text splitters (recursive-character + markdown-aware), with native tiktoken length.",
+      "speedup": "up to 2.8× faster / 3.4× slower",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/text-splitters",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/text-splitters",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/text-splitters/README.md"
+    },
+    {
       "name": "tiktoken",
       "title": "Tiktoken",
       "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
@@ -178,6 +286,33 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/tiktoken",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/tiktoken",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/tiktoken/README.md"
+    },
+    {
+      "name": "turndown",
+      "title": "Turndown",
+      "description": "HTML → Markdown via html5ever. Ships CommonMark + GFM tables/strikethrough.",
+      "speedup": "8.5–12× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/turndown",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/turndown",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/turndown/README.md"
+    },
+    {
+      "name": "typst",
+      "title": "Typst",
+      "description": "Typst document compiler — source in, PDF out. Bundled Libertinus fonts; offline-only packages.",
+      "speedup": "TBD",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/typst",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/typst",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/typst/README.md"
+    },
+    {
+      "name": "xlsx",
+      "title": "XLSX",
+      "description": "XLSX read + write. Buffer in → rows out, rows in → Buffer out. Single-FFI-crossing.",
+      "speedup": "2.2–3.5× faster",
+      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xlsx",
+      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xlsx",
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xlsx/README.md"
     },
     {
       "name": "xxhash",

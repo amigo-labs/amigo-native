@@ -1,0 +1,1 @@
+{"commit":"81bfb27","date":"2026-04-23","runner":"linux-x64","node":"v22.22.2","suites":[{"name":"index build (1000 docs)","amigo":125.79,"best_competitor":294.44,"ratio":0.427},{"name":"query (1000 docs indexed)","amigo":19472.46,"best_competitor":3828.43,"ratio":5.086},{"name":"autosuggest","amigo":167469.2,"best_competitor":2296.99,"ratio":72.908}]}

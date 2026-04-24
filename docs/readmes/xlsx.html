@@ -1,0 +1,70 @@
+<h1 id="amigo-labs-xlsx">@amigo-labs/xlsx</h1>
+<blockquote>
+<p>XLSX read + write via
+<a href="https://crates.io/crates/calamine"><code>calamine</code></a> and
+<a href="https://crates.io/crates/rust_xlsxwriter"><code>rust_xlsxwriter</code></a>.
+Buffer in → rows out. Rows in → Buffer out. Single FFI crossing
+per workbook.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/xlsx
+</code></pre>
+<h2 id="usage">Usage</h2>
+<h3 id="read">Read</h3>
+<pre><code class="language-js">import { readWorkbook, readSheet, readSheetAsObjects } from '@amigo-labs/xlsx'
+
+const wb = readWorkbook(fs.readFileSync('data.xlsx'))
+wb.sheets[0].name        // 'Sheet1'
+wb.sheets[0].rows[0][0]  // { kind: 'string', text: 'header' }
+
+// Read a single sheet:
+const sheet = readSheet(buffer, 'Q3-Data')
+
+// SheetJS-style array-of-objects (first row = headers):
+const rows = readSheetAsObjects(buffer, 'People')
+// [{ name: { kind: 'string', text: 'Alice' }, age: { kind: 'number', number: 30 } }, ...]
+</code></pre>
+<h3 id="write">Write</h3>
+<pre><code class="language-js">import { writeWorkbook, writeSheetFromObjects } from '@amigo-labs/xlsx'
+
+const buf = writeWorkbook([
+  {
+    name: 'People',
+    rows: [
+      [{ kind: 'string', text: 'name' }, { kind: 'string', text: 'age' }],
+      [{ kind: 'string', text: 'Alice' }, { kind: 'number', number: 30 }],
+    ],
+  },
+])
+fs.writeFileSync('out.xlsx', buf)
+
+// Or from objects (first-row headers auto-derived):
+const buf2 = writeSheetFromObjects('People', [
+  { name: { kind: 'string', text: 'Alice' }, age: { kind: 'number', number: 30 } },
+])
+</code></pre>
+<h2 id="cell-shape">Cell shape</h2>
+<pre><code class="language-ts">interface CellValue {
+  kind: 'string' | 'number' | 'bool' | 'date' | 'empty' | 'error'
+  text?: string
+  number?: number
+  boolValue?: boolean
+}
+</code></pre>
+<h2 id="scope">Scope</h2>
+<ul>
+<li>Read <code>.xlsx</code> and <code>.xls</code>.</li>
+<li>Write <code>.xlsx</code>.</li>
+<li>String / number / boolean / date / empty cells.</li>
+<li>Multi-sheet workbooks.</li>
+</ul>
+<h2 id="scope-cuts">Scope cuts</h2>
+<ul>
+<li>No formulas (neither read-time evaluation nor write).</li>
+<li>No cell formatting / styles / fonts / colours / borders.</li>
+<li>No charts, pivot tables, drawings.</li>
+<li>No data-validation rules or conditional formatting.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

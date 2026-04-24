@@ -1,0 +1,78 @@
+<h1 id="amigo-labs-graph-layout">@amigo-labs/graph-layout</h1>
+<blockquote>
+<p>Hierarchical (Sugiyama-style) DAG layout. One call per graph —
+spec in, positions + edge routing out. Replaces
+<a href="https://www.npmjs.com/package/dagre"><code>dagre</code></a> /
+<a href="https://www.npmjs.com/package/@dagrejs/dagre"><code>@dagrejs/dagre</code></a> for
+Node-side rendering (Mermaid, ReactFlow-SSR, Docusaurus-build).</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pnpm add @amigo-labs/graph-layout
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-js">import { layout, layoutMany } from '@amigo-labs/graph-layout'
+
+const result = layout({
+  nodes: [
+    { id: 'a', width: 100, height: 40 },
+    { id: 'b', width: 100, height: 40 },
+    { id: 'c', width: 100, height: 40 },
+  ],
+  edges: [
+    { source: 'a', target: 'b' },
+    { source: 'a', target: 'c' },
+  ],
+  options: { rankdir: 'TB', nodesep: 60, ranksep: 80 },
+})
+
+// result.nodes      → [{ id, x, y, width, height }, ...]
+// result.edges      → [{ source, target, points: [{x,y}, {x,y}] }, ...]
+// result.width      → total bounding-box width
+// result.height     → total bounding-box height
+
+// Batch N layouts in a single FFI call (CI-time graph rendering):
+layoutMany([spec1, spec2, spec3])
+</code></pre>
+<h2 id="options">Options</h2>
+<pre><code class="language-ts">interface LayoutOptions {
+  rankdir?: 'TB' | 'BT' | 'LR' | 'RL'    // default 'TB'
+  nodesep?: number                         // default 50
+  ranksep?: number                         // default 50
+  marginx?: number                         // default 0
+  marginy?: number                         // default 0
+}
+
+interface NodeSpec {
+  id: string
+  width: number
+  height: number
+  rank?: number       // pin to a specific rank
+}
+
+interface EdgeSpec {
+  source: string
+  target: string
+  minlen?: number     // minimum rank distance. default 1
+  weight?: number     // crossing-reduction weight. default 1
+}
+</code></pre>
+<h2 id="scope">Scope</h2>
+<ul>
+<li>Sugiyama-style hierarchical layout (layered DAG).</li>
+<li>Longest-path ranker with topological fallback for cycles.</li>
+<li>Barycentric crossing-reduction (4 sweeps).</li>
+<li>Straight-line two-point edge routing (renderers add splines).</li>
+<li>Pinned ranks (per-node <code>rank</code> override).</li>
+</ul>
+<h2 id="not-in-scope-v0-1">Not in scope (v0.1)</h2>
+<ul>
+<li><strong>graphlib chain-API</strong> (<code>g.setNode(...)</code>, <code>g.setEdge(...)</code>). Each
+call would cost an FFI crossing. Use the one-spec form.</li>
+<li><strong>network-simplex / tight-tree rankers</strong>. Longest-path covers the
+typical use-cases.</li>
+<li><strong>Spline edge routing</strong>. Renderers apply their own.</li>
+<li><strong>Edge labels</strong>. No dummy-node insertion for label positioning.</li>
+</ul>
+<p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

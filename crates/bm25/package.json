@@ -1,0 +1,69 @@
+{
+  "name": "@amigo-labs/bm25",
+  "version": "0.1.0",
+  "description": "BM25 full-text search for Node.js — stateful index over a shared Rust search-core.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "bm25",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "fast-check": "^3.23.0",
+    "okapibm25": "^1.2.2",
+    "vitest": "^3.0.0",
+    "wink-bm25-text-search": "^3.1.0",
+    "wink-nlp-utils": "^2.1.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/bm25"
+  },
+  "keywords": [
+    "bm25",
+    "search",
+    "information-retrieval",
+    "full-text",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "BM25",
+    "description": "BM25 full-text search. Stateful NAPI class — build index once, query many times.",
+    "tableDescription": "BM25 full-text search",
+    "replaces": "wink-bm25-text-search",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Compatible",
+    "competitors": ["wink-bm25-text-search", "okapibm25"]
+  }
+}

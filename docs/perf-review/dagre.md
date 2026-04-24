@@ -1,6 +1,8 @@
 # Candidate review: `dagre` / `@dagrejs/dagre`
 
 > **Status:** GO (as a new package `@amigo-labs/graph-layout`, not a drop-in) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-20
+> **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks measured.
+
 
 ## Verdict
 

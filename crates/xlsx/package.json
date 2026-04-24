@@ -1,0 +1,69 @@
+{
+  "name": "@amigo-labs/xlsx",
+  "version": "0.1.0",
+  "description": "XLSX read + write via calamine/rust_xlsxwriter. Buffer in, rows out; rows in, Buffer out.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "xlsx",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.5.0",
+    "exceljs": "^4.4.0",
+    "fast-check": "^3.23.0",
+    "vitest": "^3.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/xlsx"
+  },
+  "keywords": [
+    "xlsx",
+    "excel",
+    "spreadsheet",
+    "calamine",
+    "sheetjs",
+    "native",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 18"
+  },
+  "amigo": {
+    "title": "XLSX",
+    "description": "XLSX read + write. Buffer in → rows out, rows in → Buffer out. Single-FFI-crossing.",
+    "tableDescription": "XLSX read + write",
+    "replaces": "xlsx",
+    "vsJs": "TBD",
+    "parity": "TBD",
+    "status": "Subset",
+    "competitors": ["xlsx", "exceljs"]
+  }
+}
