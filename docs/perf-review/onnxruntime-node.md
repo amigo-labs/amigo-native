@@ -4,64 +4,64 @@
 
 ## Verdict
 
-Beide Pakete sind bereits **native C++-Bindings** (ONNX Runtime und Facebook-Faiss), wrapped via node-addon-api. Ein Re-Wrap via NAPI-RS läuft Rust-Bindings gegen dieselben C++-Kern-Libraries — Null Perf-Gewinn möglich. Exakt dieselbe Lehre wie `hnswlib-node` (2026-04-21 re-kategorisiert): Rust-Code ist nicht schneller als optimierter C++-Code wenn sie denselben Algorithmus implementieren. Und für `onnxruntime-node` ist der eigentliche Compute ohnehin in C++/CUDA/CoreML — unser Binding würde Millisekunden-auf-Millisekunden sparen gegen Sekunden-long-Inference-Calls = statistisches Rauschen.
+Both packages are already **native C++ bindings** (ONNX Runtime and Facebook Faiss), wrapped via node-addon-api. A re-wrap via NAPI-RS would run Rust bindings against the same C++ core libraries — zero perf gain possible. Exactly the same lesson as `hnswlib-node` (re-categorised on 2026-04-21): Rust code is not faster than optimised C++ code when both implement the same algorithm. And for `onnxruntime-node` the actual compute is in C++ / CUDA / CoreML anyway — our binding would save milliseconds against second-long inference calls = statistical noise.
 
 ## JS package
 
 - **npm:**
-  - [`onnxruntime-node`](https://www.npmjs.com/package/onnxruntime-node) (~400k/Woche) — offizielles Microsoft-Binding zu ONNX Runtime C++
-  - [`faiss-node`](https://www.npmjs.com/package/faiss-node) (~10k/Woche) — Binding zu Facebook-Faiss C++
-- **Downloads:** ~410k/Woche kombiniert (BACKLOG-Zahl bestätigt)
+  - [`onnxruntime-node`](https://www.npmjs.com/package/onnxruntime-node) (~400k/week) — official Microsoft binding to ONNX Runtime C++
+  - [`faiss-node`](https://www.npmjs.com/package/faiss-node) (~10k/week) — binding to Facebook Faiss C++
+- **Downloads:** ~410k/week combined (BACKLOG figure confirmed)
 - **Exports / API surface:**
-  - `onnxruntime-node`: `InferenceSession.create(path)` + `.run(feeds)` — ein-Inference-Call ruft C++-Model-Forward
-  - `faiss-node`: `new IndexFlatL2(d)` + `.add(vectors)` + `.search(vector, k)` — Vector-Index mit Search
-- **Typical input:** Model-Path (einmal laden), Input-Tensoren (pro Call). Für Embedding-Model: 1 Text → 1 f32-Vector der Dimension D.
-- **Typical output:** Output-Tensor(en), typisch f32-Arrays.
-- **Realistic median use-case:** **Embedding-Generation** (Text → Vector), **Classification**, **Re-Ranking**. Inference-Time dominiert: 10 ms – 2 s pro Call je nach Modellgröße. FFI-Overhead ist im <1 %-Bereich **jeder** Binding-Variante.
+  - `onnxruntime-node`: `InferenceSession.create(path)` + `.run(feeds)` — one inference call invokes the C++ model forward
+  - `faiss-node`: `new IndexFlatL2(d)` + `.add(vectors)` + `.search(vector, k)` — vector index with search
+- **Typical input:** Model path (loaded once), input tensors (per call). For an embedding model: 1 text → 1 f32 vector of dimension D.
+- **Typical output:** Output tensor(s), typically f32 arrays.
+- **Realistic median use case:** **Embedding generation** (text → vector), **classification**, **re-ranking**. Inference time dominates: 10 ms – 2 s per call depending on model size. FFI overhead is in the <1 % range for **any** binding variant.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - `ort` (ONNX Runtime Rust binding) — genau dieselbe C++-Lib unter der Haube
-  - `faiss-rs` oder direkter Binding über `cxx`/`autocxx` — wieder dieselbe C++-Lib
-- **Maintenance / license:** Beide aktiv. Aber: Sie wrappen dieselben C++-Libraries wie die npm-Pakete.
-- **Known gotchas / divergences:** **Keine algorithmischen** — dieselbe C++-Engine. Lediglich API-Shape-Unterschiede zwischen npm und Rust-Binding.
+  - `ort` (ONNX Runtime Rust binding) — exactly the same C++ lib under the hood
+  - `faiss-rs` or a direct binding via `cxx` / `autocxx` — same C++ lib again
+- **Maintenance / license:** Both active. But: they wrap the same C++ libraries that the npm packages do.
+- **Known gotchas / divergences:** **None algorithmically** — same C++ engine. Only API-shape differences between npm and the Rust binding.
 
 ## BACKLOG check
 
-Vorhandener Eintrag in `BACKLOG.md` → "Ruled out — AI-category": "Already native bindings over C++ libraries — re-wrapping a wrapper adds maintenance without speedup." Review formalisiert und archiviert.
+Existing entry in `BACKLOG.md` → "Ruled out — AI-category": "Already native bindings over C++ libraries — re-wrapping a wrapper adds maintenance without speedup." Review formalises and archives.
 
-Abgrenzung:
-- Gegen `docs/perf-review/hnswlib-node.md` (NO-GO, 2026-04-21): **identische Kategorie**. Hnswlib-node, onnxruntime-node, faiss-node sind drei Instanzen derselben Lehre — "nativer-Wrapper einer C++-Lib, keine Rust-Gewinnmarge."
-- Gegen `docs/perf-review/xenova-transformers.md` (falls erstellt): @xenova/transformers wrapped onnxruntime-node — noch eine Ebene darüber. Siehe dort.
+Boundary:
+- vs. `docs/perf-review/hnswlib-node.md` (NO-GO, 2026-04-21): **identical category**. hnswlib-node, onnxruntime-node, faiss-node are three instances of the same lesson — "native wrapper of a C++ lib, no Rust margin to be had."
+- vs. `docs/perf-review/xenova-transformers.md` (if created): @xenova/transformers wraps onnxruntime-node — one more layer above. See there.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Massiv.** Inference 10 ms – 2 s. FFI-Share (100–200 ns) ist <0,001 %. |
-| Input size distribution | Tensor als Float32Array: zero-copy via TypedArray-Buffer. Flat. |
-| Output size distribution | Tensor als Float32Array: zero-copy. Flat. |
-| Reusable setup (stateful potential) | **Zentral.** Model-Load beim Start, viele Inference-Calls danach. Genau das, was npm-Binding bereits tut. |
-| Batch-usage realism | Ja, als Rust-seitiger `run_batch(inputs)` — aber onnxruntime-node hat das bereits, und der Gewinn käme von C++-Batch-Inference, nicht von FFI-Elimination. |
-| FFI-share estimate vs. Rust work | <0,001 % in allen Szenarien. **Aber** das bedeutet: Rust-Port hat **keinen** messbaren Gewinn über npm-Original. |
+| Per-call algorithmic work | **Massive.** Inference 10 ms – 2 s. FFI share (100–200 ns) is <0.001 %. |
+| Input size distribution | Tensor as Float32Array: zero-copy via TypedArray buffer. Flat. |
+| Output size distribution | Tensor as Float32Array: zero-copy. Flat. |
+| Reusable setup (stateful potential) | **Central.** Model load on startup, many inference calls afterwards. Exactly what the npm binding already does. |
+| Batch usage realism | Yes, as a Rust-side `run_batch(inputs)` — but onnxruntime-node already has it, and the win would come from C++-side batch inference, not from eliminating FFI. |
+| FFI-share estimate vs. Rust work | <0.001 % in every scenario. **But** that means: a Rust port has **no** measurable gain over the npm original. |
 
 ## Classification reasoning
 
-1. **Beide Pakete sind bereits native C++.** onnxruntime-node nutzt ONNX Runtime C++ (Microsoft, SIMD-accelerated, GPU-fähig via CUDA/DirectML/CoreML). faiss-node nutzt Facebook-Faiss C++ (hochoptimiert für Vector-Similarity-Search). Kein JS-Code im Hot-Path.
+1. **Both packages are already native C++.** onnxruntime-node uses ONNX Runtime C++ (Microsoft, SIMD-accelerated, GPU-capable via CUDA/DirectML/CoreML). faiss-node uses Facebook Faiss C++ (highly optimised for vector similarity search). No JS code on the hot path.
 
-2. **Rust-Bindings wrappen dieselben C++-Libs.** `ort` ist ein Rust-Wrapper um ONNX Runtime C++. `faiss-rs` um Faiss C++. **Keine** Rust-Implementation ist algorithmisch schneller.
+2. **Rust bindings wrap the same C++ libs.** `ort` is a Rust wrapper around ONNX Runtime C++. `faiss-rs` around Faiss C++. **No** Rust implementation is algorithmically faster.
 
-3. **Wir haben keinen Grund, ein Wrapper von einem Wrapper zu sein.** Die npm-Originale sind von Microsoft/Meta gewartet, haben vollständige Plattform-Coverage, CUDA-Support, plus-minus vollständige Parity mit dem C++-Upstream. Unser `@amigo-labs/onnxruntime` wäre ein viertes Rad am Wagen mit keinem Unique-Selling-Point außer "wurde in Rust gewrapped."
+3. **No reason for us to be a wrapper of a wrapper.** The npm originals are maintained by Microsoft / Meta, ship full platform coverage, CUDA support, and ±complete parity with the C++ upstream. Our `@amigo-labs/onnxruntime` would be a fourth wheel with no unique selling point beyond "now wrapped in Rust."
 
-4. **DX-Argument greift nicht.** onnxruntime-node hat zuverlässige Prebuilds. faiss-node hat bekannte Build-Probleme auf manchen Plattformen — aber das löst man durch **Fork-and-Add-Prebuilds**, nicht durch Rust-Re-Implementation.
+4. **DX argument doesn't bite.** onnxruntime-node has reliable prebuilts. faiss-node has known build issues on some platforms — but the fix is **fork-and-add-prebuilds**, not a Rust re-implementation.
 
-**Shape-Matching:**
-- 🔁 Wie `hnswlib-node` (2026-04-21 ruled out, same lesson exactly)
-- 🔁 Wie Re-Wrapping jeder etablierten C++-Lib — kein Gewinn
+**Shape matching:**
+- 🔁 Like `hnswlib-node` (ruled out 2026-04-21, exactly the same lesson)
+- 🔁 Like re-wrapping any established C++ lib — no gain
 
-**Benchmark-Gap-Flag:** Kein Spike nötig. Wenn jemand einen Microbench fährt, wird er das Messrauschen messen.
+**Benchmark-gap flag:** No spike needed. Anyone running a microbench will measure measurement noise.
 
 ## If NO-GO — BACKLOG entry
 
-Archiviert 2026-04-21. Full review: `docs/perf-review/onnxruntime-node.md`. Präzedenzfall: `docs/perf-review/hnswlib-node.md`.
+Archived 2026-04-21. Full review: `docs/perf-review/onnxruntime-node.md`. Precedent: `docs/perf-review/hnswlib-node.md`.

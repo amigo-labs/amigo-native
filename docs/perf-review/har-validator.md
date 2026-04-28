@@ -4,28 +4,28 @@
 
 ## Verdict
 
-`har-validator` validiert HAR (HTTP Archive)-Dateien gegen JSON-Schema. Das Paket ist **seit 2020 deprecated** (Maintainer hat es explicit markiert). Der letzte meaningful Release war 2019. Es wurde nur noch transitiv durch `request` (selbst deprecated) gepullt. Mit `request` weg ist `har-validator` effektiv orphan. Außerdem: JSON-Schema-Validation ist in der `ajv`-Kategorie (→ `docs/perf-review/ajv.md`, Parity too expensive — codegen-vs-interpreter unterschiedliche Philosophien). Doppelt-Black.
+`har-validator` validates HAR (HTTP Archive) files against a JSON Schema. The package has been **deprecated since 2020** (the maintainer marked it explicitly). The last meaningful release was 2019. It has only been pulled in transitively by `request` (also deprecated). With `request` gone, `har-validator` is effectively orphaned. On top of that: JSON-Schema validation falls into the `ajv` category (→ `docs/perf-review/ajv.md`, parity too expensive — codegen-vs-interpreter philosophies don't reconcile). Doubly Black.
 
 ## JS package
 
 - **npm:** [`har-validator`](https://www.npmjs.com/package/har-validator)
-- **Downloads:** ~5M/Woche (reine Legacy-Transitive, sinkt stetig)
-- **Status:** Deprecated, unmaintained. [GitHub-Status](https://github.com/ahmadnassri/node-har-validator).
+- **Downloads:** ~5M/week (pure legacy transitive, declining steadily)
+- **Status:** Deprecated, unmaintained. [GitHub status](https://github.com/ahmadnassri/node-har-validator).
 
 ## Rust replacement
 
-Nicht zutreffend. HAR ist ein Nischen-Format; Schema-Validation ist `ajv`-Shape, bereits NO-GO.
+Not applicable. HAR is a niche format; schema validation is the `ajv` shape, already NO-GO.
 
 ## BACKLOG check
 
-Eintrag in `BACKLOG.md` → "Deprecated / superseded": "Don't touch." Review bestätigt.
+Entry in `BACKLOG.md` → "Deprecated / superseded": "Don't touch." Review confirms.
 
 ## Classification reasoning
 
-1. **Upstream deprecated seit Jahren.** Kein Port-Case.
-2. **Orphan durch `request`-Deprecation.** Hauptgrund der Adoption war transitiv über `request`; mit `request` formal deprecated fällt har-validator mit.
-3. **Schema-Validation-Shape-Kategorie ist bereits NO-GO** (`ajv.md`). Selbst wenn jemand das rettet, haben wir den Shape-Kill bereits dokumentiert.
+1. **Upstream has been deprecated for years.** No port case.
+2. **Orphaned by `request` deprecation.** The main reason for adoption was transitive pull-through `request`; with `request` formally deprecated, har-validator falls with it.
+3. **Schema-validation shape category is already NO-GO** (`ajv.md`). Even if someone resurrected it, the shape kill is already documented.
 
 ## If NO-GO — BACKLOG entry
 
-Archiviert 2026-04-21. Full review: `docs/perf-review/har-validator.md`.
+Archived 2026-04-21. Full review: `docs/perf-review/har-validator.md`.
