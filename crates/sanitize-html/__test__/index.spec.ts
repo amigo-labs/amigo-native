@@ -47,4 +47,29 @@ describe('sanitize-html', () => {
   it('isClean accepts safe HTML', () => {
     expect(isClean('hello world')).toBe(true)
   })
+
+  it('caps deeply-nested input via maxDepth', () => {
+    // 1000 levels of nesting; default maxDepth is 256 so the first 256
+    // levels emit, the rest unwrap.
+    const deep = '<div>'.repeat(1000) + 'x' + '</div>'.repeat(1000)
+    const out = sanitize(deep)
+    // Output remains finite and bounded; the unwrapped tail does not
+    // cause any process-level OOM.
+    expect(out.length).toBeGreaterThan(0)
+    // Count opening <div> tags in the output: with cap=256 there should
+    // be at most 256 of them.
+    const opens = (out.match(/<div>/g) ?? []).length
+    expect(opens).toBeLessThanOrEqual(256)
+  })
+
+  it('rejects oversize input via maxInputBytes', () => {
+    const oversize = '<p>x</p>'.repeat(2_000_000) // ~16 MB > 5 MiB default
+    expect(sanitize(oversize)).toBe('')
+  })
+
+  it('honours user-provided maxInputBytes override', () => {
+    const small = '<p>hello world</p>'
+    expect(sanitize(small, { maxInputBytes: 5 })).toBe('') // input larger than 5 bytes
+    expect(sanitize(small, { maxInputBytes: 0 })).toBe('<p>hello world</p>') // disabled
+  })
 })

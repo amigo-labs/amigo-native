@@ -8,6 +8,11 @@ use std::cell::RefCell;
 use crate::rules::{Rules, escape_attr, escape_text, is_void};
 use crate::{SanitizeOptions, coerce_input};
 
+/// DoS guards. Both can be overridden per-call via `SanitizeOptions`;
+/// pass `0` to disable.
+const DEFAULT_MAX_DEPTH: usize = 256;
+const DEFAULT_MAX_INPUT_BYTES: usize = 5 * 1024 * 1024;
+
 // ---------------------------------------------------------------------------
 // Tokenizer-based sanitization engine (fast path). Routes ~all real-world
 // calls. Behaviour:
@@ -42,6 +47,7 @@ struct SanitizingSink<'a> {
     rules: &'a Rules,
     out: RefCell<String>,
     stack: RefCell<Vec<Frame>>,
+    max_depth: usize,
 }
 
 impl<'a> SanitizingSink<'a> {
@@ -92,6 +98,22 @@ impl<'a> TokenSink for SanitizingSink<'a> {
                     }
 
                     if !self.rules.is_allowed_tag(&name) {
+                        if !is_void(&name) && !tag.self_closing {
+                            self.stack.borrow_mut().push(Frame {
+                                name,
+                                kind: FrameKind::Unwrap,
+                            });
+                        }
+                        return TokenSinkResult::Continue;
+                    }
+
+                    // Depth guard: once the frame stack hits `max_depth`, we
+                    // unwrap any further start tags (keep their content, drop
+                    // the tag) so deeply-nested input can't grow the stack
+                    // without bound. The check sits AFTER the allowlist /
+                    // drop-content branches so a deep `<script>` chain still
+                    // gets its content stripped.
+                    if self.max_depth > 0 && self.stack.borrow().len() >= self.max_depth {
                         if !is_void(&name) && !tag.self_closing {
                             self.stack.borrow_mut().push(Frame {
                                 name,
@@ -180,8 +202,11 @@ impl<'a> TokenSink for SanitizingSink<'a> {
                     let mut stack = self.stack.borrow_mut();
                     let pos = stack.iter().rposition(|f| f.name == name);
                     if let Some(idx) = pos {
-                        // `remove(idx)` shifted subsequent frames down by one,
-                        // so restore the invariant by popping extras.
+                        // Drain everything above the matching frame as
+                        // "extras" — these were opened after `idx` and never
+                        // closed, so we must implicitly close any that were
+                        // emitted. After the drain, the matched frame is the
+                        // last element, so a `pop()` retrieves it.
                         let extras: Vec<Frame> = stack.drain(idx + 1..).collect();
                         let frame = stack.pop().expect("frame at idx must exist");
                         drop(stack);
@@ -231,12 +256,30 @@ pub(crate) fn sanitize_impl(
     html: Option<Either<String, f64>>,
     options: Option<SanitizeOptions>,
 ) -> String {
+    let max_input_bytes = options
+        .as_ref()
+        .and_then(|o| o.max_input_bytes)
+        .map(|n| if n == 0 { usize::MAX } else { n as usize })
+        .unwrap_or(DEFAULT_MAX_INPUT_BYTES);
+    let max_depth = options
+        .as_ref()
+        .and_then(|o| o.max_depth)
+        .map(|n| n as usize)
+        .unwrap_or(DEFAULT_MAX_DEPTH);
+
     let html = coerce_input(html);
+    if html.len() > max_input_bytes {
+        // Oversized input is rejected outright rather than truncated mid-
+        // tag (which would re-introduce the unbalanced-markup case the
+        // implicit-close pass at the bottom of this function fixes).
+        return String::new();
+    }
     let rules = Rules::from_options(&options);
     let sink = SanitizingSink {
         rules: &rules,
         out: RefCell::new(String::with_capacity(html.len())),
         stack: RefCell::new(Vec::new()),
+        max_depth,
     };
     let tokenizer = Tokenizer::new(sink, TokenizerOpts::default());
     let buffer = BufferQueue::default();

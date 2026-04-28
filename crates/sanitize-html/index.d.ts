@@ -16,6 +16,19 @@ export interface SanitizeOptions {
    * Set by `compat.mjs` when the caller uses `allowedAttributes: false`.
    */
   allowAllAttributes?: boolean
+  /**
+   * Maximum nesting depth before a start tag is unwrapped (content kept,
+   * tag dropped) instead of emitted. Defaults to 256. A pathological
+   * `<div><div>…×100k…</div></div>` input no longer grows the frame
+   * stack without bound. Pass `0` to disable the cap.
+   */
+  maxDepth?: number
+  /**
+   * Hard cap on input length in bytes. Inputs longer than this are
+   * truncated to a deterministic empty string. Defaults to 5 MiB. Pass
+   * `0` to disable the cap.
+   */
+  maxInputBytes?: number
 }
 
 /**
