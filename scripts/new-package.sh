@@ -3,6 +3,15 @@ set -euo pipefail
 
 NAME=${1:?"Usage: ./scripts/new-package.sh <package-name>"}
 
+# Validate the package name up front. We feed `$NAME` into `sed` and many
+# build-tool inputs that don't escape arbitrary characters; restrict to
+# lowercase alphanumerics + dash to match npm/cargo conventions and to
+# avoid the historical CVE shape (`/`, `&`, `\` in a `sed` replacement).
+if [[ ! "$NAME" =~ ^[a-z0-9][a-z0-9_-]*$ ]]; then
+  echo "Error: package name must match [a-z0-9][a-z0-9_-]* (got: $NAME)" >&2
+  exit 1
+fi
+
 if [ -d "crates/$NAME" ]; then
   echo "Error: crates/$NAME already exists"
   exit 1
@@ -15,7 +24,8 @@ while IFS= read -r -d '' f; do
   mv "$f" "${f%.tmpl}"
 done < <(find "crates/$NAME" -type f -name "*.tmpl" -print0)
 
-# Replace template variables in every non-binary file
+# Replace template variables in every non-binary file. The validation
+# above ensures `$NAME` contains no sed metacharacters (`/`, `&`, `\`).
 while IFS= read -r -d '' f; do
   sed -i "s/{{NAME}}/$NAME/g" "$f"
 done < <(find "crates/$NAME" -type f \( -name "*.toml" -o -name "*.json" -o -name "*.rs" -o -name "*.ts" -o -name "*.md" \) -print0)

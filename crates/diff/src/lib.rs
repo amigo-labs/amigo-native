@@ -112,7 +112,7 @@ pub fn diff_trimmed_lines(old_str: String, new_str: String) -> Vec<Hunk> {
 /// This is the Green hot-path for large or char-level diffs where the
 /// hunk-array shape drowns in Vec<String> allocation.
 #[napi(js_name = "diffLinesToOffsets")]
-pub fn diff_lines_to_offsets(old_str: String, new_str: String) -> Buffer {
+pub fn diff_lines_to_offsets(old_str: String, new_str: String) -> Result<Buffer> {
     build_offsets(
         TextDiff::from_lines(&old_str, &new_str)
             .iter_all_changes()
@@ -122,7 +122,7 @@ pub fn diff_lines_to_offsets(old_str: String, new_str: String) -> Buffer {
 
 /// Offset-packed char diff. Same layout as `diffLinesToOffsets`.
 #[napi(js_name = "diffCharsToOffsets")]
-pub fn diff_chars_to_offsets(old_str: String, new_str: String) -> Buffer {
+pub fn diff_chars_to_offsets(old_str: String, new_str: String) -> Result<Buffer> {
     build_offsets(
         TextDiff::from_chars(&old_str, &new_str)
             .iter_all_changes()
@@ -131,7 +131,14 @@ pub fn diff_chars_to_offsets(old_str: String, new_str: String) -> Buffer {
 }
 
 /// Shared builder for the offset-packed layout. Each entry is 5 × u32.
-fn build_offsets<I: Iterator<Item = (ChangeTag, usize)>>(iter: I) -> Buffer {
+///
+/// Offsets are u32 because the JS surface unpacks them with
+/// `Uint32Array`. A single hunk longer than `u32::MAX` (~4 GiB) would
+/// overflow `old_pos`/`new_pos` silently and emit nonsense entries; bail
+/// instead with a napi error. Real diff inputs that exceed 4 GiB are
+/// vanishingly rare but the failure mode (silent corruption) is bad
+/// enough to warrant the check.
+fn build_offsets<I: Iterator<Item = (ChangeTag, usize)>>(iter: I) -> Result<Buffer> {
     let mut out: Vec<u8> = Vec::new();
     let mut old_pos: u32 = 0;
     let mut new_pos: u32 = 0;
@@ -173,11 +180,20 @@ fn build_offsets<I: Iterator<Item = (ChangeTag, usize)>>(iter: I) -> Buffer {
             run_new_start = new_pos;
         }
 
+        let len_u32: u32 = len.try_into().map_err(|_| {
+            Error::from_reason(format!(
+                "diff hunk of {len} elements exceeds u32::MAX; offset buffer can't represent it"
+            ))
+        })?;
         if adv_old {
-            old_pos += len as u32;
+            old_pos = old_pos.checked_add(len_u32).ok_or_else(|| {
+                Error::from_reason("offset overflow on old side; total length > u32::MAX")
+            })?;
         }
         if adv_new {
-            new_pos += len as u32;
+            new_pos = new_pos.checked_add(len_u32).ok_or_else(|| {
+                Error::from_reason("offset overflow on new side; total length > u32::MAX")
+            })?;
         }
     }
 
@@ -192,7 +208,7 @@ fn build_offsets<I: Iterator<Item = (ChangeTag, usize)>>(iter: I) -> Buffer {
         );
     }
 
-    out.into()
+    Ok(out.into())
 }
 
 /// Unified-diff-format patch string.

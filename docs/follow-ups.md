@@ -8,9 +8,9 @@ Each item lists the concrete artefact that proves it's fixed.
 
 ## 1. ~~`docs/perf-review.md` — missing post-ship verdicts~~ ✅ Done
 
-Added rows for bcrypt, commonmark, jose, and tiktoken to the "Nach-Sprint-Stand"
+Added rows for bcrypt, commonmark, jose, and tiktoken to the "Post-sprint state"
 table and updated the "Net:" tally. Portfolio is now **12 Green + 3 Yellow +
-1 faktisch-Green (nanoid)** out of 16 shipped crates.
+1 effectively-Green (nanoid)** out of 16 shipped crates.
 
 ## 2. ~~`@amigo-labs/jwt` — drop-in claim vs. `expiresIn` string limitation~~ ✅ Done
 

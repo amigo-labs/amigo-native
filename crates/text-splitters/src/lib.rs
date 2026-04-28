@@ -74,12 +74,24 @@ fn resolved(opts: &SplitterOptions) -> Result<(usize, usize, Sizer)> {
     Ok((chunk_size, chunk_overlap, sizer))
 }
 
-fn split_chars_recursive(text: &str, chunk_size: usize, chunk_overlap: usize) -> Vec<String> {
+/// `ChunkConfig::with_overlap` returns `Result` — text-splitter rejects
+/// `overlap >= size`. Every public entry-point validates this in
+/// `resolved()`, but a future caller bypassing validation would otherwise
+/// panic the host. Bubble the error up instead.
+fn overlap_err<E: std::fmt::Display>(e: E) -> Error {
+    Error::from_reason(format!("invalid chunk overlap: {e}"))
+}
+
+fn split_chars_recursive(
+    text: &str,
+    chunk_size: usize,
+    chunk_overlap: usize,
+) -> Result<Vec<String>> {
     let cfg = ChunkConfig::new(chunk_size)
         .with_overlap(chunk_overlap)
-        .unwrap();
+        .map_err(overlap_err)?;
     let splitter = TextSplitter::new(cfg);
-    splitter.chunks(text).map(String::from).collect()
+    Ok(splitter.chunks(text).map(String::from).collect())
 }
 
 fn split_tokens_recursive(
@@ -87,21 +99,25 @@ fn split_tokens_recursive(
     chunk_size: usize,
     chunk_overlap: usize,
     sizer: TiktokenSizer,
-) -> Vec<String> {
+) -> Result<Vec<String>> {
     let cfg = ChunkConfig::new(chunk_size)
         .with_sizer(sizer)
         .with_overlap(chunk_overlap)
-        .unwrap();
+        .map_err(overlap_err)?;
     let splitter = TextSplitter::new(cfg);
-    splitter.chunks(text).map(String::from).collect()
+    Ok(splitter.chunks(text).map(String::from).collect())
 }
 
-fn split_markdown_chars(text: &str, chunk_size: usize, chunk_overlap: usize) -> Vec<String> {
+fn split_markdown_chars(
+    text: &str,
+    chunk_size: usize,
+    chunk_overlap: usize,
+) -> Result<Vec<String>> {
     let cfg = ChunkConfig::new(chunk_size)
         .with_overlap(chunk_overlap)
-        .unwrap();
+        .map_err(overlap_err)?;
     let splitter = MarkdownSplitter::new(cfg);
-    splitter.chunks(text).map(String::from).collect()
+    Ok(splitter.chunks(text).map(String::from).collect())
 }
 
 fn split_markdown_tokens(
@@ -109,13 +125,13 @@ fn split_markdown_tokens(
     chunk_size: usize,
     chunk_overlap: usize,
     sizer: TiktokenSizer,
-) -> Vec<String> {
+) -> Result<Vec<String>> {
     let cfg = ChunkConfig::new(chunk_size)
         .with_sizer(sizer)
         .with_overlap(chunk_overlap)
-        .unwrap();
+        .map_err(overlap_err)?;
     let splitter = MarkdownSplitter::new(cfg);
-    splitter.chunks(text).map(String::from).collect()
+    Ok(splitter.chunks(text).map(String::from).collect())
 }
 
 /// RecursiveCharacterTextSplitter — the 80% API.
@@ -123,11 +139,10 @@ fn split_markdown_tokens(
 pub fn split_text(text: String, options: Option<SplitterOptions>) -> Result<Vec<String>> {
     let opts = options.unwrap_or_default();
     let (size, overlap, sizer) = resolved(&opts)?;
-    let chunks = match sizer {
+    match sizer {
         Sizer::Chars => split_chars_recursive(&text, size, overlap),
         Sizer::Tiktoken(s) => split_tokens_recursive(&text, size, overlap, s),
-    };
-    Ok(chunks)
+    }
 }
 
 /// Batch — one FFI crossing for N docs.
@@ -138,7 +153,7 @@ pub fn split_text_batch(
 ) -> Result<Vec<Vec<String>>> {
     let opts = options.unwrap_or_default();
     let (size, overlap, sizer) = resolved(&opts)?;
-    let out = match sizer {
+    match sizer {
         Sizer::Chars => texts
             .into_iter()
             .map(|t| split_chars_recursive(&t, size, overlap))
@@ -147,8 +162,7 @@ pub fn split_text_batch(
             .into_iter()
             .map(|t| split_tokens_recursive(&t, size, overlap, s.clone()))
             .collect(),
-    };
-    Ok(out)
+    }
 }
 
 /// Markdown-aware splitter: respects heading/paragraph/list boundaries.
@@ -156,11 +170,10 @@ pub fn split_text_batch(
 pub fn split_markdown(text: String, options: Option<SplitterOptions>) -> Result<Vec<String>> {
     let opts = options.unwrap_or_default();
     let (size, overlap, sizer) = resolved(&opts)?;
-    let chunks = match sizer {
+    match sizer {
         Sizer::Chars => split_markdown_chars(&text, size, overlap),
         Sizer::Tiktoken(s) => split_markdown_tokens(&text, size, overlap, s),
-    };
-    Ok(chunks)
+    }
 }
 
 #[napi(js_name = "splitMarkdownBatch")]
@@ -170,7 +183,7 @@ pub fn split_markdown_batch(
 ) -> Result<Vec<Vec<String>>> {
     let opts = options.unwrap_or_default();
     let (size, overlap, sizer) = resolved(&opts)?;
-    let out = match sizer {
+    match sizer {
         Sizer::Chars => texts
             .into_iter()
             .map(|t| split_markdown_chars(&t, size, overlap))
@@ -179,8 +192,7 @@ pub fn split_markdown_batch(
             .into_iter()
             .map(|t| split_markdown_tokens(&t, size, overlap, s.clone()))
             .collect(),
-    };
-    Ok(out)
+    }
 }
 
 /// Pure character-length counter.

@@ -417,6 +417,10 @@ function wireReadme(pkg) {
     try {
       const res = await fetch(`readmes/${pkg.name}.html`);
       if (!res.ok) throw new Error(res.statusText);
+      // The fetched HTML is locally rendered from each crate's README via
+      // our own commonmark crate during the docs build — same-origin, no
+      // user-controlled content. Do NOT route untrusted markup through
+      // this assignment without sanitising it first.
       host.innerHTML = await res.text();
       loaded = true;
     } catch {
