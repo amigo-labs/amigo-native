@@ -36,4 +36,20 @@ describe('inflate', () => {
   it('throws on malformed zlib input', () => {
     expect(() => inflate(Buffer.from([0, 1, 2, 3]))).toThrow()
   })
+
+  it('rejects decompression bomb above maxOutputSize', () => {
+    // 1 MiB of zeros compresses to ~1 KiB; with a 256 KiB cap the
+    // decompressor must error rather than produce the full output.
+    const bomb = gzip(Buffer.alloc(1024 * 1024))
+    expect(() => ungzip(bomb, { maxOutputSize: 256 * 1024 })).toThrow(/max_output_size/)
+
+    const zlibBomb = deflate(Buffer.alloc(1024 * 1024))
+    expect(() => inflate(zlibBomb, { maxOutputSize: 256 * 1024 })).toThrow(/max_output_size/)
+  })
+
+  it('passes when decompressed size is under maxOutputSize', () => {
+    const enc = gzip(Buffer.from('hello world'.repeat(100)))
+    const out = ungzip(enc, { maxOutputSize: 64 * 1024 })
+    expect(out.length).toBeGreaterThan(0)
+  })
 })

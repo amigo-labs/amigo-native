@@ -10,11 +10,25 @@ fn to_err<E: std::fmt::Display>(e: E) -> Error {
     Error::from_reason(e.to_string())
 }
 
+/// Cap the per-entry pre-allocation independent of what the ZIP central
+/// directory claims. A crafted archive can advertise a 100 GB entry to
+/// trigger an `OOM` on `Vec::with_capacity` *before* any decompressed
+/// bytes are read. Real entries that exceed this still decompress fine
+/// — `Vec::read_to_end` grows past the initial capacity as needed.
+const MAX_PREALLOC_PER_ENTRY: usize = 256 * 1024 * 1024;
+
+fn prealloc_size(claimed: u64) -> usize {
+    claimed.min(MAX_PREALLOC_PER_ENTRY as u64) as usize
+}
+
 #[napi(object)]
 pub struct ZipEntryInfo {
     pub name: String,
-    pub size: u32,
-    pub compressed_size: u32,
+    /// Uncompressed size in bytes. Exposed as `BigInt` because legitimate
+    /// ZIP entries can exceed 4 GiB (zip64). JS callers must use
+    /// `Number(entry.size)` if they want a plain number.
+    pub size: BigInt,
+    pub compressed_size: BigInt,
     pub is_dir: bool,
     pub compression: String,
 }
@@ -42,8 +56,8 @@ fn entries_from<R: Read + std::io::Seek>(r: R) -> Result<Vec<ZipEntryInfo>> {
         let f = ar.by_index(i).map_err(to_err)?;
         out.push(ZipEntryInfo {
             name: f.name().to_string(),
-            size: f.size().min(u32::MAX as u64) as u32,
-            compressed_size: f.compressed_size().min(u32::MAX as u64) as u32,
+            size: BigInt::from(f.size()),
+            compressed_size: BigInt::from(f.compressed_size()),
             is_dir: f.is_dir(),
             compression: format!("{:?}", f.compression()),
         });
@@ -54,7 +68,7 @@ fn entries_from<R: Read + std::io::Seek>(r: R) -> Result<Vec<ZipEntryInfo>> {
 fn read_from<R: Read + std::io::Seek>(r: R, name: &str) -> Result<Vec<u8>> {
     let mut ar = ZipArchive::new(r).map_err(to_err)?;
     let mut f = ar.by_name(name).map_err(to_err)?;
-    let mut out = Vec::with_capacity(f.size() as usize);
+    let mut out = Vec::with_capacity(prealloc_size(f.size()));
     f.read_to_end(&mut out).map_err(to_err)?;
     Ok(out)
 }
@@ -116,7 +130,7 @@ fn extract_all_from<R: Read + std::io::Seek>(r: R) -> Result<Vec<ZipEntryData>> 
         if f.is_dir() {
             continue;
         }
-        let mut bytes = Vec::with_capacity(f.size() as usize);
+        let mut bytes = Vec::with_capacity(prealloc_size(f.size()));
         f.read_to_end(&mut bytes).map_err(to_err)?;
         out.push(ZipEntryData {
             name: f.name().to_string(),
