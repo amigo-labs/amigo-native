@@ -142,7 +142,7 @@ jobs:
         run: cat conformance-summary.md >> "$GITHUB_STEP_SUMMARY"
       - name: Post conformance summary as PR comment
         if: always() && github.event_name == 'pull_request' && hashFiles('conformance-summary.md') != ''
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: conformance
           path: conformance-summary.md
