@@ -31,7 +31,7 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/cli": "^3.6.2",
     "commonmark-spec": "^0.31.2",
     "fast-check": "^3.23.0",
     "markdown-it": "^14.1.0",

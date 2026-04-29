@@ -31,7 +31,7 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/cli": "^3.6.2",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "fast-check": "^3.23.0",
