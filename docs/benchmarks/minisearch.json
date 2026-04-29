@@ -1,7 +1,7 @@
 {
   "crate": "minisearch",
-  "generatedAt": "2026-04-24T06:10:11.262Z",
-  "commit": "40fbc6c",
+  "generatedAt": "2026-04-29T05:38:04.369Z",
+  "commit": "d65438a",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/minisearch",
-          "hz": 323.55,
-          "rme": 0.66,
-          "samples": 162
+          "hz": 335.04,
+          "rme": 0.76,
+          "samples": 168
         },
         {
           "name": "minisearch",
-          "hz": 277.97,
-          "rme": 2.12,
-          "samples": 139
+          "hz": 273.06,
+          "rme": 2.36,
+          "samples": 137
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/minisearch search",
-          "hz": 17661.28,
-          "rme": 0.29,
-          "samples": 8831
+          "hz": 17963.11,
+          "rme": 0.65,
+          "samples": 8982
         },
         {
           "name": "minisearch search",
-          "hz": 4875.1,
-          "rme": 0.74,
-          "samples": 2438
+          "hz": 4783.75,
+          "rme": 0.94,
+          "samples": 2392
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/minisearch autoSuggest",
-          "hz": 134252.55,
-          "rme": 0.13,
-          "samples": 67127
+          "hz": 125438.41,
+          "rme": 0.2,
+          "samples": 62720
         },
         {
           "name": "minisearch autoSuggest",
-          "hz": 2457.79,
-          "rme": 0.56,
-          "samples": 1229
+          "hz": 2445.54,
+          "rme": 0.7,
+          "samples": 1223
         }
       ]
     }

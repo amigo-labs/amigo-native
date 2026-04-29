@@ -1,7 +1,7 @@
 {
   "crate": "bm25",
-  "generatedAt": "2026-04-24T06:10:11.262Z",
-  "commit": "40fbc6c",
+  "generatedAt": "2026-04-29T05:38:04.369Z",
+  "commit": "d65438a",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,9 +11,9 @@
       "entries": [
         {
           "name": "@amigo-labs/bm25 addAll",
-          "hz": 272.84,
-          "rme": 0.71,
-          "samples": 137
+          "hz": 284.55,
+          "rme": 0.68,
+          "samples": 143
         }
       ]
     },
@@ -23,15 +23,15 @@
       "entries": [
         {
           "name": "@amigo-labs/bm25 search",
-          "hz": 17989.17,
-          "rme": 0.57,
-          "samples": 8995
+          "hz": 18012.51,
+          "rme": 0.53,
+          "samples": 9007
         },
         {
           "name": "okapibm25 (rebuild every query)",
-          "hz": 1329.83,
-          "rme": 0.35,
-          "samples": 665
+          "hz": 1332.08,
+          "rme": 0.41,
+          "samples": 667
         }
       ]
     }

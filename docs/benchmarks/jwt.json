@@ -1,7 +1,7 @@
 {
   "crate": "jwt",
-  "generatedAt": "2026-04-21T07:19:58.891Z",
-  "commit": "1c510c2",
+  "generatedAt": "2026-04-29T05:38:04.369Z",
+  "commit": "d65438a",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jwt",
-          "hz": 179905.01,
-          "rme": 0.35,
-          "samples": 89953
+          "hz": 180105.35,
+          "rme": 0.28,
+          "samples": 90053
         },
         {
           "name": "jsonwebtoken",
-          "hz": 23404.57,
-          "rme": 1.19,
-          "samples": 11703
+          "hz": 23079.5,
+          "rme": 1.37,
+          "samples": 11540
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jwt",
-          "hz": 123809.65,
-          "rme": 0.32,
-          "samples": 61905
+          "hz": 124505.83,
+          "rme": 0.19,
+          "samples": 62253
         },
         {
           "name": "jsonwebtoken",
-          "hz": 19437.94,
-          "rme": 1.88,
-          "samples": 9719
+          "hz": 20224.93,
+          "rme": 1.27,
+          "samples": 10113
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jwt",
-          "hz": 1455.03,
-          "rme": 0.11,
-          "samples": 728
+          "hz": 1460.08,
+          "rme": 0.08,
+          "samples": 731
         },
         {
           "name": "jsonwebtoken",
-          "hz": 882.45,
-          "rme": 0.32,
-          "samples": 442
+          "hz": 886.4,
+          "rme": 0.28,
+          "samples": 444
         }
       ]
     },
@@ -65,15 +65,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jwt",
-          "hz": 26132.47,
-          "rme": 0.25,
-          "samples": 13067
+          "hz": 26316.31,
+          "rme": 0.17,
+          "samples": 13159
         },
         {
           "name": "jsonwebtoken",
-          "hz": 13095.84,
-          "rme": 1.61,
-          "samples": 6548
+          "hz": 13363.85,
+          "rme": 0.99,
+          "samples": 6682
         }
       ]
     },
@@ -83,15 +83,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jwt",
-          "hz": 22331.51,
-          "rme": 0.24,
-          "samples": 11166
+          "hz": 22188.33,
+          "rme": 0.22,
+          "samples": 11095
         },
         {
           "name": "jsonwebtoken",
-          "hz": 7175.9,
-          "rme": 8.62,
-          "samples": 3588
+          "hz": 7540.56,
+          "rme": 4.74,
+          "samples": 3771
         }
       ]
     },
@@ -101,15 +101,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jwt",
-          "hz": 13676.8,
-          "rme": 0.17,
-          "samples": 6839
+          "hz": 13570.36,
+          "rme": 1.63,
+          "samples": 6786
         },
         {
           "name": "jsonwebtoken",
-          "hz": 6359.54,
-          "rme": 5.98,
-          "samples": 3180
+          "hz": 6629.93,
+          "rme": 4.01,
+          "samples": 3315
         }
       ]
     }
