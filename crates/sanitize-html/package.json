@@ -48,7 +48,7 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
     "fast-check": "^3.23.0",
-    "isomorphic-dompurify": "^2.16.0",
+    "isomorphic-dompurify": "^3.10.0",
     "sanitize-html": "^2.13.0",
     "vitest": "^3.0.0"
   },
