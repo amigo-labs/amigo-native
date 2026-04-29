@@ -1990,9 +1990,9 @@
         "entries": [
           {
             "name": "@amigo-labs/typst compile",
-            "hz": 2235.81,
-            "rme": 0.3,
-            "samples": 1118
+            "hz": 3540.34,
+            "rme": 0.27,
+            "samples": 1771
           }
         ]
       },
@@ -2002,9 +2002,9 @@
         "entries": [
           {
             "name": "@amigo-labs/typst compile",
-            "hz": 1884.61,
-            "rme": 0.3,
-            "samples": 943
+            "hz": 2933.33,
+            "rme": 0.21,
+            "samples": 1467
           }
         ]
       },
@@ -2561,7 +2561,7 @@
         "type": "binary+shim"
       },
       "natural": {
-        "installSize": 65091506,
+        "installSize": 65092170,
         "type": "node_modules"
       }
     },
@@ -2615,7 +2615,7 @@
     },
     "typst": {
       "@amigo-labs/typst": {
-        "installSize": 31138100,
+        "installSize": 31138148,
         "type": "binary+shim"
       },
       "typst (CLI)": {
@@ -2623,7 +2623,7 @@
         "type": "node_modules"
       },
       "puppeteer": {
-        "installSize": 43586580,
+        "installSize": 43586980,
         "type": "node_modules"
       },
       "pdfmake": {
@@ -2633,7 +2633,7 @@
     },
     "xlsx": {
       "@amigo-labs/xlsx": {
-        "installSize": 1742777,
+        "installSize": 1832553,
         "type": "binary+shim"
       },
       "xlsx": {
