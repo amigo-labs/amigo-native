@@ -25,9 +25,14 @@ fn prealloc_size(claimed: u64) -> usize {
 pub struct ZipEntryInfo {
     pub name: String,
     /// Uncompressed size in bytes. Exposed as `BigInt` because legitimate
-    /// ZIP entries can exceed 4 GiB (zip64). JS callers must use
-    /// `Number(entry.size)` if they want a plain number.
+    /// ZIP entries can exceed 4 GiB (zip64).
+    ///
+    /// Casting to `Number` (`Number(entry.size)`) is only safe when the
+    /// caller knows the value fits in `Number.MAX_SAFE_INTEGER` (2^53 −
+    /// 1, ≈ 9 PiB). Above that the conversion silently rounds; prefer
+    /// keeping the value as a `bigint` when handling untrusted archives.
     pub size: BigInt,
+    /// Compressed size in bytes. Same `BigInt` semantics as `size` above.
     pub compressed_size: BigInt,
     pub is_dir: bool,
     pub compression: String,

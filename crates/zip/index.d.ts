@@ -38,11 +38,16 @@ export interface ZipEntryData {
 export interface ZipEntryInfo {
   name: string
   /**
-   * Uncompressed size in bytes. Exposed as `BigInt` because legitimate
-   * ZIP entries can exceed 4 GiB (zip64). JS callers must use
-   * `Number(entry.size)` if they want a plain number.
+   * Uncompressed size in bytes. Exposed as `bigint` because legitimate
+   * ZIP entries can exceed 4 GiB (zip64).
+   *
+   * Casting to `number` (`Number(entry.size)`) is only safe when the
+   * caller knows the value fits in `Number.MAX_SAFE_INTEGER` (2^53 − 1,
+   * ≈ 9 PiB). Above that the conversion silently rounds; prefer keeping
+   * the value as `bigint` when handling untrusted archives.
    */
   size: bigint
+  /** Compressed size in bytes. Same `bigint` semantics as `size`. */
   compressedSize: bigint
   isDir: boolean
   compression: string

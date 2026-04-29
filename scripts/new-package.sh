@@ -5,8 +5,10 @@ NAME=${1:?"Usage: ./scripts/new-package.sh <package-name>"}
 
 # Validate the package name up front. We feed `$NAME` into `sed` and many
 # build-tool inputs that don't escape arbitrary characters; restrict to
-# lowercase alphanumerics + dash to match npm/cargo conventions and to
-# avoid the historical CVE shape (`/`, `&`, `\` in a `sed` replacement).
+# lowercase alphanumerics, dash and underscore to match npm/cargo
+# conventions (and the existing `_template`, `_search-core` crate names)
+# and to avoid the historical CVE shape (`/`, `&`, `\` in a `sed`
+# replacement).
 if [[ ! "$NAME" =~ ^[a-z0-9][a-z0-9_-]*$ ]]; then
   echo "Error: package name must match [a-z0-9][a-z0-9_-]* (got: $NAME)" >&2
   exit 1
