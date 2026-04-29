@@ -31,9 +31,9 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/cli": "^3.6.2",
     "fast-check": "^3.23.0",
-    "pdfkit": "^0.15.0",
+    "pdfkit": "^0.18.0",
     "vitest": "^3.0.0"
   },
   "license": "MIT",

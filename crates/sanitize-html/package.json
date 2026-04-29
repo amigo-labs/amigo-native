@@ -46,10 +46,10 @@
     "htmlparser2": "^10.0.0"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/cli": "^3.6.2",
     "fast-check": "^3.23.0",
     "isomorphic-dompurify": "^2.16.0",
-    "sanitize-html": "^2.13.0",
+    "sanitize-html": "^2.17.3",
     "vitest": "^3.0.0"
   },
   "license": "MIT",
