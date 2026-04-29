@@ -97,7 +97,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Download NAPI binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: napi-binaries
           path: crates/
@@ -123,7 +123,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Download NAPI binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: napi-binaries
           path: crates/
@@ -194,7 +194,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Download NAPI binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: napi-binaries
           path: crates/
