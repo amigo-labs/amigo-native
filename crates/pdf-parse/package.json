@@ -33,7 +33,7 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.5.0",
     "fast-check": "^3.23.0",
-    "pdf-parse": "^1.1.1",
+    "pdf-parse": "^2.4.5",
     "vitest": "^3.0.0"
   },
   "license": "MIT",
