@@ -1,0 +1,23 @@
+# cargo-audit configuration for the audit-rust CI job.
+#
+# The CI step runs `cargo audit --deny warnings` so any new advisory —
+# vulnerability OR unmaintained-package — fails the build. The list
+# below carves out only the specific transitive advisories we already
+# know about, with a one-line reason and the upstream that pulls them
+# in. Each entry should get re-evaluated on every typst version bump.
+
+[advisories]
+ignore = [
+    # `yaml-rust` is unmaintained per RUSTSEC-2024-0320. Pulled by
+    # `syntect` → `typst-library` → `typst`. Typst's syntax-highlighting
+    # path is the only consumer; we don't drive yaml-rust ourselves.
+    "RUSTSEC-2024-0320",
+    # `paste` is no longer maintained per RUSTSEC-2024-0436. Pulled by
+    # `hayagriva` (typst's citation processor) and `biblatex`. No direct
+    # use from our crates.
+    "RUSTSEC-2024-0436",
+    # `bincode 1.3.3` is unmaintained per RUSTSEC-2025-0141. Pulled by
+    # `syntect` → `typst-library`. The 2.x line is maintained but
+    # syntect hasn't migrated yet.
+    "RUSTSEC-2025-0141",
+]

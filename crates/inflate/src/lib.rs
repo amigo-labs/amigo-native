@@ -11,15 +11,34 @@ use std::io::{Read, Write};
 pub struct InflateOptions {
     /// Compression level 0–9 (default 6, analogous to pako).
     pub level: Option<u32>,
+    /// Hard cap on decompressed output size in bytes. Defaults to
+    /// `DEFAULT_MAX_OUTPUT_SIZE` (256 MiB). Decompression that would
+    /// exceed this limit returns a napi error rather than allocating
+    /// further. Pass `0` to disable the cap (not recommended for
+    /// untrusted input — gzip bombs expand to terabytes).
+    pub max_output_size: Option<u32>,
 }
+
+/// Default decompression-bomb guard (256 MiB). A 10 MB gzip bomb that
+/// expands to 100 GB hits this limit at 256 MB and is rejected, leaving
+/// the host process responsive.
+const DEFAULT_MAX_OUTPUT_SIZE: u64 = 256 * 1024 * 1024;
 
 fn to_napi_err<E: std::fmt::Display>(e: E) -> Error {
     Error::from_reason(e.to_string())
 }
 
-fn compression_from(opts: Option<InflateOptions>) -> Compression {
+fn compression_from(opts: Option<&InflateOptions>) -> Compression {
     let level = opts.and_then(|o| o.level).unwrap_or(6).min(9);
     Compression::new(level)
+}
+
+fn max_output_size_from(opts: Option<&InflateOptions>) -> u64 {
+    match opts.and_then(|o| o.max_output_size) {
+        Some(0) => u64::MAX,
+        Some(n) => n as u64,
+        None => DEFAULT_MAX_OUTPUT_SIZE,
+    }
 }
 
 /// Heuristic for the decompressed-size pre-allocation. Real-world
@@ -52,9 +71,10 @@ fn estimated_inflate_size(compressed_len: usize) -> usize {
 /// `clippy::uninit_vec` is a conservative default; for `u8` every bit
 /// pattern is valid and `decompress` writes every byte we expose.
 #[allow(clippy::uninit_vec)]
-fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
+fn decompress_bulk(input: &[u8], zlib_header: bool, max_output: u64) -> Result<Vec<u8>> {
     let mut dec = Decompress::new(zlib_header);
-    let initial = estimated_inflate_size(input.len()).max(64);
+    let cap = (max_output.min(usize::MAX as u64)) as usize;
+    let initial = estimated_inflate_size(input.len()).max(64).min(cap);
     let mut out: Vec<u8> = Vec::with_capacity(initial);
     // SAFETY: `decompress` only writes into `&mut out[out_pos..]`; we
     // truncate to `total_out` before handing `out` to any reader.
@@ -63,7 +83,7 @@ fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
         let in_pos = dec.total_in() as usize;
         let out_pos = dec.total_out() as usize;
         if out_pos == out.len() {
-            grow_uninit(&mut out);
+            grow_uninit(&mut out, cap)?;
         }
         match dec
             .decompress(
@@ -82,7 +102,7 @@ fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
                 // input, but we gave everything upfront). Grow unless we
                 // just made forward progress on `Ok`.
                 if (dec.total_out() as usize) == out_pos {
-                    grow_uninit(&mut out);
+                    grow_uninit(&mut out, cap)?;
                 }
             }
         }
@@ -91,53 +111,71 @@ fn decompress_bulk(input: &[u8], zlib_header: bool) -> Result<Vec<u8>> {
 
 #[inline]
 #[allow(clippy::uninit_vec)]
-fn grow_uninit(out: &mut Vec<u8>) {
-    let new_len = out.len().saturating_mul(2).max(out.len() + 1);
+fn grow_uninit(out: &mut Vec<u8>, cap: usize) -> Result<()> {
+    if out.len() >= cap {
+        return Err(Error::from_reason(format!(
+            "decompressed size exceeds max_output_size ({cap} bytes)"
+        )));
+    }
+    let new_len = out.len().saturating_mul(2).max(out.len() + 1).min(cap);
     out.reserve(new_len - out.len());
     // SAFETY: see `decompress_bulk` — the tail is written by `decompress`
     // before any read observes it; we truncate before return.
     unsafe { out.set_len(new_len) };
+    Ok(())
 }
 
 #[napi]
 pub fn deflate(data: Buffer, options: Option<InflateOptions>) -> Result<Buffer> {
-    let mut enc = ZlibEncoder::new(Vec::new(), compression_from(options));
+    let mut enc = ZlibEncoder::new(Vec::new(), compression_from(options.as_ref()));
     enc.write_all(&data).map_err(to_napi_err)?;
     let out = enc.finish().map_err(to_napi_err)?;
     Ok(out.into())
 }
 
 #[napi]
-pub fn inflate(data: Buffer) -> Result<Buffer> {
-    decompress_bulk(data.as_ref(), /* zlib_header = */ true).map(Into::into)
+pub fn inflate(data: Buffer, options: Option<InflateOptions>) -> Result<Buffer> {
+    let max = max_output_size_from(options.as_ref());
+    decompress_bulk(data.as_ref(), /* zlib_header = */ true, max).map(Into::into)
 }
 
 #[napi]
 pub fn deflate_raw(data: Buffer, options: Option<InflateOptions>) -> Result<Buffer> {
-    let mut enc = DeflateEncoder::new(Vec::new(), compression_from(options));
+    let mut enc = DeflateEncoder::new(Vec::new(), compression_from(options.as_ref()));
     enc.write_all(&data).map_err(to_napi_err)?;
     let out = enc.finish().map_err(to_napi_err)?;
     Ok(out.into())
 }
 
 #[napi]
-pub fn inflate_raw(data: Buffer) -> Result<Buffer> {
-    decompress_bulk(data.as_ref(), /* zlib_header = */ false).map(Into::into)
+pub fn inflate_raw(data: Buffer, options: Option<InflateOptions>) -> Result<Buffer> {
+    let max = max_output_size_from(options.as_ref());
+    decompress_bulk(data.as_ref(), /* zlib_header = */ false, max).map(Into::into)
 }
 
 #[napi]
 pub fn gzip(data: Buffer, options: Option<InflateOptions>) -> Result<Buffer> {
-    let mut enc = GzEncoder::new(Vec::new(), compression_from(options));
+    let mut enc = GzEncoder::new(Vec::new(), compression_from(options.as_ref()));
     enc.write_all(&data).map_err(to_napi_err)?;
     let out = enc.finish().map_err(to_napi_err)?;
     Ok(out.into())
 }
 
 #[napi]
-pub fn ungzip(data: Buffer) -> Result<Buffer> {
-    let mut dec = GzDecoder::new(data.as_ref());
-    let mut out = Vec::with_capacity(estimated_inflate_size(data.len()));
+pub fn ungzip(data: Buffer, options: Option<InflateOptions>) -> Result<Buffer> {
+    let max = max_output_size_from(options.as_ref());
+    let cap = (max.min(usize::MAX as u64)) as usize;
+    // Read up to `max + 1` bytes — if the +1 ever materialises, the
+    // stream wanted to produce more output than the cap allows.
+    let read_limit = max.saturating_add(1);
+    let mut dec = GzDecoder::new(data.as_ref()).take(read_limit);
+    let mut out = Vec::with_capacity(estimated_inflate_size(data.len()).min(cap));
     dec.read_to_end(&mut out).map_err(to_napi_err)?;
+    if out.len() as u64 > max {
+        return Err(Error::from_reason(format!(
+            "decompressed size exceeds max_output_size ({max} bytes)"
+        )));
+    }
     Ok(out.into())
 }
 
@@ -176,4 +214,9 @@ mod tests {
         let data: Vec<u8> = (0..1_000_000).map(|i| (i % 251) as u8).collect();
         roundtrip_zlib(&data);
     }
+
+    // The `max_output_size` cap is exercised end-to-end from the vitest
+    // suite (`__test__/index.spec.ts`) — covering it here would require
+    // calling `decompress_bulk` directly, which returns `napi::Result`
+    // and pulls napi runtime symbols into the test binary.
 }

@@ -4,67 +4,67 @@
 
 ## Verdict
 
-Drei Pakete, identische Lehre: **kurz-String-dominante Levenshtein/Dice-Coefficient-Berechnungen**, und wir haben diese Lehre bereits gemessen in `docs/post-mortems/levenshtein.md` (0,13× auf 10k-chars nach Phase-C-Spike, archiviert 2026-04-19). Der hier geplante Port würde identische Traps treffen: UTF-16↔UTF-8-Konversion an beiden Input-Strings kostet pro Call mehr als die eigentliche Distance-Berechnung. `fastest-levenshtein` ist besonders tödlich, weil es selbst in JS ~1 µs für kurze Strings braucht — FFI-Floor alleine ist 10–20 % Overhead davon, und die eigentliche Rust-SIMD-Beschleunigung (`triple_accel`) bringt darüber keinen Wind.
+Three packages, identical lesson: **short-string-dominant Levenshtein / Dice-coefficient computations** — a lesson we have already measured in `docs/post-mortems/levenshtein.md` (0.13× on 10k chars after the Phase-C spike, archived 2026-04-19). A port here would hit the same traps: UTF-16↔UTF-8 conversion on both input strings costs more per call than the actual distance computation. `fastest-levenshtein` is especially deadly because it already takes ~1 µs in JS for short strings — the FFI floor alone is 10–20 % overhead on top, and Rust SIMD acceleration (`triple_accel`) adds nothing beyond that.
 
 ## JS package
 
 - **npm:**
-  - [`string-similarity`](https://www.npmjs.com/package/string-similarity) (~10M/Woche) — Dice-Coefficient auf Bigrams
-  - [`leven`](https://www.npmjs.com/package/leven) (~300k/Woche) — Levenshtein, pure JS
-  - [`fastest-levenshtein`](https://www.npmjs.com/package/fastest-levenshtein) (~2M/Woche) — Levenshtein, hand-optimized JS
-- **Downloads:** ~12M/Woche kombiniert (BACKLOG-Zahl "~10M" bestätigt als konservativ)
+  - [`string-similarity`](https://www.npmjs.com/package/string-similarity) (~10M/week) — Dice coefficient on bigrams
+  - [`leven`](https://www.npmjs.com/package/leven) (~300k/week) — Levenshtein, pure JS
+  - [`fastest-levenshtein`](https://www.npmjs.com/package/fastest-levenshtein) (~2M/week) — Levenshtein, hand-optimised JS
+- **Downloads:** ~12M/week combined (BACKLOG figure of "~10M" confirmed as conservative)
 - **Exports / API surface:**
   - `string-similarity`: `compareTwoStrings(s1, s2) → number` (Dice, 0..1), `findBestMatch(main, candidates) → {bestMatch, ratings}`
   - `leven(s1, s2) → number` (Levenshtein edit distance)
   - `fastest-levenshtein.distance(s1, s2) → number`, `.closest(str, arr) → string`
-- **Typical input:** Zwei Strings. **Korpus ist short-string-dominant:** Fuzzy-Match gegen Suchergebnisse (8–30 Zeichen), Typo-Korrektur (5–20 Zeichen), Namen-Match (10–40 Zeichen). Längere Strings sind Ausnahme.
-- **Typical output:** Number (edit distance oder similarity score 0..1).
-- **Realistic median use-case:** **Fuzzy-Suche in Autosuggest** (User tippt, gegen bekannte Terme matchen), **Typo-Tolerance in CLI-Tools** ("Did you mean X?"), **Name-Matching** in Recordslinkage. Fast immer **Hot-Loop gegen Array von Kandidaten**: `candidates.map(c => distance(input, c))`. Median-Input-Länge <20 Zeichen.
+- **Typical input:** Two strings. **Corpus is short-string-dominant:** fuzzy match against search results (8–30 chars), typo correction (5–20 chars), name match (10–40 chars). Longer strings are the exception.
+- **Typical output:** Number (edit distance or similarity score 0..1).
+- **Realistic median use case:** **Fuzzy search in autosuggest** (user types, match against known terms), **typo tolerance in CLI tools** ("did you mean X?"), **name matching** in record linkage. Almost always a **hot loop against an array of candidates**: `candidates.map(c => distance(input, c))`. Median input length <20 chars.
 
 ## Rust replacement
 
-- **Candidate crate(s):** `triple_accel` (SIMD-Levenshtein), `strsim` (ohne SIMD), `rapidfuzz` (Python-port, Fuzzy-Match-Suite)
-- **Maintenance / license:** Alle MIT, aktiv
-- **Known gotchas / divergences:** Keine Semantik-Divergenzen — Levenshtein/Dice sind mathematisch eindeutig
+- **Candidate crate(s):** `triple_accel` (SIMD Levenshtein), `strsim` (no SIMD), `rapidfuzz` (Python port, fuzzy-match suite)
+- **Maintenance / license:** All MIT, active
+- **Known gotchas / divergences:** No semantic divergence — Levenshtein and Dice are mathematically unambiguous
 
 ## BACKLOG check
 
-Vorhandener Eintrag in `BACKLOG.md` → "Ruled out — AI-category": "Short-string dominant corpus — repeats the `levenshtein` failure exactly (see `docs/perf-review/levenshtein.md`)." Review formalisiert und archiviert.
+Existing entry in `BACKLOG.md` → "Ruled out — AI-category": "Short-string dominant corpus — repeats the `levenshtein` failure exactly (see `docs/perf-review/levenshtein.md`)." Review formalises and archives.
 
-Abgrenzung:
-- Gegen `docs/perf-review/levenshtein.md` + `docs/post-mortems/levenshtein.md` (archived 🔴, **gemessen**): dieselbe Paket-Kategorie, und wir haben die Mess-Daten: 0,13× auf 10k-chars nach Phase-C-Spike. Der Post-Mortem ist der Präzedenzfall.
-- Gegen `docs/perf-review/deep-equal.md` (archived 🔴): architektonisch identisch (two-small-strings-in, scalar-out).
+Boundary:
+- vs. `docs/perf-review/levenshtein.md` + `docs/post-mortems/levenshtein.md` (archived 🔴, **measured**): same package category, and we have the measurements: 0.13× on 10k chars after the Phase-C spike. The post-mortem is the precedent.
+- vs. `docs/perf-review/deep-equal.md` (archived 🔴): architecturally identical (two-small-strings-in, scalar-out).
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Trivial bis klein.** Levenshtein 10-char-Strings: ~100 ns JS, ~50 ns Rust. Plus FFI-Floor 109 ns + 2× UTF-Konv ~100 ns = **Rust-Call ≥260 ns**. Speedup 0,4×. |
-| Input size distribution | **Kritisch klein.** Median <20 Zeichen. UTF-Konv ist dominanter Kostenpunkt relativ zum Compute. Gemessen in `levenshtein`-Post-Mortem. |
+| Per-call algorithmic work | **Trivial to small.** Levenshtein on 10-char strings: ~100 ns JS, ~50 ns Rust. Plus FFI floor 109 ns + 2× UTF conv ~100 ns = **Rust call ≥260 ns**. Speedup 0.4×. |
+| Input size distribution | **Critically small.** Median <20 chars. UTF conversion dominates cost relative to compute. Measured in the `levenshtein` post-mortem. |
 | Output size distribution | 1 × number. Negligible. |
-| Reusable setup (stateful potential) | Null. |
-| Batch-usage realism | **Hoch für `findBestMatch`-Shape** — ein Query gegen N Kandidaten kann als `findBestMatch(query, candidates: string[]) → {idx, score}` via ein-Crossing gebaut werden. ABER: (a) das ist die Form die in `string-similarity` bereits existiert und `@amigo-labs/levenshtein` hat das nach C-Spike getestet → 1,5× Gate bei 10k verfehlt → archived. Nicht zu reproduzieren. |
-| FFI-share estimate vs. Rust work | >100 % auf short-strings. Gemessen. |
+| Reusable setup (stateful potential) | None. |
+| Batch usage realism | **High for the `findBestMatch` shape** — one query against N candidates can be wrapped as `findBestMatch(query, candidates: string[]) → {idx, score}` via a single crossing. BUT: (a) that is the form already provided by `string-similarity` and `@amigo-labs/levenshtein` did test it after the C spike → 1.5× gate at 10k missed → archived. Not reproducible. |
+| FFI-share estimate vs. Rust work | >100 % on short strings. Measured. |
 
 ## Classification reasoning
 
-Wir haben diese Lehre **gemessen**, nicht nur vorhergesagt:
+We have **measured** this lesson, not just predicted it:
 
-1. **`@amigo-labs/levenshtein` war genau dieser Port.** 0,13× auf 10k-chars, 0,60× auf 10-chars, 1,10× auf 100-chars (nur 1 Messung über 1×, Rest Red). Deprecated in 0.2.0, archiviert 2026-04-19. Full Post-Mortem: `docs/post-mortems/levenshtein.md`.
+1. **`@amigo-labs/levenshtein` was exactly this port.** 0.13× on 10k chars, 0.60× on 10 chars, 1.10× on 100 chars (only 1 measurement above 1×, the rest Red). Deprecated in 0.2.0, archived 2026-04-19. Full post-mortem: `docs/post-mortems/levenshtein.md`.
 
-2. **`fastest-levenshtein` war schon unsere Baseline** — der Name sagt es. Pure JS, hochoptimiert. Der Abstand zu Rust-SIMD-`triple_accel` ist messbar klein nach FFI-Overhead.
+2. **`fastest-levenshtein` was already our baseline** — the name says it. Pure JS, highly optimised. The gap to Rust-SIMD `triple_accel` is measurably small after FFI overhead.
 
-3. **`string-similarity`'s Dice-Coefficient** ist minimal komplexer (Bigram-Set-Intersection), aber dieselbe Größenordnung von Compute. Gleiche FFI-Mathematik.
+3. **`string-similarity`'s Dice coefficient** is marginally more complex (bigram set intersection), but the same compute order of magnitude. Same FFI math.
 
-4. **Batch-API als Rettung wurde versucht.** Spike auf Buffer-Input (`lev_bytes(a: Buffer, b: Buffer)`) dokumentiert in `docs/perf-review/levenshtein.md` unter "Gate ≥1,5× bei 10k chars verfehlt". Keine Headroom.
+4. **Batch API as a rescue was tried.** Spike on buffer input (`lev_bytes(a: Buffer, b: Buffer)`) documented in `docs/perf-review/levenshtein.md` under "Gate ≥1.5× at 10k chars missed". No headroom.
 
-**Shape-Matching:**
-- 🔁 Wie `@amigo-labs/levenshtein` archived — **genau dieselbe Kategorie**
-- 🔁 Wie `compute-cosine-similarity` (Two-Inputs-One-Scalar-Out, FFI-drowns-Compute)
-- 🔁 Wie `deep-equal` archived
+**Shape matching:**
+- 🔁 Like archived `@amigo-labs/levenshtein` — **exactly the same category**
+- 🔁 Like `compute-cosine-similarity` (two-inputs-one-scalar-out, FFI-drowns-compute)
+- 🔁 Like archived `deep-equal`
 
-**Benchmark-Gap-Flag:** Kein Spike nötig — der `levenshtein`-Spike ist der Präzedenzfall.
+**Benchmark-gap flag:** No spike needed — the `levenshtein` spike is the precedent.
 
 ## If NO-GO — BACKLOG entry
 
-Archiviert 2026-04-21. Full review: `docs/perf-review/string-similarity.md`. Präzedenz: `docs/post-mortems/levenshtein.md`.
+Archived 2026-04-21. Full review: `docs/perf-review/string-similarity.md`. Precedent: `docs/post-mortems/levenshtein.md`.

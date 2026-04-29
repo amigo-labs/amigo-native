@@ -19,7 +19,7 @@
   "scripts": {
     "test": "vitest run __test__",
     "bench": "vitest bench",
-    "test:conformance": "vitest run __conformance__/fuzz.spec.ts",
+    "test:conformance": "vitest run __conformance__",
     "test:all": "vitest run",
     "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },

@@ -1,0 +1,40 @@
+# Dependabot keeps three ecosystems aligned for amigo-native:
+#
+# - cargo: workspace-wide updates for every `Cargo.toml` under `crates/`
+#   plus the root manifest
+# - npm: per-crate `package.json` updates for both runtime and devDeps
+# - github-actions: pinned action references in `.github/workflows/`
+#
+# Updates land as a single weekly batch on Monday morning UTC. The
+# manifest layout is `crates/<name>/{Cargo.toml,package.json}` so we use
+# `directories` (plural) where Dependabot supports it. Fall back to
+# explicit per-directory entries where it doesn't.
+version: 2
+
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      cargo-minor:
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor:
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3

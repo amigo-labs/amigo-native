@@ -90,7 +90,7 @@ impl Bm25Index {
     /// whole corpus. Preferred over repeated `addDoc`.
     #[napi(js_name = "addAll")]
     pub fn add_all(&self, docs: Vec<BmDocument>) -> Result<()> {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         for doc in docs {
             let toks = inner.tokenize(&doc.text);
             inner.index.add(doc.id, toks);
@@ -101,7 +101,7 @@ impl Bm25Index {
     /// Add a single document. Prefer `addAll` for bulk ingest.
     #[napi(js_name = "addDoc")]
     pub fn add_doc(&self, id: String, text: String) -> Result<()> {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         let toks = inner.tokenize(&text);
         inner.index.add(id, toks);
         Ok(())
@@ -109,7 +109,7 @@ impl Bm25Index {
 
     #[napi(js_name = "search")]
     pub fn search(&self, query: String, options: Option<SearchOptions>) -> Vec<SearchHit> {
-        let inner = self.inner.lock().unwrap();
+        let inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         let query_tokens = inner.tokenize(&query);
         let scores = bm25_scores(&inner.index, &query_tokens, inner.params);
         let limit = options.and_then(|o| o.limit).unwrap_or(10) as usize;
@@ -125,6 +125,10 @@ impl Bm25Index {
 
     #[napi(js_name = "size")]
     pub fn size(&self) -> u32 {
-        self.inner.lock().unwrap().index.len() as u32
+        self.inner
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .index
+            .len() as u32
     }
 }

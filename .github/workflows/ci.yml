@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: '24'
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -23,12 +26,27 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Check crate registry is in sync
         run: node scripts/sync-registry.mjs --check
       - run: pnpm run lint
+
+  audit-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      # taiki-e/install-action downloads a prebuilt cargo-audit binary
+      # from the upstream release page (~3s) and caches it across runs;
+      # `cargo install --locked cargo-audit` rebuilt it from source on
+      # every push (~2 minutes plus crates.io flake risk).
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: Run cargo audit
+        run: cargo audit --deny warnings
 
   test-rust:
     runs-on: ubuntu-latest
@@ -51,7 +69,7 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Build all crates
@@ -75,7 +93,7 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Download NAPI binaries
@@ -101,7 +119,7 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Download NAPI binaries
@@ -172,7 +190,7 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Download NAPI binaries

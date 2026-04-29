@@ -122,6 +122,37 @@ function updateReleaseYaml(yaml, crates) {
   return `${before}\n${items}\n${indent}${after}`
 }
 
+/**
+ * Verify each crate's `npm/<target>/package.json` carries the same
+ * version string as its parent. After `napi pre-publish` injects
+ * `optionalDependencies: { "@amigo-labs/<name>-<target>": "<parent>" }`,
+ * any stub at a stale version no longer exists on the registry and
+ * `npm install` falls into the postinstall error path. Returns an array
+ * of mismatch descriptors; an empty array means all stubs are aligned.
+ */
+function checkNpmStubVersions(crates) {
+  const mismatches = []
+  for (const { dir, pkg } of crates) {
+    const npmDir = join(cratesDir, dir, 'npm')
+    if (!existsSync(npmDir)) continue
+    for (const target of readdirSync(npmDir, { withFileTypes: true })) {
+      if (!target.isDirectory()) continue
+      const stubPath = join(npmDir, target.name, 'package.json')
+      if (!existsSync(stubPath)) continue
+      const stub = loadJson(stubPath)
+      if (stub.version !== pkg.version) {
+        mismatches.push({
+          crate: dir,
+          target: target.name,
+          parent: pkg.version,
+          stub: stub.version,
+        })
+      }
+    }
+  }
+  return mismatches
+}
+
 function updateReadme(readme, tableBlock) {
   const startIdx = readme.indexOf(README_START)
   const endIdx = readme.indexOf(README_END)
@@ -155,16 +186,35 @@ function main() {
   const readmeChanged = nextReadme !== readme
   const releaseChanged = nextReleaseYaml !== releaseYaml
 
+  const stubMismatches = checkNpmStubVersions(crates)
+
   if (check) {
-    if (pkgChanged || readmeChanged || releaseChanged) {
+    let stale = pkgChanged || readmeChanged || releaseChanged
+    if (stale) {
       console.error('sync-registry: outputs are stale. Run `node scripts/sync-registry.mjs` and commit the result.')
       if (pkgChanged) console.error('  - docs/packages.json')
       if (readmeChanged) console.error('  - README.md')
       if (releaseChanged) console.error('  - .github/workflows/release.yml')
-      process.exit(1)
     }
-    console.log(`sync-registry: up to date (${crates.length} crates).`)
+    if (stubMismatches.length) {
+      stale = true
+      console.error(
+        `sync-registry: ${stubMismatches.length} npm platform stub version(s) drifted from their parent crate.`,
+      )
+      console.error('  After `napi pre-publish`, stubs must match the parent so optionalDependencies resolve.')
+      for (const m of stubMismatches) {
+        console.error(`  - crates/${m.crate}/npm/${m.target}/package.json: ${m.stub} (parent ${m.parent})`)
+      }
+    }
+    if (stale) process.exit(1)
+    console.log(`sync-registry: up to date (${crates.length} crates, all stubs aligned).`)
     return
+  }
+
+  if (stubMismatches.length) {
+    console.warn(
+      `sync-registry: ${stubMismatches.length} npm platform stub version(s) do not match their parent crate; run --check in CI to fail on drift.`,
+    )
   }
 
   if (pkgChanged) writeFileSync(packagesJsonPath, nextPkgStr)

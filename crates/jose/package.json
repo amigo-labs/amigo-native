@@ -2,9 +2,11 @@
   "name": "@amigo-labs/jose",
   "version": "0.1.0",
   "description": "JOSE primitives — JWK key generation and RFC 7638 thumbprints",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "wrapper.js",
+  "types": "wrapper.d.ts",
   "files": [
+    "wrapper.js",
+    "wrapper.d.ts",
     "index.js",
     "index.d.ts",
     "README.md"

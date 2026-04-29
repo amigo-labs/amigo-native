@@ -4,68 +4,68 @@
 
 ## Verdict
 
-Alle drei Pakete sind **HTTP-Clients** — sie serialisieren JSON, schicken Requests an REST-APIs, deserialisieren Streaming-Responses. **Null Compute-Surface außerhalb von I/O**. Der Hot-Path ist `fetch` / `https.request` → Netzwerk → Parse JSON → Callback/Stream. Netzwerk-Latency dominiert (50 ms – mehrere Sekunden) um Größenordnungen über jedem FFI-Overhead. Ein Rust-Port würde vielleicht 10–50 µs JSON-Parse-Zeit sparen auf 500 ms Netzwerk-Roundtrip = **0,01 % Gewinn**. Perfektes Black-Shape.
+All three packages are **HTTP clients** — they serialise JSON, send requests to REST APIs, deserialise streaming responses. **Zero compute surface outside I/O.** The hot path is `fetch` / `https.request` → network → parse JSON → callback / stream. Network latency dominates (50 ms – several seconds) by orders of magnitude over any FFI overhead. A Rust port might save 10–50 µs of JSON-parse time on a 500 ms network round-trip = **0.01 % gain**. A perfect Black shape.
 
 ## JS package
 
 - **npm:**
-  - [`openai`](https://www.npmjs.com/package/openai) (~20M/Woche)
-  - [`@anthropic-ai/sdk`](https://www.npmjs.com/package/@anthropic-ai/sdk) (~3M/Woche)
-  - [`cohere-ai`](https://www.npmjs.com/package/cohere-ai) (~200k/Woche)
-- **Downloads:** ~30M/Woche kombiniert (BACKLOG-Zahl bestätigt)
+  - [`openai`](https://www.npmjs.com/package/openai) (~20M/week)
+  - [`@anthropic-ai/sdk`](https://www.npmjs.com/package/@anthropic-ai/sdk) (~3M/week)
+  - [`cohere-ai`](https://www.npmjs.com/package/cohere-ai) (~200k/week)
+- **Downloads:** ~30M/week combined (BACKLOG figure confirmed)
 - **Exports / API surface:**
-  - Alle drei haben **Resource-Client-Pattern**: `client.chat.completions.create({...})`, `client.messages.create({...})`, `client.embeddings.create({...})`
-  - Streaming-Variante mit async-Iterators: `for await (const chunk of stream)`
-  - Retries, Rate-Limiting, Error-Normalization
-  - Typed-Responses über TypeScript-generated-types
-- **Typical input:** Request-Objekt (Model-Name, Messages-Array, Params). JSON-Serialisierung einmal pro Request.
-- **Typical output:** Response-Objekt (Content, Token-Usage, Metadata). JSON-Parse einmal pro Response (oder pro Stream-Chunk).
-- **Realistic median use-case:** **LLM-Request-Pattern** — ein App-Server macht N Chat/Completion-Calls pro Request, jeder Call ist 200 ms – 30 s Netzwerk-IO. Streaming-Variante: Chunk kommt alle ~50 ms, 10–1000 Chunks pro Response.
+  - All three follow a **resource-client pattern**: `client.chat.completions.create({...})`, `client.messages.create({...})`, `client.embeddings.create({...})`
+  - Streaming variant with async iterators: `for await (const chunk of stream)`
+  - Retries, rate-limiting, error normalisation
+  - Typed responses via TypeScript-generated types
+- **Typical input:** Request object (model name, messages array, params). One JSON serialisation per request.
+- **Typical output:** Response object (content, token usage, metadata). One JSON parse per response (or per stream chunk).
+- **Realistic median use case:** **LLM request pattern** — an app server makes N chat/completion calls per request, each call is 200 ms – 30 s of network I/O. Streaming variant: chunks every ~50 ms, 10–1000 chunks per response.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - `async-openai`, `anthropic-sdk-rust`, `cohere-rust` — existieren, würden wir re-wrappen
-  - Oder direkt `reqwest` + manuell Typed-Request/Response-Structs — trivial, 500-1000 LOC pro Provider
-- **Maintenance / license:** Egal — kein messbarer Gewinn
-- **Known gotchas / divergences:** API-Spec-Updates pro Provider: OpenAI released alle 2–4 Wochen API-Änderungen, Anthropic ähnlich. Ein Drop-in-Port müsste laufend nachziehen. Maintenance-Tail ist das eigentliche Problem.
+  - `async-openai`, `anthropic-sdk-rust`, `cohere-rust` — exist, we'd be re-wrapping them
+  - Or directly `reqwest` + hand-rolled typed request/response structs — trivial, 500–1000 LOC per provider
+- **Maintenance / license:** Doesn't matter — no measurable gain
+- **Known gotchas / divergences:** API-spec updates per provider: OpenAI ships API changes every 2–4 weeks, Anthropic similarly. A drop-in port would have to chase them constantly. The maintenance tail is the actual problem.
 
 ## BACKLOG check
 
-Vorhandener Eintrag in `BACKLOG.md` → "Ruled out — AI-category": "HTTP + JSON clients — zero compute surface, pure I/O." Review formalisiert und archiviert.
+Existing entry in `BACKLOG.md` → "Ruled out — AI-category": "HTTP + JSON clients — zero compute surface, pure I/O." Review formalises and archives.
 
-Abgrenzung:
-- Gegen `docs/perf-review/tough-cookie.md` (NO-GO, Parity too expensive): HTTP-adjacent, aber tough-cookie hat **stateful Jar-Semantik** mit Compute. openai/anthropic sind reiner Wire-Protocol.
-- Gegen `request` (Deprecated npm — wurde formal abgekündigt): HTTP-Client, dieselbe I/O-dominanz.
+Boundary:
+- vs. `docs/perf-review/tough-cookie.md` (NO-GO, parity too expensive): HTTP-adjacent, but tough-cookie has **stateful jar semantics** with compute. openai/anthropic are pure wire-protocol.
+- vs. `request` (deprecated npm — formally archived): HTTP client, same I/O dominance.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Null im Rust-Sinn.** Was "passiert" ist: JSON-stringify (~10–50 µs für ~10 KB Payload), HTTPS-Request-Open (~50–500 ms TLS-Handshake erstmal, gecached danach), Netzwerk-RTT (~50–30 000 ms), JSON-parse (~20–100 µs pro Response). |
-| Input size distribution | Request-Body 1–50 KB. |
-| Output size distribution | Response-Body 1–500 KB (oder unbegrenzt im Streaming-Fall). |
-| Reusable setup (stateful potential) | HTTP-Connection-Pool-Reuse ist Standard, beide Libs machen das bereits. Keine Rust-spezifische Verbesserung. |
-| Batch-usage realism | OpenAI hat Batch-API (separate REST-Endpoint, `batches.create`). Das ist Netzwerk-Feature, nicht Client-Feature. |
-| FFI-share estimate vs. Rust work | Irrelevant — der "Rust-Work" ist Mikrosekunden-JSON-Ops auf Sekunden-Netzwerk-Latency. 99,99 % IO-Zeit. |
+| Per-call algorithmic work | **Zero in the Rust sense.** What "happens" is: JSON.stringify (~10–50 µs for a ~10 KB payload), HTTPS request open (~50–500 ms TLS handshake first, cached afterwards), network RTT (~50–30 000 ms), JSON.parse (~20–100 µs per response). |
+| Input size distribution | Request body 1–50 KB. |
+| Output size distribution | Response body 1–500 KB (or unbounded in streaming). |
+| Reusable setup (stateful potential) | HTTP connection-pool reuse is standard, both libs already do it. No Rust-specific improvement. |
+| Batch usage realism | OpenAI has a Batch API (separate REST endpoint, `batches.create`). That's a network feature, not a client feature. |
+| FFI-share estimate vs. Rust work | Irrelevant — the "Rust work" is microsecond-scale JSON ops on second-scale network latency. 99.99 % I/O time. |
 
 ## Classification reasoning
 
-1. **Netzwerk-Latency dominiert.** Selbst der schnellste LLM-Provider-Call (OpenAI GPT-4o-mini, simple prompt) ist 200–500 ms End-to-End. Ein Rust-Port der JSON-Parsing um 50 µs beschleunigt = 0,01 % Gewinn, unmessbar.
+1. **Network latency dominates.** Even the fastest LLM-provider call (OpenAI GPT-4o-mini, simple prompt) is 200–500 ms end-to-end. A Rust port that speeds up JSON parsing by 50 µs = 0.01 % gain, unmeasurable.
 
-2. **Keine Compute-Surface.** JSON-stringify/parse ist V8-native (extrem schnell auf kleinen Payloads). `simd-json` in Rust bringt auf 10 KB Payload <100 µs Gewinn. Irrelevant vor Netzwerk.
+2. **No compute surface.** JSON.stringify/parse is V8-native (extremely fast on small payloads). `simd-json` in Rust delivers <100 µs on 10 KB payloads. Irrelevant against the network.
 
-3. **Maintenance-Tail ist kostenlos-teuer.** OpenAI API Added `tools`, `parallel_tool_calls`, `reasoning_effort`, `response_format`, `service_tier`, etc. in kurzer Abfolge. Anthropic fügt `cache_control`, `thinking`, `system`-Array-Variants hinzu. Unser Port müsste laufend nachziehen oder User würden auf Features verzichten. Aufwand ohne Gewinn.
+3. **The maintenance tail is free-but-expensive.** The OpenAI API added `tools`, `parallel_tool_calls`, `reasoning_effort`, `response_format`, `service_tier` and friends in short order. Anthropic adds `cache_control`, `thinking`, `system`-array variants. Our port would have to chase or users would lose features. Effort with no gain.
 
-4. **TypeScript-Types sind der primäre Value.** Die SDK-Libs liefern Typed-API-Surfaces. Wir würden das auch tun müssen, aber das geht TypeScript-seitig — keine Rust-Hilfe.
+4. **TypeScript types are the primary value.** The SDK libs ship typed API surfaces. We would have to do the same, but that lives on the TypeScript side — no Rust help available.
 
-**Shape-Matching:**
-- 🔁 Wie `request` / `node-fetch`-Äquivalent (pure HTTP-I/O, no compute)
-- 🔁 Wie `langchain` (spec-driven parity surface)
-- ❌ Nicht wie `@amigo-labs/jwt` (das hat echten Crypto-Compute)
+**Shape matching:**
+- 🔁 Like `request` / `node-fetch` equivalents (pure HTTP I/O, no compute)
+- 🔁 Like `langchain` (spec-driven parity surface)
+- ❌ Not like `@amigo-labs/jwt` (which has real crypto compute)
 
-**Benchmark-Gap-Flag:** Absurdes Concept — der Bench würde Netzwerk-Latency messen.
+**Benchmark-gap flag:** Absurd by construction — the bench would measure network latency.
 
 ## If NO-GO — BACKLOG entry
 
-Archiviert 2026-04-21. Full review: `docs/perf-review/openai.md`. Gilt analog für alle HTTP-Client-SDKs (Anthropic, Cohere, Mistral, Gemini, etc.) und allgemein für Netzwerk-I/O-Pakete.
+Archived 2026-04-21. Full review: `docs/perf-review/openai.md`. Applies analogously to all HTTP-client SDKs (Anthropic, Cohere, Mistral, Gemini, etc.) and to network-I/O packages in general.

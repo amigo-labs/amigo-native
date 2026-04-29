@@ -6,13 +6,21 @@ export declare function deflateRaw(data: Buffer, options?: InflateOptions | unde
 
 export declare function gzip(data: Buffer, options?: InflateOptions | undefined | null): Buffer
 
-export declare function inflate(data: Buffer): Buffer
+export declare function inflate(data: Buffer, options?: InflateOptions | undefined | null): Buffer
 
 export interface InflateOptions {
   /** Compression level 0–9 (default 6, analogous to pako). */
   level?: number
+  /**
+   * Hard cap on decompressed output size in bytes. Defaults to
+   * `DEFAULT_MAX_OUTPUT_SIZE` (256 MiB). Decompression that would
+   * exceed this limit returns a napi error rather than allocating
+   * further. Pass `0` to disable the cap (not recommended for
+   * untrusted input — gzip bombs expand to terabytes).
+   */
+  maxOutputSize?: number
 }
 
-export declare function inflateRaw(data: Buffer): Buffer
+export declare function inflateRaw(data: Buffer, options?: InflateOptions | undefined | null): Buffer
 
-export declare function ungzip(data: Buffer): Buffer
+export declare function ungzip(data: Buffer, options?: InflateOptions | undefined | null): Buffer

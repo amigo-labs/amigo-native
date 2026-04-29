@@ -17,6 +17,15 @@ pub struct SanitizeOptions {
     /// When `true`, every attribute not an event handler passes through.
     /// Set by `compat.mjs` when the caller uses `allowedAttributes: false`.
     pub allow_all_attributes: Option<bool>,
+    /// Maximum nesting depth before a start tag is unwrapped (content kept,
+    /// tag dropped) instead of emitted. Defaults to 256. A pathological
+    /// `<div><div>…×100k…</div></div>` input no longer grows the frame
+    /// stack without bound. Pass `0` to disable the cap.
+    pub max_depth: Option<u32>,
+    /// Hard cap on input length in bytes. Inputs longer than this are
+    /// truncated to a deterministic empty string. Defaults to 5 MiB. Pass
+    /// `0` to disable the cap.
+    pub max_input_bytes: Option<u32>,
 }
 
 fn number_to_string(n: f64) -> String {

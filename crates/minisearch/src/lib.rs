@@ -114,7 +114,7 @@ impl MiniSearch {
     /// Single-FFI-crossing corpus ingest.
     #[napi(js_name = "addAll")]
     pub fn add_all(&self, docs: Vec<MiniDocument>) {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         for doc in docs {
             let toks = inner.tokenize(&doc.text);
             inner.index.add(doc.id, toks);
@@ -123,14 +123,14 @@ impl MiniSearch {
 
     #[napi(js_name = "add")]
     pub fn add(&self, doc: MiniDocument) {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         let toks = inner.tokenize(&doc.text);
         inner.index.add(doc.id, toks);
     }
 
     #[napi(js_name = "search")]
     pub fn search(&self, query: String, options: Option<MiniSearchOptions>) -> Vec<MiniHit> {
-        let inner = self.inner.lock().unwrap();
+        let inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         let opts = options.unwrap_or(MiniSearchOptions {
             limit: None,
             prefix: None,
@@ -178,7 +178,7 @@ impl MiniSearch {
     /// ranked by how many docs contain them.
     #[napi(js_name = "autoSuggest")]
     pub fn auto_suggest(&self, prefix: String, limit: Option<u32>) -> Vec<AutoSuggestion> {
-        let inner = self.inner.lock().unwrap();
+        let inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
         let mut out: Vec<AutoSuggestion> = prefix_match(&inner.index, &prefix)
             .into_iter()
             .map(|term| {
@@ -206,7 +206,11 @@ impl MiniSearch {
 
     #[napi(js_name = "size")]
     pub fn size(&self) -> u32 {
-        self.inner.lock().unwrap().index.len() as u32
+        self.inner
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .index
+            .len() as u32
     }
 }
 
