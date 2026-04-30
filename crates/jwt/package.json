@@ -42,7 +42,7 @@
     "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/cli": "^3.6.2",
     "@types/jsonwebtoken": "^9.0.7",
     "fast-check": "^3.23.0",
     "jsonwebtoken": "^9.0.2",

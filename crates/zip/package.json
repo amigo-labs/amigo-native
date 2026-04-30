@@ -40,7 +40,7 @@
     "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/cli": "^3.6.2",
     "@types/adm-zip": "^0.5.7",
     "@types/yauzl": "^2.10.3",
     "adm-zip": "^0.5.16",

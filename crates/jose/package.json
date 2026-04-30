@@ -33,7 +33,7 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
+    "@napi-rs/cli": "^3.6.2",
     "fast-check": "^3.23.0",
     "jose": "^5.9.0",
     "vitest": "^3.0.0"
