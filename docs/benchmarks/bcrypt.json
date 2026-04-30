@@ -1,7 +1,7 @@
 {
   "crate": "bcrypt",
-  "generatedAt": "2026-04-21T07:19:58.891Z",
-  "commit": "1c510c2",
+  "generatedAt": "2026-04-30T05:31:33.963Z",
+  "commit": "64baca8",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,21 +11,21 @@
       "entries": [
         {
           "name": "@amigo-labs/bcrypt",
-          "hz": 971.73,
+          "hz": 971.76,
           "rme": 0.02,
           "samples": 4859
         },
         {
           "name": "bcrypt (npm, C++ via node-gyp)",
-          "hz": 904.15,
-          "rme": 0.44,
-          "samples": 4521
+          "hz": 907.95,
+          "rme": 0.6,
+          "samples": 4540
         },
         {
           "name": "bcryptjs (pure JS)",
-          "hz": 754.03,
-          "rme": 0.15,
-          "samples": 3771
+          "hz": 755.67,
+          "rme": 0.11,
+          "samples": 3779
         }
       ]
     },
@@ -35,20 +35,20 @@
       "entries": [
         {
           "name": "@amigo-labs/bcrypt",
-          "hz": 17.4062,
-          "rme": 0.25,
+          "hz": 17.4413,
+          "rme": 0.02,
           "samples": 175
         },
         {
           "name": "bcrypt (npm, C++ via node-gyp)",
-          "hz": 16.8403,
-          "rme": 0.03,
+          "hz": 16.8328,
+          "rme": 0.02,
           "samples": 169
         },
         {
           "name": "bcryptjs (pure JS)",
-          "hz": 12.7373,
-          "rme": 0.28,
+          "hz": 12.7368,
+          "rme": 0.43,
           "samples": 128
         }
       ]
@@ -59,19 +59,19 @@
       "entries": [
         {
           "name": "@amigo-labs/bcrypt",
-          "hz": 17.4434,
-          "rme": 0.03,
+          "hz": 17.4367,
+          "rme": 0.1,
           "samples": 175
         },
         {
           "name": "bcrypt (npm, C++ via node-gyp)",
-          "hz": 16.8579,
-          "rme": 0.04,
+          "hz": 16.8406,
+          "rme": 0.13,
           "samples": 169
         },
         {
           "name": "bcryptjs (pure JS)",
-          "hz": 12.7582,
+          "hz": 12.7612,
           "rme": 0.17,
           "samples": 128
         }

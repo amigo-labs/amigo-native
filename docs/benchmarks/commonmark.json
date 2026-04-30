@@ -1,7 +1,7 @@
 {
   "crate": "commonmark",
-  "generatedAt": "2026-04-21T07:19:58.891Z",
-  "commit": "1c510c2",
+  "generatedAt": "2026-04-30T05:31:33.963Z",
+  "commit": "64baca8",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,45 +11,45 @@
       "entries": [
         {
           "name": "@amigo-labs/commonmark render",
-          "hz": 312724.81,
-          "rme": 0.16,
-          "samples": 156363
+          "hz": 301075.72,
+          "rme": 0.21,
+          "samples": 150538
         },
         {
           "name": "@amigo-labs/commonmark renderBytes",
-          "hz": 320409.23,
+          "hz": 313265.48,
           "rme": 0.2,
-          "samples": 160205
+          "samples": 156633
         },
         {
           "name": "@amigo-labs/commonmark render (fast opts)",
-          "hz": 261646.63,
-          "rme": 0.26,
-          "samples": 130824
+          "hz": 257434.88,
+          "rme": 0.77,
+          "samples": 128718
         },
         {
           "name": "@amigo-labs/commonmark renderFast",
-          "hz": 394128.47,
-          "rme": 1.19,
-          "samples": 197065
+          "hz": 392066.72,
+          "rme": 0.12,
+          "samples": 196034
         },
         {
           "name": "@amigo-labs/commonmark renderBytesFast",
-          "hz": 405479.62,
-          "rme": 0.29,
-          "samples": 202740
+          "hz": 390725.63,
+          "rme": 2.54,
+          "samples": 195363
         },
         {
           "name": "marked",
-          "hz": 35419.15,
-          "rme": 3.03,
-          "samples": 17710
+          "hz": 38337.5,
+          "rme": 0.42,
+          "samples": 19169
         },
         {
           "name": "markdown-it",
-          "hz": 57505.2,
-          "rme": 0.63,
-          "samples": 28753
+          "hz": 59464.39,
+          "rme": 0.6,
+          "samples": 29733
         }
       ]
     },
@@ -59,33 +59,33 @@
       "entries": [
         {
           "name": "@amigo-labs/commonmark render",
-          "hz": 30593.45,
-          "rme": 0.5,
-          "samples": 15298
+          "hz": 30363.55,
+          "rme": 0.51,
+          "samples": 15182
         },
         {
           "name": "@amigo-labs/commonmark renderBytes",
-          "hz": 32601.71,
+          "hz": 32499.46,
           "rme": 0.26,
-          "samples": 16301
+          "samples": 16250
         },
         {
           "name": "@amigo-labs/commonmark render (fast opts)",
-          "hz": 38430.49,
-          "rme": 0.32,
-          "samples": 19216
+          "hz": 38928.87,
+          "rme": 0.26,
+          "samples": 19465
         },
         {
           "name": "marked",
-          "hz": 3452.71,
-          "rme": 1.71,
-          "samples": 1728
+          "hz": 3485.35,
+          "rme": 0.76,
+          "samples": 1743
         },
         {
           "name": "markdown-it",
-          "hz": 5253.86,
-          "rme": 1.12,
-          "samples": 2627
+          "hz": 4903.6,
+          "rme": 2.37,
+          "samples": 2453
         }
       ]
     },
@@ -95,33 +95,33 @@
       "entries": [
         {
           "name": "@amigo-labs/commonmark render",
-          "hz": 509.84,
-          "rme": 4.14,
-          "samples": 255
+          "hz": 680.18,
+          "rme": 3,
+          "samples": 341
         },
         {
           "name": "@amigo-labs/commonmark renderBytes",
-          "hz": 736.93,
+          "hz": 750.72,
           "rme": 2.79,
-          "samples": 369
+          "samples": 376
         },
         {
           "name": "@amigo-labs/commonmark render (fast opts)",
-          "hz": 857.27,
-          "rme": 0.56,
-          "samples": 429
+          "hz": 868.7,
+          "rme": 0.98,
+          "samples": 435
         },
         {
           "name": "marked",
-          "hz": 71.6183,
-          "rme": 1.58,
+          "hz": 71.8957,
+          "rme": 3.98,
           "samples": 36
         },
         {
           "name": "markdown-it",
-          "hz": 140.07,
-          "rme": 1.95,
-          "samples": 71
+          "hz": 134.64,
+          "rme": 4.02,
+          "samples": 68
         }
       ]
     },
@@ -131,26 +131,26 @@
       "entries": [
         {
           "name": "@amigo-labs/commonmark renderMany (parallel)",
-          "hz": 126.54,
-          "rme": 0.72,
-          "samples": 64
+          "hz": 95.0319,
+          "rme": 1.71,
+          "samples": 48
         },
         {
           "name": "@amigo-labs/commonmark per-call loop",
-          "hz": 60.4112,
-          "rme": 1.94,
+          "hz": 61.0927,
+          "rme": 0.35,
           "samples": 31
         },
         {
           "name": "marked per-call loop",
-          "hz": 6.8617,
-          "rme": 1.38,
+          "hz": 6.7512,
+          "rme": 2,
           "samples": 10
         },
         {
           "name": "markdown-it per-call loop",
-          "hz": 8.8229,
-          "rme": 4.98,
+          "hz": 9.0231,
+          "rme": 4.68,
           "samples": 10
         }
       ]

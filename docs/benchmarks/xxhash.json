@@ -1,7 +1,7 @@
 {
   "crate": "xxhash",
-  "generatedAt": "2026-04-29T05:38:04.369Z",
-  "commit": "d65438a",
+  "generatedAt": "2026-04-30T05:31:33.963Z",
+  "commit": "64baca8",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,21 +11,21 @@
       "entries": [
         {
           "name": "@amigo-labs/xxhash",
-          "hz": 4024465.99,
-          "rme": 0.14,
-          "samples": 2012233
+          "hz": 3842206.71,
+          "rme": 0.13,
+          "samples": 1921104
         },
         {
           "name": "xxhash-wasm",
-          "hz": 8695147.86,
+          "hz": 8642608.46,
           "rme": 0.11,
-          "samples": 4347574
+          "samples": 4321305
         },
         {
           "name": "xxhashjs",
-          "hz": 1231000.41,
-          "rme": 2.2,
-          "samples": 615501
+          "hz": 1176361.88,
+          "rme": 0.31,
+          "samples": 588181
         }
       ]
     },
@@ -35,20 +35,20 @@
       "entries": [
         {
           "name": "@amigo-labs/xxhash",
-          "hz": 6057.19,
-          "rme": 0.12,
-          "samples": 3029
+          "hz": 6067.29,
+          "rme": 0.11,
+          "samples": 3034
         },
         {
           "name": "xxhash-wasm",
-          "hz": 5148.83,
+          "hz": 5133.77,
           "rme": 0.12,
-          "samples": 2575
+          "samples": 2567
         },
         {
           "name": "xxhashjs",
-          "hz": 345.66,
-          "rme": 0.13,
+          "hz": 345.6,
+          "rme": 0.1,
           "samples": 173
         }
       ]
@@ -59,20 +59,20 @@
       "entries": [
         {
           "name": "@amigo-labs/xxhash",
-          "hz": 12017.05,
+          "hz": 12024.59,
           "rme": 0.12,
-          "samples": 6009
+          "samples": 6013
         },
         {
           "name": "xxhash-wasm",
-          "hz": 8373.25,
-          "rme": 0.28,
-          "samples": 4187
+          "hz": 8950.34,
+          "rme": 0.14,
+          "samples": 4476
         },
         {
           "name": "xxhashjs",
-          "hz": 20.7484,
-          "rme": 0.58,
+          "hz": 20.8106,
+          "rme": 0.27,
           "samples": 11
         }
       ]
@@ -83,15 +83,15 @@
       "entries": [
         {
           "name": "@amigo-labs/xxhash (xxh3)",
-          "hz": 24257.61,
-          "rme": 0.13,
-          "samples": 12129
+          "hz": 24380.77,
+          "rme": 0.12,
+          "samples": 12191
         },
         {
           "name": "xxhash-wasm (h64)",
-          "hz": 9043.23,
+          "hz": 8968.75,
           "rme": 0.12,
-          "samples": 4522
+          "samples": 4485
         }
       ]
     },
@@ -101,33 +101,33 @@
       "entries": [
         {
           "name": "@amigo-labs/xxhash (many, Buffer in/out)",
-          "hz": 58955.8,
-          "rme": 1.45,
-          "samples": 29478
+          "hz": 56063.68,
+          "rme": 1.72,
+          "samples": 28032
         },
         {
           "name": "@amigo-labs/xxhash (loop)",
-          "hz": 5762.12,
-          "rme": 0.83,
-          "samples": 2882
+          "hz": 5792.73,
+          "rme": 1.25,
+          "samples": 2897
         },
         {
           "name": "@amigo-labs/xxhash (streaming)",
-          "hz": 4068.25,
-          "rme": 0.17,
-          "samples": 2035
+          "hz": 4132.18,
+          "rme": 0.15,
+          "samples": 2067
         },
         {
           "name": "xxhash-wasm (loop)",
-          "hz": 17019.92,
+          "hz": 16604.94,
           "rme": 0.13,
-          "samples": 8510
+          "samples": 8303
         },
         {
           "name": "xxhashjs (loop)",
-          "hz": 1330.4,
-          "rme": 0.31,
-          "samples": 666
+          "hz": 1297.47,
+          "rme": 0.38,
+          "samples": 649
         }
       ]
     },
@@ -137,21 +137,21 @@
       "entries": [
         {
           "name": "@amigo-labs/xxhash (many, Buffer in/out)",
-          "hz": 108000.36,
-          "rme": 1.6,
-          "samples": 54001
+          "hz": 105299.3,
+          "rme": 1.68,
+          "samples": 52650
         },
         {
           "name": "@amigo-labs/xxhash (streaming)",
-          "hz": 4978.44,
-          "rme": 0.19,
-          "samples": 2490
+          "hz": 4964.66,
+          "rme": 0.21,
+          "samples": 2483
         },
         {
           "name": "xxhash-wasm (loop)",
-          "hz": 16693.63,
-          "rme": 0.19,
-          "samples": 8347
+          "hz": 16183.16,
+          "rme": 0.34,
+          "samples": 8092
         }
       ]
     }
