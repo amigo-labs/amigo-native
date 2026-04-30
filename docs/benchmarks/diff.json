@@ -1,7 +1,7 @@
 {
   "crate": "diff",
-  "generatedAt": "2026-04-30T05:31:33.963Z",
-  "commit": "64baca8",
+  "generatedAt": "2026-04-30T07:07:09.765Z",
+  "commit": "94041e6",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 25146.52,
-          "rme": 0.56,
-          "samples": 12574
+          "hz": 25683.17,
+          "rme": 0.61,
+          "samples": 12842
         },
         {
           "name": "diff",
-          "hz": 2360.28,
-          "rme": 0.41,
-          "samples": 1181
+          "hz": 2343.07,
+          "rme": 0.58,
+          "samples": 1172
         }
       ]
     },
@@ -29,14 +29,14 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 156.61,
-          "rme": 0.2,
-          "samples": 79
+          "hz": 155.51,
+          "rme": 0.14,
+          "samples": 78
         },
         {
           "name": "diff",
-          "hz": 6.6639,
-          "rme": 2.18,
+          "hz": 6.6912,
+          "rme": 1.99,
           "samples": 10
         }
       ]
