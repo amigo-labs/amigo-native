@@ -20,4 +20,14 @@ ignore = [
     # `syntect` → `typst-library`. The 2.x line is maintained but
     # syntect hasn't migrated yet.
     "RUSTSEC-2025-0141",
+    # `rsa 0.9.10` has a timing-sidechannel weakness (Marvin Attack)
+    # per RUSTSEC-2023-0071, no upstream fix available. Pulled by
+    # `jsonwebtoken 10` via the `rust_crypto` backend. The Marvin attack
+    # targets RSA *decryption* (PKCS#1 v1.5 / OAEP) and our `jwt` crate
+    # only does JWS sign/verify (signature operations), not JWE
+    # decryption — the vulnerable code path is not reachable from our
+    # API. Switching to the `aws_lc_rs` backend would avoid the dep but
+    # adds cmake/perl/go to the build matrix; we prefer to keep the
+    # NAPI cross-compile toolchain pure-Rust.
+    "RUSTSEC-2023-0071",
 ]
