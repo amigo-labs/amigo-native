@@ -35,7 +35,7 @@ fn b64url(bytes: &[u8]) -> String {
 /// Synchronous: Ed25519 key generation is microsecond-scale.
 #[napi]
 pub fn generate_ed25519_key_pair() -> Result<JwkKeyPair> {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand_core::OsRng;
     let signing = SigningKey::generate(&mut rng);
     let verifying = signing.verifying_key();
 

@@ -3,7 +3,6 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use rand::RngCore;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int, c_ulong};
 
@@ -55,7 +54,8 @@ fn validate_cost(cost: u32) -> Result<()> {
 
 fn gensalt(cost: u32) -> Result<CString> {
     let mut entropy = [0u8; SALT_BYTES];
-    rand::thread_rng().fill_bytes(&mut entropy);
+    getrandom::getrandom(&mut entropy)
+        .map_err(|e| Error::from_reason(format!("failed to read OS entropy: {e}")))?;
 
     let prefix = b"$2b\0";
     let mut out = [0i8; SETTING_BUF_LEN];
