@@ -61,9 +61,12 @@
     "description": "BM25 full-text search. Stateful NAPI class — build index once, query many times.",
     "tableDescription": "BM25 full-text search",
     "replaces": "wink-bm25-text-search",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "14x",
+    "parity": "100%",
     "status": "Compatible",
-    "competitors": ["wink-bm25-text-search", "okapibm25"]
+    "competitors": [
+      "wink-bm25-text-search",
+      "okapibm25"
+    ]
   }
 }

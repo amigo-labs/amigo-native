@@ -62,9 +62,11 @@
     "description": "Character encoding conversion powered by Mozilla's encoding_rs.",
     "tableDescription": "Character encoding via `encoding_rs`",
     "replaces": "iconv-lite",
-    "vsJs": "TBD",
-    "parity": "66%",
+    "vsJs": "0.61-32x",
+    "parity": "100%",
     "status": "Alternative",
-    "competitors": ["iconv-lite@0.6.3"]
+    "competitors": [
+      "iconv-lite@0.6.3"
+    ]
   }
 }

@@ -60,9 +60,11 @@
     "description": "Language detection powered by whatlang. Paragraph-size Green, short-string Red by design.",
     "tableDescription": "Language detection via `whatlang`",
     "replaces": "franc",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "3-16x",
+    "parity": "100%",
     "status": "Alternative",
-    "competitors": ["franc@6.2"]
+    "competitors": [
+      "franc@6.2"
+    ]
   }
 }

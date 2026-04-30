@@ -61,9 +61,12 @@
     "description": "CSV parsing and serialization via BurntSushi's csv crate.",
     "tableDescription": "CSV parsing/serialization via BurntSushi's `csv`",
     "replaces": "csv-parse/papaparse",
-    "vsJs": "1.4-3.5x",
+    "vsJs": "1.55-1.94x",
     "parity": "—",
     "status": "Drop-in",
-    "competitors": ["csv-parse@5.6.0", "papaparse@5.4.1"]
+    "competitors": [
+      "csv-parse@5.6.0",
+      "papaparse@5.4.1"
+    ]
   }
 }

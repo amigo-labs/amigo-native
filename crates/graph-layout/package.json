@@ -60,9 +60,12 @@
     "description": "Hierarchical (Sugiyama-style) DAG layout. Single-call spec → positions + edge routing.",
     "tableDescription": "Hierarchical DAG layout, spec in, positions out",
     "replaces": "dagre",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "31-66x",
+    "parity": "100%",
     "status": "Compatible",
-    "competitors": ["dagre", "@dagrejs/dagre"]
+    "competitors": [
+      "dagre",
+      "@dagrejs/dagre"
+    ]
   }
 }

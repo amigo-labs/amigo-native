@@ -61,8 +61,10 @@
     "tableDescription": "Sentence splitter, multi-language + offset hot-path",
     "replaces": "sbd",
     "vsJs": "TBD",
-    "parity": "TBD",
+    "parity": "100%",
     "status": "Compatible",
-    "competitors": ["sbd"]
+    "competitors": [
+      "sbd"
+    ]
   }
 }

@@ -61,8 +61,10 @@
     "tableDescription": "PDF generation, spec-in / Buffer-out",
     "replaces": "pdfkit",
     "vsJs": "TBD",
-    "parity": "TBD",
+    "parity": "100%",
     "status": "Subset",
-    "competitors": ["pdfkit"]
+    "competitors": [
+      "pdfkit"
+    ]
   }
 }

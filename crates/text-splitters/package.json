@@ -60,9 +60,11 @@
     "description": "RAG text splitters (recursive-character + markdown-aware), with native tiktoken length.",
     "tableDescription": "RAG splitters, tiktoken-aware",
     "replaces": "@langchain/textsplitters",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "0.22-2.5x",
+    "parity": "100%",
     "status": "Compatible",
-    "competitors": ["@langchain/textsplitters"]
+    "competitors": [
+      "@langchain/textsplitters"
+    ]
   }
 }

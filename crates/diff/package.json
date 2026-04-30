@@ -59,9 +59,11 @@
     "description": "Myers/Patience diff via `similar`. Drop-in-shape with an offset-packed hot-path for char-level and large-input cases.",
     "tableDescription": "Text diff via `similar`, offset-packed hot-path",
     "replaces": "diff",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "0.26-26x",
+    "parity": "100%",
     "status": "Compatible",
-    "competitors": ["diff@5"]
+    "competitors": [
+      "diff@5"
+    ]
   }
 }

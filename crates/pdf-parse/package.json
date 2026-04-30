@@ -58,9 +58,11 @@
     "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
     "tableDescription": "PDF text + metadata extraction",
     "replaces": "pdf-parse",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "0.46-2.5x",
+    "parity": "100%",
     "status": "Compatible",
-    "competitors": ["pdf-parse"]
+    "competitors": [
+      "pdf-parse"
+    ]
   }
 }

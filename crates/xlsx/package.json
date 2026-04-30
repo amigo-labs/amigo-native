@@ -61,9 +61,12 @@
     "description": "XLSX read + write. Buffer in → rows out, rows in → Buffer out. Single-FFI-crossing.",
     "tableDescription": "XLSX read + write",
     "replaces": "xlsx",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "2.3-3x",
+    "parity": "100%",
     "status": "Subset",
-    "competitors": ["xlsx", "exceljs"]
+    "competitors": [
+      "xlsx",
+      "exceljs"
+    ]
   }
 }

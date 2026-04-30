@@ -60,9 +60,11 @@
     "description": "Porter/Snowball stemming via rust-stemmers. Batch-only API — single-word calls are intentionally not exposed.",
     "tableDescription": "Porter/Snowball stemmer (batch-only) via `rust-stemmers`",
     "replaces": "natural (stemmer subset)",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "7.1-8.3x",
+    "parity": "100%",
     "status": "Alternative",
-    "competitors": ["natural@8"]
+    "competitors": [
+      "natural@8"
+    ]
   }
 }
