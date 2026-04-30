@@ -73,7 +73,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Build all crates
-        run: pnpm -r run build
+        # `--workspace-concurrency=4` matches the GitHub-hosted Ubuntu
+        # runner's 4 vCPUs. Each crate is an independent `cdylib` with
+        # `lto = true` + `codegen-units = 1` (release profile), so the
+        # bottleneck is per-crate LTO rather than shared dependency
+        # compilation — parallelizing 4 crates at a time uses the box
+        # close to fully without thrashing cargo's `target/` lock.
+        run: pnpm -r --workspace-concurrency=4 run build
       - name: Upload NAPI binaries
         uses: actions/upload-artifact@v7
         with:
