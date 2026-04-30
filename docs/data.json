@@ -1888,15 +1888,15 @@
         "entries": [
           {
             "name": "@amigo-labs/turndown",
-            "hz": 172259.78,
-            "rme": 0.22,
-            "samples": 86130
+            "hz": 169404.9,
+            "rme": 0.18,
+            "samples": 84703
           },
           {
             "name": "turndown",
-            "hz": 10627.84,
-            "rme": 11.9,
-            "samples": 5314
+            "hz": 10897.11,
+            "rme": 12.09,
+            "samples": 5449
           }
         ]
       },
@@ -1906,15 +1906,15 @@
         "entries": [
           {
             "name": "@amigo-labs/turndown",
-            "hz": 7301.06,
-            "rme": 0.16,
-            "samples": 3651
+            "hz": 7192.99,
+            "rme": 0.17,
+            "samples": 3597
           },
           {
             "name": "turndown",
-            "hz": 728.78,
-            "rme": 6.91,
-            "samples": 365
+            "hz": 739.25,
+            "rme": 8.57,
+            "samples": 370
           }
         ]
       },

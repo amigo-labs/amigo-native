@@ -291,7 +291,7 @@
       "name": "turndown",
       "title": "Turndown",
       "description": "HTML → Markdown via html5ever. Ships CommonMark + GFM tables/strikethrough.",
-      "speedup": "10–16× faster",
+      "speedup": "9.7–16× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/turndown",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/turndown",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/turndown/README.md"
