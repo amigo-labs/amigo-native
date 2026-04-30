@@ -61,9 +61,11 @@
     "description": "zlib deflate/inflate/gzip powered by flate2 + zlib-rs.",
     "tableDescription": "zlib deflate/inflate/gzip via `flate2` (zlib-rs)",
     "replaces": "pako",
-    "vsJs": "TBD",
+    "vsJs": "0.96-12x",
     "parity": "100%",
     "status": "Compatible",
-    "competitors": ["pako@2.1.0"]
+    "competitors": [
+      "pako@2.1.0"
+    ]
   }
 }

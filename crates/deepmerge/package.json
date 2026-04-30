@@ -60,9 +60,11 @@
     "description": "Recursive object merge for JSON-safe values.",
     "tableDescription": "Recursive object merge",
     "replaces": "deepmerge",
-    "vsJs": "TBD",
+    "vsJs": "3-6.2x",
     "parity": "100%",
     "status": "Compatible",
-    "competitors": ["deepmerge@4.3.1"]
+    "competitors": [
+      "deepmerge@4.3.1"
+    ]
   }
 }

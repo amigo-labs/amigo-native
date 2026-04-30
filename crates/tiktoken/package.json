@@ -63,7 +63,7 @@
     "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
     "tableDescription": "OpenAI BPE tokenizer (cl100k, o200k) via `tiktoken-rs`",
     "replaces": "tiktoken/js-tiktoken",
-    "vsJs": "3-23× vs tiktoken-wasm",
+    "vsJs": "0.28-0.31x",
     "parity": "100%",
     "status": "Drop-in",
     "speedup": "3–23× vs tiktoken (WASM) / 2–4× vs js-tiktoken / 0.4× vs gpt-tokenizer",

@@ -65,9 +65,11 @@
     "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
     "tableDescription": "Ed25519 JWK + RFC 7638 thumbprints",
     "replaces": "jose (subset)",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "1.57-4.4x",
+    "parity": "100%",
     "status": "Alternative",
-    "competitors": ["jose@5.9.0"]
+    "competitors": [
+      "jose@5.9.0"
+    ]
   }
 }

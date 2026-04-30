@@ -62,8 +62,8 @@
     "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
     "tableDescription": "CommonMark + GFM renderer via `pulldown-cmark`",
     "replaces": "marked/markdown-it",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "6.8x",
+    "parity": "100%",
     "status": "Alternative",
     "competitors": [
       "marked@15.0.0",

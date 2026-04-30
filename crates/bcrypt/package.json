@@ -59,9 +59,12 @@
     "description": "Bcrypt password hashing with sync + async API. Argon2 sibling.",
     "tableDescription": "Bcrypt password hashing (sync + async)",
     "replaces": "bcrypt/bcryptjs",
-    "vsJs": "1.1-1.6x",
-    "parity": "TBD",
+    "vsJs": "1.03-1.07x",
+    "parity": "100%",
     "status": "Drop-in",
-    "competitors": ["bcrypt@6.0.0", "bcryptjs@2.4.3"]
+    "competitors": [
+      "bcrypt@6.0.0",
+      "bcryptjs@2.4.3"
+    ]
   }
 }

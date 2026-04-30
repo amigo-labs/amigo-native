@@ -62,9 +62,11 @@
     "description": "HTML → Markdown via html5ever. Ships CommonMark + GFM tables/strikethrough.",
     "tableDescription": "HTML → Markdown, CommonMark + GFM",
     "replaces": "turndown",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "10-16x",
+    "parity": "100%",
     "status": "Subset",
-    "competitors": ["turndown"]
+    "competitors": [
+      "turndown"
+    ]
   }
 }

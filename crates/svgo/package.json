@@ -59,9 +59,11 @@
     "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
     "tableDescription": "SVG optimizer, 8 preset-default plugins",
     "replaces": "svgo",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "15-27x",
+    "parity": "100%",
     "status": "Subset",
-    "competitors": ["svgo@3"]
+    "competitors": [
+      "svgo@3"
+    ]
   }
 }

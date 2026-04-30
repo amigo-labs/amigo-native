@@ -6,6 +6,9 @@
  * two artifacts:
  *   - conformance-results.json (machine)
  *   - conformance-summary.md   (PR comment / GITHUB_STEP_SUMMARY)
+ *
+ * Pass `--crates a,b,c` to restrict the run to a subset (used in CI
+ * when only a subset of crates was rebuilt).
  */
 
 import { spawnSync } from 'node:child_process'
@@ -15,9 +18,16 @@ import { join, basename } from 'node:path'
 const root = process.cwd()
 const cratesDir = join(root, 'crates')
 
+const cratesArgIdx = process.argv.indexOf('--crates')
+const cratesFilter =
+  cratesArgIdx !== -1 && process.argv[cratesArgIdx + 1]
+    ? new Set(process.argv[cratesArgIdx + 1].split(',').map((s) => s.trim()).filter(Boolean))
+    : null
+
 const packages = []
 for (const entry of readdirSync(cratesDir)) {
   if (entry === '_template') continue
+  if (cratesFilter && !cratesFilter.has(entry)) continue
   const dir = join(cratesDir, entry, '__conformance__')
   if (!existsSync(dir) || !statSync(dir).isDirectory()) continue
   const specs = readdirSync(dir).filter((f) => f.endsWith('.spec.ts'))

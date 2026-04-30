@@ -59,9 +59,11 @@
     "description": "Tiny in-memory full-text search with prefix autocomplete. Shares Rust search-core with @amigo-labs/bm25.",
     "tableDescription": "In-memory full-text search + autocomplete",
     "replaces": "minisearch",
-    "vsJs": "TBD",
-    "parity": "TBD",
+    "vsJs": "1.23-51x",
+    "parity": "100%",
     "status": "Compatible",
-    "competitors": ["minisearch"]
+    "competitors": [
+      "minisearch"
+    ]
   }
 }

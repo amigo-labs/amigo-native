@@ -13,6 +13,72 @@ env:
   NODE_VERSION: '24'
 
 jobs:
+  # ── change detection ────────────────────────────────────────────────────
+  # Runs first so per-crate jobs can decide whether to skip. Outputs:
+  #   crates       — comma-separated list of changed crate dirs (excluding
+  #                  `_template` and other underscore-prefixed entries).
+  #   rebuildall   — "1" when any workspace-wide signal changed (root
+  #                  Cargo.toml/Cargo.lock, pnpm-lock.yaml, .github/, the
+  #                  template dir, or `[full-build]` in the commit msg).
+  #                  Forces all crates to be built and tested.
+  #   fullbench    — "1" when `[full-bench]` is in the commit message.
+  #                  Consumed only by the benchmark job.
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      crates: ${{ steps.detect.outputs.crates }}
+      rebuildall: ${{ steps.detect.outputs.rebuildall }}
+      fullbench: ${{ steps.detect.outputs.fullbench }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # PRs need full history to diff against the base branch; pushes
+          # to main only need the parent commit.
+          fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 2 }}
+      - id: detect
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "$BASE_REF" --depth=1 --no-tags
+            files=$(git diff --name-only "origin/$BASE_REF...HEAD")
+            commit_msg=$(git log -1 --format=%B HEAD)
+          else
+            files=$(git diff --name-only HEAD^..HEAD)
+            commit_msg=$(git log -1 --format=%B HEAD)
+          fi
+
+          # Workspace-wide changes that invalidate every crate's build.
+          if echo "$files" | grep -qE '^(Cargo\.toml|Cargo\.lock|pnpm-lock\.yaml|pnpm-workspace\.yaml|\.github/workflows/|\.cargo/|crates/_template/)'; then
+            rebuildall=1
+          elif echo "$commit_msg" | grep -qF '[full-build]'; then
+            rebuildall=1
+          else
+            rebuildall=0
+          fi
+
+          # Per-crate changes (excludes `_template` and any other underscore-
+          # prefixed crate dirs).
+          crates=$(echo "$files" \
+            | { grep -E '^crates/[^_][^/]*/' || true; } \
+            | sed -E 's|^crates/([^/]+)/.*|\1|' \
+            | sort -u \
+            | paste -sd, -)
+
+          if echo "$commit_msg" | grep -qF '[full-bench]'; then
+            fullbench=1
+          else
+            fullbench=0
+          fi
+
+          echo "crates=$crates" >> "$GITHUB_OUTPUT"
+          echo "rebuildall=$rebuildall" >> "$GITHUB_OUTPUT"
+          echo "fullbench=$fullbench" >> "$GITHUB_OUTPUT"
+          echo "Detected changed crates: ${crates:-<none>}"
+          echo "Rebuild-all: $rebuildall"
+          echo "Full-bench: $fullbench"
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -60,6 +126,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -72,8 +140,31 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Build all crates
-        run: pnpm -r run build
+      - name: Build crates
+        # `--workspace-concurrency=4` matches the GitHub-hosted Ubuntu
+        # runner's 4 vCPUs. Each crate is an independent `cdylib` with
+        # `lto = true` + `codegen-units = 1` (release profile), so the
+        # bottleneck is per-crate LTO rather than shared dependency
+        # compilation — parallelizing 4 crates at a time uses the box
+        # close to fully without thrashing cargo's `target/` lock.
+        #
+        # When only a subset of crates changed (and no workspace-wide
+        # files were touched) we filter to those crates only — the
+        # `Swatinem/rust-cache` step still warms the workspace target/
+        # so dependency compilation is shared across runs.
+        run: |
+          set -euo pipefail
+          if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
+            echo "::notice::Building all crates (rebuildall=1)"
+            pnpm -r --workspace-concurrency=4 run build
+          else
+            echo "::notice::Building only: ${{ needs.detect-changes.outputs.crates }}"
+            filters=""
+            for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+              filters="$filters --filter @amigo-labs/$c"
+            done
+            pnpm $filters --workspace-concurrency=4 run build
+          fi
       - name: Upload NAPI binaries
         uses: actions/upload-artifact@v7
         with:
@@ -87,7 +178,8 @@ jobs:
 
   test-node:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, detect-changes]
+    if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v6
@@ -103,14 +195,25 @@ jobs:
           path: crates/
       - name: Check rendered READMEs are in sync
         run: node scripts/render-readmes.mjs --check
-      - name: Test all crates
-        run: pnpm -r run test
+      - name: Test crates
+        run: |
+          set -euo pipefail
+          if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
+            pnpm -r run test
+          else
+            filters=""
+            for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+              filters="$filters --filter @amigo-labs/$c"
+            done
+            pnpm $filters run test
+          fi
       - name: Parity tests
         run: pnpm test:parity
 
   test-conformance:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, detect-changes]
+    if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     permissions:
       contents: read
       pull-requests: write
@@ -129,12 +232,15 @@ jobs:
           path: crates/
       - name: Run conformance suite + summary
         id: conformance
-        # Summary script exits non-zero on any failure; use `|| true` so we
-        # still post the comment. The `conformance: fail` detection below
-        # re-fails the step.
+        # Summary script exits non-zero on any failure; capture the
+        # status so we still post the comment, then re-fail at the end.
         run: |
           set +e
-          pnpm test:conformance:summary
+          if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
+            node scripts/conformance-summary.mjs
+          else
+            node scripts/conformance-summary.mjs --crates "${{ needs.detect-changes.outputs.crates }}"
+          fi
           echo "exit=$?" >> "$GITHUB_OUTPUT"
           set -e
       - name: Append summary to GITHUB_STEP_SUMMARY
@@ -149,33 +255,6 @@ jobs:
       - name: Fail job if conformance failed
         if: steps.conformance.outputs.exit != '0'
         run: exit 1
-
-  detect-changes:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    outputs:
-      crates: ${{ steps.detect.outputs.crates }}
-      fullbench: ${{ steps.detect.outputs.fullbench }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 2
-      - id: detect
-        run: |
-          # `set -o pipefail` (GitHub Actions default) makes grep's exit=1 on
-          # no match fail the whole pipeline, so the second grep-based gate
-          # is written as an `if` block and this one is tolerated explicitly.
-          crates=$(git diff --name-only HEAD^..HEAD \
-            | { grep -E '^crates/[^_][^/]*/' || true; } \
-            | sed -E 's|^crates/([^/]+)/.*|\1|' \
-            | sort -u \
-            | paste -sd, -)
-          echo "crates=$crates" >> "$GITHUB_OUTPUT"
-          if git log -1 --format=%B | grep -qF '[full-bench]'; then
-            echo "fullbench=1" >> "$GITHUB_OUTPUT"
-          else
-            echo "fullbench=0" >> "$GITHUB_OUTPUT"
-          fi
 
   benchmark:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

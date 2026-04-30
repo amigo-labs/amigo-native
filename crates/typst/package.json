@@ -59,8 +59,12 @@
     "tableDescription": "Typst compiler, source → PDF",
     "replaces": "typst-js",
     "vsJs": "TBD",
-    "parity": "TBD",
+    "parity": "100%",
     "status": "New",
-    "competitors": ["typst (CLI)", "puppeteer", "pdfmake"]
+    "competitors": [
+      "typst (CLI)",
+      "puppeteer",
+      "pdfmake"
+    ]
   }
 }
