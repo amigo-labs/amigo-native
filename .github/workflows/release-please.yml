@@ -5,8 +5,11 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+
+# All write actions (committing the Release PR branch, pushing tags, creating
+# GitHub Releases) are performed by RELEASE_PLEASE_TOKEN, not GITHUB_TOKEN —
+# so the workflow's own GITHUB_TOKEN can stay read-only.
 
 concurrency:
   group: release-please

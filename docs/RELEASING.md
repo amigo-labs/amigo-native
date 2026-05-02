@@ -71,11 +71,13 @@ long as the secret name and scopes match.
 
 ### Force a release without a code change
 
-Push an empty commit on `main` with the `Release-As:` footer:
+Push an empty commit on `main` with a crate scope and the `Release-As:` footer.
+The scope is mandatory — it tells release-please which package the override
+applies to:
 
 ```bash
 git commit --allow-empty \
-  -m "chore: release argon2" \
+  -m "chore(argon2): release" \
   -m "Release-As: 0.2.0"
 git push origin main
 ```

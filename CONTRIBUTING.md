@@ -118,8 +118,10 @@ Releases are automated via [release-please](https://github.com/googleapis/releas
    single grouped Release PR titled `chore: release main` proposing per-crate
    version bumps and CHANGELOG entries.
 3. Review the proposed bumps. Edit the offending commit on `main` if a type
-   was misclassified, or add an empty commit with a `Release-As: <ver>` footer
-   to override.
+   was misclassified, or add an empty commit scoped to the target crate with a
+   `Release-As: <ver>` footer (e.g. `chore(argon2): release` + `Release-As:
+   0.2.0`) to override. The scope is required — without it the override is
+   ignored.
 4. Merge the Release PR. release-please tags each released crate as
    `<crate>@<version>` and pushes them; this triggers `release.yml`, which
    cross-compiles for six platforms and publishes to npm with provenance.
