@@ -89,7 +89,9 @@ Then:
 ## Commits and PRs
 
 - Use conventional-commit style prefixes: `feat(<crate>):`, `fix(<crate>):`,
-  `perf(<crate>):`, `docs(<area>):`, `chore(...):`, `refactor(...):`.
+  `perf(<crate>):`, `docs(<area>):`, `chore(...):`, `refactor(...):`. The
+  scope MUST match a crate directory name (`argon2`, `csv`, …) for that crate
+  to be released — unscoped commits do not trigger any release.
 - One logical change per PR. Doc-only PRs are fine on their own.
 - Fill out [the PR template](.github/PULL_REQUEST_TEMPLATE.md) — in particular
   the "Benchmarks" section when you touch `crates/`.
@@ -108,9 +110,25 @@ Then:
 
 ## Releasing
 
-Tagged via `<crate>@<version>` (e.g. `slugify@0.2.0`) on `main`. The release
-workflow cross-compiles for six platforms and publishes with provenance — no
-manual `npm publish`.
+Releases are automated via [release-please](https://github.com/googleapis/release-please).
+
+1. Use scoped conventional commits, e.g. `fix(argon2): …`, `feat(csv): …`.
+   Unscoped commits do NOT bump any package — they are ignored by release-please.
+2. On every push to `main`, the `release-please` workflow opens or refreshes a
+   single grouped Release PR titled `chore: release main` proposing per-crate
+   version bumps and CHANGELOG entries.
+3. Review the proposed bumps. Edit the offending commit on `main` if a type
+   was misclassified, or add an empty commit with a `Release-As: <ver>` footer
+   to override.
+4. Merge the Release PR. release-please tags each released crate as
+   `<crate>@<version>` and pushes them; this triggers `release.yml`, which
+   cross-compiles for six platforms and publishes to npm with provenance.
+
+Pre-1.0 semver: `feat:` and `feat!:` (breaking) are both minor bumps until a
+crate reaches 1.0.0. Use `Release-As: 1.0.0` to graduate.
+
+See [`docs/RELEASING.md`](./docs/RELEASING.md) for manual overrides,
+troubleshooting, and the `RELEASE_PLEASE_TOKEN` secret setup.
 
 ## License
 
