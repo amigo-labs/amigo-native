@@ -56,6 +56,7 @@
   },
   "amigo": {
     "title": "Diff",
+    "category": "util",
     "description": "Myers/Patience diff via `similar`. Drop-in-shape with an offset-packed hot-path for char-level and large-input cases.",
     "tableDescription": "Text diff via `similar`, offset-packed hot-path",
     "replaces": "diff",

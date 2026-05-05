@@ -58,6 +58,7 @@
   },
   "amigo": {
     "title": "XLSX",
+    "category": "document",
     "description": "XLSX read + write. Buffer in → rows out, rows in → Buffer out. Single-FFI-crossing.",
     "tableDescription": "XLSX read + write",
     "replaces": "xlsx",

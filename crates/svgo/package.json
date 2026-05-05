@@ -56,6 +56,7 @@
   },
   "amigo": {
     "title": "Svgo",
+    "category": "document",
     "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
     "tableDescription": "SVG optimizer, 8 preset-default plugins",
     "replaces": "svgo",

@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Force Layout",
+    "category": "graph",
     "description": "Force-directed graph simulation. Batch-mode d3-force replacement for SSR / precompute workloads.",
     "tableDescription": "Force-directed graph layout (batch)",
     "replaces": "d3-force",

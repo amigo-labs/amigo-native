@@ -58,6 +58,7 @@
   },
   "amigo": {
     "title": "Inflate",
+    "category": "archive",
     "description": "zlib deflate/inflate/gzip powered by flate2 + zlib-rs.",
     "tableDescription": "zlib deflate/inflate/gzip via `flate2` (zlib-rs)",
     "replaces": "pako",

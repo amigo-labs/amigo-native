@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Text Splitters",
+    "category": "text",
     "description": "RAG text splitters (recursive-character + markdown-aware), with native tiktoken length.",
     "tableDescription": "RAG splitters, tiktoken-aware",
     "replaces": "@langchain/textsplitters",

@@ -73,6 +73,7 @@
   },
   "amigo": {
     "title": "Sanitize HTML",
+    "category": "text",
     "description": "HTML sanitization via Mozilla's ammonia engine.",
     "tableDescription": "HTML sanitization via Mozilla's `ammonia`",
     "replaces": "sanitize-html",

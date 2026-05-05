@@ -56,6 +56,7 @@
   },
   "amigo": {
     "title": "Minisearch",
+    "category": "search",
     "description": "Tiny in-memory full-text search with prefix autocomplete. Shares Rust search-core with @amigo-labs/bm25.",
     "tableDescription": "In-memory full-text search + autocomplete",
     "replaces": "minisearch",

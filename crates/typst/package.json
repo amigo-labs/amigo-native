@@ -55,6 +55,7 @@
   },
   "amigo": {
     "title": "Typst",
+    "category": "document",
     "description": "Typst document compiler — source in, PDF out. Bundled Libertinus fonts; offline-only packages.",
     "tableDescription": "Typst compiler, source → PDF",
     "replaces": "typst-js",

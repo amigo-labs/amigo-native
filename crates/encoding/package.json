@@ -59,6 +59,7 @@
   },
   "amigo": {
     "title": "Encoding",
+    "category": "text",
     "description": "Character encoding conversion powered by Mozilla's encoding_rs.",
     "tableDescription": "Character encoding via `encoding_rs`",
     "replaces": "iconv-lite",

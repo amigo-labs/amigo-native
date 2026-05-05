@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "PDF",
+    "category": "document",
     "description": "PDF generation — one FFI call per document. Labels / tickets / simple reports.",
     "tableDescription": "PDF generation, spec-in / Buffer-out",
     "replaces": "pdfkit",

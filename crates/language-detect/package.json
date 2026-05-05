@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Language Detect",
+    "category": "text",
     "description": "Language detection powered by whatlang. Paragraph-size Green, short-string Red by design.",
     "tableDescription": "Language detection via `whatlang`",
     "replaces": "franc",
