@@ -54,6 +54,7 @@
   },
   "amigo": {
     "title": "Slugify",
+    "category": "text",
     "description": "Unicode-aware slugification. Wraps deunicode + unicode-normalization.",
     "tableDescription": "Unicode-aware slugification via `deunicode`",
     "replaces": "slugify",

@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Graph Layout",
+    "category": "graph",
     "description": "Hierarchical (Sugiyama-style) DAG layout. Single-call spec → positions + edge routing.",
     "tableDescription": "Hierarchical DAG layout, spec in, positions out",
     "replaces": "dagre",

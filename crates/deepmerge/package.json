@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Deepmerge",
+    "category": "util",
     "description": "Recursive object merge for JSON-safe values.",
     "tableDescription": "Recursive object merge",
     "replaces": "deepmerge",

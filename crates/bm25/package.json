@@ -58,6 +58,7 @@
   },
   "amigo": {
     "title": "BM25",
+    "category": "search",
     "description": "BM25 full-text search. Stateful NAPI class — build index once, query many times.",
     "tableDescription": "BM25 full-text search",
     "replaces": "wink-bm25-text-search",

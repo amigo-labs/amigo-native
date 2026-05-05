@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Stemmer",
+    "category": "text",
     "description": "Porter/Snowball stemming via rust-stemmers. Batch-only API — single-word calls are intentionally not exposed.",
     "tableDescription": "Porter/Snowball stemmer (batch-only) via `rust-stemmers`",
     "replaces": "natural (stemmer subset)",

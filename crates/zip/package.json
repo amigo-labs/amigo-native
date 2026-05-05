@@ -59,6 +59,7 @@
   },
   "amigo": {
     "title": "ZIP",
+    "category": "archive",
     "description": "ZIP archive read/write via the zip Rust crate.",
     "tableDescription": "ZIP read/write via `zip` crate",
     "replaces": "yauzl/adm-zip/jszip",

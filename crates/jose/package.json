@@ -62,6 +62,7 @@
   },
   "amigo": {
     "title": "JOSE",
+    "category": "crypto",
     "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
     "tableDescription": "Ed25519 JWK + RFC 7638 thumbprints",
     "replaces": "jose (subset)",

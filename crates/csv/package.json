@@ -58,6 +58,7 @@
   },
   "amigo": {
     "title": "CSV",
+    "category": "document",
     "description": "CSV parsing and serialization via BurntSushi's csv crate.",
     "tableDescription": "CSV parsing/serialization via BurntSushi's `csv`",
     "replaces": "csv-parse/papaparse",

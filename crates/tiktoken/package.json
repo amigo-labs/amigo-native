@@ -60,6 +60,7 @@
   },
   "amigo": {
     "title": "Tiktoken",
+    "category": "text",
     "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
     "tableDescription": "OpenAI BPE tokenizer (cl100k, o200k) via `tiktoken-rs`",
     "replaces": "tiktoken/js-tiktoken",

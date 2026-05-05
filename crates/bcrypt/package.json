@@ -56,6 +56,7 @@
   },
   "amigo": {
     "title": "Bcrypt",
+    "category": "crypto",
     "description": "Bcrypt password hashing with sync + async API. Argon2 sibling.",
     "tableDescription": "Bcrypt password hashing (sync + async)",
     "replaces": "bcrypt/bcryptjs",

@@ -59,6 +59,7 @@
   },
   "amigo": {
     "title": "JWT",
+    "category": "crypto",
     "description": "JWT sign, verify, and decode via the jsonwebtoken Rust crate.",
     "tableDescription": "JWT sign/verify via `jsonwebtoken` crate",
     "replaces": "jsonwebtoken",

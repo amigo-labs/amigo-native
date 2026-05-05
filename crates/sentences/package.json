@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Sentences",
+    "category": "text",
     "description": "Multi-language sentence boundary detection. String or offset-packed output for hot paths.",
     "tableDescription": "Sentence splitter, multi-language + offset hot-path",
     "replaces": "sbd",

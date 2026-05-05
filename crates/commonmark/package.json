@@ -59,6 +59,7 @@
   },
   "amigo": {
     "title": "CommonMark",
+    "category": "text",
     "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
     "tableDescription": "CommonMark + GFM renderer via `pulldown-cmark`",
     "replaces": "marked/markdown-it",

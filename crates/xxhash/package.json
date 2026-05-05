@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "XXHash",
+    "category": "crypto",
     "description": "XXH32, XXH64, and XXH3 with batch + streaming support.",
     "tableDescription": "XXH32/64/XXH3 hashing with batch + streaming API",
     "replaces": "xxhash-wasm/xxhashjs",

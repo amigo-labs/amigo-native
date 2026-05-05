@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Argon2",
+    "category": "crypto",
     "description": "Argon2id password hashing with sync + async API.",
     "tableDescription": "Argon2id password hashing (sync + async)",
     "replaces": "argon2/hash-wasm",

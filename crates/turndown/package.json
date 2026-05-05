@@ -59,6 +59,7 @@
   },
   "amigo": {
     "title": "Turndown",
+    "category": "text",
     "description": "HTML → Markdown via html5ever. Ships CommonMark + GFM tables/strikethrough.",
     "tableDescription": "HTML → Markdown, CommonMark + GFM",
     "replaces": "turndown",

@@ -55,6 +55,7 @@
   },
   "amigo": {
     "title": "PDF Parse",
+    "category": "document",
     "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
     "tableDescription": "PDF text + metadata extraction",
     "replaces": "pdf-parse",
