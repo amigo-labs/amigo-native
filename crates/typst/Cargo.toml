@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 typst = "0.13"
-typst-pdf = "0.13"
+typst-pdf = "0.14"
 typst-assets = { version = "0.13", features = ["fonts"] }
 comemo = "0.5"
 ecow = "0.2"
