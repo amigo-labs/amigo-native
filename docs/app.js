@@ -434,6 +434,8 @@ function buildSlabHTML(p) {
     </div>
     <p class="slab-desc" id="slabDesc"></p>
 
+    <div class="slab-trend" id="slabTrend"></div>
+
     <div class="slab-install">
       <span class="prefix" aria-hidden="true">$</span>
       <span class="cmd" id="slabCmd"></span><span class="caret" aria-hidden="true"></span>
@@ -495,7 +497,98 @@ function animateSlab(p) {
 
   renderBench(p);
   renderSizes(p);
+  renderTrend(p);
   wireReadme(p);
+}
+
+// Per-package perf history lives in docs/history/<name>.jsonl, one entry
+// per commit. Each entry has a list of suites, where ratio = amigo/competitor
+// (null when there's no comparable competitor). We aggregate per-commit by
+// geomean of the available ratios and plot the sequence as an inline sparkline.
+const _historyCache = {};
+async function loadHistory(name) {
+  if (_historyCache[name] !== undefined) return _historyCache[name];
+  try {
+    const res = await fetch(`history/${name}.jsonl`);
+    if (!res.ok) throw new Error(res.statusText);
+    const txt = await res.text();
+    const lines = txt.split('\n').map(l => l.trim()).filter(Boolean);
+    const entries = [];
+    for (const line of lines) {
+      try {
+        const e = JSON.parse(line);
+        const ratios = (e.suites || [])
+          .map(s => typeof s.ratio === 'number' ? s.ratio : null)
+          .filter(r => r !== null && r > 0 && isFinite(r));
+        if (!ratios.length) continue;
+        const logSum = ratios.reduce((a, r) => a + Math.log(r), 0);
+        const geomean = Math.exp(logSum / ratios.length);
+        entries.push({ commit: e.commit, date: e.date, geomean });
+      } catch { /* skip malformed line */ }
+    }
+    _historyCache[name] = entries;
+    return entries;
+  } catch {
+    _historyCache[name] = [];
+    return [];
+  }
+}
+
+function buildSparkline(values, width = 96, height = 24) {
+  if (!values.length) return '';
+  const min = Math.min(...values, 1);
+  const max = Math.max(...values, 1);
+  const span = max - min || 1;
+  const padY = 3;
+  const usableH = height - padY * 2;
+  const stepX = values.length > 1 ? width / (values.length - 1) : 0;
+  const points = values.map((v, i) => {
+    const x = stepX * i;
+    const y = padY + (1 - (v - min) / span) * usableH;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const last = values[values.length - 1];
+  const lastX = stepX * (values.length - 1);
+  const lastY = padY + (1 - (last - min) / span) * usableH;
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="trend sparkline">
+    <polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2" fill="var(--accent)"/>
+  </svg>`;
+}
+
+async function renderTrend(pkg) {
+  const host = $('#slabTrend');
+  if (!host) return;
+  host.classList.add('empty');
+  host.innerHTML = '<span class="label">trend</span><span>loading…</span>';
+
+  const entries = await loadHistory(pkg.name);
+  // The slab might have re-rendered while we were fetching; bail if so.
+  if ($('#slabTrend') !== host) return;
+
+  if (!entries.length) {
+    host.innerHTML = '<span class="label">trend</span><span>no history yet</span>';
+    return;
+  }
+
+  host.classList.remove('empty');
+  const values = entries.map(e => e.geomean);
+  const first = values[0];
+  const last = values[values.length - 1];
+  const pct = first > 0 ? ((last - first) / first) * 100 : 0;
+  let arrow = '→', cls = 'flat';
+  if (pct > 5) { arrow = '↑'; cls = 'up'; }
+  else if (pct < -5) { arrow = '↓'; cls = 'down'; }
+  const sign = pct >= 0 ? '+' : '';
+  const sparkline = buildSparkline(values);
+  const latest = `<span class="latest">${last.toFixed(2)}×</span>`;
+
+  host.innerHTML = `
+    <span class="label">trend · ${entries.length} runs</span>
+    ${sparkline}
+    <span>geomean ${latest}</span>
+    <span class="delta ${cls}" aria-label="trend ${cls}">${arrow} ${sign}${pct.toFixed(1)}%</span>
+  `;
 }
 
 // Try the modern clipboard API; fall back to the legacy execCommand path
