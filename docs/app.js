@@ -117,6 +117,15 @@ function countUp(el, from, to, duration = 400, formatter = v => v) {
   }
   requestAnimationFrame(tick);
 }
+function formatSpeedupShort(n) {
+  // Compact form for picker rows: 1.4×, 11×, 31×. Drop the decimal once
+  // the value is comfortably above 10× — at that scale the .1 rounding is
+  // visual noise.
+  if (!isFinite(n) || n <= 0) return '';
+  if (n >= 10) return Math.round(n) + '×';
+  return n.toFixed(1).replace(/\.0$/, '') + '×';
+}
+
 function formatOps(hz) {
   if (hz >= 1e6) return (hz / 1e6).toFixed(2) + 'M';
   if (hz >= 1e3) return (hz / 1e3).toFixed(1) + 'K';
@@ -241,12 +250,19 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 // --- picker ---
 function renderPicker() {
   const picker = $('#picker');
-  picker.innerHTML = state.sortedList.map((p, i) => `
-    <li id="pkg-opt-${p.name}" role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false" tabindex="-1">
-      <span>${p.name}</span>
-      <span class="arrow" aria-hidden="true">&larr;</span>
-    </li>
-  `).join('');
+  picker.innerHTML = state.sortedList.map((p, i) => {
+    const speed = parseMaxSpeedup(p.speedup);
+    const speedTag = speed > 0
+      ? `<span class="row-speed" aria-hidden="true">${formatSpeedupShort(speed)}</span>`
+      : '';
+    return `
+      <li id="pkg-opt-${p.name}" role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false" tabindex="-1">
+        <span class="row-name">${p.name}</span>
+        ${speedTag}
+        <span class="arrow" aria-hidden="true">←</span>
+      </li>
+    `;
+  }).join('');
 
   // mobile still needs horizontal center-snap padding; desktop is a flat top-aligned list
   const updatePadding = () => {
