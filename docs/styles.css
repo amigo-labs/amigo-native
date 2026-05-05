@@ -152,6 +152,10 @@ a:hover { color: var(--text-primary); }
   animation: marquee 30s linear infinite;
   white-space: nowrap;
 }
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
 .marquee-item {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem; color: var(--text-tertiary);
@@ -292,6 +296,13 @@ a:hover { color: var(--text-primary); }
   margin-bottom: 28px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.9rem; flex-wrap: wrap;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.slab-install:hover { border-color: var(--border-hover); }
+.slab-install.flash {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--accent-dim);
 }
 .slab-install .prefix { color: var(--text-tertiary); }
 .slab-install .cmd { color: var(--text-primary); flex: 1; min-width: 0; }
@@ -311,6 +322,20 @@ a:hover { color: var(--text-primary); }
 }
 .slab-install .copy-btn:hover { background: var(--accent-hot); }
 .slab-install .copy-btn:active { transform: scale(0.95); }
+.slab-install .copy-btn.is-ok {
+  background: var(--ok);
+  animation: copy-pulse 0.4s ease;
+}
+.slab-install .copy-btn.is-err {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+@keyframes copy-pulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
 
 .slab-grid {
   display: grid; grid-template-columns: 1fr 1fr;

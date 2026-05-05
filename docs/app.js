@@ -131,6 +131,9 @@ async function boot() {
   // initial active from hash (name-based so it survives sort changes)
   const hash = (location.hash || '').replace('#', '');
   const hashIdx = state.sortedList.findIndex(p => p.name === hash);
+  if (hash && hashIdx < 0) {
+    console.warn(`[amigo-native] no package matches #${hash} — falling back to first.`);
+  }
   state.activeIdx = hashIdx >= 0 ? hashIdx : 0;
   state.activeName = state.sortedList[state.activeIdx].name;
 
@@ -365,6 +368,9 @@ function updateMeta() {
 }
 
 // --- slab ---
+// Holding ↓/↑ rapidly cascades the 120 ms fade per render and feels janky.
+// Coalesce: only the latest pending render lands; intermediates are dropped.
+let renderSlabPending = null;
 function renderSlab() {
   const p = state.sortedList[state.activeIdx];
   if (!p) return;
@@ -372,15 +378,22 @@ function renderSlab() {
   clearTimers();
 
   // Announce the new package to assistive tech via the persistent live region.
-  // Updating its text content (vs. re-rendering it) is what makes SRs read it.
   const announce = $('#slabAnnounce');
   if (announce) announce.textContent = `${p.name} — ${p.speedup}`;
 
+  if (renderSlabPending !== null) {
+    clearTimeout(renderSlabPending);
+    renderSlabPending = null;
+  }
+
   slab.classList.add('fading');
-  setTimeout(() => {
-    slab.innerHTML = buildSlabHTML(p);
+  renderSlabPending = setTimeout(() => {
+    renderSlabPending = null;
+    const cur = state.sortedList[state.activeIdx];
+    if (!cur) return;
+    slab.innerHTML = buildSlabHTML(cur);
     slab.classList.remove('fading');
-    animateSlab(p);
+    animateSlab(cur);
   }, reducedMotion() ? 0 : 120);
 }
 
@@ -434,21 +447,62 @@ function buildSlabHTML(p) {
 function animateSlab(p) {
   const cmdText = 'npm install @amigo-labs/' + p.name;
 
-  typeInto($('#slabSpeedup'), p.speedup, 18);
-  typeInto($('#slabDesc'), p.description, 8);
+  // Speedup and description are functional content — show instantly so the
+  // user can read them. The slab fade-in already provides motion. Only the
+  // install command keeps the typewriter (it's the on-brand shell prompt).
+  $('#slabSpeedup').textContent = p.speedup;
+  $('#slabDesc').textContent = p.description;
   typeInto($('#slabCmd'), cmdText, 20);
 
-  $('#slabCopy').addEventListener('click', () => {
-    navigator.clipboard.writeText(cmdText);
-    const btn = $('#slabCopy');
-    const prev = btn.textContent;
-    btn.textContent = 'Copied';
-    setTimeout(() => { btn.textContent = prev; }, 1500);
+  const installRow = document.querySelector('.slab-install');
+  const copyBtn = $('#slabCopy');
+  const triggerCopy = () => copyToClipboard(cmdText, copyBtn, installRow);
+  copyBtn.addEventListener('click', triggerCopy);
+  // Tapping anywhere on the install row also copies — so users don't have
+  // to aim at the small button on touch devices.
+  installRow.addEventListener('click', e => {
+    if (e.target.closest('.copy-btn')) return; // button click already handled
+    triggerCopy();
   });
 
   renderBench(p);
   renderSizes(p);
   wireReadme(p);
+}
+
+// Try the modern clipboard API; fall back to the legacy execCommand path
+// for non-secure contexts (file://, embedded). On full failure surface a
+// visible error state so the user knows to copy manually.
+async function copyToClipboard(text, btn, installRow) {
+  let ok = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+  } catch {
+    ok = false;
+  }
+  if (!btn) return;
+  const prev = btn.textContent;
+  btn.textContent = ok ? '✓ Copied' : 'Copy failed';
+  btn.classList.add(ok ? 'is-ok' : 'is-err');
+  if (installRow && ok) installRow.classList.add('flash');
+  setTimeout(() => {
+    btn.textContent = prev;
+    btn.classList.remove('is-ok', 'is-err');
+    if (installRow) installRow.classList.remove('flash');
+  }, 1500);
 }
 
 function wireReadme(pkg) {
@@ -626,7 +680,9 @@ function wireKeyboard() {
   });
 }
 
-// --- wheel: let mouse-wheel anywhere on the page drive the picker ---
+// Wheel-driven picker navigation, scoped to the picker column. Wheels
+// elsewhere on the page are left alone so users from "normal" sites don't
+// feel hijacked. The picker's own native scroll-snap still works.
 function wireWheel() {
   let accum = 0;
   let lastTime = 0;
@@ -634,22 +690,18 @@ function wireWheel() {
   const THRESHOLD = 40;
   const COOLDOWN_MS = 220;
 
-  window.addEventListener('wheel', e => {
+  const pickerWrap = document.querySelector('.picker-wrap');
+  if (!pickerWrap) return;
+
+  pickerWrap.addEventListener('wheel', e => {
     if (window.innerWidth <= 900) return; // mobile uses its own swipes
     if (!state.sortedList.length) return;
 
     const picker = document.getElementById('picker');
-    const slab = document.getElementById('slab');
 
-    // allow native scroll inside the slab while it still has room
-    if (slab && slab.contains(e.target)) {
-      const canScrollDown = slab.scrollTop + slab.clientHeight < slab.scrollHeight - 1;
-      const canScrollUp = slab.scrollTop > 0;
-      if (e.deltaY > 0 && canScrollDown) return;
-      if (e.deltaY < 0 && canScrollUp) return;
-    }
-
-    // let the picker handle its own wheel natively (scroll-snap)
+    // The picker's own scroll-snap handles wheels that land directly on it.
+    // Wheels on the surrounding column (label, sort chips) drive the picker
+    // programmatically.
     if (picker && picker.contains(e.target)) return;
 
     e.preventDefault();
