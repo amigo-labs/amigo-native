@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-getrandom = "0.2"
+getrandom = "0.4"
 
 [build-dependencies]
 napi-build = "2"
