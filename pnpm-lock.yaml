@@ -57,8 +57,8 @@ importers:
         specifier: ^0.7.2
         version: 0.7.2
       isomorphic-dompurify:
-        specifier: ^3.11.0
-        version: 3.11.0(@noble/hashes@1.8.0)
+        specifier: ^3.12.0
+        version: 3.12.0(@noble/hashes@1.8.0)
       js-tiktoken:
         specifier: ^1.0.21
         version: 1.0.21
@@ -69,8 +69,8 @@ importers:
         specifier: ^4.0.0
         version: 4.1.0
       nanoid:
-        specifier: ^5.0.9
-        version: 5.1.9
+        specifier: ^5.1.11
+        version: 5.1.11
       oxlint:
         specifier: ^1.62.0
         version: 1.62.0
@@ -97,7 +97,7 @@ importers:
         version: 1.0.22
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
       xxhash-wasm:
         specifier: ^1.1.0
         version: 1.1.0
@@ -115,7 +115,7 @@ importers:
         version: 3.6.2(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/node@25.6.0)(node-addon-api@8.7.0)
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/argon2:
     devDependencies:
@@ -133,7 +133,7 @@ importers:
         version: 4.12.0
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/bcrypt:
     devDependencies:
@@ -151,7 +151,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/bm25:
     devDependencies:
@@ -166,7 +166,7 @@ importers:
         version: 1.4.1
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
       wink-bm25-text-search:
         specifier: ^3.1.0
         version: 3.1.2
@@ -193,7 +193,7 @@ importers:
         version: 15.0.12
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/csv:
     devDependencies:
@@ -211,7 +211,7 @@ importers:
         version: 5.5.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/deepmerge:
     devDependencies:
@@ -226,7 +226,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/diff:
     devDependencies:
@@ -241,7 +241,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/encoding:
     devDependencies:
@@ -256,7 +256,7 @@ importers:
         version: 0.7.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/file-type:
     devDependencies:
@@ -271,7 +271,7 @@ importers:
         version: 19.6.0
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/force-layout:
     devDependencies:
@@ -286,7 +286,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/graph-layout:
     devDependencies:
@@ -301,7 +301,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/inflate:
     devDependencies:
@@ -316,7 +316,7 @@ importers:
         version: 2.1.0
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/jose:
     devDependencies:
@@ -331,7 +331,7 @@ importers:
         version: 5.10.0
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/jwt:
     devDependencies:
@@ -349,7 +349,7 @@ importers:
         version: 9.0.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/language-detect:
     devDependencies:
@@ -364,7 +364,7 @@ importers:
         version: 6.2.0
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/minisearch:
     devDependencies:
@@ -379,7 +379,7 @@ importers:
         version: 7.2.0
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/nanoid:
     devDependencies:
@@ -387,11 +387,11 @@ importers:
         specifier: ^3.23.0
         version: 3.23.2
       nanoid:
-        specifier: ^5.0.9
-        version: 5.1.9
+        specifier: ^5.1.11
+        version: 5.1.11
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/pdf:
     devDependencies:
@@ -406,7 +406,7 @@ importers:
         version: 0.18.0
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/pdf-parse:
     devDependencies:
@@ -421,7 +421,7 @@ importers:
         version: 2.4.5
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/sanitize-html:
     dependencies:
@@ -436,14 +436,14 @@ importers:
         specifier: ^3.23.0
         version: 3.23.2
       isomorphic-dompurify:
-        specifier: ^3.11.0
-        version: 3.11.0(@noble/hashes@1.8.0)
+        specifier: ^3.12.0
+        version: 3.12.0(@noble/hashes@1.8.0)
       sanitize-html:
         specifier: ^2.17.3
         version: 2.17.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/sentences:
     devDependencies:
@@ -458,7 +458,7 @@ importers:
         version: 1.0.19
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/slugify:
     devDependencies:
@@ -473,7 +473,7 @@ importers:
         version: 1.6.9
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/stemmer:
     devDependencies:
@@ -488,7 +488,7 @@ importers:
         version: 8.1.1
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/svgo:
     devDependencies:
@@ -503,7 +503,7 @@ importers:
         version: 3.3.3
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/text-splitters:
     devDependencies:
@@ -518,7 +518,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/tiktoken:
     devDependencies:
@@ -530,7 +530,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/turndown:
     devDependencies:
@@ -541,8 +541,8 @@ importers:
         specifier: ^3.23.0
         version: 3.23.2
       jsdom:
-        specifier: ^29.1.0
-        version: 29.1.0(@noble/hashes@1.8.0)
+        specifier: ^29.1.1
+        version: 29.1.1(@noble/hashes@1.8.0)
       turndown:
         specifier: ^7.2.0
         version: 7.2.4
@@ -551,7 +551,7 @@ importers:
         version: 1.0.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/typst:
     devDependencies:
@@ -563,7 +563,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
 
   crates/xlsx:
     devDependencies:
@@ -578,7 +578,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
       xlsx:
         specifier: ^0.18.5
         version: 0.18.5
@@ -593,7 +593,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
       xxhash-wasm:
         specifier: ^1.1.0
         version: 1.1.0
@@ -620,7 +620,7 @@ importers:
         version: 3.23.2
       vitest:
         specifier: ^3.0.0
-        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0))
+        version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0))
       yauzl:
         specifier: ^3.2.0
         version: 3.3.0
@@ -2224,8 +2224,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.1:
-    resolution: {integrity: sha512-JahakDAIg1gyOm7dlgWSDjV4n7Ip2PKR55NIT6jrMfIgLFgWo81vdr1/QGqWtFNRqXP9UV71oVePtjqS2ebnPw==}
+  dompurify@3.4.2:
+    resolution: {integrity: sha512-lHeS9SA/IKeIFFyYciHBr2n0v1VMPlSj843HdLOwjb2OxNwdq9Xykxqhk+FE42MzAdHvInbAolSE4mhahPpjXA==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -2426,8 +2426,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-dompurify@3.11.0:
-    resolution: {integrity: sha512-il0sNhLnfawc6vKoMqnZX1JXzEzw0pP3DZWg7mM7VJNJ8cq6DCxeAjEcfjTazyBF8dkUn+rBsBPS5NQs4ZaI3g==}
+  isomorphic-dompurify@3.12.0:
+    resolution: {integrity: sha512-8n+j+6ypTHvriJwFOQ2qusQ6bzGjZVcR3jbe1pBpLcGI1dn4WIl0ctLBngqE5QttquQBAlKXwJeTMw+X7x7qKw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
 
   jose@5.10.0:
@@ -2446,8 +2446,8 @@ packages:
     resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
     hasBin: true
 
-  jsdom@29.1.0:
-    resolution: {integrity: sha512-YNUc7fB9QuvSSQWfrH0xF+TyABkxUwx8sswgIDaCrw4Hol8BghdZDkITtZheRJeMtzWlnTfsM3bBBusRvpO1wg==}
+  jsdom@29.1.1:
+    resolution: {integrity: sha512-ECi4Fi2f7BdJtUKTflYRTiaMxIB0O6zfR1fX0GXpUrf6flp8QIYn1UT20YQqdSOfk2dfkCwS8LAFoJDEppNK5Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
     peerDependencies:
       canvas: ^3.0.0
@@ -2570,8 +2570,8 @@ packages:
   loupe@3.2.1:
     resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
 
-  lru-cache@11.3.5:
-    resolution: {integrity: sha512-NxVFwLAnrd9i7KUBxC4DrUhmgjzOs+1Qm50D3oF1/oL+r1NpZ4gA7xvG0/zJ8evR7zIKn4vLf7qTNduWFtCrRw==}
+  lru-cache@11.3.6:
+    resolution: {integrity: sha512-Gf/KoL3C/MlI7Bt0PGI9I+TeTC/I6r/csU58N4BSNc4lppLBeKsOdFYkK+dX0ABDUMJNfCHTyPpzwwO21Awd3A==}
     engines: {node: 20 || >=22}
 
   magic-string@0.30.21:
@@ -2679,13 +2679,13 @@ packages:
   n-gram@2.0.2:
     resolution: {integrity: sha512-S24aGsn+HLBxUGVAUFOwGpKs7LBcG4RudKU//eWzt/mQ97/NMKQxDWHyHx63UNWk/OOdihgmzoETn1tf5nQDzQ==}
 
-  nanoid@3.3.11:
-    resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
+  nanoid@3.3.12:
+    resolution: {integrity: sha512-ZB9RH/39qpq5Vu6Y+NmUaFhQR6pp+M2Xt76XBnEwDaGcVAqhlvxrl3B2bKS5D3NH3QR76v3aSrKaF/Kiy7lEtQ==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@5.1.9:
-    resolution: {integrity: sha512-ZUvP7KeBLe3OZ1ypw6dI/TzYJuvHP77IM4Ry73waSQTLn8/g8rpdjfyVAh7t1/+FjBtG4lCP42MEbDxOsRpBMw==}
+  nanoid@5.1.11:
+    resolution: {integrity: sha512-v+KEsUv2ps74PaSKv0gHTxTCgMXOIfBEbaqa6w6ISIGC7ZsvHN4N9oJ8d4cmf0n5oTzQz2SLmThbQWhjd/8eKg==}
     engines: {node: ^18 || >=20}
     hasBin: true
 
@@ -3063,11 +3063,11 @@ packages:
     resolution: {integrity: sha512-azl+t0z7pw/z958Gy9svOTuzqIk6xq+NSheJzn5MMWtWTFywIacg2wUlzKFGtt3cthx0r2SxMK0yzJOR0IES7Q==}
     engines: {node: '>=14.0.0'}
 
-  tldts-core@7.0.29:
-    resolution: {integrity: sha512-W99NuU7b1DcG3uJ3v9k9VztCH3WialNbBkBft5wCs8V8mexu0XQqaZEYb9l9RNNzK8+3EJ9PKWB0/RUtTQ/o+Q==}
+  tldts-core@7.0.30:
+    resolution: {integrity: sha512-uiHN8PIB1VmWyS98eZYja4xzlYqeFZVjb4OuYlJQnZAuJhMw4PbKQOKgHKhBdJR3FE/t5mUQ1Kd80++B+qhD1Q==}
 
-  tldts@7.0.29:
-    resolution: {integrity: sha512-JIXCerhudr/N6OWLwLF1HVsTTUo7ry6qHa5eWZEkiMuxsIiAACL55tGLfqfHfoH7QaMQUW8fngD7u7TxWexYQg==}
+  tldts@7.0.30:
+    resolution: {integrity: sha512-ELrFxuqsDdHUwoh0XxDbxuLD3Wnz49Z57IFvTtvWy1hJdcMZjXLIuonjilCiWHlT2GbE4Wlv1wKVTzDFnXH1aw==}
     hasBin: true
 
   tmp@0.2.5:
@@ -4620,7 +4620,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.1:
+  dompurify@3.4.2:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -4843,10 +4843,10 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  isomorphic-dompurify@3.11.0(@noble/hashes@1.8.0):
+  isomorphic-dompurify@3.12.0(@noble/hashes@1.8.0):
     dependencies:
-      dompurify: 3.4.1
-      jsdom: 29.1.0(@noble/hashes@1.8.0)
+      dompurify: 3.4.2
+      jsdom: 29.1.1(@noble/hashes@1.8.0)
     transitivePeerDependencies:
       - '@noble/hashes'
       - canvas
@@ -4865,7 +4865,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jsdom@29.1.0(@noble/hashes@1.8.0):
+  jsdom@29.1.1(@noble/hashes@1.8.0):
     dependencies:
       '@asamuzakjp/css-color': 5.1.11
       '@asamuzakjp/dom-selector': 7.1.1
@@ -4877,7 +4877,7 @@ snapshots:
       decimal.js: 10.6.0
       html-encoding-sniffer: 6.0.0(@noble/hashes@1.8.0)
       is-potential-custom-element-name: 1.0.1
-      lru-cache: 11.3.5
+      lru-cache: 11.3.6
       parse5: 8.0.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
@@ -4994,7 +4994,7 @@ snapshots:
 
   loupe@3.2.1: {}
 
-  lru-cache@11.3.5: {}
+  lru-cache@11.3.6: {}
 
   magic-string@0.30.21:
     dependencies:
@@ -5079,9 +5079,9 @@ snapshots:
 
   n-gram@2.0.2: {}
 
-  nanoid@3.3.11: {}
+  nanoid@3.3.12: {}
 
-  nanoid@5.1.9: {}
+  nanoid@5.1.11: {}
 
   natural@8.1.1:
     dependencies:
@@ -5256,7 +5256,7 @@ snapshots:
 
   postcss@8.5.12:
     dependencies:
-      nanoid: 3.3.11
+      nanoid: 3.3.12
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -5483,11 +5483,11 @@ snapshots:
 
   tinyspy@4.0.4: {}
 
-  tldts-core@7.0.29: {}
+  tldts-core@7.0.30: {}
 
-  tldts@7.0.29:
+  tldts@7.0.30:
     dependencies:
-      tldts-core: 7.0.29
+      tldts-core: 7.0.30
 
   tmp@0.2.5: {}
 
@@ -5499,7 +5499,7 @@ snapshots:
 
   tough-cookie@6.0.1:
     dependencies:
-      tldts: 7.0.29
+      tldts: 7.0.30
 
   tr46@5.1.1:
     dependencies:
@@ -5602,7 +5602,7 @@ snapshots:
       '@types/node': 25.6.0
       fsevents: 2.3.3
 
-  vitest@3.2.4(@types/node@25.6.0)(jsdom@29.1.0(@noble/hashes@1.8.0)):
+  vitest@3.2.4(@types/node@25.6.0)(jsdom@29.1.1(@noble/hashes@1.8.0)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
@@ -5629,7 +5629,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 25.6.0
-      jsdom: 29.1.0(@noble/hashes@1.8.0)
+      jsdom: 29.1.1(@noble/hashes@1.8.0)
     transitivePeerDependencies:
       - jiti
       - less
