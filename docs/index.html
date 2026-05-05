@@ -72,14 +72,20 @@
   <main class="dashboard">
     <div class="picker-wrap">
       <div class="picker-head">
-        <div class="picker-label" id="pickerLabel">Packages</div>
+        <div class="picker-label" id="pickerLabel">Packages <span class="picker-count" id="pickerCount" aria-hidden="true"></span></div>
         <div class="sort-chips" role="group" aria-label="Sort packages">
           <button class="chip" type="button" data-sort="speedup" aria-pressed="true">Speedup</button>
           <button class="chip" type="button" data-sort="alpha" aria-pressed="false">A&ndash;Z</button>
           <button class="chip" type="button" data-sort="size" aria-pressed="false">Size</button>
         </div>
       </div>
+      <div class="picker-search">
+        <input type="search" id="pkgFilter" placeholder="filter packages…" autocomplete="off" spellcheck="false" aria-label="Filter packages by name or description">
+        <span class="picker-search-hint" aria-hidden="true"><kbd>/</kbd></span>
+      </div>
+      <div class="category-chips" role="group" aria-label="Filter by category" id="categoryChips"></div>
       <ul class="picker" id="picker" role="listbox" aria-labelledby="pickerLabel" tabindex="0" aria-activedescendant=""></ul>
+      <div class="picker-empty empty-state" id="pickerEmpty" hidden>No packages match.</div>
     </div>
     <section class="slab" id="slab"></section>
     <div id="slabAnnounce" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>

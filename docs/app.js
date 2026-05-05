@@ -6,7 +6,9 @@ const state = {
   activeIdx: 0,
   activeName: null,
   sortMode: 'speedup', // 'speedup' | 'alpha' | 'size'
-  sortedList: [],
+  filter: '',           // user's text query (lowercased)
+  category: 'all',      // 'all' | category id
+  sortedList: [],       // packages after sort + filter
   typingTimers: [],
 };
 
@@ -44,7 +46,22 @@ function sizeAdvantage(pkgName, sizesData) {
 }
 
 function computeSortedList() {
-  const list = [...state.pkgs.packages];
+  let list = [...state.pkgs.packages];
+
+  // Filter by category first (mostly disjoint, fast).
+  if (state.category && state.category !== 'all') {
+    list = list.filter(p => p.category === state.category);
+  }
+  // Then by free-text query against name + description.
+  if (state.filter) {
+    const q = state.filter.toLowerCase();
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.description || '').toLowerCase().includes(q) ||
+      (p.title || '').toLowerCase().includes(q)
+    );
+  }
+
   const mode = state.sortMode;
   if (mode === 'alpha') {
     list.sort((a, b) => a.name.localeCompare(b.name));
@@ -55,6 +72,14 @@ function computeSortedList() {
     list.sort((a, b) => sizeAdvantage(b.name, sizes) - sizeAdvantage(a.name, sizes));
   }
   state.sortedList = list;
+}
+
+function uniqueCategories() {
+  const seen = new Set();
+  for (const p of state.pkgs.packages) {
+    if (p.category) seen.add(p.category);
+  }
+  return [...seen].sort();
 }
 
 // --- helpers ---
@@ -122,8 +147,11 @@ async function boot() {
 
   renderBrand();
   renderMarquee();
+  renderCategoryChips();
   renderPicker();
+  updatePickerCount();
   wireSortChips();
+  wireFilter();
   cycleHeroTagline();
   wireKeyboard();
   wireWheel();
@@ -630,6 +658,75 @@ function renderSizes(pkg) {
 }
 
 // --- keyboard ---
+function renderCategoryChips() {
+  const host = $('#categoryChips');
+  if (!host) return;
+  const cats = uniqueCategories();
+  const items = [{ id: 'all', label: 'all' }, ...cats.map(c => ({ id: c, label: c }))];
+  host.innerHTML = items.map(c => `
+    <button class="chip" type="button" data-category="${c.id}"
+      aria-pressed="${state.category === c.id ? 'true' : 'false'}">${c.label}</button>
+  `).join('');
+  host.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      state.category = chip.dataset.category;
+      host.querySelectorAll('.chip').forEach(c => {
+        c.setAttribute('aria-pressed', c.dataset.category === state.category ? 'true' : 'false');
+      });
+      onFilterOrCategoryChange();
+    });
+  });
+}
+
+function updatePickerCount() {
+  const el = $('#pickerCount');
+  if (!el) return;
+  const total = state.pkgs.packages.length;
+  const shown = state.sortedList.length;
+  el.textContent = shown === total ? `(${total})` : `(${shown}/${total})`;
+}
+
+// Re-run filter+sort, refresh the picker, and either jump to the active item
+// (if still visible) or land on the first match. Empty state shows when the
+// query has zero hits.
+function onFilterOrCategoryChange() {
+  const keepName = state.activeName;
+  computeSortedList();
+  renderPicker();
+  updatePickerCount();
+  const empty = $('#pickerEmpty');
+  if (empty) empty.hidden = state.sortedList.length > 0;
+  if (!state.sortedList.length) return;
+  const newIdx = state.sortedList.findIndex(p => p.name === keepName);
+  state.activeIdx = newIdx >= 0 ? newIdx : 0;
+  state.activeName = state.sortedList[state.activeIdx].name;
+  requestAnimationFrame(() => snapTo(state.activeIdx, false));
+}
+
+function wireFilter() {
+  const input = $('#pkgFilter');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    state.filter = input.value.trim();
+    onFilterOrCategoryChange();
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (input.value) {
+        input.value = '';
+        state.filter = '';
+        onFilterOrCategoryChange();
+      } else {
+        input.blur();
+      }
+    } else if (e.key === 'Enter') {
+      // Jump to first match and put focus back on the picker for arrow nav.
+      const picker = $('#picker');
+      if (state.sortedList.length && picker) picker.focus();
+    }
+  });
+}
+
 function wireSortChips() {
   document.querySelectorAll('.sort-chips .chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -642,6 +739,8 @@ function wireSortChips() {
       const keepName = state.activeName;
       computeSortedList();
       renderPicker();
+      updatePickerCount();
+      if (!state.sortedList.length) return;
       const newIdx = Math.max(0, state.sortedList.findIndex(p => p.name === keepName));
       requestAnimationFrame(() => snapTo(newIdx, true));
     });
@@ -656,8 +755,20 @@ function wireKeyboard() {
   };
 
   document.addEventListener('keydown', e => {
-    if (!state.sortedList.length) return;
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    // "/" focuses the filter input from anywhere outside an editable. We do
+    // this before the interactive-target / empty-list checks so the shortcut
+    // works even when the picker is empty.
+    if (e.key === '/' && !isInteractiveTarget(e.target)) {
+      const input = document.getElementById('pkgFilter');
+      if (input) {
+        input.focus();
+        input.select();
+        e.preventDefault();
+      }
+      return;
+    }
+    if (!state.sortedList.length) return;
     if (isInteractiveTarget(e.target)) return;
 
     const n = state.sortedList.length;

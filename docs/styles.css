@@ -188,6 +188,63 @@ a:hover { color: var(--text-primary); }
   font-size: 0.65rem; color: var(--text-tertiary);
   text-transform: uppercase; letter-spacing: 0.1em;
 }
+.picker-count {
+  color: var(--text-tertiary);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.picker-search {
+  position: relative;
+  margin-bottom: 8px;
+}
+.picker-search input {
+  width: 100%;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  padding: 7px 30px 7px 10px;
+  transition: border-color 0.15s ease;
+}
+.picker-search input::placeholder { color: var(--text-tertiary); }
+.picker-search input:hover { border-color: var(--border-hover); }
+.picker-search input:focus { outline: none; border-color: var(--accent); }
+.picker-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px; height: 12px;
+  background-color: var(--text-tertiary);
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='2' fill='none' stroke-linecap='round'/></svg>") no-repeat center;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='2' fill='none' stroke-linecap='round'/></svg>") no-repeat center;
+  cursor: pointer;
+}
+.picker-search-hint {
+  position: absolute;
+  right: 10px; top: 50%; transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.6rem;
+}
+.picker-search input:not(:placeholder-shown) ~ .picker-search-hint,
+.picker-search input:focus ~ .picker-search-hint { display: none; }
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.category-chips .chip {
+  font-size: 0.6rem;
+  padding: 3px 7px;
+}
+.picker-empty {
+  text-align: center;
+  padding: 20px 0;
+}
 .sort-chips {
   display: flex; gap: 4px;
 }
