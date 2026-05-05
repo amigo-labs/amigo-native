@@ -122,7 +122,6 @@ async function boot() {
 
   renderBrand();
   renderMarquee();
-  renderFooter();
   renderPicker();
   wireSortChips();
   cycleHeroTagline();
@@ -162,8 +161,6 @@ function renderMarquee() {
     .map(i => `<div class="marquee-item">${i.k}<span>${i.v}</span></div>`).join('');
   $('#marqueeTrack').innerHTML = html;
 }
-
-function renderFooter() { /* merged into renderBrand */ }
 
 // --- hero tagline typewriter ---
 function cycleHeroTagline() {
@@ -214,9 +211,9 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 function renderPicker() {
   const picker = $('#picker');
   picker.innerHTML = state.sortedList.map((p, i) => `
-    <li id="pkg-opt-${p.name}" role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false">
+    <li id="pkg-opt-${p.name}" role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false" tabindex="-1">
       <span>${p.name}</span>
-      <span class="arrow">&larr;</span>
+      <span class="arrow" aria-hidden="true">&larr;</span>
     </li>
   `).join('');
 
@@ -328,6 +325,19 @@ function updateActiveClass() {
   picker.setAttribute('aria-activedescendant', activeId);
 }
 
+// When the user is arrow-navigating from inside the listbox, keep the visible
+// focus ring on the active option. We don't steal focus when arrows fire from
+// elsewhere in the page (e.g. global hotkeys with body focused).
+function focusActiveOptionIfInPicker() {
+  const picker = $('#picker');
+  if (!picker) return;
+  const active = document.activeElement;
+  const isInPicker = active === picker || (active instanceof Node && picker.contains(active));
+  if (!isInPicker) return;
+  const li = picker.querySelectorAll('li')[state.activeIdx];
+  if (li) li.focus({ preventScroll: true });
+}
+
 function updateHash() {
   const p = state.sortedList[state.activeIdx];
   if (p) history.replaceState(null, '', '#' + p.name);
@@ -340,6 +350,11 @@ function renderSlab() {
   const slab = $('#slab');
   clearTimers();
 
+  // Announce the new package to assistive tech via the persistent live region.
+  // Updating its text content (vs. re-rendering it) is what makes SRs read it.
+  const announce = $('#slabAnnounce');
+  if (announce) announce.textContent = `${p.name} — ${p.speedup}`;
+
   slab.classList.add('fading');
   setTimeout(() => {
     slab.innerHTML = buildSlabHTML(p);
@@ -349,6 +364,7 @@ function renderSlab() {
 }
 
 function buildSlabHTML(p) {
+  const newTabSr = '<span class="visually-hidden"> (opens in new tab)</span>';
   return `
     <div class="slab-head">
       <div class="slab-name"><span class="scope">@amigo-labs/</span><span id="slabName">${p.name}</span></div>
@@ -357,24 +373,32 @@ function buildSlabHTML(p) {
     <p class="slab-desc" id="slabDesc"></p>
 
     <div class="slab-install">
-      <span class="prefix">$</span>
+      <span class="prefix" aria-hidden="true">$</span>
       <span class="cmd" id="slabCmd"></span><span class="caret" aria-hidden="true"></span>
-      <button class="copy-btn" type="button" id="slabCopy">Copy</button>
+      <button class="copy-btn" type="button" id="slabCopy" aria-label="Copy install command">Copy</button>
     </div>
 
     <div class="slab-links">
-      <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
-      <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
-      <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
+      <a href="${p.npmUrl}" target="_blank" rel="noopener noreferrer">npm <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
+      <a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer">source <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
+      <a href="${p.readmeUrl}" target="_blank" rel="noopener noreferrer">readme <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
     </div>
 
     <div class="slab-grid">
       <div class="slab-col">
         <div class="slab-col-head">Benchmarks (ops/s)</div>
+        <div class="chart-legend" aria-hidden="true">
+          <span><span class="swatch amigo"></span>amigo-labs</span>
+          <span><span class="swatch competitor"></span>competitor</span>
+        </div>
         <div id="slabBench"></div>
       </div>
       <div class="slab-col">
         <div class="slab-col-head">Install footprint</div>
+        <div class="chart-legend" aria-hidden="true">
+          <span><span class="swatch amigo"></span>amigo-labs</span>
+          <span><span class="swatch competitor"></span>competitor</span>
+        </div>
         <div id="slabSizes"></div>
       </div>
     </div>
@@ -413,7 +437,7 @@ function wireReadme(pkg) {
   let loaded = false;
   details.addEventListener('toggle', async () => {
     if (!details.open || loaded) return;
-    host.innerHTML = '<div class="readme-loading">Loading…</div>';
+    host.innerHTML = '<div class="readme-skeleton" aria-label="Loading README"><div class="line"></div><div class="line"></div><div class="line"></div></div>';
     try {
       const res = await fetch(`readmes/${pkg.name}.html`);
       if (!res.ok) throw new Error(res.statusText);
@@ -432,12 +456,12 @@ function wireReadme(pkg) {
 function renderBench(pkg) {
   const host = $('#slabBench');
   if (!state.data?.benchmarks?.suites) {
-    host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No benchmark data available.</div>';
+    host.innerHTML = '<div class="empty-state">No benchmark data available.</div>';
     return;
   }
   const suites = state.data.benchmarks.suites.filter(s => suiteCrate(s) === pkg.name);
   if (!suites.length) {
-    host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No benchmarks for this package yet.</div>';
+    host.innerHTML = '<div class="empty-state">No benchmarks for this package yet.</div>';
     return;
   }
   let html = '';
@@ -459,9 +483,10 @@ function renderBench(pkg) {
         const second = sorted.find(e => !e.name.includes('@amigo'));
         if (second) ratio = `<span class="ratio">${(entry.hz / second.hz).toFixed(1)}&times;</span>`;
       }
+      const tag = isAmigo ? '<span class="amigo-tag" aria-hidden="true">amigo</span>' : '';
       html += `
         <div class="bar-row">
-          <span class="label${labelCls}">${entry.name}</span>
+          <span class="label${labelCls}">${tag}${entry.name}</span>
           <span class="val" data-hz="${entry.hz}">0</span>${ratio}
           <div class="track"><div class="fill ${fillCls}" data-pct="${pct}" style="width:0%"></div></div>
         </div>`;
@@ -485,7 +510,7 @@ function renderSizes(pkg) {
   const host = $('#slabSizes');
   const sizes = state.data?.sizes?.[pkg.name];
   if (!sizes) {
-    host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No size data.</div>';
+    host.innerHTML = '<div class="empty-state">No size data.</div>';
     return;
   }
   const amigoKey = '@amigo-labs/' + pkg.name;
@@ -508,9 +533,10 @@ function renderSizes(pkg) {
         ratio = `<span class="ratio">${(largestCompetitor / size).toFixed(1)}&times;</span>`;
       }
     }
+    const tag = isAmigo ? '<span class="amigo-tag" aria-hidden="true">amigo</span>' : '';
     html += `
       <div class="bar-row">
-        <span class="label${labelCls}">${name}</span>
+        <span class="label${labelCls}">${tag}${name}</span>
         <span class="val" data-bytes="${size}">0</span>${ratio}
         <div class="track"><div class="fill ${fillCls}" data-pct="${pct}" style="width:0%"></div></div>
       </div>`;
@@ -536,7 +562,7 @@ function wireSortChips() {
       if (mode === state.sortMode) return;
       state.sortMode = mode;
       document.querySelectorAll('.sort-chips .chip').forEach(c => {
-        c.setAttribute('aria-selected', c.dataset.sort === mode ? 'true' : 'false');
+        c.setAttribute('aria-pressed', c.dataset.sort === mode ? 'true' : 'false');
       });
       const keepName = state.activeName;
       computeSortedList();
@@ -562,17 +588,19 @@ function wireKeyboard() {
     const n = state.sortedList.length;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j') {
       snapTo((state.activeIdx + 1) % n, true);
+      focusActiveOptionIfInPicker();
       e.preventDefault();
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'k') {
       snapTo((state.activeIdx - 1 + n) % n, true);
+      focusActiveOptionIfInPicker();
       e.preventDefault();
     } else if (e.key === 'c') {
       const btn = document.getElementById('slabCopy');
       if (btn) btn.click();
     } else if (e.key === 'Home') {
-      snapTo(0, true); e.preventDefault();
+      snapTo(0, true); focusActiveOptionIfInPicker(); e.preventDefault();
     } else if (e.key === 'End') {
-      snapTo(n - 1, true); e.preventDefault();
+      snapTo(n - 1, true); focusActiveOptionIfInPicker(); e.preventDefault();
     }
   });
 }

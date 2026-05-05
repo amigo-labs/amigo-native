@@ -6,7 +6,7 @@
   --border-hover: #3B444E;
   --text-primary: #E8E6E2;
   --text-secondary: #8B8D91;
-  --text-tertiary: #4A4D52;
+  --text-tertiary: #6B6E73;
   --accent: #FF6B2B;
   --accent-hot: #FF8A3D;
   --accent-glow: rgba(255, 107, 43, 0.25);
@@ -28,6 +28,46 @@ body {
 ::selection { background: var(--accent); color: var(--bg); }
 a { color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--text-primary); }
+
+/* Visible focus for keyboard users. Pointer focus stays unstyled via :focus-visible. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.picker:focus-visible { outline-offset: 4px; }
+.picker li:focus-visible { outline-offset: -2px; }
+
+/* Visually hidden — keeps content for screen readers, hides for sighted users. */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* Skip link — first tab stop, jumps past decorative chrome. */
+.skip-link {
+  position: absolute;
+  top: -100px; left: 8px;
+  z-index: 1000;
+  padding: 8px 14px;
+  background: var(--accent); color: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem; font-weight: 600;
+  border-radius: 6px;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  transition: top 0.15s ease;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 8px;
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+  color: var(--bg);
+}
 
 .bg-grid {
   position: fixed; inset: 0; z-index: -2; pointer-events: none;
@@ -160,7 +200,7 @@ a:hover { color: var(--text-primary); }
   text-transform: uppercase;
 }
 .chip:hover { color: var(--text-secondary); border-color: var(--border-hover); }
-.chip[aria-selected="true"] {
+.chip[aria-pressed="true"] {
   color: var(--accent);
   border-color: var(--accent);
   background: var(--accent-dim);
@@ -319,6 +359,47 @@ a:hover { color: var(--text-primary); }
 .bar-row .fill.competitor { background: var(--text-tertiary); }
 .bar-row .val { color: var(--text-primary); text-align: right; white-space: nowrap; }
 .bar-row .ratio { color: var(--ok); font-size: 0.7rem; margin-left: 6px; }
+.bar-row .label .amigo-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: 1px;
+  text-transform: uppercase;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.chart-legend .swatch {
+  display: inline-block;
+  width: 10px; height: 4px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.chart-legend .swatch.amigo { background: var(--accent); }
+.chart-legend .swatch.competitor { background: var(--text-tertiary); }
+
+/* Reusable empty-state for missing benches / sizes / filter no-match. */
+.empty-state {
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 8px 0;
+}
 
 .slab-links {
   display: flex; gap: 18px;
@@ -422,6 +503,33 @@ a:hover { color: var(--text-primary); }
 }
 .readme-error { color: var(--accent); }
 
+/* Loading skeleton — three shimmer lines while fetching the README. */
+.readme-skeleton {
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.readme-skeleton .line {
+  height: 10px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(232,230,226,0.04) 0%,
+    rgba(232,230,226,0.10) 50%,
+    rgba(232,230,226,0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.readme-skeleton .line:nth-child(1) { width: 90%; }
+.readme-skeleton .line:nth-child(2) { width: 75%; }
+.readme-skeleton .line:nth-child(3) { width: 60%; }
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .footer {
   display: flex; justify-content: space-between;
   gap: 16px; flex-wrap: wrap;
@@ -495,6 +603,7 @@ a:hover { color: var(--text-primary); }
     padding: 8px 14px; font-size: 0.85rem;
   }
   .picker li.active { font-size: 0.95rem; border-bottom-color: var(--accent); }
+  .picker li .arrow { display: none; }
 
   .slab { padding: 18px; overflow-x: hidden; overflow-y: visible; border-radius: 12px; min-width: 0; max-width: 100%; }
   .slab-head { gap: 10px; flex-wrap: wrap; max-width: 100%; }
@@ -534,4 +643,18 @@ a:hover { color: var(--text-primary); }
     transition-duration: 0.01ms !important;
   }
   .bar-row .fill { transition: none; }
+  .readme-skeleton .line {
+    animation: none;
+    background: rgba(232,230,226,0.07);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --text-tertiary: #B0B3B8;
+    --text-secondary: #D4D6DA;
+    --border: var(--border-hover);
+  }
+  .ambient-aura, .bg-grid { display: none; }
+  .bar-row .fill.competitor { background: var(--text-secondary); }
 }
