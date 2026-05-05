@@ -58,7 +58,7 @@
       "title": "Argon2",
       "category": "crypto",
       "description": "Argon2id password hashing with sync + async API.",
-      "speedup": "1.35× faster",
+      "speedup": "1.36× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/argon2",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/argon2",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/argon2/README.md"
@@ -98,7 +98,7 @@
       "title": "CSV",
       "category": "document",
       "description": "CSV parsing and serialization via BurntSushi's csv crate.",
-      "speedup": "1.49–1.98× faster",
+      "speedup": "1.48–1.96× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/csv",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/csv",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/csv/README.md"
@@ -118,7 +118,7 @@
       "title": "Diff",
       "category": "util",
       "description": "Myers/Patience diff via `similar`. Drop-in-shape with an offset-packed hot-path for char-level and large-input cases.",
-      "speedup": "11–23× faster",
+      "speedup": "11–25× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/diff",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/diff",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/diff/README.md"
@@ -128,7 +128,7 @@
       "title": "Encoding",
       "category": "text",
       "description": "Character encoding conversion powered by Mozilla's encoding_rs.",
-      "speedup": "up to 33× faster / 1.59× slower",
+      "speedup": "up to 38× faster / 1.67× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/encoding",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/encoding",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/encoding/README.md"
@@ -178,7 +178,7 @@
       "title": "JOSE",
       "category": "crypto",
       "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
-      "speedup": "1.53–4.1× faster",
+      "speedup": "1.53–4.3× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jose",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jose",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md"
@@ -188,7 +188,7 @@
       "title": "JWT",
       "category": "crypto",
       "description": "JWT sign, verify, and decode via the jsonwebtoken Rust crate.",
-      "speedup": "up to 7.9× faster / 3.5× slower",
+      "speedup": "up to 7.9× faster / 3.3× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jwt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jwt",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jwt/README.md"
@@ -248,7 +248,7 @@
       "title": "Sanitize HTML",
       "category": "text",
       "description": "HTML sanitization via Mozilla's ammonia engine.",
-      "speedup": "1.7–4.1× faster",
+      "speedup": "1.68–3.7× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sanitize-html",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sanitize-html",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sanitize-html/README.md"
@@ -308,7 +308,7 @@
       "title": "Tiktoken",
       "category": "text",
       "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
-      "speedup": "3.2–3.8× slower",
+      "speedup": "3.2–3.5× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/tiktoken",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/tiktoken",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/tiktoken/README.md"
@@ -348,7 +348,7 @@
       "title": "XXHash",
       "category": "crypto",
       "description": "XXH32, XXH64, and XXH3 with batch + streaming support.",
-      "speedup": "up to 2.7× faster / 2.9× slower",
+      "speedup": "up to 2.7× faster / 2.7× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xxhash",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xxhash",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xxhash/README.md"
@@ -358,7 +358,7 @@
       "title": "ZIP",
       "category": "archive",
       "description": "ZIP archive read/write via the zip Rust crate.",
-      "speedup": "1.85–8.8× faster",
+      "speedup": "1.84–11× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/zip",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/zip",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md"
