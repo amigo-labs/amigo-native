@@ -262,6 +262,7 @@ function renderPicker() {
         updateActiveClass();
         renderSlab();
         updateHash();
+        updateMeta();
       }
     });
   }, { passive: true });
@@ -310,6 +311,7 @@ function snapTo(idx, smooth) {
   updateActiveClass();
   renderSlab();
   updateHash();
+  updateMeta();
 }
 
 function updateActiveClass() {
@@ -341,6 +343,25 @@ function focusActiveOptionIfInPicker() {
 function updateHash() {
   const p = state.sortedList[state.activeIdx];
   if (p) history.replaceState(null, '', '#' + p.name);
+}
+
+// Reflect the active package in the document title + description so that
+// tab labels, browser history entries, and link previews include it.
+function updateMeta() {
+  const p = state.sortedList[state.activeIdx];
+  if (!p) return;
+  document.title = `${p.name} · ${p.speedup} — amigo-native`;
+  const desc = document.querySelector('meta[name="description"]');
+  if (desc) {
+    desc.setAttribute('content',
+      `@amigo-labs/${p.name}: ${p.description} ${p.speedup}.`);
+  }
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) {
+    ogTitle.setAttribute('content', `@amigo-labs/${p.name} — ${p.speedup}`);
+  }
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.setAttribute('content', p.description);
 }
 
 // --- slab ---
