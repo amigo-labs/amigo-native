@@ -159,6 +159,7 @@ async function boot() {
   renderCategoryChips();
   renderPicker();
   updatePickerCount();
+  wirePicker();
   wireSortChips();
   wireFilter();
   cycleHeroTagline();
@@ -263,39 +264,43 @@ function renderPicker() {
       </li>
     `;
   }).join('');
+  updatePickerPadding();
+}
 
-  // mobile still needs horizontal center-snap padding; desktop is a flat top-aligned list
-  const updatePadding = () => {
-    const isMobile = window.innerWidth <= 900;
-    if (isMobile) {
-      picker.style.paddingTop = '';
-      picker.style.paddingBottom = '';
-      picker.style.paddingLeft = '50%';
-      picker.style.paddingRight = '50%';
-    } else {
-      picker.style.paddingLeft = '';
-      picker.style.paddingRight = '';
-      picker.style.paddingTop = '';
-      picker.style.paddingBottom = '';
-    }
-  };
-  updatePadding();
-  window.addEventListener('resize', () => {
-    updatePadding();
-    // mobile's horizontal picker needs to re-center on the active item when the
-    // layout flips across the 900px breakpoint; desktop's flat list is a no-op
-    snapTo(state.activeIdx, false);
+// Mobile needs horizontal center-snap padding; desktop is a flat top-aligned list.
+function updatePickerPadding() {
+  const picker = $('#picker');
+  if (!picker) return;
+  const isMobile = window.innerWidth <= 900;
+  if (isMobile) {
+    picker.style.paddingTop = '';
+    picker.style.paddingBottom = '';
+    picker.style.paddingLeft = '50%';
+    picker.style.paddingRight = '50%';
+  } else {
+    picker.style.paddingLeft = '';
+    picker.style.paddingRight = '';
+    picker.style.paddingTop = '';
+    picker.style.paddingBottom = '';
+  }
+}
+
+// One-time wiring on the persistent #picker element. Event delegation for
+// clicks means renderPicker() can rebuild the list freely without piling up
+// handlers on each render. The window-level resize listener used to live
+// inside renderPicker(), where every sort/filter change attached a duplicate.
+function wirePicker() {
+  const picker = $('#picker');
+  if (!picker) return;
+
+  picker.addEventListener('click', e => {
+    const li = e.target.closest('li[data-idx]');
+    if (!li || !picker.contains(li)) return;
+    const idx = parseInt(li.dataset.idx, 10);
+    if (Number.isFinite(idx)) snapTo(idx, true);
   });
 
-  // click to select
-  picker.querySelectorAll('li').forEach(li => {
-    li.addEventListener('click', () => {
-      const idx = parseInt(li.dataset.idx, 10);
-      snapTo(idx, true);
-    });
-  });
-
-  // scroll-based active detection only on mobile (horizontal wheel-picker)
+  // Scroll-based active detection only on mobile (horizontal wheel-picker).
   let scrollTimer = null;
   picker.addEventListener('scroll', () => {
     if (window.innerWidth > 900) return;
@@ -313,6 +318,14 @@ function renderPicker() {
       }
     });
   }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    updatePickerPadding();
+    // Mobile's horizontal picker needs to re-center on the active item when
+    // the layout flips across the 900 px breakpoint; desktop's flat list is
+    // a no-op.
+    snapTo(state.activeIdx, false);
+  });
 }
 
 function nearestCenterIdx() {
@@ -521,33 +534,39 @@ function animateSlab(p) {
 // per commit. Each entry has a list of suites, where ratio = amigo/competitor
 // (null when there's no comparable competitor). We aggregate per-commit by
 // geomean of the available ratios and plot the sequence as an inline sparkline.
+//
+// Cache the *in-flight Promise*, not just its resolved value, so that a
+// second caller (e.g. user clicks pkg A → switches to pkg B → switches back
+// to A before A's fetch lands) shares the same network request.
 const _historyCache = {};
-async function loadHistory(name) {
-  if (_historyCache[name] !== undefined) return _historyCache[name];
-  try {
-    const res = await fetch(`history/${name}.jsonl`);
-    if (!res.ok) throw new Error(res.statusText);
-    const txt = await res.text();
-    const lines = txt.split('\n').map(l => l.trim()).filter(Boolean);
-    const entries = [];
-    for (const line of lines) {
-      try {
-        const e = JSON.parse(line);
-        const ratios = (e.suites || [])
-          .map(s => typeof s.ratio === 'number' ? s.ratio : null)
-          .filter(r => r !== null && r > 0 && isFinite(r));
-        if (!ratios.length) continue;
-        const logSum = ratios.reduce((a, r) => a + Math.log(r), 0);
-        const geomean = Math.exp(logSum / ratios.length);
-        entries.push({ commit: e.commit, date: e.date, geomean });
-      } catch { /* skip malformed line */ }
+function loadHistory(name) {
+  if (_historyCache[name]) return _historyCache[name];
+  const promise = (async () => {
+    try {
+      const res = await fetch(`history/${name}.jsonl`);
+      if (!res.ok) throw new Error(res.statusText);
+      const txt = await res.text();
+      const lines = txt.split('\n').map(l => l.trim()).filter(Boolean);
+      const entries = [];
+      for (const line of lines) {
+        try {
+          const e = JSON.parse(line);
+          const ratios = (e.suites || [])
+            .map(s => typeof s.ratio === 'number' ? s.ratio : null)
+            .filter(r => r !== null && r > 0 && isFinite(r));
+          if (!ratios.length) continue;
+          const logSum = ratios.reduce((a, r) => a + Math.log(r), 0);
+          const geomean = Math.exp(logSum / ratios.length);
+          entries.push({ commit: e.commit, date: e.date, geomean });
+        } catch { /* skip malformed line */ }
+      }
+      return entries;
+    } catch {
+      return [];
     }
-    _historyCache[name] = entries;
-    return entries;
-  } catch {
-    _historyCache[name] = [];
-    return [];
-  }
+  })();
+  _historyCache[name] = promise;
+  return promise;
 }
 
 function buildSparkline(values, width = 96, height = 24) {

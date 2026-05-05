@@ -29,8 +29,11 @@ body {
 a { color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--text-primary); }
 
-/* Visible focus for keyboard users. Pointer focus stays unstyled via :focus-visible. */
-:focus { outline: none; }
+/* Visible focus for keyboard users. Pointer focus stays unstyled, but only
+ * suppress the browser default *when the engine actually supports
+ * :focus-visible* — older engines would otherwise lose all focus indication.
+ */
+:focus:not(:focus-visible) { outline: none; }
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
