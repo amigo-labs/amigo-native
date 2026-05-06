@@ -56,9 +56,15 @@ function buildPackagesJson(crates, existing) {
   const packages = crates.map(({ dir, amigo }) => {
     const prev = existingByName.get(dir)
     const speedup = prev?.speedup ?? amigo.speedup ?? 'TBD'
+    // Categories drive the docs site's category-chip filter. Source of
+    // truth is the crate's amigo.category — if it's missing we fall back
+    // to whatever was in docs/packages.json so a partial roll-out doesn't
+    // erase data, and finally to "util".
+    const category = amigo.category ?? prev?.category ?? 'util'
     return {
       name: dir,
       title: amigo.title,
+      category,
       description: amigo.description,
       speedup,
       npmUrl: `https://www.npmjs.com/package/@amigo-labs/${dir}`,
