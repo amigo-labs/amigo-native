@@ -30,4 +30,10 @@ ignore = [
     # adds cmake/perl/go to the build matrix; we prefer to keep the
     # NAPI cross-compile toolchain pure-Rust.
     "RUSTSEC-2023-0071",
+    # `proc-macro-error 1.0.4` is unmaintained per RUSTSEC-2024-0370.
+    # Pulled by `printpdf` → `allsorts` → `ouroboros 0.17` →
+    # `ouroboros_macro`. Build-time proc-macro only, not in the runtime
+    # artifact. Re-evaluate when `allsorts` bumps to an `ouroboros`
+    # release that has migrated to `proc-macro-error2`.
+    "RUSTSEC-2024-0370",
 ]
