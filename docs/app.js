@@ -6,7 +6,9 @@ const state = {
   activeIdx: 0,
   activeName: null,
   sortMode: 'speedup', // 'speedup' | 'alpha' | 'size'
-  sortedList: [],
+  filter: '',           // user's text query (lowercased)
+  category: 'all',      // 'all' | category id
+  sortedList: [],       // packages after sort + filter
   typingTimers: [],
 };
 
@@ -44,7 +46,22 @@ function sizeAdvantage(pkgName, sizesData) {
 }
 
 function computeSortedList() {
-  const list = [...state.pkgs.packages];
+  let list = [...state.pkgs.packages];
+
+  // Filter by category first (mostly disjoint, fast).
+  if (state.category && state.category !== 'all') {
+    list = list.filter(p => p.category === state.category);
+  }
+  // Then by free-text query against name + description.
+  if (state.filter) {
+    const q = state.filter.toLowerCase();
+    list = list.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.description || '').toLowerCase().includes(q) ||
+      (p.title || '').toLowerCase().includes(q)
+    );
+  }
+
   const mode = state.sortMode;
   if (mode === 'alpha') {
     list.sort((a, b) => a.name.localeCompare(b.name));
@@ -55,6 +72,14 @@ function computeSortedList() {
     list.sort((a, b) => sizeAdvantage(b.name, sizes) - sizeAdvantage(a.name, sizes));
   }
   state.sortedList = list;
+}
+
+function uniqueCategories() {
+  const seen = new Set();
+  for (const p of state.pkgs.packages) {
+    if (p.category) seen.add(p.category);
+  }
+  return [...seen].sort();
 }
 
 // --- helpers ---
@@ -92,6 +117,15 @@ function countUp(el, from, to, duration = 400, formatter = v => v) {
   }
   requestAnimationFrame(tick);
 }
+function formatSpeedupShort(n) {
+  // Compact form for picker rows: 1.4×, 11×, 31×. Drop the decimal once
+  // the value is comfortably above 10× — at that scale the .1 rounding is
+  // visual noise.
+  if (!isFinite(n) || n <= 0) return '';
+  if (n >= 10) return Math.round(n) + '×';
+  return n.toFixed(1).replace(/\.0$/, '') + '×';
+}
+
 function formatOps(hz) {
   if (hz >= 1e6) return (hz / 1e6).toFixed(2) + 'M';
   if (hz >= 1e3) return (hz / 1e3).toFixed(1) + 'K';
@@ -122,9 +156,12 @@ async function boot() {
 
   renderBrand();
   renderMarquee();
-  renderFooter();
+  renderCategoryChips();
   renderPicker();
+  updatePickerCount();
+  wirePicker();
   wireSortChips();
+  wireFilter();
   cycleHeroTagline();
   wireKeyboard();
   wireWheel();
@@ -132,6 +169,9 @@ async function boot() {
   // initial active from hash (name-based so it survives sort changes)
   const hash = (location.hash || '').replace('#', '');
   const hashIdx = state.sortedList.findIndex(p => p.name === hash);
+  if (hash && hashIdx < 0) {
+    console.warn(`[amigo-native] no package matches #${hash} — falling back to first.`);
+  }
   state.activeIdx = hashIdx >= 0 ? hashIdx : 0;
   state.activeName = state.sortedList[state.activeIdx].name;
 
@@ -162,8 +202,6 @@ function renderMarquee() {
     .map(i => `<div class="marquee-item">${i.k}<span>${i.v}</span></div>`).join('');
   $('#marqueeTrack').innerHTML = html;
 }
-
-function renderFooter() { /* merged into renderBrand */ }
 
 // --- hero tagline typewriter ---
 function cycleHeroTagline() {
@@ -213,45 +251,56 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 // --- picker ---
 function renderPicker() {
   const picker = $('#picker');
-  picker.innerHTML = state.sortedList.map((p, i) => `
-    <li id="pkg-opt-${p.name}" role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false">
-      <span>${p.name}</span>
-      <span class="arrow">&larr;</span>
-    </li>
-  `).join('');
+  picker.innerHTML = state.sortedList.map((p, i) => {
+    const speed = parseMaxSpeedup(p.speedup);
+    const speedTag = speed > 0
+      ? `<span class="row-speed" aria-hidden="true">${formatSpeedupShort(speed)}</span>`
+      : '';
+    return `
+      <li id="pkg-opt-${p.name}" role="option" data-idx="${i}" data-name="${p.name}" aria-selected="false" tabindex="-1">
+        <span class="row-name">${p.name}</span>
+        ${speedTag}
+        <span class="arrow" aria-hidden="true">←</span>
+      </li>
+    `;
+  }).join('');
+  updatePickerPadding();
+}
 
-  // mobile still needs horizontal center-snap padding; desktop is a flat top-aligned list
-  const updatePadding = () => {
-    const isMobile = window.innerWidth <= 900;
-    if (isMobile) {
-      picker.style.paddingTop = '';
-      picker.style.paddingBottom = '';
-      picker.style.paddingLeft = '50%';
-      picker.style.paddingRight = '50%';
-    } else {
-      picker.style.paddingLeft = '';
-      picker.style.paddingRight = '';
-      picker.style.paddingTop = '';
-      picker.style.paddingBottom = '';
-    }
-  };
-  updatePadding();
-  window.addEventListener('resize', () => {
-    updatePadding();
-    // mobile's horizontal picker needs to re-center on the active item when the
-    // layout flips across the 900px breakpoint; desktop's flat list is a no-op
-    snapTo(state.activeIdx, false);
+// Mobile needs horizontal center-snap padding; desktop is a flat top-aligned list.
+function updatePickerPadding() {
+  const picker = $('#picker');
+  if (!picker) return;
+  const isMobile = window.innerWidth <= 900;
+  if (isMobile) {
+    picker.style.paddingTop = '';
+    picker.style.paddingBottom = '';
+    picker.style.paddingLeft = '50%';
+    picker.style.paddingRight = '50%';
+  } else {
+    picker.style.paddingLeft = '';
+    picker.style.paddingRight = '';
+    picker.style.paddingTop = '';
+    picker.style.paddingBottom = '';
+  }
+}
+
+// One-time wiring on the persistent #picker element. Event delegation for
+// clicks means renderPicker() can rebuild the list freely without piling up
+// handlers on each render. The window-level resize listener used to live
+// inside renderPicker(), where every sort/filter change attached a duplicate.
+function wirePicker() {
+  const picker = $('#picker');
+  if (!picker) return;
+
+  picker.addEventListener('click', e => {
+    const li = e.target.closest('li[data-idx]');
+    if (!li || !picker.contains(li)) return;
+    const idx = parseInt(li.dataset.idx, 10);
+    if (Number.isFinite(idx)) snapTo(idx, true);
   });
 
-  // click to select
-  picker.querySelectorAll('li').forEach(li => {
-    li.addEventListener('click', () => {
-      const idx = parseInt(li.dataset.idx, 10);
-      snapTo(idx, true);
-    });
-  });
-
-  // scroll-based active detection only on mobile (horizontal wheel-picker)
+  // Scroll-based active detection only on mobile (horizontal wheel-picker).
   let scrollTimer = null;
   picker.addEventListener('scroll', () => {
     if (window.innerWidth > 900) return;
@@ -265,9 +314,18 @@ function renderPicker() {
         updateActiveClass();
         renderSlab();
         updateHash();
+        updateMeta();
       }
     });
   }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    updatePickerPadding();
+    // Mobile's horizontal picker needs to re-center on the active item when
+    // the layout flips across the 900 px breakpoint; desktop's flat list is
+    // a no-op.
+    snapTo(state.activeIdx, false);
+  });
 }
 
 function nearestCenterIdx() {
@@ -313,6 +371,7 @@ function snapTo(idx, smooth) {
   updateActiveClass();
   renderSlab();
   updateHash();
+  updateMeta();
 }
 
 function updateActiveClass() {
@@ -328,27 +387,75 @@ function updateActiveClass() {
   picker.setAttribute('aria-activedescendant', activeId);
 }
 
+// When the user is arrow-navigating from inside the listbox, keep the visible
+// focus ring on the active option. We don't steal focus when arrows fire from
+// elsewhere in the page (e.g. global hotkeys with body focused).
+function focusActiveOptionIfInPicker() {
+  const picker = $('#picker');
+  if (!picker) return;
+  const active = document.activeElement;
+  const isInPicker = active === picker || (active instanceof Node && picker.contains(active));
+  if (!isInPicker) return;
+  const li = picker.querySelectorAll('li')[state.activeIdx];
+  if (li) li.focus({ preventScroll: true });
+}
+
 function updateHash() {
   const p = state.sortedList[state.activeIdx];
   if (p) history.replaceState(null, '', '#' + p.name);
 }
 
+// Reflect the active package in the document title + description so that
+// tab labels, browser history entries, and link previews include it.
+function updateMeta() {
+  const p = state.sortedList[state.activeIdx];
+  if (!p) return;
+  document.title = `${p.name} · ${p.speedup} — amigo-native`;
+  const desc = document.querySelector('meta[name="description"]');
+  if (desc) {
+    desc.setAttribute('content',
+      `@amigo-labs/${p.name}: ${p.description} ${p.speedup}.`);
+  }
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) {
+    ogTitle.setAttribute('content', `@amigo-labs/${p.name} — ${p.speedup}`);
+  }
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.setAttribute('content', p.description);
+}
+
 // --- slab ---
+// Holding ↓/↑ rapidly cascades the 120 ms fade per render and feels janky.
+// Coalesce: only the latest pending render lands; intermediates are dropped.
+let renderSlabPending = null;
 function renderSlab() {
   const p = state.sortedList[state.activeIdx];
   if (!p) return;
   const slab = $('#slab');
   clearTimers();
 
+  // Announce the new package to assistive tech via the persistent live region.
+  const announce = $('#slabAnnounce');
+  if (announce) announce.textContent = `${p.name} — ${p.speedup}`;
+
+  if (renderSlabPending !== null) {
+    clearTimeout(renderSlabPending);
+    renderSlabPending = null;
+  }
+
   slab.classList.add('fading');
-  setTimeout(() => {
-    slab.innerHTML = buildSlabHTML(p);
+  renderSlabPending = setTimeout(() => {
+    renderSlabPending = null;
+    const cur = state.sortedList[state.activeIdx];
+    if (!cur) return;
+    slab.innerHTML = buildSlabHTML(cur);
     slab.classList.remove('fading');
-    animateSlab(p);
+    animateSlab(cur);
   }, reducedMotion() ? 0 : 120);
 }
 
 function buildSlabHTML(p) {
+  const newTabSr = '<span class="visually-hidden"> (opens in new tab)</span>';
   return `
     <div class="slab-head">
       <div class="slab-name"><span class="scope">@amigo-labs/</span><span id="slabName">${p.name}</span></div>
@@ -356,25 +463,35 @@ function buildSlabHTML(p) {
     </div>
     <p class="slab-desc" id="slabDesc"></p>
 
+    <div class="slab-trend" id="slabTrend"></div>
+
     <div class="slab-install">
-      <span class="prefix">$</span>
+      <span class="prefix" aria-hidden="true">$</span>
       <span class="cmd" id="slabCmd"></span><span class="caret" aria-hidden="true"></span>
-      <button class="copy-btn" type="button" id="slabCopy">Copy</button>
+      <button class="copy-btn" type="button" id="slabCopy" aria-label="Copy install command">Copy</button>
     </div>
 
     <div class="slab-links">
-      <a href="${p.npmUrl}" target="_blank" rel="noopener">npm &nearr;</a>
-      <a href="${p.sourceUrl}" target="_blank" rel="noopener">source &nearr;</a>
-      <a href="${p.readmeUrl}" target="_blank" rel="noopener">readme &nearr;</a>
+      <a href="${p.npmUrl}" target="_blank" rel="noopener noreferrer">npm <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
+      <a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer">source <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
+      <a href="${p.readmeUrl}" target="_blank" rel="noopener noreferrer">readme <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
     </div>
 
     <div class="slab-grid">
       <div class="slab-col">
         <div class="slab-col-head">Benchmarks (ops/s)</div>
+        <div class="chart-legend" aria-hidden="true">
+          <span><span class="swatch amigo"></span>amigo-labs</span>
+          <span><span class="swatch competitor"></span>competitor</span>
+        </div>
         <div id="slabBench"></div>
       </div>
       <div class="slab-col">
         <div class="slab-col-head">Install footprint</div>
+        <div class="chart-legend" aria-hidden="true">
+          <span><span class="swatch amigo"></span>amigo-labs</span>
+          <span><span class="swatch competitor"></span>competitor</span>
+        </div>
         <div id="slabSizes"></div>
       </div>
     </div>
@@ -389,21 +506,159 @@ function buildSlabHTML(p) {
 function animateSlab(p) {
   const cmdText = 'npm install @amigo-labs/' + p.name;
 
-  typeInto($('#slabSpeedup'), p.speedup, 18);
-  typeInto($('#slabDesc'), p.description, 8);
+  // Speedup and description are functional content — show instantly so the
+  // user can read them. The slab fade-in already provides motion. Only the
+  // install command keeps the typewriter (it's the on-brand shell prompt).
+  $('#slabSpeedup').textContent = p.speedup;
+  $('#slabDesc').textContent = p.description;
   typeInto($('#slabCmd'), cmdText, 20);
 
-  $('#slabCopy').addEventListener('click', () => {
-    navigator.clipboard.writeText(cmdText);
-    const btn = $('#slabCopy');
-    const prev = btn.textContent;
-    btn.textContent = 'Copied';
-    setTimeout(() => { btn.textContent = prev; }, 1500);
+  const installRow = document.querySelector('.slab-install');
+  const copyBtn = $('#slabCopy');
+  const triggerCopy = () => copyToClipboard(cmdText, copyBtn, installRow);
+  copyBtn.addEventListener('click', triggerCopy);
+  // Tapping anywhere on the install row also copies — so users don't have
+  // to aim at the small button on touch devices.
+  installRow.addEventListener('click', e => {
+    if (e.target.closest('.copy-btn')) return; // button click already handled
+    triggerCopy();
   });
 
   renderBench(p);
   renderSizes(p);
+  renderTrend(p);
   wireReadme(p);
+}
+
+// Per-package perf history lives in docs/history/<name>.jsonl, one entry
+// per commit. Each entry has a list of suites, where ratio = amigo/competitor
+// (null when there's no comparable competitor). We aggregate per-commit by
+// geomean of the available ratios and plot the sequence as an inline sparkline.
+//
+// Cache the *in-flight Promise*, not just its resolved value, so that a
+// second caller (e.g. user clicks pkg A → switches to pkg B → switches back
+// to A before A's fetch lands) shares the same network request.
+const _historyCache = {};
+function loadHistory(name) {
+  if (_historyCache[name]) return _historyCache[name];
+  const promise = (async () => {
+    try {
+      const res = await fetch(`history/${name}.jsonl`);
+      if (!res.ok) throw new Error(res.statusText);
+      const txt = await res.text();
+      const lines = txt.split('\n').map(l => l.trim()).filter(Boolean);
+      const entries = [];
+      for (const line of lines) {
+        try {
+          const e = JSON.parse(line);
+          const ratios = (e.suites || [])
+            .map(s => typeof s.ratio === 'number' ? s.ratio : null)
+            .filter(r => r !== null && r > 0 && isFinite(r));
+          if (!ratios.length) continue;
+          const logSum = ratios.reduce((a, r) => a + Math.log(r), 0);
+          const geomean = Math.exp(logSum / ratios.length);
+          entries.push({ commit: e.commit, date: e.date, geomean });
+        } catch { /* skip malformed line */ }
+      }
+      return entries;
+    } catch {
+      return [];
+    }
+  })();
+  _historyCache[name] = promise;
+  return promise;
+}
+
+function buildSparkline(values, width = 96, height = 24) {
+  if (!values.length) return '';
+  const min = Math.min(...values, 1);
+  const max = Math.max(...values, 1);
+  const span = max - min || 1;
+  const padY = 3;
+  const usableH = height - padY * 2;
+  const stepX = values.length > 1 ? width / (values.length - 1) : 0;
+  const points = values.map((v, i) => {
+    const x = stepX * i;
+    const y = padY + (1 - (v - min) / span) * usableH;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const last = values[values.length - 1];
+  const lastX = stepX * (values.length - 1);
+  const lastY = padY + (1 - (last - min) / span) * usableH;
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="trend sparkline">
+    <polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2" fill="var(--accent)"/>
+  </svg>`;
+}
+
+async function renderTrend(pkg) {
+  const host = $('#slabTrend');
+  if (!host) return;
+  host.classList.add('empty');
+  host.innerHTML = '<span class="label">trend</span><span>loading…</span>';
+
+  const entries = await loadHistory(pkg.name);
+  // The slab might have re-rendered while we were fetching; bail if so.
+  if ($('#slabTrend') !== host) return;
+
+  if (!entries.length) {
+    host.innerHTML = '<span class="label">trend</span><span>no history yet</span>';
+    return;
+  }
+
+  host.classList.remove('empty');
+  const values = entries.map(e => e.geomean);
+  const first = values[0];
+  const last = values[values.length - 1];
+  const pct = first > 0 ? ((last - first) / first) * 100 : 0;
+  let arrow = '→', cls = 'flat';
+  if (pct > 5) { arrow = '↑'; cls = 'up'; }
+  else if (pct < -5) { arrow = '↓'; cls = 'down'; }
+  const sign = pct >= 0 ? '+' : '';
+  const sparkline = buildSparkline(values);
+  const latest = `<span class="latest">${last.toFixed(2)}×</span>`;
+
+  host.innerHTML = `
+    <span class="label">trend · ${entries.length} runs</span>
+    ${sparkline}
+    <span>geomean ${latest}</span>
+    <span class="delta ${cls}" aria-label="trend ${cls}">${arrow} ${sign}${pct.toFixed(1)}%</span>
+  `;
+}
+
+// Try the modern clipboard API; fall back to the legacy execCommand path
+// for non-secure contexts (file://, embedded). On full failure surface a
+// visible error state so the user knows to copy manually.
+async function copyToClipboard(text, btn, installRow) {
+  let ok = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+  } catch {
+    ok = false;
+  }
+  if (!btn) return;
+  const prev = btn.textContent;
+  btn.textContent = ok ? '✓ Copied' : 'Copy failed';
+  btn.classList.add(ok ? 'is-ok' : 'is-err');
+  if (installRow && ok) installRow.classList.add('flash');
+  setTimeout(() => {
+    btn.textContent = prev;
+    btn.classList.remove('is-ok', 'is-err');
+    if (installRow) installRow.classList.remove('flash');
+  }, 1500);
 }
 
 function wireReadme(pkg) {
@@ -413,7 +668,7 @@ function wireReadme(pkg) {
   let loaded = false;
   details.addEventListener('toggle', async () => {
     if (!details.open || loaded) return;
-    host.innerHTML = '<div class="readme-loading">Loading…</div>';
+    host.innerHTML = '<div class="readme-skeleton" aria-label="Loading README"><div class="line"></div><div class="line"></div><div class="line"></div></div>';
     try {
       const res = await fetch(`readmes/${pkg.name}.html`);
       if (!res.ok) throw new Error(res.statusText);
@@ -432,12 +687,12 @@ function wireReadme(pkg) {
 function renderBench(pkg) {
   const host = $('#slabBench');
   if (!state.data?.benchmarks?.suites) {
-    host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No benchmark data available.</div>';
+    host.innerHTML = '<div class="empty-state">No benchmark data available.</div>';
     return;
   }
   const suites = state.data.benchmarks.suites.filter(s => suiteCrate(s) === pkg.name);
   if (!suites.length) {
-    host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No benchmarks for this package yet.</div>';
+    host.innerHTML = '<div class="empty-state">No benchmarks for this package yet.</div>';
     return;
   }
   let html = '';
@@ -459,9 +714,10 @@ function renderBench(pkg) {
         const second = sorted.find(e => !e.name.includes('@amigo'));
         if (second) ratio = `<span class="ratio">${(entry.hz / second.hz).toFixed(1)}&times;</span>`;
       }
+      const tag = isAmigo ? '<span class="amigo-tag" aria-hidden="true">amigo</span>' : '';
       html += `
         <div class="bar-row">
-          <span class="label${labelCls}">${entry.name}</span>
+          <span class="label${labelCls}">${tag}${entry.name}</span>
           <span class="val" data-hz="${entry.hz}">0</span>${ratio}
           <div class="track"><div class="fill ${fillCls}" data-pct="${pct}" style="width:0%"></div></div>
         </div>`;
@@ -485,7 +741,7 @@ function renderSizes(pkg) {
   const host = $('#slabSizes');
   const sizes = state.data?.sizes?.[pkg.name];
   if (!sizes) {
-    host.innerHTML = '<div style="color:var(--text-tertiary);font-size:.75rem">No size data.</div>';
+    host.innerHTML = '<div class="empty-state">No size data.</div>';
     return;
   }
   const amigoKey = '@amigo-labs/' + pkg.name;
@@ -508,9 +764,10 @@ function renderSizes(pkg) {
         ratio = `<span class="ratio">${(largestCompetitor / size).toFixed(1)}&times;</span>`;
       }
     }
+    const tag = isAmigo ? '<span class="amigo-tag" aria-hidden="true">amigo</span>' : '';
     html += `
       <div class="bar-row">
-        <span class="label${labelCls}">${name}</span>
+        <span class="label${labelCls}">${tag}${name}</span>
         <span class="val" data-bytes="${size}">0</span>${ratio}
         <div class="track"><div class="fill ${fillCls}" data-pct="${pct}" style="width:0%"></div></div>
       </div>`;
@@ -529,6 +786,75 @@ function renderSizes(pkg) {
 }
 
 // --- keyboard ---
+function renderCategoryChips() {
+  const host = $('#categoryChips');
+  if (!host) return;
+  const cats = uniqueCategories();
+  const items = [{ id: 'all', label: 'all' }, ...cats.map(c => ({ id: c, label: c }))];
+  host.innerHTML = items.map(c => `
+    <button class="chip" type="button" data-category="${c.id}"
+      aria-pressed="${state.category === c.id ? 'true' : 'false'}">${c.label}</button>
+  `).join('');
+  host.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      state.category = chip.dataset.category;
+      host.querySelectorAll('.chip').forEach(c => {
+        c.setAttribute('aria-pressed', c.dataset.category === state.category ? 'true' : 'false');
+      });
+      onFilterOrCategoryChange();
+    });
+  });
+}
+
+function updatePickerCount() {
+  const el = $('#pickerCount');
+  if (!el) return;
+  const total = state.pkgs.packages.length;
+  const shown = state.sortedList.length;
+  el.textContent = shown === total ? `(${total})` : `(${shown}/${total})`;
+}
+
+// Re-run filter+sort, refresh the picker, and either jump to the active item
+// (if still visible) or land on the first match. Empty state shows when the
+// query has zero hits.
+function onFilterOrCategoryChange() {
+  const keepName = state.activeName;
+  computeSortedList();
+  renderPicker();
+  updatePickerCount();
+  const empty = $('#pickerEmpty');
+  if (empty) empty.hidden = state.sortedList.length > 0;
+  if (!state.sortedList.length) return;
+  const newIdx = state.sortedList.findIndex(p => p.name === keepName);
+  state.activeIdx = newIdx >= 0 ? newIdx : 0;
+  state.activeName = state.sortedList[state.activeIdx].name;
+  requestAnimationFrame(() => snapTo(state.activeIdx, false));
+}
+
+function wireFilter() {
+  const input = $('#pkgFilter');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    state.filter = input.value.trim();
+    onFilterOrCategoryChange();
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (input.value) {
+        input.value = '';
+        state.filter = '';
+        onFilterOrCategoryChange();
+      } else {
+        input.blur();
+      }
+    } else if (e.key === 'Enter') {
+      // Jump to first match and put focus back on the picker for arrow nav.
+      const picker = $('#picker');
+      if (state.sortedList.length && picker) picker.focus();
+    }
+  });
+}
+
 function wireSortChips() {
   document.querySelectorAll('.sort-chips .chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -536,11 +862,13 @@ function wireSortChips() {
       if (mode === state.sortMode) return;
       state.sortMode = mode;
       document.querySelectorAll('.sort-chips .chip').forEach(c => {
-        c.setAttribute('aria-selected', c.dataset.sort === mode ? 'true' : 'false');
+        c.setAttribute('aria-pressed', c.dataset.sort === mode ? 'true' : 'false');
       });
       const keepName = state.activeName;
       computeSortedList();
       renderPicker();
+      updatePickerCount();
+      if (!state.sortedList.length) return;
       const newIdx = Math.max(0, state.sortedList.findIndex(p => p.name === keepName));
       requestAnimationFrame(() => snapTo(newIdx, true));
     });
@@ -555,29 +883,45 @@ function wireKeyboard() {
   };
 
   document.addEventListener('keydown', e => {
-    if (!state.sortedList.length) return;
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    // "/" focuses the filter input from anywhere outside an editable. We do
+    // this before the interactive-target / empty-list checks so the shortcut
+    // works even when the picker is empty.
+    if (e.key === '/' && !isInteractiveTarget(e.target)) {
+      const input = document.getElementById('pkgFilter');
+      if (input) {
+        input.focus();
+        input.select();
+        e.preventDefault();
+      }
+      return;
+    }
+    if (!state.sortedList.length) return;
     if (isInteractiveTarget(e.target)) return;
 
     const n = state.sortedList.length;
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j') {
       snapTo((state.activeIdx + 1) % n, true);
+      focusActiveOptionIfInPicker();
       e.preventDefault();
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'k') {
       snapTo((state.activeIdx - 1 + n) % n, true);
+      focusActiveOptionIfInPicker();
       e.preventDefault();
     } else if (e.key === 'c') {
       const btn = document.getElementById('slabCopy');
       if (btn) btn.click();
     } else if (e.key === 'Home') {
-      snapTo(0, true); e.preventDefault();
+      snapTo(0, true); focusActiveOptionIfInPicker(); e.preventDefault();
     } else if (e.key === 'End') {
-      snapTo(n - 1, true); e.preventDefault();
+      snapTo(n - 1, true); focusActiveOptionIfInPicker(); e.preventDefault();
     }
   });
 }
 
-// --- wheel: let mouse-wheel anywhere on the page drive the picker ---
+// Wheel-driven picker navigation, scoped to the picker column. Wheels
+// elsewhere on the page are left alone so users from "normal" sites don't
+// feel hijacked. The picker's own native scroll-snap still works.
 function wireWheel() {
   let accum = 0;
   let lastTime = 0;
@@ -585,22 +929,18 @@ function wireWheel() {
   const THRESHOLD = 40;
   const COOLDOWN_MS = 220;
 
-  window.addEventListener('wheel', e => {
+  const pickerWrap = document.querySelector('.picker-wrap');
+  if (!pickerWrap) return;
+
+  pickerWrap.addEventListener('wheel', e => {
     if (window.innerWidth <= 900) return; // mobile uses its own swipes
     if (!state.sortedList.length) return;
 
     const picker = document.getElementById('picker');
-    const slab = document.getElementById('slab');
 
-    // allow native scroll inside the slab while it still has room
-    if (slab && slab.contains(e.target)) {
-      const canScrollDown = slab.scrollTop + slab.clientHeight < slab.scrollHeight - 1;
-      const canScrollUp = slab.scrollTop > 0;
-      if (e.deltaY > 0 && canScrollDown) return;
-      if (e.deltaY < 0 && canScrollUp) return;
-    }
-
-    // let the picker handle its own wheel natively (scroll-snap)
+    // The picker's own scroll-snap handles wheels that land directly on it.
+    // Wheels on the surrounding column (label, sort chips) drive the picker
+    // programmatically.
     if (picker && picker.contains(e.target)) return;
 
     e.preventDefault();
