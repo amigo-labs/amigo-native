@@ -9,9 +9,9 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-html5ever = "0.35"
-markup5ever = "0.35"
-markup5ever_rcdom = "=0.35.0+unofficial"
+html5ever = "0.39"
+markup5ever = "0.39"
+markup5ever_rcdom = "0.39"
 
 [build-dependencies]
 napi-build = "2"
