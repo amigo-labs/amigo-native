@@ -589,25 +589,31 @@ function loadHistory(name) {
 function buildSparkline(values, opts = {}) {
   if (!values.length) return '';
   const { width = 96, height = 24, label = 'trend' } = opts;
-  const min = Math.min(...values, 1);
-  const max = Math.max(...values, 1);
-  const span = max - min || 1;
+  // Render-space min/max keep the 1× baseline in view so a chart that's all
+  // ratios > 1 still shows the "even" line at the bottom of the box. The
+  // human-readable summary uses the actual data range so a tooltip on a
+  // pkg whose worst run was 1.37× doesn't read "min 1.00×".
+  const renderMin = Math.min(...values, 1);
+  const renderMax = Math.max(...values, 1);
+  const span = renderMax - renderMin || 1;
+  const dataMin = Math.min(...values);
+  const dataMax = Math.max(...values);
   const padY = 3;
   const usableH = height - padY * 2;
   const stepX = values.length > 1 ? width / (values.length - 1) : 0;
   const points = values.map((v, i) => {
     const x = stepX * i;
-    const y = padY + (1 - (v - min) / span) * usableH;
+    const y = padY + (1 - (v - renderMin) / span) * usableH;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
   const last = values[values.length - 1];
   const first = values[0];
   const lastX = stepX * (values.length - 1);
-  const lastY = padY + (1 - (last - min) / span) * usableH;
+  const lastY = padY + (1 - (last - renderMin) / span) * usableH;
   // Both <title> (for pointer hover tooltips) and aria-label (for SR) carry
   // the same human-readable summary so the chart isn't a black box.
   const summary = values.length > 1
-    ? `${label}: ${first.toFixed(2)}× → ${last.toFixed(2)}× over ${values.length} runs (min ${min.toFixed(2)}×, max ${max.toFixed(2)}×)`
+    ? `${label}: ${first.toFixed(2)}× → ${last.toFixed(2)}× over ${values.length} runs (min ${dataMin.toFixed(2)}×, max ${dataMax.toFixed(2)}×)`
     : `${label}: ${last.toFixed(2)}× (single run)`;
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${summary}">
     <title>${summary}</title>

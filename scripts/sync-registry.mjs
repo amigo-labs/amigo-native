@@ -75,10 +75,10 @@ function buildPackagesJson(crates, existing) {
       readmeUrl: `https://github.com/amigo-labs/amigo-native/blob/main/crates/${dir}/README.md`,
     }
     if (reviewSet.has(dir)) {
-      entry.perfReviewUrl = `perf-review/${dir}.md`
+      entry.perfReviewUrl = `/perf-review/${dir}.md`
     }
     if (postMortemSet.has(dir)) {
-      entry.postMortemUrl = `post-mortems/${dir}.md`
+      entry.postMortemUrl = `/post-mortems/${dir}.md`
     }
     return entry
   })
@@ -89,8 +89,8 @@ function buildPackagesJson(crates, existing) {
   const candidates = []
   for (const name of [...reviewSet].sort()) {
     if (shippedNames.has(name)) continue
-    const c = { name, perfReviewUrl: `perf-review/${name}.md` }
-    if (postMortemSet.has(name)) c.postMortemUrl = `post-mortems/${name}.md`
+    const c = { name, perfReviewUrl: `/perf-review/${name}.md` }
+    if (postMortemSet.has(name)) c.postMortemUrl = `/post-mortems/${name}.md`
     candidates.push(c)
   }
   const marquee = (existing.marquee ?? []).map((m) =>
