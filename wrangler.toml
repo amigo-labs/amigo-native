@@ -21,12 +21,6 @@ directory = "./docs"
 # served directly first.
 not_found_handling = "single-page-application"
 
-# Static-asset worker — nothing to compile. Without this, Cloudflare Workers
-# Builds auto-detects `pnpm run build` from the workspace and tries to build
-# every Rust crate, which can't work in their Node-only build container.
-[build]
-command = ""
-
 # Custom domain — uncomment and set once a route is provisioned in Cloudflare.
 # Until then the worker is reachable at
 # https://amigo-native.<your-cf-subdomain>.workers.dev/.
