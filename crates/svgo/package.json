@@ -34,7 +34,7 @@
     "@napi-rs/cli": "^3.6.2",
     "fast-check": "^3.23.0",
     "svgo": "^3.3.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.5"
   },
   "license": "MIT",
   "repository": {
@@ -56,6 +56,7 @@
   },
   "amigo": {
     "title": "Svgo",
+    "category": "document",
     "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
     "tableDescription": "SVG optimizer, 8 preset-default plugins",
     "replaces": "svgo",

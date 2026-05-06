@@ -47,7 +47,7 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.6.2",
     "fast-check": "^3.23.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.5"
   },
   "license": "MIT",
   "repository": {
@@ -60,6 +60,7 @@
   },
   "amigo": {
     "title": "Tiktoken",
+    "category": "text",
     "description": "OpenAI BPE tokenizer powered by tiktoken-rs. Drop-in for tiktoken (WASM) and js-tiktoken.",
     "tableDescription": "OpenAI BPE tokenizer (cl100k, o200k) via `tiktoken-rs`",
     "replaces": "tiktoken/js-tiktoken",

@@ -33,9 +33,9 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.6.2",
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "fast-check": "^3.23.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.5"
   },
   "license": "MIT",
   "repository": {
@@ -56,6 +56,7 @@
   },
   "amigo": {
     "title": "Bcrypt",
+    "category": "crypto",
     "description": "Bcrypt password hashing with sync + async API. Argon2 sibling.",
     "tableDescription": "Bcrypt password hashing (sync + async)",
     "replaces": "bcrypt/bcryptjs",
