@@ -132,8 +132,8 @@ amigo-native/
 │   └── conformance-summary.mjs
 ├── .github/workflows/
 │   ├── ci.yml            # lint + test + benchmark (on main)
-│   ├── cloudflare.yml    # publish docs/ to Cloudflare Workers (see wrangler.toml)
 │   └── release.yml       # cross-compile + npm publish
+├── wrangler.toml         # docs/ dashboard → Cloudflare Worker (Git integration)
 ├── Cargo.toml            # workspace root
 └── vitest.config.ts
 ```
