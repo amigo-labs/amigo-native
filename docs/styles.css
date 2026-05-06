@@ -675,6 +675,78 @@ a:hover { color: var(--text-primary); }
   100% { background-position: -200% 0; }
 }
 
+.candidates {
+  margin: 0 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+}
+.candidates > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  user-select: none;
+}
+.candidates > summary::-webkit-details-marker { display: none; }
+.candidates > summary::before {
+  content: '▸';
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  transition: transform 0.15s ease;
+}
+.candidates[open] > summary::before { transform: rotate(90deg); }
+.candidates > summary .candidates-label { color: var(--text-secondary); }
+.candidates > summary .candidates-count {
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.candidates > summary .candidates-hint {
+  color: var(--text-tertiary);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+.candidates > summary:hover .candidates-label { color: var(--text-primary); }
+
+.candidates-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 4px 16px;
+  padding: 8px 4px 16px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.candidates-list a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.candidates-list a:hover { color: var(--accent); }
+.candidates-list a .pm-tag {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+  padding: 1px 5px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
 .footer {
   display: flex; justify-content: space-between;
   gap: 16px; flex-wrap: wrap;
@@ -743,7 +815,7 @@ a:hover { color: var(--text-primary); }
   .picker-head { flex-wrap: wrap; gap: 8px; min-width: 0; }
   .picker-label { flex: 1 0 100%; margin-bottom: 2px; }
   .sort-chips { width: 100%; min-width: 0; }
-  .chip { flex: 1 1 0; min-width: 0; text-align: center; padding: 6px 4px; }
+  .sort-chips .chip { flex: 1 1 0; min-width: 0; text-align: center; padding: 6px 4px; }
 
   .picker-wrap { max-height: none; }
   .picker {

@@ -61,7 +61,8 @@
       "speedup": "1.36× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/argon2",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/argon2",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/argon2/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/argon2/README.md",
+      "perfReviewUrl": "/perf-review/argon2.md"
     },
     {
       "name": "bcrypt",
@@ -71,7 +72,8 @@
       "speedup": "up to 1.07× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bcrypt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bcrypt",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bcrypt/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bcrypt/README.md",
+      "perfReviewUrl": "/perf-review/bcrypt.md"
     },
     {
       "name": "bm25",
@@ -91,7 +93,8 @@
       "speedup": "6.7× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/commonmark",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/commonmark",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/commonmark/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/commonmark/README.md",
+      "perfReviewUrl": "/perf-review/commonmark.md"
     },
     {
       "name": "csv",
@@ -101,7 +104,8 @@
       "speedup": "1.48–1.96× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/csv",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/csv",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/csv/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/csv/README.md",
+      "perfReviewUrl": "/perf-review/csv.md"
     },
     {
       "name": "deepmerge",
@@ -111,7 +115,8 @@
       "speedup": "3–6.2× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/deepmerge",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/deepmerge",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deepmerge/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/deepmerge/README.md",
+      "perfReviewUrl": "/perf-review/deepmerge.md"
     },
     {
       "name": "diff",
@@ -121,7 +126,8 @@
       "speedup": "11–25× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/diff",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/diff",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/diff/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/diff/README.md",
+      "perfReviewUrl": "/perf-review/diff.md"
     },
     {
       "name": "encoding",
@@ -131,7 +137,8 @@
       "speedup": "up to 38× faster / 1.67× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/encoding",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/encoding",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/encoding/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/encoding/README.md",
+      "perfReviewUrl": "/perf-review/encoding.md"
     },
     {
       "name": "file-type",
@@ -141,7 +148,8 @@
       "speedup": "28× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/file-type",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/file-type",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/file-type/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/file-type/README.md",
+      "perfReviewUrl": "/perf-review/file-type.md"
     },
     {
       "name": "force-layout",
@@ -171,7 +179,8 @@
       "speedup": "up to 11× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/inflate",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/inflate",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/inflate/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/inflate/README.md",
+      "perfReviewUrl": "/perf-review/inflate.md"
     },
     {
       "name": "jose",
@@ -181,7 +190,8 @@
       "speedup": "1.53–4.3× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jose",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jose",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md",
+      "perfReviewUrl": "/perf-review/jose.md"
     },
     {
       "name": "jwt",
@@ -191,7 +201,8 @@
       "speedup": "up to 7.9× faster / 3.3× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jwt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jwt",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jwt/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jwt/README.md",
+      "perfReviewUrl": "/perf-review/jwt.md"
     },
     {
       "name": "language-detect",
@@ -211,7 +222,8 @@
       "speedup": "1.23–51× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/minisearch",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/minisearch",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/minisearch/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/minisearch/README.md",
+      "perfReviewUrl": "/perf-review/minisearch.md"
     },
     {
       "name": "nanoid",
@@ -221,7 +233,8 @@
       "speedup": "up to 1.11× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/nanoid",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/nanoid",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/nanoid/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/nanoid/README.md",
+      "perfReviewUrl": "/perf-review/nanoid.md"
     },
     {
       "name": "pdf",
@@ -241,7 +254,8 @@
       "speedup": "up to 2.5× faster / 2.2× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/pdf-parse",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/pdf-parse",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf-parse/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf-parse/README.md",
+      "perfReviewUrl": "/perf-review/pdf-parse.md"
     },
     {
       "name": "sanitize-html",
@@ -251,7 +265,8 @@
       "speedup": "1.68–3.7× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sanitize-html",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sanitize-html",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sanitize-html/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sanitize-html/README.md",
+      "perfReviewUrl": "/perf-review/sanitize-html.md"
     },
     {
       "name": "sentences",
@@ -271,7 +286,8 @@
       "speedup": "2.4–5.3× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/slugify",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/slugify",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/slugify/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/slugify/README.md",
+      "perfReviewUrl": "/perf-review/slugify.md"
     },
     {
       "name": "stemmer",
@@ -291,7 +307,8 @@
       "speedup": "15–27× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/svgo",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/svgo",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/svgo/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/svgo/README.md",
+      "perfReviewUrl": "/perf-review/svgo.md"
     },
     {
       "name": "text-splitters",
@@ -311,7 +328,8 @@
       "speedup": "3.2–3.5× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/tiktoken",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/tiktoken",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/tiktoken/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/tiktoken/README.md",
+      "perfReviewUrl": "/perf-review/tiktoken.md"
     },
     {
       "name": "turndown",
@@ -321,7 +339,8 @@
       "speedup": "9.7–16× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/turndown",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/turndown",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/turndown/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/turndown/README.md",
+      "perfReviewUrl": "/perf-review/turndown.md"
     },
     {
       "name": "typst",
@@ -331,7 +350,8 @@
       "speedup": "TBD",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/typst",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/typst",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/typst/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/typst/README.md",
+      "perfReviewUrl": "/perf-review/typst.md"
     },
     {
       "name": "xlsx",
@@ -341,7 +361,8 @@
       "speedup": "2.3–3× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xlsx",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xlsx",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xlsx/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xlsx/README.md",
+      "perfReviewUrl": "/perf-review/xlsx.md"
     },
     {
       "name": "xxhash",
@@ -351,7 +372,8 @@
       "speedup": "up to 2.7× faster / 2.7× slower",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xxhash",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xxhash",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xxhash/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xxhash/README.md",
+      "perfReviewUrl": "/perf-review/xxhash.md"
     },
     {
       "name": "zip",
@@ -361,7 +383,197 @@
       "speedup": "1.84–11× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/zip",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/zip",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md",
+      "perfReviewUrl": "/perf-review/zip.md"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "ajv",
+      "perfReviewUrl": "/perf-review/ajv.md"
+    },
+    {
+      "name": "chartjs",
+      "perfReviewUrl": "/perf-review/chartjs.md"
+    },
+    {
+      "name": "cheerio",
+      "perfReviewUrl": "/perf-review/cheerio.md"
+    },
+    {
+      "name": "compute-cosine-similarity",
+      "perfReviewUrl": "/perf-review/compute-cosine-similarity.md"
+    },
+    {
+      "name": "core-js",
+      "perfReviewUrl": "/perf-review/core-js.md"
+    },
+    {
+      "name": "cosmiconfig",
+      "perfReviewUrl": "/perf-review/cosmiconfig.md"
+    },
+    {
+      "name": "d3-force",
+      "perfReviewUrl": "/perf-review/d3-force.md"
+    },
+    {
+      "name": "dagre",
+      "perfReviewUrl": "/perf-review/dagre.md"
+    },
+    {
+      "name": "deep-equal",
+      "perfReviewUrl": "/perf-review/deep-equal.md",
+      "postMortemUrl": "/post-mortems/deep-equal.md"
+    },
+    {
+      "name": "dotenv",
+      "perfReviewUrl": "/perf-review/dotenv.md"
+    },
+    {
+      "name": "ejs",
+      "perfReviewUrl": "/perf-review/ejs.md"
+    },
+    {
+      "name": "franc",
+      "perfReviewUrl": "/perf-review/franc.md"
+    },
+    {
+      "name": "gpt-tokenizer",
+      "perfReviewUrl": "/perf-review/gpt-tokenizer.md"
+    },
+    {
+      "name": "handlebars",
+      "perfReviewUrl": "/perf-review/handlebars.md"
+    },
+    {
+      "name": "har-validator",
+      "perfReviewUrl": "/perf-review/har-validator.md"
+    },
+    {
+      "name": "hnswlib-node",
+      "perfReviewUrl": "/perf-review/hnswlib-node.md"
+    },
+    {
+      "name": "htmlparser2",
+      "perfReviewUrl": "/perf-review/htmlparser2.md"
+    },
+    {
+      "name": "inflate-backend-spike",
+      "perfReviewUrl": "/perf-review/inflate-backend-spike.md"
+    },
+    {
+      "name": "js-yaml",
+      "perfReviewUrl": "/perf-review/js-yaml.md"
+    },
+    {
+      "name": "jsdom",
+      "perfReviewUrl": "/perf-review/jsdom.md"
+    },
+    {
+      "name": "langchain",
+      "perfReviewUrl": "/perf-review/langchain.md"
+    },
+    {
+      "name": "langchain__textsplitters",
+      "perfReviewUrl": "/perf-review/langchain__textsplitters.md"
+    },
+    {
+      "name": "levenshtein",
+      "perfReviewUrl": "/perf-review/levenshtein.md",
+      "postMortemUrl": "/post-mortems/levenshtein.md"
+    },
+    {
+      "name": "marked",
+      "perfReviewUrl": "/perf-review/marked.md"
+    },
+    {
+      "name": "mermaid",
+      "perfReviewUrl": "/perf-review/mermaid.md"
+    },
+    {
+      "name": "mime",
+      "perfReviewUrl": "/perf-review/mime.md"
+    },
+    {
+      "name": "mime-types",
+      "perfReviewUrl": "/perf-review/mime-types.md"
+    },
+    {
+      "name": "moment",
+      "perfReviewUrl": "/perf-review/moment.md"
+    },
+    {
+      "name": "natural",
+      "perfReviewUrl": "/perf-review/natural.md"
+    },
+    {
+      "name": "onnxruntime-node",
+      "perfReviewUrl": "/perf-review/onnxruntime-node.md"
+    },
+    {
+      "name": "openai",
+      "perfReviewUrl": "/perf-review/openai.md"
+    },
+    {
+      "name": "parse5",
+      "perfReviewUrl": "/perf-review/parse5.md"
+    },
+    {
+      "name": "pbkdf2",
+      "perfReviewUrl": "/perf-review/pbkdf2.md"
+    },
+    {
+      "name": "pdfkit",
+      "perfReviewUrl": "/perf-review/pdfkit.md"
+    },
+    {
+      "name": "remark",
+      "perfReviewUrl": "/perf-review/remark.md"
+    },
+    {
+      "name": "request",
+      "perfReviewUrl": "/perf-review/request.md"
+    },
+    {
+      "name": "sbd",
+      "perfReviewUrl": "/perf-review/sbd.md"
+    },
+    {
+      "name": "scrypt",
+      "perfReviewUrl": "/perf-review/scrypt.md"
+    },
+    {
+      "name": "semver",
+      "perfReviewUrl": "/perf-review/semver.md"
+    },
+    {
+      "name": "stopword",
+      "perfReviewUrl": "/perf-review/stopword.md"
+    },
+    {
+      "name": "string-similarity",
+      "perfReviewUrl": "/perf-review/string-similarity.md"
+    },
+    {
+      "name": "tough-cookie",
+      "perfReviewUrl": "/perf-review/tough-cookie.md"
+    },
+    {
+      "name": "wink-bm25-text-search",
+      "perfReviewUrl": "/perf-review/wink-bm25-text-search.md"
+    },
+    {
+      "name": "ws",
+      "perfReviewUrl": "/perf-review/ws.md"
+    },
+    {
+      "name": "xenova-transformers",
+      "perfReviewUrl": "/perf-review/xenova-transformers.md"
+    },
+    {
+      "name": "xml",
+      "perfReviewUrl": "/perf-review/xml.md",
+      "postMortemUrl": "/post-mortems/xml.md"
     }
   ]
 }
