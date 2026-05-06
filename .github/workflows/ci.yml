@@ -159,7 +159,12 @@ jobs:
             pnpm -r --workspace-concurrency=4 run build
           else
             echo "::notice::Building only: ${{ needs.detect-changes.outputs.crates }}"
-            filters=""
+            # `commonmark` is always included because `test-node` runs
+            # `render-readmes.mjs --check`, which loads commonmark's NAPI
+            # binding to re-render every crate's README. Without it the
+            # check crashes at module load on any PR that doesn't itself
+            # touch commonmark.
+            filters="--filter @amigo-labs/commonmark"
             for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
               filters="$filters --filter @amigo-labs/$c"
             done
