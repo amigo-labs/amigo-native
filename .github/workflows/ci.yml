@@ -159,7 +159,11 @@ jobs:
             pnpm -r --workspace-concurrency=4 run build
           else
             echo "::notice::Building only: ${{ needs.detect-changes.outputs.crates }}"
-            filters=""
+            # commonmark is always built — `test-node` runs
+            # render-readmes.mjs which requires the commonmark binary,
+            # so partial builds that don't touch commonmark would
+            # otherwise leave the artifact missing it.
+            filters="--filter @amigo-labs/commonmark"
             for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
               filters="$filters --filter @amigo-labs/$c"
             done
