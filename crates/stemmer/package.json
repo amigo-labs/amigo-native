@@ -34,7 +34,7 @@
     "@napi-rs/cli": "^3.6.2",
     "fast-check": "^3.23.0",
     "natural": "^8.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.5"
   },
   "license": "MIT",
   "repository": {
@@ -57,6 +57,7 @@
   },
   "amigo": {
     "title": "Stemmer",
+    "category": "text",
     "description": "Porter/Snowball stemming via rust-stemmers. Batch-only API — single-word calls are intentionally not exposed.",
     "tableDescription": "Porter/Snowball stemmer (batch-only) via `rust-stemmers`",
     "replaces": "natural (stemmer subset)",
