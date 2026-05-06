@@ -1,0 +1,40 @@
+# amigo-native docs — Cloudflare Worker (static-asset hosting)
+#
+# This worker has no JS code of its own; it just serves the assembled `_site/`
+# directory (main's docs at root + optional `preview/<branch>/` overlays) that
+# the GitHub workflow builds before invoking `wrangler deploy`.
+#
+# Required Cloudflare account state:
+#   * an account ID (set as the CLOUDFLARE_ACCOUNT_ID GitHub Actions secret)
+#   * an API token with "Workers Scripts:Edit" scope (set as
+#     CLOUDFLARE_API_TOKEN). Tokens are managed at
+#     https://dash.cloudflare.com/profile/api-tokens
+#
+# Local: `pnpm exec wrangler deploy --dry-run` to validate this file without
+# touching production. `pnpm run deploy` for a real deploy (still requires the
+# two env vars above).
+
+name = "amigo-native"
+compatibility_date = "2025-04-01"
+workers_dev = true
+
+[assets]
+directory = "./_site"
+# Hash-only routes today, but per-package URLs (#G2 in the docs roadmap) will
+# rely on this fallback so /pkg/argon2 lands on index.html and the SPA reads
+# the path. Existing files (/perf-review/*.md, /history/*.jsonl, …) are still
+# served directly first.
+not_found_handling = "single-page-application"
+
+# Custom domain — uncomment and set once a route is provisioned in Cloudflare.
+# Until then the worker is reachable at
+# https://amigo-native.<your-cf-subdomain>.workers.dev/.
+#
+# [[routes]]
+# pattern = "amigo-native.example.com"
+# custom_domain = true
+
+# `wrangler observability` opt-in — keeps a small request-log tail visible in
+# the Cloudflare dashboard for the worker. Free tier includes a generous quota.
+[observability]
+enabled = true

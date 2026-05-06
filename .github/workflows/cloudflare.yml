@@ -1,4 +1,4 @@
-name: Deploy Pages
+name: Deploy Cloudflare Worker (docs)
 
 on:
   push:
@@ -7,42 +7,39 @@ on:
       - 'claude/**'
     paths:
       - 'docs/**'
-      - '.github/workflows/pages.yml'
+      - 'wrangler.toml'
+      - '.github/workflows/cloudflare.yml'
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: cloudflare-docs
   cancel-in-progress: false
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Build site (main + triggering preview branch, if any)
+      # Mirrors the layout the GitHub Pages workflow used to build:
+      #   _site/                  ← main's docs always live at the root
+      #   _site/preview/<slug>/   ← branch preview when this push isn't main
+      # Pushes on main deploy main only; previews from other branches are
+      # republished the next time their own branch is pushed.
+      - name: Assemble _site
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           mkdir -p _site
 
-          # 1. main's docs are always the site root
           git worktree add /tmp/main-docs origin/main
           cp -r /tmp/main-docs/docs/. _site/
 
-          # 2. If this push was on a claude/** branch, add only that branch as preview.
-          #    Pushes on main deploy main-only; previews from other branches will be
-          #    republished next time their own branch is pushed.
           if [ "$REF_NAME" != "main" ]; then
             slug=$(echo "$REF_NAME" | sed 's|/|-|g')
             mkdir -p "_site/preview/$slug"
@@ -59,12 +56,17 @@ jobs:
           ls -la _site
           [ -d _site/preview ] && ls -la _site/preview || true
 
-      - uses: actions/configure-pages@v6
-
-      - uses: actions/upload-pages-artifact@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
         with:
-          path: _site
+          node-version: 22
+          cache: pnpm
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+      - run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

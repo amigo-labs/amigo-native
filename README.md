@@ -132,7 +132,7 @@ amigo-native/
 │   └── conformance-summary.mjs
 ├── .github/workflows/
 │   ├── ci.yml            # lint + test + benchmark (on main)
-│   ├── pages.yml         # publish docs/ dashboard to GitHub Pages
+│   ├── cloudflare.yml    # publish docs/ to Cloudflare Workers (see wrangler.toml)
 │   └── release.yml       # cross-compile + npm publish
 ├── Cargo.toml            # workspace root
 └── vitest.config.ts
