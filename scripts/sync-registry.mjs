@@ -53,6 +53,9 @@ export function loadCrates(baseDir = cratesDir) {
 
 function buildPackagesJson(crates, existing) {
   const existingByName = new Map((existing.packages ?? []).map((p) => [p.name, p]))
+  const reviewSet = perfReviewSet()
+  const postMortemSet = postMortemSet_()
+  const shippedNames = new Set(crates.map((c) => c.dir))
   const packages = crates.map(({ dir, amigo }) => {
     const prev = existingByName.get(dir)
     const speedup = prev?.speedup ?? amigo.speedup ?? 'TBD'
@@ -61,7 +64,7 @@ function buildPackagesJson(crates, existing) {
     // to whatever was in docs/packages.json so a partial roll-out doesn't
     // erase data, and finally to "util".
     const category = amigo.category ?? prev?.category ?? 'util'
-    return {
+    const entry = {
       name: dir,
       title: amigo.title,
       category,
@@ -71,11 +74,51 @@ function buildPackagesJson(crates, existing) {
       sourceUrl: `https://github.com/amigo-labs/amigo-native/tree/main/crates/${dir}`,
       readmeUrl: `https://github.com/amigo-labs/amigo-native/blob/main/crates/${dir}/README.md`,
     }
+    if (reviewSet.has(dir)) {
+      entry.perfReviewUrl = `perf-review/${dir}.md`
+    }
+    if (postMortemSet.has(dir)) {
+      entry.postMortemUrl = `post-mortems/${dir}.md`
+    }
+    return entry
   })
+  // "Candidates" — packages we evaluated but didn't ship. Surfaced in the
+  // docs as a "considered" panel so visitors can see the work behind the
+  // selection. Driven by docs/perf-review/<name>.md whose <name> isn't a
+  // shipped crate.
+  const candidates = []
+  for (const name of [...reviewSet].sort()) {
+    if (shippedNames.has(name)) continue
+    const c = { name, perfReviewUrl: `perf-review/${name}.md` }
+    if (postMortemSet.has(name)) c.postMortemUrl = `post-mortems/${name}.md`
+    candidates.push(c)
+  }
   const marquee = (existing.marquee ?? []).map((m) =>
     m.k === 'PACKAGES' ? { ...m, v: String(packages.length) } : m,
   )
-  return { ...existing, marquee, packages }
+  return { ...existing, marquee, packages, candidates }
+}
+
+function perfReviewSet() {
+  const dir = join(root, 'docs', 'perf-review')
+  if (!existsSync(dir)) return new Set()
+  const out = new Set()
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith('.md')) continue
+    out.add(f.slice(0, -3))
+  }
+  return out
+}
+
+function postMortemSet_() {
+  const dir = join(root, 'docs', 'post-mortems')
+  if (!existsSync(dir)) return new Set()
+  const out = new Set()
+  for (const f of readdirSync(dir)) {
+    if (!f.endsWith('.md')) continue
+    out.add(f.slice(0, -3))
+  }
+  return out
 }
 
 function columnWidths(rows) {

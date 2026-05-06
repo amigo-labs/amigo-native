@@ -159,6 +159,7 @@ async function boot() {
   renderCategoryChips();
   renderPicker();
   updatePickerCount();
+  renderCandidates();
   wirePicker();
   wireSortChips();
   wireFilter();
@@ -198,9 +199,23 @@ function renderBrand() {
 
 function renderMarquee() {
   const items = state.pkgs.marquee;
-  const html = [...items, ...items, ...items]
+  const track = $('#marqueeTrack');
+  const itemHtml = items
     .map(i => `<div class="marquee-item">${i.k}<span>${i.v}</span></div>`).join('');
-  $('#marqueeTrack').innerHTML = html;
+  // Duplicate enough copies that the looping translateX(-50%) animation
+  // always has off-screen content waiting on the right. Two copies suffice
+  // when the natural width already exceeds the viewport; otherwise we keep
+  // doubling. Falls back to 3× (the previous hardcoded value) if we can't
+  // measure (e.g. detached element).
+  track.innerHTML = itemHtml + itemHtml;
+  requestAnimationFrame(() => {
+    const vw = window.innerWidth;
+    let copies = 2;
+    while (track.scrollWidth < vw * 2 && copies < 8) {
+      track.innerHTML += itemHtml;
+      copies++;
+    }
+  });
 }
 
 // --- hero tagline typewriter ---
@@ -475,6 +490,8 @@ function buildSlabHTML(p) {
       <a href="${p.npmUrl}" target="_blank" rel="noopener noreferrer">npm <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
       <a href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer">source <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
       <a href="${p.readmeUrl}" target="_blank" rel="noopener noreferrer">readme <span aria-hidden="true">&nearr;</span>${newTabSr}</a>
+      ${p.perfReviewUrl ? `<a href="${p.perfReviewUrl}" target="_blank" rel="noopener noreferrer">perf review <span aria-hidden="true">&nearr;</span>${newTabSr}</a>` : ''}
+      ${p.postMortemUrl ? `<a href="${p.postMortemUrl}" target="_blank" rel="noopener noreferrer">post-mortem <span aria-hidden="true">&nearr;</span>${newTabSr}</a>` : ''}
     </div>
 
     <div class="slab-grid">
@@ -569,8 +586,9 @@ function loadHistory(name) {
   return promise;
 }
 
-function buildSparkline(values, width = 96, height = 24) {
+function buildSparkline(values, opts = {}) {
   if (!values.length) return '';
+  const { width = 96, height = 24, label = 'trend' } = opts;
   const min = Math.min(...values, 1);
   const max = Math.max(...values, 1);
   const span = max - min || 1;
@@ -583,9 +601,16 @@ function buildSparkline(values, width = 96, height = 24) {
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
   const last = values[values.length - 1];
+  const first = values[0];
   const lastX = stepX * (values.length - 1);
   const lastY = padY + (1 - (last - min) / span) * usableH;
-  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="trend sparkline">
+  // Both <title> (for pointer hover tooltips) and aria-label (for SR) carry
+  // the same human-readable summary so the chart isn't a black box.
+  const summary = values.length > 1
+    ? `${label}: ${first.toFixed(2)}× → ${last.toFixed(2)}× over ${values.length} runs (min ${min.toFixed(2)}×, max ${max.toFixed(2)}×)`
+    : `${label}: ${last.toFixed(2)}× (single run)`;
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${summary}">
+    <title>${summary}</title>
     <polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
     <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2" fill="var(--accent)"/>
   </svg>`;
@@ -615,7 +640,7 @@ async function renderTrend(pkg) {
   if (pct > 5) { arrow = '↑'; cls = 'up'; }
   else if (pct < -5) { arrow = '↓'; cls = 'down'; }
   const sign = pct >= 0 ? '+' : '';
-  const sparkline = buildSparkline(values);
+  const sparkline = buildSparkline(values, { label: `${pkg.name} geomean` });
   const latest = `<span class="latest">${last.toFixed(2)}×</span>`;
 
   host.innerHTML = `
@@ -661,13 +686,25 @@ async function copyToClipboard(text, btn, installRow) {
   }, 1500);
 }
 
+// Cache fetched README HTML so switching away from a package and back doesn't
+// re-fetch. The previous in-function `loaded` flag was reset on every slab
+// re-render, defeating the purpose.
+const _readmeCache = {};
 function wireReadme(pkg) {
   const details = $('#slabReadmeHost');
   const host = $('#slabReadme');
   if (!details || !host) return;
-  let loaded = false;
+  // If we've already loaded this README, paint it eagerly so opening the
+  // <details> shows content instantly with no network round-trip.
+  if (_readmeCache[pkg.name]) {
+    host.innerHTML = _readmeCache[pkg.name];
+  }
   details.addEventListener('toggle', async () => {
-    if (!details.open || loaded) return;
+    if (!details.open) return;
+    if (_readmeCache[pkg.name]) {
+      host.innerHTML = _readmeCache[pkg.name];
+      return;
+    }
     host.innerHTML = '<div class="readme-skeleton" aria-label="Loading README"><div class="line"></div><div class="line"></div><div class="line"></div></div>';
     try {
       const res = await fetch(`readmes/${pkg.name}.html`);
@@ -676,8 +713,9 @@ function wireReadme(pkg) {
       // our own commonmark crate during the docs build — same-origin, no
       // user-controlled content. Do NOT route untrusted markup through
       // this assignment without sanitising it first.
-      host.innerHTML = await res.text();
-      loaded = true;
+      const html = await res.text();
+      _readmeCache[pkg.name] = html;
+      host.innerHTML = html;
     } catch {
       host.innerHTML = '<div class="readme-error">Could not load README.</div>';
     }
@@ -804,6 +842,27 @@ function renderCategoryChips() {
       onFilterOrCategoryChange();
     });
   });
+}
+
+function renderCandidates() {
+  const host = $('#candidatesList');
+  const count = $('#candidatesCount');
+  const wrap = $('#candidates');
+  const cands = state.pkgs.candidates ?? [];
+  if (!host || !wrap) return;
+  if (!cands.length) {
+    wrap.hidden = true;
+    return;
+  }
+  if (count) count.textContent = `(${cands.length})`;
+  // Sorted alphabetically server-side. Each entry links to its perf-review
+  // and, if present, its post-mortem (a deeper retrospective for packages
+  // we shipped + later removed). Both files are local under docs/.
+  host.innerHTML = cands.map(c => {
+    const url = c.postMortemUrl || c.perfReviewUrl;
+    const tag = c.postMortemUrl ? '<span class="pm-tag">post-mortem</span>' : '';
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${c.name}${tag}</a>`;
+  }).join('');
 }
 
 function updatePickerCount() {

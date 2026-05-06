@@ -91,6 +91,15 @@
     <div id="slabAnnounce" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
   </main>
 
+  <details class="candidates" id="candidates">
+    <summary>
+      <span class="candidates-label">Considered candidates</span>
+      <span class="candidates-count" id="candidatesCount" aria-hidden="true"></span>
+      <span class="candidates-hint" aria-hidden="true">npm packages we evaluated but didn't ship</span>
+    </summary>
+    <div class="candidates-list" id="candidatesList"></div>
+  </details>
+
   <footer class="footer">
     <div class="footer-links">
       <a href="https://github.com/amigo-labs/amigo-native" id="footerRepo" target="_blank" rel="noopener noreferrer">amigo-labs/amigo-native</a>
