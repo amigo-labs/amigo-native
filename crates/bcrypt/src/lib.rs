@@ -54,7 +54,7 @@ fn validate_cost(cost: u32) -> Result<()> {
 
 fn gensalt(cost: u32) -> Result<CString> {
     let mut entropy = [0u8; SALT_BYTES];
-    getrandom::getrandom(&mut entropy)
+    getrandom::fill(&mut entropy)
         .map_err(|e| Error::from_reason(format!("failed to read OS entropy: {e}")))?;
 
     let prefix = b"$2b\0";
