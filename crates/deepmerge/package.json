@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/deepmerge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Semantic drop-in for deepmerge with a Rust fast-path for plain JSON",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",

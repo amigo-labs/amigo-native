@@ -1,13 +1,21 @@
 {
   "name": "@amigo-labs/bm25-darwin-arm64",
-  "version": "0.1.0",
-  "os": ["darwin"],
-  "cpu": ["arm64"],
+  "version": "0.1.1",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
   "main": "bm25.darwin-arm64.node",
-  "files": ["bm25.darwin-arm64.node"],
+  "files": [
+    "bm25.darwin-arm64.node"
+  ],
   "description": "Prebuilt binary for @amigo-labs/bm25 on darwin-arm64",
   "license": "MIT",
-  "engines": { "node": ">= 18" },
+  "engines": {
+    "node": ">= 18"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/amigo-labs/amigo-native",
