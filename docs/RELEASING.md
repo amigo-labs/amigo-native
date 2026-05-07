@@ -117,6 +117,20 @@ is missing or the workflow is using `secrets.GITHUB_TOKEN` by accident. Push
 the tag manually with a PAT to recover the publish (`git push origin
 <crate>@<version>`), then fix the secret.
 
+**Release PR was merged but no tags were created.** Symptoms: the merged PR
+keeps the `autorelease: pending` label, the `release-please--branches--main`
+branch is not deleted, and no `<crate>@<version>` tags appear under
+`git ls-remote --tags origin`. Cause: the post-merge `release-please.yml`
+run could not parse the merged PR title against the per-package
+`pull-request-title-pattern` and aborted with `Bad pull request title`.
+This happens when grouped releases (`separate-pull-requests: false`) are
+combined with a literal `group-pull-request-title-pattern` — the single
+grouped title cannot simultaneously match every component's pattern.
+Recovery: run `node scripts/recover-release.mjs <merge-commit-sha>` with a
+PAT-authenticated remote to tag and push the missing releases. The script
+reads the manifest, derives each tag, skips tags already on origin, and
+pushes the rest, which fires `release.yml` once per tag.
+
 **A commit is missing from the Release PR.** Check the scope. Commits without
 a scope, or with a scope that doesn't match any directory under `crates/`, are
 not associated with any package and contribute nothing to a release.
