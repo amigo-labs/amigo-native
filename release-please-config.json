@@ -10,48 +10,411 @@
   "pull-request-header": "Automated release proposed by release-please. Merging this PR creates per-crate tags and triggers the npm publish workflow.",
   "bootstrap-sha": "e8478c226c1c9bc5731d890e937625495f0e3e19",
   "changelog-sections": [
-    { "type": "feat",     "section": "Features" },
-    { "type": "fix",      "section": "Bug Fixes" },
-    { "type": "perf",     "section": "Performance Improvements" },
-    { "type": "revert",   "section": "Reverts" },
-    { "type": "docs",     "section": "Documentation" },
-    { "type": "refactor", "section": "Code Refactoring",        "hidden": true },
-    { "type": "test",     "section": "Tests",                   "hidden": true },
-    { "type": "build",    "section": "Build System",            "hidden": true },
-    { "type": "ci",       "section": "Continuous Integration",  "hidden": true },
-    { "type": "chore",    "section": "Miscellaneous",           "hidden": true }
+    {"type":"feat","section":"Features"},
+    {"type":"fix","section":"Bug Fixes"},
+    {"type":"perf","section":"Performance Improvements"},
+    {"type":"revert","section":"Reverts"},
+    {"type":"docs","section":"Documentation"},
+    {"type":"refactor","section":"Code Refactoring","hidden":true},
+    {"type":"test","section":"Tests","hidden":true},
+    {"type":"build","section":"Build System","hidden":true},
+    {"type":"ci","section":"Continuous Integration","hidden":true},
+    {"type":"chore","section":"Miscellaneous","hidden":true}
   ],
   "packages": {
-    "crates/argon2":          { "package-name": "@amigo-labs/argon2",          "component": "argon2",          "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/bcrypt":          { "package-name": "@amigo-labs/bcrypt",          "component": "bcrypt",          "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/bm25":            { "package-name": "@amigo-labs/bm25",            "component": "bm25",            "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/commonmark":      { "package-name": "@amigo-labs/commonmark",      "component": "commonmark",      "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/csv":             { "package-name": "@amigo-labs/csv",             "component": "csv",             "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/deepmerge":       { "package-name": "@amigo-labs/deepmerge",       "component": "deepmerge",       "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/diff":            { "package-name": "@amigo-labs/diff",            "component": "diff",            "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/encoding":        { "package-name": "@amigo-labs/encoding",        "component": "encoding",        "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/file-type":       { "package-name": "@amigo-labs/file-type",       "component": "file-type",       "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/force-layout":    { "package-name": "@amigo-labs/force-layout",    "component": "force-layout",    "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/graph-layout":    { "package-name": "@amigo-labs/graph-layout",    "component": "graph-layout",    "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/inflate":         { "package-name": "@amigo-labs/inflate",         "component": "inflate",         "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/jose":            { "package-name": "@amigo-labs/jose",            "component": "jose",            "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/jwt":             { "package-name": "@amigo-labs/jwt",             "component": "jwt",             "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/language-detect": { "package-name": "@amigo-labs/language-detect", "component": "language-detect", "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/minisearch":      { "package-name": "@amigo-labs/minisearch",      "component": "minisearch",      "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/nanoid":          { "package-name": "@amigo-labs/nanoid",          "component": "nanoid" },
-    "crates/pdf":             { "package-name": "@amigo-labs/pdf",             "component": "pdf",             "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/pdf-parse":       { "package-name": "@amigo-labs/pdf-parse",       "component": "pdf-parse",       "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/sanitize-html":   { "package-name": "@amigo-labs/sanitize-html",   "component": "sanitize-html",   "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/sentences":       { "package-name": "@amigo-labs/sentences",       "component": "sentences",       "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/slugify":         { "package-name": "@amigo-labs/slugify",         "component": "slugify",         "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/stemmer":         { "package-name": "@amigo-labs/stemmer",         "component": "stemmer",         "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/svgo":            { "package-name": "@amigo-labs/svgo",            "component": "svgo",            "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/text-splitters":  { "package-name": "@amigo-labs/text-splitters",  "component": "text-splitters",  "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/tiktoken":        { "package-name": "@amigo-labs/tiktoken",        "component": "tiktoken",        "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/turndown":        { "package-name": "@amigo-labs/turndown",        "component": "turndown",        "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/typst":           { "package-name": "@amigo-labs/typst",           "component": "typst",           "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/xlsx":            { "package-name": "@amigo-labs/xlsx",            "component": "xlsx",            "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/xxhash":          { "package-name": "@amigo-labs/xxhash",          "component": "xxhash",          "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] },
-    "crates/zip":             { "package-name": "@amigo-labs/zip",             "component": "zip",             "extra-files": [{ "type": "toml", "path": "Cargo.toml", "jsonpath": "$.package.version" }] }
+    "crates/argon2": {
+      "package-name": "@amigo-labs/argon2",
+      "component": "argon2",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/bcrypt": {
+      "package-name": "@amigo-labs/bcrypt",
+      "component": "bcrypt",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/bm25": {
+      "package-name": "@amigo-labs/bm25",
+      "component": "bm25",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/commonmark": {
+      "package-name": "@amigo-labs/commonmark",
+      "component": "commonmark",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/csv": {
+      "package-name": "@amigo-labs/csv",
+      "component": "csv",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/deepmerge": {
+      "package-name": "@amigo-labs/deepmerge",
+      "component": "deepmerge",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/diff": {
+      "package-name": "@amigo-labs/diff",
+      "component": "diff",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/encoding": {
+      "package-name": "@amigo-labs/encoding",
+      "component": "encoding",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/file-type": {
+      "package-name": "@amigo-labs/file-type",
+      "component": "file-type",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/force-layout": {
+      "package-name": "@amigo-labs/force-layout",
+      "component": "force-layout",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/graph-layout": {
+      "package-name": "@amigo-labs/graph-layout",
+      "component": "graph-layout",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/inflate": {
+      "package-name": "@amigo-labs/inflate",
+      "component": "inflate",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/jose": {
+      "package-name": "@amigo-labs/jose",
+      "component": "jose",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/jwt": {
+      "package-name": "@amigo-labs/jwt",
+      "component": "jwt",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/language-detect": {
+      "package-name": "@amigo-labs/language-detect",
+      "component": "language-detect",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/minisearch": {
+      "package-name": "@amigo-labs/minisearch",
+      "component": "minisearch",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/nanoid": {
+      "package-name": "@amigo-labs/nanoid",
+      "component": "nanoid"
+    },
+    "crates/pdf": {
+      "package-name": "@amigo-labs/pdf",
+      "component": "pdf",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/pdf-parse": {
+      "package-name": "@amigo-labs/pdf-parse",
+      "component": "pdf-parse",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/sanitize-html": {
+      "package-name": "@amigo-labs/sanitize-html",
+      "component": "sanitize-html",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/sentences": {
+      "package-name": "@amigo-labs/sentences",
+      "component": "sentences",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/slugify": {
+      "package-name": "@amigo-labs/slugify",
+      "component": "slugify",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/stemmer": {
+      "package-name": "@amigo-labs/stemmer",
+      "component": "stemmer",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/svgo": {
+      "package-name": "@amigo-labs/svgo",
+      "component": "svgo",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/text-splitters": {
+      "package-name": "@amigo-labs/text-splitters",
+      "component": "text-splitters",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/tiktoken": {
+      "package-name": "@amigo-labs/tiktoken",
+      "component": "tiktoken",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/turndown": {
+      "package-name": "@amigo-labs/turndown",
+      "component": "turndown",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/typst": {
+      "package-name": "@amigo-labs/typst",
+      "component": "typst",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/xlsx": {
+      "package-name": "@amigo-labs/xlsx",
+      "component": "xlsx",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/xxhash": {
+      "package-name": "@amigo-labs/xxhash",
+      "component": "xxhash",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/zip": {
+      "package-name": "@amigo-labs/zip",
+      "component": "zip",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    }
   }
 }

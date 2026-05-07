@@ -450,8 +450,6 @@ function buildSlabHTML(p) {
     </div>
     <p class="slab-desc" id="slabDesc"></p>
 
-    <div class="slab-trend" id="slabTrend"></div>
-
     <div class="slab-install">
       <span class="prefix" aria-hidden="true">$</span>
       <span class="cmd" id="slabCmd"></span><span class="caret" aria-hidden="true"></span>
@@ -466,29 +464,32 @@ function buildSlabHTML(p) {
       ${p.postMortemUrl ? `<a href="${p.postMortemUrl}" target="_blank" rel="noopener noreferrer">post-mortem <span aria-hidden="true">&nearr;</span>${newTabSr}</a>` : ''}
     </div>
 
-    <div class="slab-grid">
-      <div class="slab-col">
-        <div class="slab-col-head">Benchmarks (ops/s)</div>
+    <div class="slab-tabs" id="slabTabs">
+      <div class="slab-tablist" role="tablist" aria-label="Package details">
+        <button class="slab-tab" role="tab" id="tab-bench" aria-controls="panel-bench" aria-selected="true" tabindex="0">Benchmarks</button>
+        <button class="slab-tab" role="tab" id="tab-foot" aria-controls="panel-foot" aria-selected="false" tabindex="-1">Footprint</button>
+        <button class="slab-tab" role="tab" id="tab-readme" aria-controls="panel-readme" aria-selected="false" tabindex="-1">README</button>
+      </div>
+      <section class="slab-tabpanel" id="panel-bench" role="tabpanel" aria-labelledby="tab-bench">
+        <div class="slab-trend" id="slabTrend"></div>
         <div class="chart-legend" aria-hidden="true">
           <span><span class="swatch amigo"></span>amigo-labs</span>
           <span><span class="swatch competitor"></span>competitor</span>
         </div>
         <div id="slabBench"></div>
-      </div>
-      <div class="slab-col">
-        <div class="slab-col-head">Install footprint</div>
+      </section>
+      <section class="slab-tabpanel" id="panel-foot" role="tabpanel" aria-labelledby="tab-foot" hidden>
         <div class="chart-legend" aria-hidden="true">
           <span><span class="swatch amigo"></span>amigo-labs</span>
           <span><span class="swatch competitor"></span>competitor</span>
         </div>
         <div id="slabSizes"></div>
-      </div>
+      </section>
+      <section class="slab-tabpanel" id="panel-readme" role="tabpanel" aria-labelledby="tab-readme" hidden>
+        <div class="readme-tab-hint">rendered by @amigo-labs/commonmark</div>
+        <div class="readme-body" id="slabReadme"></div>
+      </section>
     </div>
-
-    <details class="slab-readme" id="slabReadmeHost">
-      <summary>README <span class="readme-hint">rendered by @amigo-labs/commonmark</span></summary>
-      <div class="readme-body" id="slabReadme"></div>
-    </details>
 
     ${p.perfReviewUrl ? `
     <details class="slab-readme" id="slabPerfReviewHost">
@@ -522,8 +523,55 @@ function animateSlab(p) {
   renderBench(p);
   renderSizes(p);
   renderTrend(p);
-  wireReadme(p);
+  initTabs(p);
   wirePerfReview(p);
+}
+
+function initTabs(pkg) {
+  const tablist = document.querySelector('#slabTabs .slab-tablist');
+  if (!tablist) return;
+  const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+  const panels = tabs.map(t => document.getElementById(t.getAttribute('aria-controls')));
+  let readmeLoaded = false;
+
+  // Cache pre-warm — if README is already cached for this pkg, render it
+  // immediately so first activation doesn't re-fetch.
+  const readmeHost = $('#slabReadme');
+  if (readmeHost && _readmeCache[pkg.name]) {
+    readmeHost.innerHTML = _readmeCache[pkg.name];
+    readmeLoaded = true;
+  }
+
+  function activate(i, focus) {
+    tabs.forEach((t, j) => {
+      const on = i === j;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      panels[j].hidden = !on;
+    });
+    if (focus) tabs[i].focus();
+    if (tabs[i].id === 'tab-readme' && !readmeLoaded) {
+      readmeLoaded = true;
+      loadMarkdown({
+        host: readmeHost,
+        cache: _readmeCache,
+        key: pkg.name,
+        fetchPath: `readmes/${pkg.name}.html`,
+        label: 'README',
+      });
+    }
+  }
+
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => activate(i, false));
+    t.addEventListener('keydown', e => {
+      const n = tabs.length;
+      if (e.key === 'ArrowRight') { activate((i + 1) % n, true); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft') { activate((i - 1 + n) % n, true); e.preventDefault(); }
+      else if (e.key === 'Home') { activate(0, true); e.preventDefault(); }
+      else if (e.key === 'End') { activate(n - 1, true); e.preventDefault(); }
+    });
+  });
 }
 
 // Per-package perf history lives in docs/history/<name>.jsonl, one entry
@@ -677,42 +725,36 @@ async function copyToClipboard(text, btn, installRow) {
 const _readmeCache = {};
 const _perfReviewCache = {};
 
+async function loadMarkdown({ host, cache, key, fetchPath, label }) {
+  if (!host) return;
+  if (cache[key]) {
+    host.innerHTML = cache[key];
+    return;
+  }
+  host.innerHTML = `<div class="readme-skeleton" aria-label="Loading ${label}"><div class="line"></div><div class="line"></div><div class="line"></div></div>`;
+  try {
+    const res = await fetch(fetchPath);
+    if (!res.ok) throw new Error(res.statusText);
+    // The fetched HTML is locally rendered from project-owned markdown
+    // via our own commonmark crate during the docs build — same-origin,
+    // no user-controlled content. Do NOT route untrusted markup through
+    // this assignment without sanitising it first.
+    const html = await res.text();
+    cache[key] = html;
+    host.innerHTML = html;
+  } catch {
+    host.innerHTML = `<div class="readme-error">Could not load ${label}.</div>`;
+  }
+}
+
 function wireMarkdownDetails({ details, host, cache, key, fetchPath, label }) {
   if (!details || !host) return;
   if (cache[key]) {
     host.innerHTML = cache[key];
   }
-  details.addEventListener('toggle', async () => {
+  details.addEventListener('toggle', () => {
     if (!details.open) return;
-    if (cache[key]) {
-      host.innerHTML = cache[key];
-      return;
-    }
-    host.innerHTML = `<div class="readme-skeleton" aria-label="Loading ${label}"><div class="line"></div><div class="line"></div><div class="line"></div></div>`;
-    try {
-      const res = await fetch(fetchPath);
-      if (!res.ok) throw new Error(res.statusText);
-      // The fetched HTML is locally rendered from project-owned markdown
-      // via our own commonmark crate during the docs build — same-origin,
-      // no user-controlled content. Do NOT route untrusted markup through
-      // this assignment without sanitising it first.
-      const html = await res.text();
-      cache[key] = html;
-      host.innerHTML = html;
-    } catch {
-      host.innerHTML = `<div class="readme-error">Could not load ${label}.</div>`;
-    }
-  });
-}
-
-function wireReadme(pkg) {
-  wireMarkdownDetails({
-    details: $('#slabReadmeHost'),
-    host: $('#slabReadme'),
-    cache: _readmeCache,
-    key: pkg.name,
-    fetchPath: `readmes/${pkg.name}.html`,
-    label: 'README',
+    loadMarkdown({ host, cache, key, fetchPath, label });
   });
 }
 
