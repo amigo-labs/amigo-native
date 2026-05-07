@@ -1,13 +1,21 @@
 {
   "name": "@amigo-labs/typst-win32-x64-msvc",
-  "version": "0.1.0",
-  "os": ["win32"],
-  "cpu": ["x64"],
+  "version": "0.1.1",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "main": "typst.win32-x64-msvc.node",
-  "files": ["typst.win32-x64-msvc.node"],
+  "files": [
+    "typst.win32-x64-msvc.node"
+  ],
   "description": "Prebuilt binary for @amigo-labs/typst on win32-x64-msvc",
   "license": "MIT",
-  "engines": { "node": ">= 18" },
+  "engines": {
+    "node": ">= 18"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/amigo-labs/amigo-native",

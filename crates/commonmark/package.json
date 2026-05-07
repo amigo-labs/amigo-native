@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/commonmark",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Blazing fast native CommonMark + GFM renderer powered by Rust and pulldown-cmark",
   "main": "index.js",
   "types": "index.d.ts",

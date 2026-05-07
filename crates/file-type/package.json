@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/file-type",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Rust-powered magic-byte file type detection via infer",
   "main": "index.js",
   "types": "index.d.ts",

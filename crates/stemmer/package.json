@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/stemmer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Porter/Snowball stemmer — batch-only, 18 languages, integrates with @amigo-labs/bm25.",
   "main": "index.js",
   "types": "index.d.ts",
