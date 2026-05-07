@@ -1,8 +1,8 @@
+use argon2::password_hash::SaltString;
+use argon2::password_hash::rand_core::OsRng;
 use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use password_hash::SaltString;
-use password_hash::rand_core::OsRng;
 
 #[napi(object)]
 #[derive(Default)]

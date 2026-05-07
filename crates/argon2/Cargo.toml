@@ -10,7 +10,6 @@ crate-type = ["cdylib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 argon2 = { version = "0.5", features = ["std"] }
-password-hash = { version = "0.5", features = ["rand_core"] }
 
 [build-dependencies]
 napi-build = "2"
