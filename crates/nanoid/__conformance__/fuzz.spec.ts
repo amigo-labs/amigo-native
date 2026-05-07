@@ -22,7 +22,7 @@ describe('nanoid fuzzing', () => {
   it('custom alphabet is respected', () => {
     fc.assert(
       fc.property(
-        fc.stringOf(fc.constantFrom(...'abcdef0123456789'), { minLength: 2, maxLength: 16 }),
+        fc.string({ unit: fc.constantFrom(...'abcdef0123456789'), minLength: 2, maxLength: 16 }),
         fc.integer({ min: 1, max: 32 }),
         (alphabet, size) => {
           const unique = [...new Set(alphabet)].join('')

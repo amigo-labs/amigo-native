@@ -9,7 +9,7 @@ import { slugify as nativeSlugify } from '../index.js';
 describe('slugify fuzzing — invariants', () => {
   it('output is always lowercase', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (input) => {
+      fc.property(fc.string({ unit: 'binary' }), (input) => {
         const result = nativeSlugify(input);
         return result === result.toLowerCase();
       }),
@@ -19,7 +19,7 @@ describe('slugify fuzzing — invariants', () => {
 
   it('output never contains double separators', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (input) => {
+      fc.property(fc.string({ unit: 'binary' }), (input) => {
         const result = nativeSlugify(input);
         return !result.includes('--');
       }),
@@ -29,7 +29,7 @@ describe('slugify fuzzing — invariants', () => {
 
   it('output has no leading or trailing separators', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (input) => {
+      fc.property(fc.string({ unit: 'binary' }), (input) => {
         const result = nativeSlugify(input);
         return !result.startsWith('-') && !result.endsWith('-');
       }),
@@ -39,7 +39,7 @@ describe('slugify fuzzing — invariants', () => {
 
   it('output contains only [a-z0-9-]', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (input) => {
+      fc.property(fc.string({ unit: 'binary' }), (input) => {
         const result = nativeSlugify(input);
         return /^[a-z0-9-]*$/.test(result);
       }),
@@ -49,7 +49,7 @@ describe('slugify fuzzing — invariants', () => {
 
   it('idempotent: slugify(slugify(x)) === slugify(x)', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (input) => {
+      fc.property(fc.string({ unit: 'binary' }), (input) => {
         const once = nativeSlugify(input);
         const twice = nativeSlugify(once);
         return once === twice;

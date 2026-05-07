@@ -7,7 +7,7 @@ const runs = Number(process.env.FUZZ_RUNS ?? 200)
 describe('diff — fuzz (totality + reconstruction)', () => {
   it('diffLines is total for arbitrary unicode', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), fc.fullUnicodeString(), (a, b) => {
+      fc.property(fc.string({ unit: 'binary' }), fc.string({ unit: 'binary' }), (a, b) => {
         const h = diffLines(a, b)
         expect(Array.isArray(h)).toBe(true)
       }),
