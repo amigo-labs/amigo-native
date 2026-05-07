@@ -380,7 +380,7 @@
       "title": "ZIP",
       "category": "archive",
       "description": "ZIP archive read/write via the zip Rust crate.",
-      "speedup": "1.84–11× faster",
+      "speedup": "3.3–12× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/zip",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/zip",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md",
