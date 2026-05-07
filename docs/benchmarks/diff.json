@@ -1,7 +1,7 @@
 {
   "crate": "diff",
-  "generatedAt": "2026-05-05T21:18:36.646Z",
-  "commit": "4aea272",
+  "generatedAt": "2026-05-07T09:24:02.766Z",
+  "commit": "3be9101",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 24898.42,
-          "rme": 0.72,
-          "samples": 12450
+          "hz": 26700.23,
+          "rme": 0.27,
+          "samples": 13351
         },
         {
           "name": "diff",
-          "hz": 2350.38,
-          "rme": 0.52,
-          "samples": 1176
+          "hz": 2524.65,
+          "rme": 0.55,
+          "samples": 1263
         }
       ]
     },
@@ -29,15 +29,81 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 157.06,
-          "rme": 0.21,
-          "samples": 79
+          "hz": 143.47,
+          "rme": 0.17,
+          "samples": 72
         },
         {
           "name": "diff",
-          "hz": 6.1731,
-          "rme": 1.38,
+          "hz": 6.6498,
+          "rme": 1.81,
           "samples": 10
+        }
+      ]
+    },
+    {
+      "file": "crates/diff/__bench__/index.bench.ts",
+      "name": "diff — diffLines 200 KB",
+      "entries": [
+        {
+          "name": "@amigo-labs/diff",
+          "hz": 1.5225,
+          "rme": 0.05,
+          "samples": 10
+        }
+      ]
+    },
+    {
+      "file": "crates/diff/__bench__/index.bench.ts",
+      "name": "diff — diffLinesToOffsets 20 KB (packed hot-path)",
+      "entries": [
+        {
+          "name": "@amigo-labs/diff (offsets)",
+          "hz": 145.76,
+          "rme": 0.14,
+          "samples": 73
+        },
+        {
+          "name": "@amigo-labs/diff (hunks)",
+          "hz": 143.68,
+          "rme": 0.31,
+          "samples": 72
+        }
+      ]
+    },
+    {
+      "file": "crates/diff/__bench__/index.bench.ts",
+      "name": "diff — createPatch 20 KB",
+      "entries": [
+        {
+          "name": "@amigo-labs/diff",
+          "hz": 144.73,
+          "rme": 0.32,
+          "samples": 73
+        },
+        {
+          "name": "diff.createPatch",
+          "hz": 6.5816,
+          "rme": 0.25,
+          "samples": 10
+        }
+      ]
+    },
+    {
+      "file": "crates/diff/__bench__/index.bench.ts",
+      "name": "diff — diffChars 5 KB",
+      "entries": [
+        {
+          "name": "@amigo-labs/diff",
+          "hz": 1900.54,
+          "rme": 0.16,
+          "samples": 951
+        },
+        {
+          "name": "diff",
+          "hz": 5364.59,
+          "rme": 0.42,
+          "samples": 2683
         }
       ]
     }

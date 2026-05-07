@@ -1,7 +1,7 @@
 {
   "crate": "bcrypt",
-  "generatedAt": "2026-05-05T21:18:36.646Z",
-  "commit": "4aea272",
+  "generatedAt": "2026-05-07T09:24:02.766Z",
+  "commit": "3be9101",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,21 +11,21 @@
       "entries": [
         {
           "name": "@amigo-labs/bcrypt",
-          "hz": 972.43,
-          "rme": 0.02,
-          "samples": 4863
+          "hz": 859.88,
+          "rme": 0.01,
+          "samples": 4300
         },
         {
           "name": "bcrypt (npm, C++ via node-gyp)",
-          "hz": 909.65,
-          "rme": 0.42,
-          "samples": 4549
+          "hz": 846.32,
+          "rme": 0.19,
+          "samples": 4232
         },
         {
           "name": "bcryptjs (pure JS)",
-          "hz": 757.01,
-          "rme": 0.16,
-          "samples": 3786
+          "hz": 672.89,
+          "rme": 0.11,
+          "samples": 3365
         }
       ]
     },
@@ -35,21 +35,21 @@
       "entries": [
         {
           "name": "@amigo-labs/bcrypt",
-          "hz": 17.4524,
+          "hz": 15.4397,
           "rme": 0.02,
-          "samples": 175
+          "samples": 155
         },
         {
           "name": "bcrypt (npm, C++ via node-gyp)",
-          "hz": 16.8433,
-          "rme": 0.03,
-          "samples": 169
+          "hz": 15.0253,
+          "rme": 0.08,
+          "samples": 151
         },
         {
           "name": "bcryptjs (pure JS)",
-          "hz": 12.768,
-          "rme": 0.07,
-          "samples": 128
+          "hz": 11.2042,
+          "rme": 0.3,
+          "samples": 113
         }
       ]
     },
@@ -59,21 +59,21 @@
       "entries": [
         {
           "name": "@amigo-labs/bcrypt",
-          "hz": 17.3726,
-          "rme": 0.39,
-          "samples": 174
+          "hz": 15.4446,
+          "rme": 0.02,
+          "samples": 155
         },
         {
           "name": "bcrypt (npm, C++ via node-gyp)",
-          "hz": 16.8425,
-          "rme": 0.19,
-          "samples": 169
+          "hz": 15.0612,
+          "rme": 0.02,
+          "samples": 151
         },
         {
           "name": "bcryptjs (pure JS)",
-          "hz": 12.78,
-          "rme": 0.06,
-          "samples": 128
+          "hz": 11.2287,
+          "rme": 0.14,
+          "samples": 113
         }
       ]
     }

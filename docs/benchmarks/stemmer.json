@@ -1,7 +1,7 @@
 {
   "crate": "stemmer",
-  "generatedAt": "2026-04-24T06:10:11.262Z",
-  "commit": "40fbc6c",
+  "generatedAt": "2026-05-07T09:24:02.766Z",
+  "commit": "3be9101",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,69 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 1843.42,
-          "rme": 1.57,
-          "samples": 922
+          "hz": 2040.56,
+          "rme": 3.8,
+          "samples": 1021
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 260.7,
-          "rme": 0.47,
-          "samples": 131
-        }
-      ]
-    },
-    {
-      "file": "crates/stemmer/__bench__/index.bench.ts",
-      "name": "stemmer — stemMany × 10000",
-      "entries": [
-        {
-          "name": "@amigo-labs/stemmer",
-          "hz": 189.9,
-          "rme": 0.18,
-          "samples": 95
-        },
-        {
-          "name": "natural.PorterStemmer (loop)",
-          "hz": 26.1401,
-          "rme": 0.33,
-          "samples": 14
-        }
-      ]
-    },
-    {
-      "file": "crates/stemmer/__bench__/index.bench.ts",
-      "name": "stemmer — tokenizeAndStem 10 KB doc",
-      "entries": [
-        {
-          "name": "@amigo-labs/stemmer",
-          "hz": 1353.41,
-          "rme": 0.2,
-          "samples": 677
-        },
-        {
-          "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 169,
-          "rme": 0.38,
-          "samples": 85
-        }
-      ]
-    },
-    {
-      "file": "crates/stemmer/__bench__/index.bench.ts",
-      "name": "stemmer — tokenizeAndStem 100 KB doc",
-      "entries": [
-        {
-          "name": "@amigo-labs/stemmer",
-          "hz": 139.17,
-          "rme": 0.17,
-          "samples": 70
-        },
-        {
-          "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 16.7758,
-          "rme": 0.48,
-          "samples": 10
+          "hz": 258.35,
+          "rme": 2.26,
+          "samples": 130
         }
       ]
     }
