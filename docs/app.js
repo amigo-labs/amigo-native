@@ -5,14 +5,12 @@ const state = {
   data: null,
   activeIdx: 0,
   activeName: null,
-  sortMode: 'speedup', // 'speedup' | 'alpha' | 'size'
   filter: '',           // user's text query (lowercased)
   category: 'all',      // 'all' | category id
-  sortedList: [],       // packages after sort + filter
+  sortedList: [],       // packages after filter, ordered by speedup
   typingTimers: [],
 };
 
-// --- sort helpers ---
 // parses strings like "3-7x faster", "1.4-2.5× faster", returns max value
 function parseMaxSpeedup(s) {
   if (!s) return 0;
@@ -27,22 +25,6 @@ function parseMaxSpeedup(s) {
     if (v > best) best = v;
   }
   return best === -Infinity ? 0 : best;
-}
-
-// returns how much smaller amigo is vs. the largest competitor for this pkg
-// e.g. 4.8 MB competitor / 2.1 MB amigo = 2.28
-function sizeAdvantage(pkgName, sizesData) {
-  const sizes = sizesData?.[pkgName];
-  if (!sizes) return 0;
-  const amigoKey = '@amigo-labs/' + pkgName;
-  const amigoSize = sizes[amigoKey]?.installSize;
-  if (!amigoSize) return 0;
-  let maxCompetitor = 0;
-  for (const [name, info] of Object.entries(sizes)) {
-    if (name === amigoKey) continue;
-    if ((info.installSize || 0) > maxCompetitor) maxCompetitor = info.installSize;
-  }
-  return maxCompetitor > amigoSize ? maxCompetitor / amigoSize : 0;
 }
 
 function computeSortedList() {
@@ -62,15 +44,7 @@ function computeSortedList() {
     );
   }
 
-  const mode = state.sortMode;
-  if (mode === 'alpha') {
-    list.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (mode === 'speedup') {
-    list.sort((a, b) => parseMaxSpeedup(b.speedup) - parseMaxSpeedup(a.speedup));
-  } else if (mode === 'size') {
-    const sizes = state.data?.sizes;
-    list.sort((a, b) => sizeAdvantage(b.name, sizes) - sizeAdvantage(a.name, sizes));
-  }
+  list.sort((a, b) => parseMaxSpeedup(b.speedup) - parseMaxSpeedup(a.speedup));
   state.sortedList = list;
 }
 
@@ -159,9 +133,7 @@ async function boot() {
   renderCategoryChips();
   renderPicker();
   updatePickerCount();
-  renderCandidates();
   wirePicker();
-  wireSortChips();
   wireFilter();
   cycleHeroTagline();
   wireKeyboard();
@@ -517,6 +489,12 @@ function buildSlabHTML(p) {
       <summary>README <span class="readme-hint">rendered by @amigo-labs/commonmark</span></summary>
       <div class="readme-body" id="slabReadme"></div>
     </details>
+
+    ${p.perfReviewUrl ? `
+    <details class="slab-readme" id="slabPerfReviewHost">
+      <summary>Perf review <span class="readme-hint">rendered by @amigo-labs/commonmark</span></summary>
+      <div class="readme-body" id="slabPerfReview"></div>
+    </details>` : ''}
   `;
 }
 
@@ -545,6 +523,7 @@ function animateSlab(p) {
   renderSizes(p);
   renderTrend(p);
   wireReadme(p);
+  wirePerfReview(p);
 }
 
 // Per-package perf history lives in docs/history/<name>.jsonl, one entry
@@ -696,35 +675,56 @@ async function copyToClipboard(text, btn, installRow) {
 // re-fetch. The previous in-function `loaded` flag was reset on every slab
 // re-render, defeating the purpose.
 const _readmeCache = {};
-function wireReadme(pkg) {
-  const details = $('#slabReadmeHost');
-  const host = $('#slabReadme');
+const _perfReviewCache = {};
+
+function wireMarkdownDetails({ details, host, cache, key, fetchPath, label }) {
   if (!details || !host) return;
-  // If we've already loaded this README, paint it eagerly so opening the
-  // <details> shows content instantly with no network round-trip.
-  if (_readmeCache[pkg.name]) {
-    host.innerHTML = _readmeCache[pkg.name];
+  if (cache[key]) {
+    host.innerHTML = cache[key];
   }
   details.addEventListener('toggle', async () => {
     if (!details.open) return;
-    if (_readmeCache[pkg.name]) {
-      host.innerHTML = _readmeCache[pkg.name];
+    if (cache[key]) {
+      host.innerHTML = cache[key];
       return;
     }
-    host.innerHTML = '<div class="readme-skeleton" aria-label="Loading README"><div class="line"></div><div class="line"></div><div class="line"></div></div>';
+    host.innerHTML = `<div class="readme-skeleton" aria-label="Loading ${label}"><div class="line"></div><div class="line"></div><div class="line"></div></div>`;
     try {
-      const res = await fetch(`readmes/${pkg.name}.html`);
+      const res = await fetch(fetchPath);
       if (!res.ok) throw new Error(res.statusText);
-      // The fetched HTML is locally rendered from each crate's README via
-      // our own commonmark crate during the docs build — same-origin, no
-      // user-controlled content. Do NOT route untrusted markup through
+      // The fetched HTML is locally rendered from project-owned markdown
+      // via our own commonmark crate during the docs build — same-origin,
+      // no user-controlled content. Do NOT route untrusted markup through
       // this assignment without sanitising it first.
       const html = await res.text();
-      _readmeCache[pkg.name] = html;
+      cache[key] = html;
       host.innerHTML = html;
     } catch {
-      host.innerHTML = '<div class="readme-error">Could not load README.</div>';
+      host.innerHTML = `<div class="readme-error">Could not load ${label}.</div>`;
     }
+  });
+}
+
+function wireReadme(pkg) {
+  wireMarkdownDetails({
+    details: $('#slabReadmeHost'),
+    host: $('#slabReadme'),
+    cache: _readmeCache,
+    key: pkg.name,
+    fetchPath: `readmes/${pkg.name}.html`,
+    label: 'README',
+  });
+}
+
+function wirePerfReview(pkg) {
+  if (!pkg.perfReviewUrl) return;
+  wireMarkdownDetails({
+    details: $('#slabPerfReviewHost'),
+    host: $('#slabPerfReview'),
+    cache: _perfReviewCache,
+    key: pkg.name,
+    fetchPath: `perf-review/${pkg.name}.html`,
+    label: 'perf review',
   });
 }
 
@@ -850,27 +850,6 @@ function renderCategoryChips() {
   });
 }
 
-function renderCandidates() {
-  const host = $('#candidatesList');
-  const count = $('#candidatesCount');
-  const wrap = $('#candidates');
-  const cands = state.pkgs.candidates ?? [];
-  if (!host || !wrap) return;
-  if (!cands.length) {
-    wrap.hidden = true;
-    return;
-  }
-  if (count) count.textContent = `(${cands.length})`;
-  // Sorted alphabetically server-side. Each entry links to its perf-review
-  // and, if present, its post-mortem (a deeper retrospective for packages
-  // we shipped + later removed). Both files are local under docs/.
-  host.innerHTML = cands.map(c => {
-    const url = c.postMortemUrl || c.perfReviewUrl;
-    const tag = c.postMortemUrl ? '<span class="pm-tag">post-mortem</span>' : '';
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${c.name}${tag}</a>`;
-  }).join('');
-}
-
 function updatePickerCount() {
   const el = $('#pickerCount');
   if (!el) return;
@@ -917,26 +896,6 @@ function wireFilter() {
       const picker = $('#picker');
       if (state.sortedList.length && picker) picker.focus();
     }
-  });
-}
-
-function wireSortChips() {
-  document.querySelectorAll('.sort-chips .chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const mode = chip.dataset.sort;
-      if (mode === state.sortMode) return;
-      state.sortMode = mode;
-      document.querySelectorAll('.sort-chips .chip').forEach(c => {
-        c.setAttribute('aria-pressed', c.dataset.sort === mode ? 'true' : 'false');
-      });
-      const keepName = state.activeName;
-      computeSortedList();
-      renderPicker();
-      updatePickerCount();
-      if (!state.sortedList.length) return;
-      const newIdx = Math.max(0, state.sortedList.findIndex(p => p.name === keepName));
-      requestAnimationFrame(() => snapTo(newIdx, true));
-    });
   });
 }
 

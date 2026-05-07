@@ -207,6 +207,8 @@ jobs:
           path: crates/
       - name: Check rendered READMEs are in sync
         run: node scripts/render-readmes.mjs --check
+      - name: Check rendered perf-reviews are in sync
+        run: node scripts/render-perf-reviews.mjs --check
       - name: Test crates
         run: |
           set -euo pipefail

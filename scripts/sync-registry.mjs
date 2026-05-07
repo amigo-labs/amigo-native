@@ -55,7 +55,6 @@ function buildPackagesJson(crates, existing) {
   const existingByName = new Map((existing.packages ?? []).map((p) => [p.name, p]))
   const reviewSet = perfReviewSet()
   const postMortemSet = postMortemSet_()
-  const shippedNames = new Set(crates.map((c) => c.dir))
   const packages = crates.map(({ dir, amigo }) => {
     const prev = existingByName.get(dir)
     const speedup = prev?.speedup ?? amigo.speedup ?? 'TBD'
@@ -82,21 +81,13 @@ function buildPackagesJson(crates, existing) {
     }
     return entry
   })
-  // "Candidates" — packages we evaluated but didn't ship. Surfaced in the
-  // docs as a "considered" panel so visitors can see the work behind the
-  // selection. Driven by docs/perf-review/<name>.md whose <name> isn't a
-  // shipped crate.
-  const candidates = []
-  for (const name of [...reviewSet].sort()) {
-    if (shippedNames.has(name)) continue
-    const c = { name, perfReviewUrl: `/perf-review/${name}.md` }
-    if (postMortemSet.has(name)) c.postMortemUrl = `/post-mortems/${name}.md`
-    candidates.push(c)
-  }
   const marquee = (existing.marquee ?? []).map((m) =>
     m.k === 'PACKAGES' ? { ...m, v: String(packages.length) } : m,
   )
-  return { ...existing, marquee, packages, candidates }
+  // Drop the legacy `candidates` block — the docs site no longer surfaces
+  // unshipped reviews, and keeping it around invites stale data drift.
+  const { candidates: _drop, ...rest } = existing
+  return { ...rest, marquee, packages }
 }
 
 function perfReviewSet() {

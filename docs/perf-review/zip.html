@@ -1,0 +1,78 @@
+<h1 id="perf-review-amigo-labs-zip">Perf-Review: <code>@amigo-labs/zip</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>1,84×–9,64× vs. <code>adm-zip</code> npm</strong> über alle fünf Szenarien. Die frühere Regression auf <code>extract-all-many-files</code> (0,56× pre-Phase-C) wurde durch die neue <code>extractAll()</code>-Funktion (Commit <code>16c74ed</code>) geheilt: 1400 Hz vs. adm-zip’s 506 Hz = <strong>2,77×</strong> auf demselben 100-Files-Szenario. Der Phase-C-Hebel war der klassische <code>Vec&lt;Buffer&gt;</code>-Marshalling-Antipattern: entries-and-read-loop kostete 100 FFI-Crossings pro Extract, neues <code>extractAll()</code> gibt alle Files in einem Crossing zurück (235 Hz → 1400 Hz, <strong>5,95×</strong> Self-Improvement). Der <code>zip</code> crate (Mathijs van de Nes) + <code>flate2</code>-zlib-rs-backend liefern solide Write-Speeds über alle Größen.</p>
+<h2 id="classification-rationale">Classification rationale</h2>
+<ol>
+<li><strong><code>extract-all</code> Phase-C war Portfolio-Pattern wiederholt.</strong> Gleiche Lehre wie xxhash-Batch und csv-parseToJson: <code>Vec&lt;Buffer&gt;</code>-Return ist nie Green bei substantieller Anzahl Items. Solution ist immer ein “packed output” oder interner Loop hinter <strong>einem</strong> FFI-Crossing.</li>
+<li><strong>Write-Side ist sauberer Green.</strong> 100 × 1 KB Files: 467 Hz vs. adm-zip 254 Hz = <strong>1,84×</strong>. Für 10 MB single-File: 44 Hz vs. 18 Hz = <strong>2,42×</strong>. Scaling ist konsistent.</li>
+<li><strong>Read-entries (Metadata-only) ist stark.</strong> 3069 Hz vs. adm-zip 887 Hz = <strong>3,46×</strong>. ZIP-central-directory-Parse ist in Rust-zip-crate zero-copy; adm-zip liest das als JS-Object-Graph.</li>
+<li><strong>Extract-large (10 MB single-File)</strong> ist <strong>9,64× vs. adm-zip</strong> — adm-zip’s Decompress läuft durch <code>pako</code> (pure JS), wir nutzen zlib-rs-native. Das ist derselbe Hebel wie in <code>@amigo-labs/inflate</code>.</li>
+</ol>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/zip</th><th style="text-align: right">adm-zip</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>write 100 × 1 KB files</td><td style="text-align: right">467,0 Hz</td><td style="text-align: right">253,6 Hz</td><td style="text-align: right"><strong>1,84×</strong></td></tr>
+<tr><td>write 1 × 10 MB file</td><td style="text-align: right">44,2 Hz</td><td style="text-align: right">18,3 Hz</td><td style="text-align: right"><strong>2,42×</strong></td></tr>
+<tr><td>read entries (100 files)</td><td style="text-align: right">3069 Hz</td><td style="text-align: right">886,7 Hz</td><td style="text-align: right"><strong>3,46×</strong></td></tr>
+<tr><td>extract all (100 files, extractAll)</td><td style="text-align: right">1400 Hz</td><td style="text-align: right">506,4 Hz</td><td style="text-align: right"><strong>2,77×</strong></td></tr>
+<tr><td>extract all (100 files, entries + read loop)</td><td style="text-align: right">235,1 Hz</td><td style="text-align: right">506,4 Hz</td><td style="text-align: right">0,46× (legacy path, use <code>extractAll</code>)</td></tr>
+<tr><td>extract large (10 MB single)</td><td style="text-align: right">273,5 Hz</td><td style="text-align: right">28,4 Hz</td><td style="text-align: right"><strong>9,64×</strong></td></tr>
+</tbody></table>
+<h3 id="realistic-use-case">Realistic use-case</h3>
+<p><strong>Download-Bundle-Generation</strong> — Server erzeugt ZIP aus dynamischen Files (CSV-Exports, Report-Dumps). Write-Side, typisch 10–1000 Files à 1 KB – 10 MB. <strong>Archive-Extraction</strong> für Input-Pipelines (User lädt ZIP hoch → Files rausparsen). Read-Side, typisch 10–10000 Entries. <strong>Plugin-/Theme-Loading</strong> in Extensible-Apps — ZIP-entpacken und lesen.</p>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>Middle-size-File-Counts</strong> (1000, 10k Files) nicht gemessen. Vermutlich konsistent Green, aber nicht bestätigt.</li>
+<li><strong>Compression-Level-Matrix</strong> (STORE/DEFLATE/ZSTD) nicht isoliert — welcher Mode wird benutzt für die Write-Szenarien?</li>
+<li><strong>Password-protected ZIP</strong> nicht gebenched (Encryption-Overhead).</li>
+</ul>
+<h3 id="api-surface">API surface</h3>
+<p>Typisch <code>zip</code>-crate-gewrappte Surface:</p>
+<pre><code class="language-rust">// Write
+createZip(entries: Array&lt;{ name: string, data: Buffer }&gt;, options?) → Buffer
+// Read
+readEntries(zipBuffer: Buffer) → Array&lt;{ name, size, compressedSize }&gt;
+extractEntry(zipBuffer: Buffer, entryName: string) → Buffer
+extractAll(zipBuffer: Buffer) → Array&lt;{ name: string, data: Buffer }&gt;   // Phase-C primary
+</code></pre>
+<p>(Exakte Signaturen ggf. in <code>crates/zip/src/lib.rs</code> verifizierbar.)</p>
+<h3 id="bundle-binary-size">Bundle / binary size</h3>
+<p><code>zip</code> crate + <code>flate2</code>-zlib-rs + deps: ~700 KB – 1 MB pro Target. Medium-size Binary.</p>
+<h3 id="ffi-overhead-baseline">FFI-overhead baseline</h3>
+<ul>
+<li>extract-all 100 × 1 KB mit legacy entries+read-loop: 100 × (FFI-call + Buffer-return) = ~20 µs FFI + ~4 ms decompress = <strong>entries+read was 0,5% FFI overhead</strong> but 0.46× vs. adm-zip because the call-count itself serialized across the boundary 100 times.</li>
+<li>extract-all mit new extractAll: 1 FFI-call + Vec&lt;{ name, data }&gt;-Marshalling ~50 µs + ~4 ms decompress = 1,2 % FFI-Share. Green.</li>
+<li>extract 10 MB single: Buffer-in/-out flat. Rust ~3,5 ms decompress. FFI &lt;1 %.</li>
+</ul>
+<h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
+<table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
+<tr><td>C.1</td><td>Input-type minimization</td><td>✅ already done</td><td>Buffer-input für alle Read-Ops</td></tr>
+<tr><td>C.2</td><td>Output-type minimization</td><td>✅ already done</td><td><code>extractAll</code> bündelt 100 Files in einem Crossing (Phase-C primary, Commit <code>16c74ed</code>)</td></tr>
+<tr><td>C.3</td><td>Batch API</td><td>✅ already done</td><td><code>extractAll</code> ist DER Batch-Hebel</td></tr>
+<tr><td>C.4</td><td>Stateful API (ZipReader-Class mit cached central-dir)</td><td>🟡 potential</td><td>Für Multi-Extract auf dem gleichen ZIP (z.B. streaming browse) könnte eine NAPI-Class das central-dir-Parse amortisieren. Use-case unklar</td></tr>
+<tr><td>C.5</td><td>Parallelization (rayon über Entries bei extractAll)</td><td>🟡 <strong>potential win</strong></td><td>100 × 1KB extract ist embarrassingly parallelisierbar. Könnte 1400 Hz → 4000 Hz auf 4-Core machen. Sprint-Kandidat wenn portfoliopolitisch gewünscht — aktuell 2,77× reicht</td></tr>
+<tr><td>C.6</td><td>Algorithm swap</td><td>❌ not applicable</td><td><code>zip</code> + zlib-rs ist best-in-class</td></tr>
+<tr><td>C.7</td><td>Allocator tuning</td><td>✅ already done</td><td>Pre-alloc für Output-Buffer beim Extract basierend auf central-dir-Size-Info</td></tr>
+<tr><td>C.8</td><td>Bundle-size</td><td>✅ already done</td><td>—</td></tr>
+</tbody></table>
+<h2 id="action-plan">Action plan</h2>
+<p><strong>Keep-as-is.</strong> Phase-C-Fix via <code>extractAll</code> hat die einzige Yellow-Stelle beseitigt.</p>
+<p>Maintenance:</p>
+<ol>
+<li><strong>Compression-Mode-Matrix benchen</strong> — STORE vs. DEFLATE; welcher ist Default, welcher profitiert am meisten.</li>
+<li><strong>Middle-size-File-Count-Bench</strong> (1k, 10k Files).</li>
+<li><strong>rayon-parallel-extract als Phase-C.5-Spike</strong> falls Multi-Core-Bundle-Processing-Workload auftaucht.</li>
+</ol>
+<p>Kein Phase-D-Risiko.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/zip</code></li>
+<li>Bench: <code>crates/zip/__bench__/index.bench.ts</code></li>
+<li>Lib: <code>crates/zip/src/lib.rs</code></li>
+<li>Cargo: <code>crates/zip/Cargo.toml</code></li>
+<li>Phase-C primary commit: <code>16c74ed</code> (<code>extractAll()</code> shortcut, 0,56× → 2,77×)</li>
+<li><code>docs/packages.json</code> speedup: <code>"1.84–9.6× faster"</code></li>
+</ul>

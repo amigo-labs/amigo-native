@@ -1,0 +1,91 @@
+<h1 id="perf-review-amigo-labs-xxhash">Perf-Review: <code>@amigo-labs/xxhash</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.2.0</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>Large-Buffer: 1,15×–2,72× vs. <code>xxhash-wasm</code></strong> je nach Variante. <strong>Batch-API: 2,87×–5,39× vs. xxhash-wasm-Loop</strong> nach Phase-C-Fix (Commit <code>4c6fb50</code>). Single-call auf 64 B ist 0,47× vs. xxhash-wasm — das ist erwartet und dokumentiert (xxhash-wasm hat sehr kleine WASM-Call-Overhead, Native-NAPI hat höheren Floor für trivial compute). <strong>Batch ist der große Portfolio-Win</strong> — <code>*Many</code>-API gibt Result-Hashes als kompakten Buffer zurück statt als <code>Vec&lt;BigInt&gt;</code> (was katastrophal langsam war, 0,15× pre-Fix). 5,39× auf xxh3_64-batch-1000 ist der Hebel der xxhash v0.2 ausgemacht hat.</p>
+<h2 id="classification-rationale">Classification rationale</h2>
+<ol>
+<li><strong>Batch-API-Phase-C ist die Lehre von Portfolio-Level.</strong> Pre-0.2 <code>*Batch(Vec&lt;Buffer&gt;) → Vec&lt;BigInt&gt;</code>: 43 ns/Element Marshalling-Cost für BigInt-Output (BASELINE.md:32). Für 1000 × 64-B-Hashes war das <strong>~43 µs nur für BigInt-Packaging</strong> auf ~40 µs Rust-Hash-Work — 107 % Overhead. Post-Fix <code>*Many(Buffer, chunkSize) → Buffer</code>: ein Crossing, Buffer-packed u64-Output. 0,15× → 4,00× auf schlimmstem Szenario.</li>
+<li><strong>Single-call-small ist WASM-competitive-territory.</strong> <code>xxhash-wasm</code> hat ~100 ns WASM-Boundary-Cost — vergleichbar mit unserem NAPI-Floor. Für 64-Byte-Inputs ist die Rust-Work sub-FFI-Floor und WASM gewinnt marginal. Das ist der Nanoid-Analog-Shape, aber die Large-Buffer- und Batch-Wins amortisieren das klar.</li>
+<li><strong>xxh3 ist unser primärer Win-Case.</strong> 2,72× vs. xxhash-wasm auf 1 MB xxh3, 5,39× batch. <code>xxh3</code> ist moderner als xxh32/xxh64 und hat weniger Wrapping-Overhead im xxhash-rust-crate.</li>
+<li><strong>Streaming-API ist Red-Territory</strong> (4 183 Hz auf Batch-1000). Streaming-Per-Chunk-via-FFI ist der <code>xml</code>-Antipattern. Wir halten die API für seltene Use-Cases (File-Streams größer als Memory), aber dokumentieren das als “last resort, use <code>*Many</code> or direct call.”</li>
+</ol>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
+<p><strong>Single-Call:</strong></p>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/xxhash</th><th style="text-align: right">xxhash-wasm</th><th style="text-align: right">xxhashjs</th><th style="text-align: right">vs. xxhash-wasm</th></tr></thead><tbody>
+<tr><td>xxh32 64 B</td><td style="text-align: right">3 937 229 Hz</td><td style="text-align: right">8 323 203 Hz</td><td style="text-align: right">1 251 882 Hz</td><td style="text-align: right"><strong>0,47×</strong> (small-input limit)</td></tr>
+<tr><td>xxh32 1 MB</td><td style="text-align: right">5 369 Hz</td><td style="text-align: right">4 678 Hz</td><td style="text-align: right">347 Hz</td><td style="text-align: right"><strong>1,15×</strong></td></tr>
+<tr><td>xxh64 1 MB</td><td style="text-align: right">10 683 Hz</td><td style="text-align: right">8 233 Hz</td><td style="text-align: right">22 Hz</td><td style="text-align: right"><strong>1,30×</strong></td></tr>
+<tr><td>xxh3_64 1 MB</td><td style="text-align: right">22 471 Hz</td><td style="text-align: right">8 260 Hz</td><td style="text-align: right">—</td><td style="text-align: right"><strong>2,72×</strong></td></tr>
+</tbody></table>
+<p><strong>Batch-1000 × 64 B:</strong></p>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/xxhash (many)</th><th style="text-align: right">@amigo-labs/xxhash (loop)</th><th style="text-align: right">xxhash-wasm (loop)</th><th style="text-align: right">vs. wasm</th></tr></thead><tbody>
+<tr><td>xxh32 batch</td><td style="text-align: right">51 801 Hz</td><td style="text-align: right">5 255 Hz</td><td style="text-align: right">18 084 Hz</td><td style="text-align: right"><strong>2,87×</strong></td></tr>
+<tr><td>xxh3_64 batch</td><td style="text-align: right">94 831 Hz</td><td style="text-align: right">—</td><td style="text-align: right">17 591 Hz</td><td style="text-align: right"><strong>5,39×</strong></td></tr>
+</tbody></table>
+<h3 id="realistic-use-case">Realistic use-case</h3>
+<p><strong>Deduplikation</strong> — Content-Addressable-Storage, Asset-Fingerprinting, Cache-Keys. Typisch Buffer 1 KB – 10 MB, hot-loop über viele Items. <strong>Integrity-Check</strong> bei File-Upload/-Download. <strong>HashMap-Keying</strong> in tantivy-style Search-Indexes (intern). Median: Batch-100-to-10000 × 64B-to-1KB für Dedup, Single-Call-1MB+ für Integrity.</p>
+<p>Single-Call-small-Case (64 B, der 0,47× Messung) ist unrealistisch häufig — wenn du so viele kleine Hashes brauchst, willst du batch.</p>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>xxh128-Variante</strong> (128-bit) nicht separat gebenched.</li>
+<li><strong>Streaming nur gegen Batch.</strong> Streaming-vs-xxhash-wasm-Streaming nicht direkt gemessen.</li>
+<li><strong>Large-batch-size-Matrix</strong> (10k, 100k items) — 1000 items ist der gemessene Punkt.</li>
+</ul>
+<h3 id="api-surface">API surface</h3>
+<p>Basierend auf Phase-C-Rescope (Commit <code>4c6fb50</code>):</p>
+<pre><code class="language-rust">// Single-call
+xxh32(data: Buffer) → u32
+xxh64(data: Buffer) → u64 (as BigInt in JS)
+xxh3_64(data: Buffer) → u64
+xxh3_128(data: Buffer) → u128 (as Buffer/BigInt)
+
+// Batch — Phase-C Primary
+xxh32Many(data: Buffer, chunkSize: number) → Buffer  // u32-packed
+xxh64Many(data: Buffer, chunkSize: number) → Buffer  // u64-packed
+xxh3_64Many(data: Buffer, chunkSize: number) → Buffer
+xxh3_128Many(data: Buffer, chunkSize: number) → Buffer
+
+// Streaming (legacy / edge-case)
+createHasher(variant) → StreamingHasher class
+</code></pre>
+<h3 id="bundle-binary-size">Bundle / binary size</h3>
+<p><code>xxhash-rust</code> crate ist sehr klein (~100-200 KB mit allen Varianten).</p>
+<h3 id="ffi-overhead-baseline">FFI-overhead baseline</h3>
+<ul>
+<li>Single 64 B: Input ~180 ns, output ~200 ns (u32/u64-return). Rust ~50 ns hash. Total ~430 ns. <strong>WASM ~120 ns total</strong> = 3× faster. Dokumentierter small-input-limit.</li>
+<li>Single 1 MB: Input flat ~180 ns, output ~200 ns, Rust ~50 µs. FFI <strong>&lt;1 %</strong>.</li>
+<li>Batch-1000 × 64 B (Many): Input 64 KB Buffer ~180 ns, Output 8 KB Buffer ~180 ns, Rust ~10 µs (1000 × 10 ns hash). Total ~10,4 µs. 51 800 Hz. <strong>FFI ~4 % Share</strong> — excellent.</li>
+</ul>
+<h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
+<table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
+<tr><td>C.1</td><td>Input-type minimization</td><td>✅ already done</td><td><code>Buffer</code> zero-copy durchgehend</td></tr>
+<tr><td>C.2</td><td>Output-type minimization</td><td>✅ already done</td><td><strong>Phase-C primary win</strong>: <code>Vec&lt;BigInt&gt;</code> → <code>Buffer</code> packed (Commit <code>4c6fb50</code>)</td></tr>
+<tr><td>C.3</td><td>Batch API</td><td>✅ already done</td><td><code>*Many</code> ist der shipped Hot-Path</td></tr>
+<tr><td>C.4</td><td>Stateful API (StreamingHasher)</td><td>🟡 accepted</td><td>Exponiert aber dokumentiert als last-resort. Kein Fix geplant</td></tr>
+<tr><td>C.5</td><td>Parallelization</td><td>🟡 potential</td><td>rayon über Many-Chunks denkbar, aber 5,39× ist bereits so schnell dass Single-Core durch Scheduling-Overhead limitiert</td></tr>
+<tr><td>C.6</td><td>Algorithm swap</td><td>❌ not applicable</td><td><code>xxhash-rust</code> hat sowohl native-Rust-Impl als auch xxhash-C-FFI-Variante. Die Rust-nativen xxh3-Pfade sind schnell genug</td></tr>
+<tr><td>C.7</td><td>Allocator tuning</td><td>✅ already done</td><td>Buffer-Output pre-alloc basierend auf <code>input.len() / chunkSize * output_bytes</code></td></tr>
+<tr><td>C.8</td><td>Bundle-size</td><td>✅ already done</td><td>Sehr klein</td></tr>
+</tbody></table>
+<h2 id="action-plan">Action plan</h2>
+<p><strong>Keep-as-is.</strong> Post-Phase-C ist das Paket in seiner Zielform.</p>
+<p>Maintenance:</p>
+<ol>
+<li><strong>xxh128-Bench hinzufügen</strong> — Algorithmus-Matrix komplettieren.</li>
+<li><strong>Streaming-Bench vs. xxhash-wasm-Streaming</strong> — für Doku, sichtbar-machen dass Streaming-API schlecht performed gegen WASM.</li>
+<li><strong>Large-Batch-Matrix</strong> (10k, 100k items) — skalierungs-Bestätigung.</li>
+<li><strong>rayon-Spike als Phase-C.5</strong> nur wenn Produktions-Multi-Core-Batch-Use-Case auftaucht.</li>
+</ol>
+<p>Der dokumentierte Small-Input-Limit (0,47× auf 64 B single-call) ist keine Schwäche im Paket sondern FFI-Physik. README muss klar die “use <code>*Many</code> for hot loops”-Empfehlung machen.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/xxhash</code></li>
+<li>Bench: <code>crates/xxhash/__bench__/index.bench.ts</code></li>
+<li>Lib: <code>crates/xxhash/src/lib.rs</code></li>
+<li>Cargo: <code>crates/xxhash/Cargo.toml</code></li>
+<li>Phase-C primary commit: <code>4c6fb50</code> (<code>*Batch(Vec&lt;Buffer&gt;)→Vec&lt;BigInt&gt;</code> → <code>*Many(Buffer, chunkSize)→Buffer</code>)</li>
+<li><code>docs/packages.json</code> speedup: <code>"up to 2.7× faster / 3.4× slower"</code></li>
+</ul>
