@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-zip = { version = "2", default-features = false, features = ["deflate", "deflate-flate2"] }
+zip = { version = "8", default-features = false, features = ["deflate", "deflate-flate2"] }
 
 [build-dependencies]
 napi-build = "2"
