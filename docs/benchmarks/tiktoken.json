@@ -1,7 +1,7 @@
 {
   "crate": "tiktoken",
-  "generatedAt": "2026-05-07T09:24:02.766Z",
-  "commit": "3be9101",
+  "generatedAt": "2026-05-07T12:02:40.790Z",
+  "commit": "14cf4ea",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,27 +11,27 @@
       "entries": [
         {
           "name": "@amigo-labs/tiktoken",
-          "hz": 257326.62,
-          "rme": 2.76,
-          "samples": 128664
+          "hz": 344538.36,
+          "rme": 1.03,
+          "samples": 172270
         },
         {
           "name": "tiktoken (WASM)",
-          "hz": 11827.33,
-          "rme": 0.51,
-          "samples": 5914
+          "hz": 14760.85,
+          "rme": 0.6,
+          "samples": 7381
         },
         {
           "name": "js-tiktoken (pure JS)",
-          "hz": 118587.14,
-          "rme": 0.35,
-          "samples": 59294
+          "hz": 156692.48,
+          "rme": 0.34,
+          "samples": 78347
         },
         {
           "name": "gpt-tokenizer (pure JS)",
-          "hz": 826310.61,
-          "rme": 0.36,
-          "samples": 413156
+          "hz": 1076256.98,
+          "rme": 0.27,
+          "samples": 538136
         }
       ]
     },
@@ -41,27 +41,27 @@
       "entries": [
         {
           "name": "@amigo-labs/tiktoken",
-          "hz": 8567.78,
-          "rme": 0.18,
-          "samples": 4284
+          "hz": 10764.78,
+          "rme": 0.13,
+          "samples": 5383
         },
         {
           "name": "tiktoken (WASM)",
-          "hz": 2291.76,
-          "rme": 0.12,
-          "samples": 1146
+          "hz": 3035.88,
+          "rme": 0.15,
+          "samples": 1518
         },
         {
           "name": "js-tiktoken (pure JS)",
-          "hz": 3053.72,
-          "rme": 1.16,
-          "samples": 1527
+          "hz": 3859.25,
+          "rme": 0.74,
+          "samples": 1930
         },
         {
           "name": "gpt-tokenizer (pure JS)",
-          "hz": 29415.17,
-          "rme": 0.5,
-          "samples": 14708
+          "hz": 36872.7,
+          "rme": 0.41,
+          "samples": 18437
         }
       ]
     },
@@ -71,27 +71,27 @@
       "entries": [
         {
           "name": "@amigo-labs/tiktoken",
-          "hz": 182.5,
-          "rme": 1.1,
-          "samples": 92
+          "hz": 229.52,
+          "rme": 1.18,
+          "samples": 115
         },
         {
           "name": "tiktoken (WASM)",
-          "hz": 57.2962,
-          "rme": 0.15,
-          "samples": 29
+          "hz": 74.5762,
+          "rme": 0.25,
+          "samples": 38
         },
         {
           "name": "js-tiktoken (pure JS)",
-          "hz": 58.4411,
-          "rme": 19.07,
-          "samples": 30
+          "hz": 83.0257,
+          "rme": 10.64,
+          "samples": 42
         },
         {
           "name": "gpt-tokenizer (pure JS)",
-          "hz": 575.29,
-          "rme": 1.08,
-          "samples": 288
+          "hz": 721.93,
+          "rme": 0.87,
+          "samples": 361
         }
       ]
     },
@@ -101,21 +101,21 @@
       "entries": [
         {
           "name": "@amigo-labs/tiktoken countTokens (medium)",
-          "hz": 8473.44,
-          "rme": 0.13,
-          "samples": 4237
+          "hz": 10878.81,
+          "rme": 0.15,
+          "samples": 5440
         },
         {
           "name": "@amigo-labs/tiktoken encode(...).length (medium)",
-          "hz": 8574.15,
-          "rme": 0.13,
-          "samples": 4288
+          "hz": 10833.16,
+          "rme": 0.15,
+          "samples": 5417
         },
         {
           "name": "gpt-tokenizer countTokens (medium)",
-          "hz": 31394.23,
-          "rme": 0.44,
-          "samples": 15698
+          "hz": 39468.13,
+          "rme": 0.43,
+          "samples": 19735
         }
       ]
     },
@@ -125,27 +125,27 @@
       "entries": [
         {
           "name": "@amigo-labs/tiktoken encodeMany",
-          "hz": 2213.46,
-          "rme": 0.28,
-          "samples": 1107
+          "hz": 2822.85,
+          "rme": 0.31,
+          "samples": 1412
         },
         {
           "name": "@amigo-labs/tiktoken encode loop",
-          "hz": 1821.34,
-          "rme": 6.53,
-          "samples": 911
+          "hz": 2461.82,
+          "rme": 1.74,
+          "samples": 1231
         },
         {
           "name": "tiktoken (WASM) encode loop",
-          "hz": 117.5,
-          "rme": 1.85,
-          "samples": 59
+          "hz": 156.04,
+          "rme": 0.35,
+          "samples": 79
         },
         {
           "name": "gpt-tokenizer encode loop",
-          "hz": 6755.92,
-          "rme": 0.5,
-          "samples": 3378
+          "hz": 8959.59,
+          "rme": 0.37,
+          "samples": 4480
         }
       ]
     }

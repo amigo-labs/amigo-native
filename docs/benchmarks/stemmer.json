@@ -1,7 +1,7 @@
 {
   "crate": "stemmer",
-  "generatedAt": "2026-05-07T09:24:02.766Z",
-  "commit": "3be9101",
+  "generatedAt": "2026-05-07T12:02:40.790Z",
+  "commit": "14cf4ea",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,69 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 2040.56,
-          "rme": 3.8,
-          "samples": 1021
+          "hz": 2645.7,
+          "rme": 3.01,
+          "samples": 1323
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 258.35,
-          "rme": 2.26,
-          "samples": 130
+          "hz": 342.77,
+          "rme": 1.31,
+          "samples": 172
+        }
+      ]
+    },
+    {
+      "file": "crates/stemmer/__bench__/index.bench.ts",
+      "name": "stemmer — stemMany × 10000",
+      "entries": [
+        {
+          "name": "@amigo-labs/stemmer",
+          "hz": 274.13,
+          "rme": 0.09,
+          "samples": 138
+        },
+        {
+          "name": "natural.PorterStemmer (loop)",
+          "hz": 34.2706,
+          "rme": 0.37,
+          "samples": 18
+        }
+      ]
+    },
+    {
+      "file": "crates/stemmer/__bench__/index.bench.ts",
+      "name": "stemmer — tokenizeAndStem 10 KB doc",
+      "entries": [
+        {
+          "name": "@amigo-labs/stemmer",
+          "hz": 1955.98,
+          "rme": 0.22,
+          "samples": 978
+        },
+        {
+          "name": "natural.PorterStemmer.tokenizeAndStem",
+          "hz": 224.45,
+          "rme": 0.71,
+          "samples": 113
+        }
+      ]
+    },
+    {
+      "file": "crates/stemmer/__bench__/index.bench.ts",
+      "name": "stemmer — tokenizeAndStem 100 KB doc",
+      "entries": [
+        {
+          "name": "@amigo-labs/stemmer",
+          "hz": 198.31,
+          "rme": 0.26,
+          "samples": 100
+        },
+        {
+          "name": "natural.PorterStemmer.tokenizeAndStem",
+          "hz": 21.926,
+          "rme": 1.39,
+          "samples": 11
         }
       ]
     }

@@ -1,7 +1,7 @@
 {
   "crate": "file-type",
-  "generatedAt": "2026-04-29T05:38:04.369Z",
-  "commit": "d65438a",
+  "generatedAt": "2026-05-07T12:02:40.790Z",
+  "commit": "14cf4ea",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/file-type (sync)",
-          "hz": 1374395.61,
-          "rme": 0.23,
-          "samples": 687198
+          "hz": 1801587.29,
+          "rme": 0.19,
+          "samples": 900794
         },
         {
           "name": "file-type (upstream async)",
-          "hz": 49689.7,
-          "rme": 3.46,
-          "samples": 24859
+          "hz": 72131.05,
+          "rme": 2.56,
+          "samples": 36068
         }
       ]
     },
@@ -29,21 +29,21 @@
       "entries": [
         {
           "name": "@amigo-labs/file-type (sync)",
-          "hz": 1252967.91,
-          "rme": 0.18,
-          "samples": 626484
+          "hz": 1655046.09,
+          "rme": 0.21,
+          "samples": 827524
         },
         {
           "name": "@amigo-labs/file-type (async)",
-          "hz": 29641.59,
-          "rme": 0.34,
-          "samples": 14822
+          "hz": 46778.02,
+          "rme": 0.14,
+          "samples": 23390
         },
         {
           "name": "file-type (upstream async)",
-          "hz": 983.22,
-          "rme": 5.89,
-          "samples": 492
+          "hz": 1241.06,
+          "rme": 5.67,
+          "samples": 621
         }
       ]
     }

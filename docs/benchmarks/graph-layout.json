@@ -1,7 +1,7 @@
 {
   "crate": "graph-layout",
-  "generatedAt": "2026-04-24T06:10:11.262Z",
-  "commit": "40fbc6c",
+  "generatedAt": "2026-05-07T12:02:40.790Z",
+  "commit": "14cf4ea",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/graph-layout",
-          "hz": 9046.31,
-          "rme": 0.6,
-          "samples": 4524
+          "hz": 13480.95,
+          "rme": 0.29,
+          "samples": 6741
         },
         {
           "name": "@dagrejs/dagre",
-          "hz": 137.63,
-          "rme": 4.2,
-          "samples": 69
+          "hz": 189.1,
+          "rme": 3.81,
+          "samples": 95
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/graph-layout",
-          "hz": 760.91,
-          "rme": 6.31,
-          "samples": 381
+          "hz": 2435.26,
+          "rme": 0.37,
+          "samples": 1218
         },
         {
           "name": "@dagrejs/dagre",
-          "hz": 24.664,
-          "rme": 3.69,
-          "samples": 13
+          "hz": 33.4557,
+          "rme": 3.02,
+          "samples": 17
         }
       ]
     }

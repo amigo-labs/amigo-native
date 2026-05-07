@@ -1,7 +1,7 @@
 {
   "crate": "force-layout",
-  "generatedAt": "2026-04-24T06:10:11.262Z",
-  "commit": "40fbc6c",
+  "generatedAt": "2026-05-07T12:02:40.790Z",
+  "commit": "14cf4ea",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/force-layout",
-          "hz": 1243.69,
-          "rme": 0.21,
-          "samples": 622
+          "hz": 1413.89,
+          "rme": 0.28,
+          "samples": 707
         },
         {
           "name": "d3-force",
-          "hz": 188.72,
-          "rme": 0.33,
-          "samples": 95
+          "hz": 231.98,
+          "rme": 2.12,
+          "samples": 117
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/force-layout",
-          "hz": 57.1189,
-          "rme": 0.04,
-          "samples": 29
+          "hz": 63.8111,
+          "rme": 0.6,
+          "samples": 32
         },
         {
           "name": "d3-force",
-          "hz": 16.3459,
-          "rme": 0.16,
-          "samples": 10
+          "hz": 20.7524,
+          "rme": 0.86,
+          "samples": 11
         }
       ]
     }

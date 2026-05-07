@@ -1,7 +1,7 @@
 {
   "crate": "deepmerge",
-  "generatedAt": "2026-04-29T05:38:04.369Z",
-  "commit": "d65438a",
+  "generatedAt": "2026-05-07T12:02:40.790Z",
+  "commit": "14cf4ea",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/deepmerge",
-          "hz": 3041811.6,
-          "rme": 0.91,
-          "samples": 1520906
+          "hz": 4259497.6,
+          "rme": 2.02,
+          "samples": 2129749
         },
         {
           "name": "deepmerge",
-          "hz": 1024025.13,
-          "rme": 0.12,
-          "samples": 512013
+          "hz": 1319536.65,
+          "rme": 0.2,
+          "samples": 659769
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/deepmerge",
-          "hz": 218408.56,
-          "rme": 0.4,
-          "samples": 109205
+          "hz": 255373.68,
+          "rme": 3.39,
+          "samples": 127687
         },
         {
           "name": "deepmerge",
-          "hz": 35077.79,
-          "rme": 0.44,
-          "samples": 17539
+          "hz": 49412.9,
+          "rme": 0.48,
+          "samples": 24707
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/deepmerge",
-          "hz": 3405.15,
-          "rme": 0.89,
-          "samples": 1703
+          "hz": 4218.76,
+          "rme": 0.96,
+          "samples": 2110
         },
         {
           "name": "deepmerge",
-          "hz": 685.56,
-          "rme": 0.54,
-          "samples": 343
+          "hz": 983.98,
+          "rme": 0.51,
+          "samples": 493
         }
       ]
     }

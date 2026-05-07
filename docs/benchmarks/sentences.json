@@ -1,7 +1,7 @@
 {
   "crate": "sentences",
-  "generatedAt": "2026-04-24T06:10:11.262Z",
-  "commit": "40fbc6c",
+  "generatedAt": "2026-05-07T12:02:40.790Z",
+  "commit": "14cf4ea",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,21 +11,21 @@
       "entries": [
         {
           "name": "@amigo-labs/sentences split()",
-          "hz": 118076.33,
-          "rme": 0.14,
-          "samples": 59039
+          "hz": 167872.75,
+          "rme": 0.93,
+          "samples": 83937
         },
         {
           "name": "@amigo-labs/sentences splitToOffsets()",
-          "hz": 100670.74,
-          "rme": 0.3,
-          "samples": 50336
+          "hz": 134939.92,
+          "rme": 0.73,
+          "samples": 67471
         },
         {
           "name": "sbd",
-          "hz": 352867.78,
-          "rme": 0.32,
-          "samples": 176434
+          "hz": 464482.12,
+          "rme": 0.69,
+          "samples": 232242
         }
       ]
     },
@@ -35,21 +35,21 @@
       "entries": [
         {
           "name": "@amigo-labs/sentences split()",
-          "hz": 29883.24,
-          "rme": 0.22,
-          "samples": 14942
+          "hz": 38475.08,
+          "rme": 0.79,
+          "samples": 19238
         },
         {
           "name": "@amigo-labs/sentences splitToOffsets()",
-          "hz": 38824.71,
-          "rme": 0.14,
-          "samples": 19413
+          "hz": 49641.87,
+          "rme": 0.09,
+          "samples": 24821
         },
         {
           "name": "sbd",
-          "hz": 8407.25,
-          "rme": 1.2,
-          "samples": 4204
+          "hz": 12577.27,
+          "rme": 0.41,
+          "samples": 6289
         }
       ]
     }
