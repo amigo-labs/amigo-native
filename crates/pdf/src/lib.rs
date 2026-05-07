@@ -11,7 +11,10 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use printpdf::{BuiltinFont, Mm, PdfDocument};
+use printpdf::{
+    BuiltinFont, Line, LinePoint, Mm, Op, PaintMode, PdfDocument, PdfFontHandle, PdfPage,
+    PdfSaveOptions, Point, Polygon, PolygonRing, Pt, TextItem, WindingOrder,
+};
 
 #[napi(object)]
 #[derive(Clone)]
@@ -73,84 +76,85 @@ fn mm(v: f64) -> Mm {
     Mm(v as f32)
 }
 
+fn lp(x: f64, y: f64) -> LinePoint {
+    LinePoint {
+        p: Point::new(mm(x), mm(y)),
+        bezier: false,
+    }
+}
+
 fn render_document(doc: Document) -> Result<Buffer> {
+    if doc.pages.is_empty() {
+        return Err(Error::from_reason("document must have at least one page"));
+    }
     let title = doc.title.unwrap_or_else(|| "amigo-pdf".to_string());
-    let first_page = doc
-        .pages
-        .first()
-        .ok_or_else(|| Error::from_reason("document must have at least one page"))?;
-    let (pdf, page1_idx, layer1_idx) = PdfDocument::new(
-        &title,
-        mm(first_page.width),
-        mm(first_page.height),
-        "Layer 1",
-    );
-    let font = pdf
-        .add_builtin_font(BuiltinFont::Helvetica)
-        .map_err(|e| Error::from_reason(format!("font: {e}")))?;
+    let mut pdf = PdfDocument::new(&title);
+    let helvetica = PdfFontHandle::Builtin(BuiltinFont::Helvetica);
 
-    for (page_idx, page) in doc.pages.iter().enumerate() {
-        let (p_idx, l_idx) = if page_idx == 0 {
-            (page1_idx, layer1_idx)
-        } else {
-            pdf.add_page(mm(page.width), mm(page.height), "Layer 1")
-        };
-        let layer = pdf.get_page(p_idx).get_layer(l_idx);
-
+    let mut pages: Vec<PdfPage> = Vec::with_capacity(doc.pages.len());
+    for page in &doc.pages {
+        let mut ops: Vec<Op> = Vec::with_capacity(page.elements.len() * 4);
         for el in &page.elements {
             match el.kind.as_str() {
                 "text" => {
                     if let Some(t) = &el.text {
-                        let size = t.font_size.unwrap_or(12.0) as f32;
-                        layer.use_text(&t.text, size, mm(t.x), mm(t.y), &font);
+                        let size = Pt(t.font_size.unwrap_or(12.0) as f32);
+                        ops.push(Op::StartTextSection);
+                        ops.push(Op::SetFont {
+                            font: helvetica.clone(),
+                            size,
+                        });
+                        ops.push(Op::SetTextCursor {
+                            pos: Point::new(mm(t.x), mm(t.y)),
+                        });
+                        ops.push(Op::ShowText {
+                            items: vec![TextItem::Text(t.text.clone())],
+                        });
+                        ops.push(Op::EndTextSection);
                     }
                 }
                 "line" => {
                     if let Some(l) = &el.line {
-                        use printpdf::{Line, Point};
-                        let thickness = l.thickness.unwrap_or(0.5) as f32;
-                        layer.set_outline_thickness(thickness);
-                        let line = Line {
-                            points: vec![
-                                (Point::new(mm(l.x1), mm(l.y1)), false),
-                                (Point::new(mm(l.x2), mm(l.y2)), false),
-                            ],
-                            is_closed: false,
-                        };
-                        layer.add_line(line);
+                        let thickness = Pt(l.thickness.unwrap_or(0.5) as f32);
+                        ops.push(Op::SetOutlineThickness { pt: thickness });
+                        ops.push(Op::DrawLine {
+                            line: Line {
+                                points: vec![lp(l.x1, l.y1), lp(l.x2, l.y2)],
+                                is_closed: false,
+                            },
+                        });
                     }
                 }
                 "rect" => {
                     if let Some(r) = &el.rect {
-                        use printpdf::{Line, Point};
-                        let rect = Line {
-                            points: vec![
-                                (Point::new(mm(r.x), mm(r.y)), false),
-                                (Point::new(mm(r.x + r.width), mm(r.y)), false),
-                                (Point::new(mm(r.x + r.width), mm(r.y + r.height)), false),
-                                (Point::new(mm(r.x), mm(r.y + r.height)), false),
-                            ],
-                            is_closed: true,
-                        };
-                        if r.filled.unwrap_or(false) {
-                            layer.add_polygon(printpdf::Polygon {
-                                rings: vec![rect.points.clone()],
-                                mode: printpdf::path::PaintMode::Fill,
-                                winding_order: printpdf::path::WindingOrder::NonZero,
-                            });
+                        let points = vec![
+                            lp(r.x, r.y),
+                            lp(r.x + r.width, r.y),
+                            lp(r.x + r.width, r.y + r.height),
+                            lp(r.x, r.y + r.height),
+                        ];
+                        let mode = if r.filled.unwrap_or(false) {
+                            PaintMode::Fill
                         } else {
-                            layer.add_line(rect);
-                        }
+                            PaintMode::Stroke
+                        };
+                        ops.push(Op::DrawPolygon {
+                            polygon: Polygon {
+                                rings: vec![PolygonRing { points }],
+                                mode,
+                                winding_order: WindingOrder::NonZero,
+                            },
+                        });
                     }
                 }
                 _ => {}
             }
         }
+        pages.push(PdfPage::new(mm(page.width), mm(page.height), ops));
     }
 
-    let bytes = pdf
-        .save_to_bytes()
-        .map_err(|e| Error::from_reason(format!("save: {e}")))?;
+    pdf.with_pages(pages);
+    let bytes = pdf.save(&PdfSaveOptions::default(), &mut Vec::new());
     Ok(bytes.into())
 }
 

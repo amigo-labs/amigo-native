@@ -1,7 +1,7 @@
 {
   "crate": "turndown",
-  "generatedAt": "2026-04-30T05:41:29.715Z",
-  "commit": "164ac08",
+  "generatedAt": "2026-05-06T16:25:59.137Z",
+  "commit": "efe5d6e",
   "runner": "linux-x64",
   "nodeVersion": "v24.14.1",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/turndown",
-          "hz": 169404.9,
-          "rme": 0.18,
-          "samples": 84703
+          "hz": 171521.54,
+          "rme": 0.3,
+          "samples": 85761
         },
         {
           "name": "turndown",
-          "hz": 10897.11,
-          "rme": 12.09,
-          "samples": 5449
+          "hz": 10302.89,
+          "rme": 12.59,
+          "samples": 5152
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/turndown",
-          "hz": 7192.99,
-          "rme": 0.17,
-          "samples": 3597
+          "hz": 7033.72,
+          "rme": 0.16,
+          "samples": 3517
         },
         {
           "name": "turndown",
-          "hz": 739.25,
-          "rme": 8.57,
-          "samples": 370
+          "hz": 735.01,
+          "rme": 6.25,
+          "samples": 368
         }
       ]
     }

@@ -33,3 +33,7 @@ sanitize-skip-categorization.md
 .env
 .env.*
 .claude/*.local.json
+
+# Cloudflare Workers (local wrangler state)
+.wrangler/
+.dev.vars

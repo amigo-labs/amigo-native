@@ -1,0 +1,36 @@
+# amigo-native docs — Cloudflare Worker (static-asset hosting)
+#
+# This worker has no JS code of its own; it just serves the docs/ directory.
+# Cloudflare's Git integration (configured in the Workers dashboard) deploys
+# this on every push to main and creates per-branch preview URLs for any
+# other branch — no GitHub Actions workflow or repo secrets needed.
+#
+# Local: `pnpm exec wrangler deploy --dry-run` to validate this file without
+# touching production. `pnpm run deploy` for a manual deploy (still requires
+# CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID env vars).
+
+name = "amigo-native"
+compatibility_date = "2025-04-01"
+workers_dev = true
+
+[assets]
+directory = "./docs"
+# Hash-only routes today, but per-package URLs (#G2 in the docs roadmap) will
+# rely on this fallback so /pkg/argon2 lands on index.html and the SPA reads
+# the path. Existing files (/perf-review/*.md, /history/*.jsonl, …) are still
+# served directly first.
+not_found_handling = "single-page-application"
+
+# Custom domain — uncomment and set once a route is provisioned in Cloudflare.
+# Until then the worker is reachable at
+# https://amigo-native.<your-cf-subdomain>.workers.dev/.
+#
+# [[routes]]
+# pattern = "amigo-native.example.com"
+# custom_domain = true
+
+# `wrangler observability` opt-in — keeps a small request-log tail visible in
+# the Cloudflare dashboard for the worker. Free tier includes a generous quota.
+[observability]
+enabled = true
+
