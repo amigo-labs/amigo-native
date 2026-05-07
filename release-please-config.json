@@ -4,10 +4,8 @@
   "tag-separator": "@",
   "include-component-in-tag": true,
   "include-v-in-tag": false,
-  "separate-pull-requests": false,
-  "group-pull-request-title-pattern": "chore: release main",
-  "pull-request-title-pattern": "chore: release ${component} ${version}",
-  "pull-request-header": "Automated release proposed by release-please. Merging this PR creates per-crate tags and triggers the npm publish workflow.",
+  "separate-pull-requests": true,
+  "pull-request-header": "Automated release proposed by release-please. Merging this PR creates the per-crate tag and triggers the npm publish workflow.",
   "bootstrap-sha": "e8478c226c1c9bc5731d890e937625495f0e3e19",
   "changelog-sections": [
     {"type":"feat","section":"Features"},
