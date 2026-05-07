@@ -58,7 +58,7 @@
       "title": "Argon2",
       "category": "crypto",
       "description": "Argon2id password hashing with sync + async API.",
-      "speedup": "1.37× faster",
+      "speedup": "1.5× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/argon2",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/argon2",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/argon2/README.md",

@@ -10,21 +10,21 @@
         "entries": [
           {
             "name": "@amigo-labs/argon2",
-            "hz": 321.67,
-            "rme": 0.03,
-            "samples": 3217
+            "hz": 312.5,
+            "rme": 0.1,
+            "samples": 3125
           },
           {
             "name": "argon2 (npm, C-bindings)",
-            "hz": 234.52,
-            "rme": 0.1,
-            "samples": 2346
+            "hz": 208.01,
+            "rme": 0.31,
+            "samples": 2081
           },
           {
             "name": "hash-wasm (WASM)",
-            "hz": 138.99,
-            "rme": 0.69,
-            "samples": 1390
+            "hz": 128.43,
+            "rme": 0.63,
+            "samples": 1285
           }
         ]
       },
@@ -34,9 +34,9 @@
         "entries": [
           {
             "name": "@amigo-labs/argon2",
-            "hz": 322.59,
-            "rme": 0.06,
-            "samples": 3226
+            "hz": 313.89,
+            "rme": 0.09,
+            "samples": 3139
           }
         ]
       },
@@ -2265,7 +2265,7 @@
   "sizes": {
     "argon2": {
       "@amigo-labs/argon2": {
-        "installSize": 24891,
+        "installSize": 469931,
         "type": "binary+shim"
       },
       "argon2": {
@@ -2279,7 +2279,7 @@
     },
     "bcrypt": {
       "@amigo-labs/bcrypt": {
-        "installSize": 413309,
+        "installSize": 24821,
         "type": "binary+shim"
       },
       "bcrypt": {
