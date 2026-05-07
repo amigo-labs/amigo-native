@@ -9,7 +9,7 @@ describe('stemmer — fuzz (totality + safety)', () => {
 
   it('stemMany is total (never throws on arbitrary unicode strings)', () => {
     fc.assert(
-      fc.property(fc.array(fc.fullUnicodeString(), { maxLength: 20 }), (input) => {
+      fc.property(fc.array(fc.string({ unit: 'binary' }), { maxLength: 20 }), (input) => {
         const out = s.stemMany(input)
         expect(out).toHaveLength(input.length)
       }),
@@ -19,7 +19,7 @@ describe('stemmer — fuzz (totality + safety)', () => {
 
   it('tokenizeAndStem is total', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (input) => {
+      fc.property(fc.string({ unit: 'binary' }), (input) => {
         const out = s.tokenizeAndStem(input)
         expect(Array.isArray(out)).toBe(true)
       }),

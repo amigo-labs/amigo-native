@@ -7,7 +7,7 @@ const runs = Number(process.env.FUZZ_RUNS ?? 200)
 describe('{{NAME}} — fuzz (totality + safety)', () => {
   it.todo('never throws on arbitrary unicode input', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (_input) => {
+      fc.property(fc.string({ unit: 'binary' }), (_input) => {
         // something(_input)
       }),
       { numRuns: runs },
@@ -16,7 +16,7 @@ describe('{{NAME}} — fuzz (totality + safety)', () => {
 
   it.todo('output is always valid UTF-8 (Buffer round-trip)', () => {
     fc.assert(
-      fc.property(fc.fullUnicodeString(), (_input) => {
+      fc.property(fc.string({ unit: 'binary' }), (_input) => {
         // const out = something(_input)
         // expect(Buffer.from(out, 'utf8').toString('utf8')).toBe(out)
       }),
