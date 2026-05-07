@@ -8,7 +8,7 @@
 <title>amigo-native | Rust-powered Node.js packages</title>
 <meta name="description" content="Rust-powered drop-in replacements for popular Node.js packages. Compiled to native addons via NAPI-RS, prebuilt for every major platform, zero transitive dependencies.">
 
-<link rel="canonical" href="https://amigo-labs.github.io/amigo-native/">
+<link rel="canonical" href="https://amigo-native.amigo-labs.workers.dev/">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
@@ -17,12 +17,12 @@
 <meta property="og:site_name" content="amigo-native">
 <meta property="og:title" content="amigo-native — Rust-powered Node.js packages">
 <meta property="og:description" content="Drop-in replacements for popular Node.js packages, compiled to native via NAPI-RS. Prebuilt for every major platform. Zero transitive dependencies.">
-<meta property="og:url" content="https://amigo-labs.github.io/amigo-native/">
-<meta property="og:image" content="https://amigo-labs.github.io/amigo-native/logo.png">
+<meta property="og:url" content="https://amigo-native.amigo-labs.workers.dev/">
+<meta property="og:image" content="https://amigo-native.amigo-labs.workers.dev/logo.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="amigo-native — Rust-powered Node.js packages">
 <meta name="twitter:description" content="Drop-in replacements for popular Node.js packages, compiled to native via NAPI-RS. Zero transitive dependencies.">
-<meta name="twitter:image" content="https://amigo-labs.github.io/amigo-native/logo.png">
+<meta name="twitter:image" content="https://amigo-native.amigo-labs.workers.dev/logo.png">
 
 <script type="application/ld+json">
 {
@@ -90,6 +90,15 @@
     <section class="slab" id="slab"></section>
     <div id="slabAnnounce" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
   </main>
+
+  <details class="candidates" id="candidates">
+    <summary>
+      <span class="candidates-label">Considered candidates</span>
+      <span class="candidates-count" id="candidatesCount" aria-hidden="true"></span>
+      <span class="candidates-hint" aria-hidden="true">npm packages we evaluated but didn't ship</span>
+    </summary>
+    <div class="candidates-list" id="candidatesList"></div>
+  </details>
 
   <footer class="footer">
     <div class="footer-links">

@@ -12,7 +12,9 @@
     "build:readmes": "node scripts/render-readmes.mjs",
     "bench:report": "node scripts/run-benchmarks.mjs && node scripts/measure-size.mjs && node scripts/parity-report.mjs && node scripts/render-readmes.mjs && node scripts/generate-report.mjs",
     "lint": "oxlint --ignore-pattern 'crates/sanitize-html/__conformance__/upstream/**' . && cargo fmt --check && cargo clippy --workspace -- -D warnings",
-    "format": "prettier --write . && cargo fmt && taplo format"
+    "format": "prettier --write . && cargo fmt && taplo format",
+    "deploy:dry": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.6.2",
@@ -31,12 +33,12 @@
     "gpt-tokenizer": "^3.0.0",
     "hash-wasm": "^4.11.0",
     "iconv-lite": "^0.7.2",
-    "isomorphic-dompurify": "^3.11.0",
+    "isomorphic-dompurify": "^3.12.0",
     "js-tiktoken": "^1.0.21",
     "jsonwebtoken": "^9.0.2",
     "leven": "^4.0.0",
-    "nanoid": "^5.0.9",
-    "oxlint": "^1.62.0",
+    "nanoid": "^5.1.11",
+    "oxlint": "^1.63.0",
     "pako": "^2.1.0",
     "papaparse": "^5.4.1",
     "prettier": "^3.8.3",
@@ -45,6 +47,7 @@
     "slugify": "^1.6.6",
     "tiktoken": "^1.0.21",
     "vitest": "^4.1.5",
+    "wrangler": "^4.40.0",
     "xxhash-wasm": "^1.1.0",
     "xxhashjs": "^0.2.2",
     "yauzl": "^3.2.0"
