@@ -46,21 +46,21 @@
         "entries": [
           {
             "name": "@amigo-labs/bcrypt",
-            "hz": 859.88,
-            "rme": 0.01,
-            "samples": 4300
+            "hz": 971.61,
+            "rme": 0.02,
+            "samples": 4859
           },
           {
             "name": "bcrypt (npm, C++ via node-gyp)",
-            "hz": 846.32,
-            "rme": 0.19,
-            "samples": 4232
+            "hz": 904.08,
+            "rme": 0.38,
+            "samples": 4521
           },
           {
             "name": "bcryptjs (pure JS)",
-            "hz": 672.89,
-            "rme": 0.11,
-            "samples": 3365
+            "hz": 749.39,
+            "rme": 0.14,
+            "samples": 3747
           }
         ]
       },
@@ -70,21 +70,21 @@
         "entries": [
           {
             "name": "@amigo-labs/bcrypt",
-            "hz": 15.4397,
-            "rme": 0.02,
-            "samples": 155
+            "hz": 17.4431,
+            "rme": 0.03,
+            "samples": 175
           },
           {
             "name": "bcrypt (npm, C++ via node-gyp)",
-            "hz": 15.0253,
-            "rme": 0.08,
-            "samples": 151
+            "hz": 16.8151,
+            "rme": 0.06,
+            "samples": 169
           },
           {
             "name": "bcryptjs (pure JS)",
-            "hz": 11.2042,
-            "rme": 0.3,
-            "samples": 113
+            "hz": 12.6284,
+            "rme": 0.08,
+            "samples": 127
           }
         ]
       },
@@ -94,21 +94,21 @@
         "entries": [
           {
             "name": "@amigo-labs/bcrypt",
-            "hz": 15.4446,
-            "rme": 0.02,
-            "samples": 155
+            "hz": 17.4477,
+            "rme": 0.03,
+            "samples": 175
           },
           {
             "name": "bcrypt (npm, C++ via node-gyp)",
-            "hz": 15.0612,
-            "rme": 0.02,
-            "samples": 151
+            "hz": 16.8558,
+            "rme": 0.03,
+            "samples": 169
           },
           {
             "name": "bcryptjs (pure JS)",
-            "hz": 11.2287,
-            "rme": 0.14,
-            "samples": 113
+            "hz": 12.566,
+            "rme": 0.22,
+            "samples": 126
           }
         ]
       },
@@ -2265,7 +2265,7 @@
   "sizes": {
     "argon2": {
       "@amigo-labs/argon2": {
-        "installSize": 469931,
+        "installSize": 24891,
         "type": "binary+shim"
       },
       "argon2": {
@@ -2279,7 +2279,7 @@
     },
     "bcrypt": {
       "@amigo-labs/bcrypt": {
-        "installSize": 414621,
+        "installSize": 413309,
         "type": "binary+shim"
       },
       "bcrypt": {
@@ -2293,7 +2293,7 @@
     },
     "bm25": {
       "@amigo-labs/bm25": {
-        "installSize": 448393,
+        "installSize": 25017,
         "type": "binary+shim"
       },
       "wink-bm25-text-search": {
@@ -2307,7 +2307,7 @@
     },
     "commonmark": {
       "@amigo-labs/commonmark": {
-        "installSize": 924730,
+        "installSize": 26322,
         "type": "binary+shim"
       },
       "marked": {
@@ -2321,7 +2321,7 @@
     },
     "csv": {
       "@amigo-labs/csv": {
-        "installSize": 450634,
+        "installSize": 1770,
         "type": "binary+shim"
       },
       "csv-parse": {
@@ -2335,7 +2335,7 @@
     },
     "deepmerge": {
       "@amigo-labs/deepmerge": {
-        "installSize": 415978,
+        "installSize": 24882,
         "type": "binary+shim"
       },
       "deepmerge": {
@@ -2345,7 +2345,7 @@
     },
     "diff": {
       "@amigo-labs/diff": {
-        "installSize": 494434,
+        "installSize": 25994,
         "type": "binary+shim"
       },
       "diff": {
@@ -2355,7 +2355,7 @@
     },
     "encoding": {
       "@amigo-labs/encoding": {
-        "installSize": 615164,
+        "installSize": 3852,
         "type": "binary+shim"
       },
       "iconv-lite": {
@@ -2365,7 +2365,7 @@
     },
     "file-type": {
       "@amigo-labs/file-type": {
-        "installSize": 456888,
+        "installSize": 24840,
         "type": "binary+shim"
       },
       "file-type": {
@@ -2375,7 +2375,7 @@
     },
     "force-layout": {
       "@amigo-labs/force-layout": {
-        "installSize": 402678,
+        "installSize": 26254,
         "type": "binary+shim"
       },
       "d3-force": {
@@ -2385,7 +2385,7 @@
     },
     "graph-layout": {
       "@amigo-labs/graph-layout": {
-        "installSize": 435090,
+        "installSize": 26418,
         "type": "binary+shim"
       },
       "dagre": {
@@ -2399,7 +2399,7 @@
     },
     "inflate": {
       "@amigo-labs/inflate": {
-        "installSize": 521964,
+        "installSize": 25652,
         "type": "binary+shim"
       },
       "pako": {
@@ -2409,7 +2409,7 @@
     },
     "jose": {
       "@amigo-labs/jose": {
-        "installSize": 487662,
+        "installSize": 24878,
         "type": "binary+shim"
       },
       "jose": {
@@ -2419,7 +2419,7 @@
     },
     "jwt": {
       "@amigo-labs/jwt": {
-        "installSize": 1385820,
+        "installSize": 25740,
         "type": "binary+shim"
       },
       "jsonwebtoken": {
@@ -2429,7 +2429,7 @@
     },
     "language-detect": {
       "@amigo-labs/language-detect": {
-        "installSize": 661587,
+        "installSize": 26787,
         "type": "binary+shim"
       },
       "franc": {
@@ -2439,7 +2439,7 @@
     },
     "minisearch": {
       "@amigo-labs/minisearch": {
-        "installSize": 468249,
+        "installSize": 25857,
         "type": "binary+shim"
       },
       "minisearch": {
@@ -2449,7 +2449,7 @@
     },
     "pdf": {
       "@amigo-labs/pdf": {
-        "installSize": 1343351,
+        "installSize": 24991,
         "type": "binary+shim"
       },
       "pdfkit": {
@@ -2459,7 +2459,7 @@
     },
     "pdf-parse": {
       "@amigo-labs/pdf-parse": {
-        "installSize": 1905760,
+        "installSize": 25392,
         "type": "binary+shim"
       },
       "pdf-parse": {
@@ -2469,7 +2469,7 @@
     },
     "sanitize-html": {
       "@amigo-labs/sanitize-html": {
-        "installSize": 1369967,
+        "installSize": 26623,
         "type": "binary+shim"
       },
       "sanitize-html": {
@@ -2483,7 +2483,7 @@
     },
     "sentences": {
       "@amigo-labs/sentences": {
-        "installSize": 418966,
+        "installSize": 25838,
         "type": "binary+shim"
       },
       "sbd": {
@@ -2493,7 +2493,7 @@
     },
     "slugify": {
       "@amigo-labs/slugify": {
-        "installSize": 988673,
+        "installSize": 24553,
         "type": "binary+shim"
       },
       "slugify": {
@@ -2503,7 +2503,7 @@
     },
     "stemmer": {
       "@amigo-labs/stemmer": {
-        "installSize": 794567,
+        "installSize": 26111,
         "type": "binary+shim"
       },
       "natural": {
@@ -2513,7 +2513,7 @@
     },
     "svgo": {
       "@amigo-labs/svgo": {
-        "installSize": 486053,
+        "installSize": 25117,
         "type": "binary+shim"
       },
       "svgo": {
@@ -2523,7 +2523,7 @@
     },
     "text-splitters": {
       "@amigo-labs/text-splitters": {
-        "installSize": 11776047,
+        "installSize": 26439,
         "type": "binary+shim"
       },
       "@langchain/textsplitters": {
@@ -2533,7 +2533,7 @@
     },
     "tiktoken": {
       "@amigo-labs/tiktoken": {
-        "installSize": 9154840,
+        "installSize": 26368,
         "type": "binary+shim"
       },
       "tiktoken": {
@@ -2551,7 +2551,7 @@
     },
     "turndown": {
       "@amigo-labs/turndown": {
-        "installSize": 1273450,
+        "installSize": 25578,
         "type": "binary+shim"
       },
       "turndown": {
@@ -2561,7 +2561,7 @@
     },
     "typst": {
       "@amigo-labs/typst": {
-        "installSize": 37651156,
+        "installSize": 24836,
         "type": "binary+shim"
       },
       "typst (CLI)": {
@@ -2579,7 +2579,7 @@
     },
     "xlsx": {
       "@amigo-labs/xlsx": {
-        "installSize": 1832617,
+        "installSize": 25697,
         "type": "binary+shim"
       },
       "xlsx": {
@@ -2593,7 +2593,7 @@
     },
     "xxhash": {
       "@amigo-labs/xxhash": {
-        "installSize": 427051,
+        "installSize": 25963,
         "type": "binary+shim"
       },
       "xxhash-wasm": {
@@ -2607,7 +2607,7 @@
     },
     "zip": {
       "@amigo-labs/zip": {
-        "installSize": 836900,
+        "installSize": 25724,
         "type": "binary+shim"
       },
       "yauzl": {

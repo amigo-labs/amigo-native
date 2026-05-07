@@ -69,7 +69,7 @@
       "title": "Bcrypt",
       "category": "crypto",
       "description": "Bcrypt password hashing with sync + async API. Argon2 sibling.",
-      "speedup": "~equal",
+      "speedup": "up to 1.07× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bcrypt",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bcrypt",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bcrypt/README.md",
