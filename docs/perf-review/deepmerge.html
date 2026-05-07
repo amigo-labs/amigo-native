@@ -1,0 +1,72 @@
+<h1 id="perf-review-amigo-labs-deepmerge">Perf-Review: <code>@amigo-labs/deepmerge</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>3.38×–5.55× vs. <code>deepmerge</code> npm</strong> across all three scenarios (flat / deep / large-arrays). One of the more surprising Green verdicts in the portfolio — deepmerge looks superficially like a <code>deep-equal</code> antipattern (two JS objects in, one JS object out), but the object traversal + allocation work is significantly faster in Rust than V8’s object-prototype walking, even after FFI overhead from <code>serde_json::Value</code> marshalling.</p>
+<h2 id="classification-rationale">Classification rationale</h2>
+<ol>
+<li><strong>Object allocation is the real bottleneck in JS.</strong> V8 allocates every <code>{...}</code> spread copy as a new shape descriptor. Deeply-nested objects trigger hidden-class transitions per level. Rust <code>serde_json::Map</code> is a flat HashMap-backed structure — insert cost is constant.</li>
+<li><strong>Array-concat scaling</strong> (1000 items) is the biggest win (4.91×). deepmerge-npm calls <code>Array.prototype.concat</code> in a loop over keys = repeated array allocation.</li>
+<li><strong>FFI transport is the cost driver, but amortised.</strong> We marshal two JS objects in via <code>serde_json::Value</code> and one out. That’s <code>Vec&lt;Object&gt;</code>-style FFI cost (see <code>docs/post-mortems/xml.md</code>), but once per call — Rust merge work dominates.</li>
+<li><strong>Prototype-pollution protection as a side-effect.</strong> Rust-side <code>__proto__</code> / <code>constructor</code> / <code>prototype</code> filtering is security-relevant and a recurring CVE target in deepmerge-npm.</li>
+</ol>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/deepmerge</th><th style="text-align: right">deepmerge npm</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>flat 4-key objects</td><td style="text-align: right">3 353 331 Hz</td><td style="text-align: right">992 663 Hz</td><td style="text-align: right"><strong>3.38×</strong></td></tr>
+<tr><td>deep (10 levels)</td><td style="text-align: right">210 618 Hz</td><td style="text-align: right">37 983 Hz</td><td style="text-align: right"><strong>5.55×</strong></td></tr>
+<tr><td>1000-item arrays</td><td style="text-align: right">3 564 Hz</td><td style="text-align: right">725 Hz</td><td style="text-align: right"><strong>4.91×</strong></td></tr>
+</tbody></table>
+<h3 id="realistic-use-case">Realistic use case</h3>
+<p><strong>Config merging</strong> — CLI defaults + user config + project config + env overrides. Typical object size: 5–50 keys, 2–5 levels deep. Called multiple times per process start. Second use case: <strong>deep clone via <code>merge(target={}, source)</code></strong> — idiomatic in Vue / React state management and vanilla JS.</p>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong><code>mergeAll</code> path</strong> (variadic merge) not benched. The API exposes <code>merge_all_json(values: Vec&lt;Value&gt;)</code> but no bench slot.</li>
+<li><strong>Extreme-deep (50+ levels) not tested.</strong> Mostly artificial, but testable for stack depth.</li>
+<li><strong>Rich-type handling</strong> (Date, RegExp via JS wrapper) not in the perf bench (it’s a <code>__conformance__</code> topic).</li>
+</ul>
+<h3 id="api-surface">API surface</h3>
+<pre><code class="language-rust">#[napi] fn merge_json(target: Value, source: Value, options: Option&lt;DeepmergeOptions&gt;) -&gt; Value
+#[napi] fn merge_all_json(values: Vec&lt;Value&gt;, options: Option&lt;DeepmergeOptions&gt;) -&gt; Value
+</code></pre>
+<ul>
+<li><code>Value</code> = <code>serde_json::Value</code> — objects / arrays / primitives. Rich types (Date, RegExp, Map, Set) are intercepted in the JS wrapper layer (documented in the README).</li>
+<li><code>DeepmergeOptions.array_merge</code>: <code>'concat'</code> (default) or <code>'overwrite'</code>.</li>
+<li>Prototype-pollution filter is hard-built-in: <code>FORBIDDEN = ["__proto__", "constructor", "prototype"]</code> are ignored during merge.</li>
+</ul>
+<h3 id="bundle-binary-size">Bundle / binary size</h3>
+<p><code>serde_json</code> is the only notable dep. ~400–600 KB per target.</p>
+<h3 id="ffi-overhead-baseline">FFI-overhead baseline</h3>
+<ul>
+<li>Flat 4-key object: 2× input marshalling + 1× output ≈ 1–3 µs on 100-byte objects. On 300 ns of Rust merge work = ~5×. But the JS equivalent (deepmerge-npm) itself takes ~1 µs for the same objects. Net: 3.38× win.</li>
+<li>Deep 10-level: input ~2 KB JSON + output ~2 KB. FFI ~10 µs on ~5 ms of Rust work = 0.2 %. Rust dominates.</li>
+<li>1000-array: input 2× 8 KB, output 16 KB. FFI ~50 µs on 300 µs Rust. ~17 %. Borderline, but the 4.91× margin holds.</li>
+</ul>
+<h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
+<table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
+<tr><td>C.1</td><td>Input-type minimisation (Buffer instead of Value?)</td><td>❌ not applicable</td><td>User API is JS object native; a Buffer overload would mean JSON.stringify on the caller side — that just shifts the work</td></tr>
+<tr><td>C.2</td><td>Output-type minimisation</td><td>❌ not applicable</td><td>—</td></tr>
+<tr><td>C.3</td><td>Batch API (<code>merge_all_json</code>)</td><td>✅ already done</td><td>Exposed, not benched but the API exists</td></tr>
+<tr><td>C.4</td><td>Stateful API</td><td>❌ not applicable</td><td>—</td></tr>
+<tr><td>C.5</td><td>Parallelisation</td><td>❌ not applicable</td><td>Merge is sequential</td></tr>
+<tr><td>C.6</td><td>Algorithm swap (simd-json instead of serde_json)</td><td>🟡 potential</td><td><code>simd-json</code> for input parse would lower the FFI share, but parsing already happens V8-side (NAPI hands us a deserialised <code>Value</code>). Not directly applicable.</td></tr>
+<tr><td>C.7</td><td>Allocator tuning (bumpalo for merge allocs)</td><td>🟡 marginal</td><td><code>serde_json::Map</code> is BTreeMap-backed. Swapping in a bump arena would speed up merge intermediates. Unknown gain.</td></tr>
+<tr><td>C.8</td><td>Bundle size</td><td>✅ already done</td><td>Workspace profile</td></tr>
+</tbody></table>
+<h2 id="action-plan">Action plan</h2>
+<p><strong>Keep-as-is.</strong> Green across every scenario, no open front.</p>
+<p>Maintenance:</p>
+<ol>
+<li><strong>Add a <code>mergeAll</code> bench</strong> — API exposed but not measured.</li>
+<li><strong>Document rich-type wrapper tests</strong> (Date / RegExp in the JS layer) — partially in the README, but edge cases could be expanded.</li>
+<li><strong>bumpalo spike as fast-follow</strong> if size regressions appear in later Node versions.</li>
+</ol>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/deepmerge</code></li>
+<li>Bench: <code>crates/deepmerge/__bench__/index.bench.ts</code></li>
+<li>Lib: <code>crates/deepmerge/src/lib.rs</code></li>
+<li>Cargo: <code>crates/deepmerge/Cargo.toml</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"3.4–5.5× faster"</code></li>
+</ul>

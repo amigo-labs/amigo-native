@@ -517,6 +517,12 @@ function buildSlabHTML(p) {
       <summary>README <span class="readme-hint">rendered by @amigo-labs/commonmark</span></summary>
       <div class="readme-body" id="slabReadme"></div>
     </details>
+
+    ${p.perfReviewUrl ? `
+    <details class="slab-readme" id="slabPerfReviewHost">
+      <summary>Perf review <span class="readme-hint">rendered by @amigo-labs/commonmark</span></summary>
+      <div class="readme-body" id="slabPerfReview"></div>
+    </details>` : ''}
   `;
 }
 
@@ -545,6 +551,7 @@ function animateSlab(p) {
   renderSizes(p);
   renderTrend(p);
   wireReadme(p);
+  wirePerfReview(p);
 }
 
 // Per-package perf history lives in docs/history/<name>.jsonl, one entry
@@ -696,35 +703,56 @@ async function copyToClipboard(text, btn, installRow) {
 // re-fetch. The previous in-function `loaded` flag was reset on every slab
 // re-render, defeating the purpose.
 const _readmeCache = {};
-function wireReadme(pkg) {
-  const details = $('#slabReadmeHost');
-  const host = $('#slabReadme');
+const _perfReviewCache = {};
+
+function wireMarkdownDetails({ details, host, cache, key, fetchPath, label }) {
   if (!details || !host) return;
-  // If we've already loaded this README, paint it eagerly so opening the
-  // <details> shows content instantly with no network round-trip.
-  if (_readmeCache[pkg.name]) {
-    host.innerHTML = _readmeCache[pkg.name];
+  if (cache[key]) {
+    host.innerHTML = cache[key];
   }
   details.addEventListener('toggle', async () => {
     if (!details.open) return;
-    if (_readmeCache[pkg.name]) {
-      host.innerHTML = _readmeCache[pkg.name];
+    if (cache[key]) {
+      host.innerHTML = cache[key];
       return;
     }
-    host.innerHTML = '<div class="readme-skeleton" aria-label="Loading README"><div class="line"></div><div class="line"></div><div class="line"></div></div>';
+    host.innerHTML = `<div class="readme-skeleton" aria-label="Loading ${label}"><div class="line"></div><div class="line"></div><div class="line"></div></div>`;
     try {
-      const res = await fetch(`readmes/${pkg.name}.html`);
+      const res = await fetch(fetchPath);
       if (!res.ok) throw new Error(res.statusText);
-      // The fetched HTML is locally rendered from each crate's README via
-      // our own commonmark crate during the docs build — same-origin, no
-      // user-controlled content. Do NOT route untrusted markup through
+      // The fetched HTML is locally rendered from project-owned markdown
+      // via our own commonmark crate during the docs build — same-origin,
+      // no user-controlled content. Do NOT route untrusted markup through
       // this assignment without sanitising it first.
       const html = await res.text();
-      _readmeCache[pkg.name] = html;
+      cache[key] = html;
       host.innerHTML = html;
     } catch {
-      host.innerHTML = '<div class="readme-error">Could not load README.</div>';
+      host.innerHTML = `<div class="readme-error">Could not load ${label}.</div>`;
     }
+  });
+}
+
+function wireReadme(pkg) {
+  wireMarkdownDetails({
+    details: $('#slabReadmeHost'),
+    host: $('#slabReadme'),
+    cache: _readmeCache,
+    key: pkg.name,
+    fetchPath: `readmes/${pkg.name}.html`,
+    label: 'README',
+  });
+}
+
+function wirePerfReview(pkg) {
+  if (!pkg.perfReviewUrl) return;
+  wireMarkdownDetails({
+    details: $('#slabPerfReviewHost'),
+    host: $('#slabPerfReview'),
+    cache: _perfReviewCache,
+    key: pkg.name,
+    fetchPath: `perf-review/${pkg.name}.html`,
+    label: 'perf review',
   });
 }
 

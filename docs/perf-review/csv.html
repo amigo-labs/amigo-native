@@ -1,0 +1,76 @@
+<h1 id="perf-review-amigo-labs-csv">Perf-Review: <code>@amigo-labs/csv</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p>Parity Green across all three size buckets — <strong>2.39×–5.22× vs. <code>csv-parse</code> (sync)</strong> and <strong>1.52×–1.88× vs. <code>papaparse</code></strong>. The Phase-C fix (commit <code>ecf8408</code>) now routes <code>parse()</code> through <code>parseToJson + JSON.parse</code>, eliminating the earlier Yellow margin on plain <code>parse()</code> — both paths now measure identically. BurntSushi’s <code>csv</code> crate is one of the most mature Rust parser libraries in the ecosystem; FFI overhead at 10k-row scale is &lt;1 % (Buffer in, JSON string out).</p>
+<h2 id="classification-rationale">Classification rationale</h2>
+<ol>
+<li><strong>Parser baseline is relatively slow.</strong> <code>csv-parse</code> (sync) uses a state machine in JS, <code>papaparse</code> a custom tokenizer; both CPU-bound without SIMD. BurntSushi <code>csv</code> uses memchr-backed field detection plus a zero-copy reader pattern.</li>
+<li><strong>The <code>parseToJson</code> path was the Phase-C lever.</strong> The original <code>parse()</code> returned <code>Vec&lt;Vec&lt;String&gt;&gt;</code> — 100k rows × 5 cols × marshalling overhead was measurable. Current implementation: Rust builds a JSON string directly, JS does <code>JSON.parse</code> on the output. <strong>One</strong> FFI crossing instead of 500k.</li>
+<li><strong>All three buckets Green.</strong> No bimodal problem. Speedup scales with input size (larger = more Rust work relative to FFI transport).</li>
+</ol>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/csv</th><th style="text-align: right">parseToJson</th><th style="text-align: right">csv-parse</th><th style="text-align: right">papaparse</th><th style="text-align: right">vs. csv-parse</th><th style="text-align: right">vs. papaparse</th></tr></thead><tbody>
+<tr><td>100 rows × 5 cols</td><td style="text-align: right">11 892 Hz</td><td style="text-align: right">12 395 Hz</td><td style="text-align: right">4 968 Hz</td><td style="text-align: right">7 832 Hz</td><td style="text-align: right"><strong>2.39×</strong></td><td style="text-align: right"><strong>1.52×</strong></td></tr>
+<tr><td>10 000 rows × 5 cols</td><td style="text-align: right">177.3 Hz</td><td style="text-align: right">177.7 Hz</td><td style="text-align: right">45.3 Hz</td><td style="text-align: right">97.2 Hz</td><td style="text-align: right"><strong>3.91×</strong></td><td style="text-align: right"><strong>1.82×</strong></td></tr>
+<tr><td>100 000 rows × 10 cols</td><td style="text-align: right">10.37 Hz</td><td style="text-align: right">10.35 Hz</td><td style="text-align: right">1.99 Hz</td><td style="text-align: right">5.51 Hz</td><td style="text-align: right"><strong>5.22×</strong></td><td style="text-align: right"><strong>1.88×</strong></td></tr>
+</tbody></table>
+<h3 id="realistic-use-case">Realistic use case</h3>
+<p><strong>ETL / data import</strong> — CSV uploads from user forms, log-file analysis, spreadsheet-export pipelines. Median workload: 10 KB – 10 MB CSV, 10–100k rows. One parse call per file, deterministic output shape. Second use case: <strong>CLI tooling</strong> (<code>csv</code> util pipes), where inputs are smaller but call frequency is higher — the 100-row bucket matters there.</p>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong><code>stringify</code> path not benched</strong> (row array → CSV string). Phase-C equivalent of the parseToJson lever not verified. Catch up before v0.2.</li>
+<li><strong><code>parseWithHeaders</code> not separately benched.</strong> The npm <code>csv-parse</code> convention <code>{columns: true}</code> is the default production use case. We have the API, no measurement.</li>
+<li><strong>Edge cases</strong> (CRLF/LF mix, quoted delimiter, UTF-8 BOM) not as bench scenario — parity covered via <code>__conformance__/upstream.spec.ts</code>, but a perf-only split would be useful.</li>
+</ul>
+<h3 id="api-surface">API surface</h3>
+<pre><code class="language-rust">#[napi] fn parse(input: Buffer, options: Option&lt;CsvOptions&gt;) -&gt; Result&lt;Vec&lt;Vec&lt;String&gt;&gt;&gt;
+#[napi(js_name = "parseWithHeaders")] fn parse_with_headers(input: Buffer, ...) -&gt; Result&lt;Vec&lt;HashMap&lt;String, String&gt;&gt;&gt;
+#[napi] fn stringify(rows: Vec&lt;Vec&lt;String&gt;&gt;, options: ...) -&gt; Result&lt;String&gt;
+#[napi(js_name = "stringifyObjects")] fn stringify_objects(rows: Vec&lt;HashMap&lt;String, String&gt;&gt;, columns: ..., options: ...) -&gt; Result&lt;String&gt;
+#[napi(js_name = "countRows")] fn count_rows(input: Buffer, options: ...) -&gt; Result&lt;u32&gt;
+#[napi(js_name = "parseToJson")] fn parse_to_json(input: Buffer, options: ...) -&gt; Result&lt;String&gt;
+</code></pre>
+<ul>
+<li><code>Buffer</code> input throughout (zero-copy transport).</li>
+<li><code>parse()</code> is internally identical to <code>parseToJson + JSON.parse</code> (commit <code>ecf8408</code>).</li>
+<li><code>countRows()</code> is the shortcut for row counting without array construction — pure Rust, zero array FFI.</li>
+<li><code>parseToJson()</code> is the exposed hot path — the user can <code>JSON.parse</code> and stream themselves.</li>
+</ul>
+<h3 id="bundle-binary-size">Bundle / binary size</h3>
+<p>BurntSushi <code>csv</code> crate without the <code>serde</code> feature. Likely 300–500 KB per target — small. <code>docs/data.json</code>’s <code>sizes</code> field has the exact number.</p>
+<h3 id="ffi-overhead-baseline">FFI-overhead baseline</h3>
+<ul>
+<li>100k-row bucket: input buffer ~5 MB via buffer handle ~180 ns transport. Output JSON string ~8 MB via UTF-8→UTF-16 conversion at 0.35 ns/byte = ~2.8 ms. On ~100 ms of Rust parse = <strong>2.8 % FFI share</strong>. Tolerable.</li>
+<li>100-row bucket: FFI ~30 µs on ~80 µs Rust = 27 %. A buffer-output variant would be a theoretical lever there, but the current 2.39× speedup is already Green.</li>
+</ul>
+<h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
+<table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
+<tr><td>C.1</td><td>Input-type minimisation</td><td>✅ already done</td><td><code>Buffer</code> throughout, zero-copy</td></tr>
+<tr><td>C.2</td><td>Output-type minimisation (string JSON instead of Vec&lt;Vec&gt;)</td><td>✅ already done</td><td>Commit <code>ecf8408</code></td></tr>
+<tr><td>C.3</td><td>Batch API</td><td>❌ not applicable</td><td>One-call-per-file is the idiom</td></tr>
+<tr><td>C.4</td><td>Stateful API (CsvParser class)</td><td>🟡 marginal</td><td>If users repeatedly parse with identical options, small build-opts wins. Sub-percent.</td></tr>
+<tr><td>C.5</td><td>Parallelisation</td><td>❌ not applicable</td><td>CSV is a sequential parse</td></tr>
+<tr><td>C.6</td><td>Algorithm swap (<code>qsv</code>-style simd-csv)</td><td>🟡 potential</td><td>The <code>csv-async</code> crate has SIMD experiments. If 10× vs. BurntSushi is measurable, sprint-worthy. Currently 5.22× at 100k — enough headroom.</td></tr>
+<tr><td>C.7</td><td>Allocator tuning</td><td>❌ not applicable</td><td>—</td></tr>
+<tr><td>C.8</td><td>Bundle size</td><td>✅ already done</td><td>Workspace profile</td></tr>
+</tbody></table>
+<h2 id="action-plan">Action plan</h2>
+<p><strong>Keep-as-is.</strong> Green across every bucket, Phase-C lever already pulled.</p>
+<p>Maintenance:</p>
+<ol>
+<li><strong>Add a <code>stringify</code> bench</strong> — symmetric path to parse.</li>
+<li><strong><code>parseWithHeaders</code> bench</strong> — the primary production use case, deserves its own measurement.</li>
+<li><strong>SIMD-CSV spike</strong> (Phase-C.6) only as fast-follow if a 10× upgrade is portfolio-political. No pressure right now.</li>
+</ol>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/csv</code></li>
+<li>Bench: <code>crates/csv/__bench__/index.bench.ts</code></li>
+<li>Lib: <code>crates/csv/src/lib.rs</code></li>
+<li>Cargo: <code>crates/csv/Cargo.toml</code></li>
+<li>Phase-C commit: <code>ecf8408</code> (<code>parse()</code> → <code>parseToJson + JSON.parse</code>)</li>
+<li><code>docs/packages.json</code> speedup: <code>"1.52–1.88× faster"</code> (vs. papaparse — conservative figure)</li>
+</ul>

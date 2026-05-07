@@ -1,0 +1,71 @@
+<h1 id="perf-review-amigo-labs-argon2">Perf-Review: <code>@amigo-labs/argon2</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟡 Yellow · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p>CPU-bound password hashing — <strong>1.37× vs. upstream <code>argon2</code> (C bindings via node-gyp)</strong>, <strong>2.33× vs. <code>hash-wasm</code> WASM build</strong>. Upstream is already natively compiled (argon2-C via node-gyp), so this margin represents the entire Phase-C/D ceiling for this package: the algorithm is the Argon2-2015 spec, both sides drive <code>blake2b</code> core loops over the same algorithm — no order-of-magnitude headroom is available. Keep-as-is; no optimization sprint in sight that would clear measurement noise.</p>
+<h2 id="classification-rationale">Classification rationale</h2>
+<p>Argon2 is the definitive <strong>algorithm-ceiling-bound</strong> case in the portfolio:</p>
+<ol>
+<li><strong>Upstream is also native.</strong> The <code>argon2</code> npm package is <code>node-gyp</code>-compiled C bindings to libargon2. We’re pitting Rust-native against C-native on the same spec. The inner loop is <code>blake2b</code> compress over 128-byte blocks, identically vectorised on both sides.</li>
+<li><strong>The default config is deliberately slow.</strong> Memory cost 64 MiB, time cost 3, parallelism 4 — Argon2 is meant to take 100–500 ms per hash. FFI floor (109 ns) vs. 300 ms compute = <strong>0.00004 %</strong> share. No FFI lever to pull.</li>
+<li><strong>hash-wasm is the real alternative.</strong> A 2.33× speedup vs. WASM builds justifies the package portfolio-wide. WASM has ~1.5× overhead per blake2b round vs. native.</li>
+<li><strong>Yellow rather than Green</strong> because the 1.37× margin against the primary drop-in alternative (<code>argon2</code> npm) sits below the 2× gate. Not Red, because the margin is unambiguously positive and the WASM case is Green.</li>
+</ol>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/argon2</th><th style="text-align: right">argon2 (npm, C)</th><th style="text-align: right">hash-wasm</th><th style="text-align: right">vs. argon2</th><th style="text-align: right">vs. hash-wasm</th></tr></thead><tbody>
+<tr><td>hash (low-cost params)</td><td style="text-align: right">320.93 Hz</td><td style="text-align: right">234.39 Hz</td><td style="text-align: right">137.48 Hz</td><td style="text-align: right"><strong>1.37×</strong></td><td style="text-align: right"><strong>2.33×</strong></td></tr>
+<tr><td>verify</td><td style="text-align: right">321.38 Hz</td><td style="text-align: right">—</td><td style="text-align: right">—</td><td style="text-align: right">(baseline)</td><td style="text-align: right">—</td></tr>
+</tbody></table>
+<h3 id="realistic-use-case">Realistic use case</h3>
+<p>Password hashing in authentication flows. One hash operation per user registration / login, not a hot loop. Default params (memory=64 MiB, time=3, parallelism=4) ≈ 300 ms. Server-side, not latency-critical below the default-cost configuration. The async API (<code>hash()</code> returns an <code>AsyncTask</code>) keeps the event loop free — that’s the actual value vs. sync-only upstream.</p>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>Verify cross-bench is missing.</strong> Only <code>@amigo-labs/argon2.verify_sync</code> is benched — no numbers vs. <code>argon2.verify</code> npm. Catch up before v0.2.</li>
+<li><strong>High-cost params not tested.</strong> <code>memory=256 MiB, time=10</code> (paranoid server config) would clarify the CPU margin. Expected ≈1.3× there because blake2b dominates.</li>
+<li><strong>Async path not directly measured</strong> (only sync in the bench). The async overhead is <code>AsyncTask</code> = thread hop + join — sub-millisecond, negligible against 300 ms compute.</li>
+</ul>
+<h3 id="api-surface">API surface</h3>
+<pre><code class="language-rust">#[napi] fn hash_sync(password: String, options: Option&lt;Argon2Options&gt;) -&gt; Result&lt;String&gt;
+#[napi] fn hash(password: String, options: Option&lt;Argon2Options&gt;) -&gt; AsyncTask&lt;HashTask&gt;
+#[napi] fn verify_sync(hash: String, password: String) -&gt; Result&lt;bool&gt;
+#[napi] fn verify(hash: String, password: String) -&gt; AsyncTask&lt;VerifyTask&gt;
+</code></pre>
+<ul>
+<li>Inputs: <code>String</code> (password) and <code>Option&lt;Argon2Options&gt;</code> (memory_cost, time_cost, parallelism, output_len). Output: PHC string.</li>
+<li>The <code>AsyncTask</code> variant is the default hot path — offloaded to the worker pool.</li>
+<li>No stateful class. No callback boundary. Clean.</li>
+</ul>
+<h3 id="bundle-binary-size">Bundle / binary size</h3>
+<p>The <code>sizes</code> field in <code>docs/data.json</code> for argon2 is roughly portfolio-median (600–800 KB per target). <code>argon2 = { version = "0.5", features = ["std"] }</code> is compact, no SIMD features.</p>
+<h3 id="ffi-overhead-baseline">FFI overhead baseline</h3>
+<p>Irrelevant — 300 ms of compute per call absorbs every FFI boundary. Reference: <code>docs/BASELINE.md:24</code> (noop = 109 ns).</p>
+<h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
+<table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
+<tr><td>C.1</td><td>Input-type minimisation (<code>String</code> → <code>&amp;str</code>, <code>Buffer</code> overload)</td><td>❌ not applicable</td><td>Password is string-native; FFI share &lt;0.001 %</td></tr>
+<tr><td>C.2</td><td>Output-type minimisation</td><td>❌ not applicable</td><td>Output is a short PHC string</td></tr>
+<tr><td>C.3</td><td>Batch API</td><td>❌ not applicable</td><td>Nobody hashes passwords in batches — use-case mismatch</td></tr>
+<tr><td>C.4</td><td>Stateful API (NAPI class with reused Argon2 config)</td><td>🟡 marginal</td><td><code>build_argon2()</code> costs sub-µs; reuse doesn’t pay</td></tr>
+<tr><td>C.5</td><td>Parallelisation (rayon over multiple inputs)</td><td>❌ not applicable</td><td>Argon2 is itself internally parallelised (<code>parallelism=4</code>)</td></tr>
+<tr><td>C.6</td><td>Algorithm swap (SIMD blake2b)</td><td>🟡 <strong>potential</strong>, uncertain</td><td>The <code>blake2b_simd</code> crate has AVX2/NEON variants. <code>argon2</code> v0.5 uses the <code>blake2b</code> crate (scalar default). Upgrading to the SIMD variant could buy 10–20 % — not enough for a Green upgrade, but measurable.</td></tr>
+<tr><td>C.7</td><td>Allocator tuning</td><td>❌ not applicable</td><td>Argon2 memory allocation is user-controlled via <code>memory_cost</code></td></tr>
+<tr><td>C.8</td><td>Bundle size (LTO, features)</td><td>✅ already done</td><td>Workspace profile with lto=true, strip=symbols</td></tr>
+</tbody></table>
+<h2 id="action-plan">Action plan</h2>
+<p><strong>Keep-as-is.</strong> Yellow stays Yellow, algorithmically ceiling-limited. Three small maintenance items:</p>
+<ol>
+<li><strong>Add a verify cross-bench</strong> (<code>argon2.verify</code> vs. <code>@amigo-labs/argon2.verify_sync</code>) — doc hygiene before v0.2.</li>
+<li><strong>High-cost-param bench</strong> as a second scenario — sharpens the CPU-vs-FFI story for users running paranoid configs.</li>
+<li><strong><code>blake2b_simd</code> spike as fast-follow</strong> (not sprint priority). Expect 1.37× → 1.5–1.6×, still Yellow, but a sign of life for ongoing maintenance.</li>
+</ol>
+<p>No Phase-C sprint scheduled. No Phase-D risk (no Red drift conceivable absent a V8 / libargon2 change).</p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/argon2</code></li>
+<li>Bench: <code>crates/argon2/__bench__/index.bench.ts</code></li>
+<li>Lib: <code>crates/argon2/src/lib.rs</code></li>
+<li>Cargo: <code>crates/argon2/Cargo.toml</code></li>
+<li><code>docs/packages.json</code> speedup field: <code>"1.37× faster"</code></li>
+<li>Summary row: <code>docs/perf-review.md</code> (Yellow, post-sprint table)</li>
+</ul>

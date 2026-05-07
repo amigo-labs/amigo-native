@@ -1,0 +1,73 @@
+<h1 id="perf-review-amigo-labs-slugify">Perf-Review: <code>@amigo-labs/slugify</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>2,27×–4,49× vs. <code>slugify</code> npm</strong> über alle Input-Größen. Unicode-Normalization + Transliteration ist echtes Work, der FFI-Overhead ist relativ klein zur Rust-Compute-Größe. <code>deunicode</code> crate + <code>unicode-normalization</code> crate machen per-Character-Work in pre-computed Tables — JS-upstream nutzt eine große JS-Lookup-Table plus manuelle NFD-Normalization. Sauberster Green-Shape im Portfolio neben <code>jwt</code>: String-in, String-out, kein State, kein Callback, substantial compute.</p>
+<h2 id="classification-rationale">Classification rationale</h2>
+<ol>
+<li><strong>Unicode-Normalization ist der strukturelle Win.</strong> NFD-Normalization braucht Lookup in compact Unicode-Tables (10k+ Einträge). Rust’s <code>unicode-normalization</code> crate hat hand-optimized Decomposition-Tables (compile-time PHF); JS macht dasselbe mit einem großen JS-Object + V8-Hashmap-Lookup per Char.</li>
+<li><strong>Transliteration via <code>deunicode</code> ist Lookup-Table-Perf.</strong> Per-char Rust-Match ist schneller als JS’s Chain-of-<code>switch</code> oder Map-Lookup.</li>
+<li><strong>Skaliert linear mit Input-Size.</strong> 20-char: 2,82×, 500-char: 4,49×, unicode-heavy: 2,27×. Keine Bimodalität.</li>
+<li><strong>Binary-Size ist der Trade-off.</strong> slugify bringt ~966 KB Binary für 21 KB JS-Alternative (<code>docs/perf-review.md:115</code>). Das ist explizit dokumentiert als akzeptabler Trade-off (3 Größenordnungen Speedup bei 3 Größenordnungen Bundle).</li>
+</ol>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/slugify</th><th style="text-align: right">slugify npm</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>short ASCII (20 chars)</td><td style="text-align: right">1 435 759 Hz</td><td style="text-align: right">508 504 Hz</td><td style="text-align: right"><strong>2,82×</strong></td></tr>
+<tr><td>long ASCII (500 chars)</td><td style="text-align: right">116 529 Hz</td><td style="text-align: right">25 966 Hz</td><td style="text-align: right"><strong>4,49×</strong></td></tr>
+<tr><td>unicode heavy</td><td style="text-align: right">278 351 Hz</td><td style="text-align: right">122 440 Hz</td><td style="text-align: right"><strong>2,27×</strong></td></tr>
+</tbody></table>
+<h3 id="realistic-use-case">Realistic use-case</h3>
+<p><strong>URL-Slug-Generation</strong> — Post-Title → URL-Path. Typisch 10–80 chars Input, ein Call pro Post/Article/Item-Create. <strong>Filename-Safe-Naming</strong> für Uploads. <strong>Database-Record-Identity-Generation</strong>. Alle Single-Call-per-Operation, keine Hot-Loops.</p>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>Sprach-Matrix nicht isoliert.</strong> <code>deunicode</code> hat sprachspezifische Transliteration (deutsch-Ü → ue, chinesisch-汉字 → Han Zi). Ein Korpus pro Sprache wäre lehrreich, aber nicht kritisch.</li>
+<li><strong>Separator-Option-Variation</strong> nicht gemessen (<code>_</code> vs <code>-</code> vs custom).</li>
+<li><strong>Strict-Mode-Option</strong> (alphanumeric-only) nicht isoliert.</li>
+</ul>
+<h3 id="api-surface">API surface</h3>
+<p>Aus <code>crates/slugify/package.json</code> amigo-block und typischer slugify-npm-Parity:</p>
+<ul>
+<li><code>slugify(string, options?) → string</code></li>
+<li>Options: <code>replacement</code> (separator), <code>remove</code> (regex/set von chars), <code>lower</code>, <code>strict</code>, <code>locale</code></li>
+</ul>
+<p>Keine NAPI-Class, kein Stateful, kein Async (trivial-fast, keine Notwendigkeit).</p>
+<h3 id="bundle-binary-size">Bundle / binary size</h3>
+<p>~966 KB per Target (explicit in <code>docs/perf-review.md:115</code>). Groß relativ zu JS-Alternative (21 KB) weil Unicode-Tables eingebettet. Das ist das gesamte Portfolio-Trade-off-Argument: 3× – 6× Speedup bei 46× Bundle-Size.</p>
+<p>Für Serverless-Deployments ist das relevant — 966 KB × 6 Targets ist signifikant. Für Docker-Containers irrelevant.</p>
+<h3 id="ffi-overhead-baseline">FFI-overhead baseline</h3>
+<ul>
+<li>20-char ASCII: String-Input-UTF-Konv ~100 ns, Output ähnlich. Rust ~650 ns slugify (inkl. normalize+transliterate+join). Total ~1 µs. FFI ~20 % Share, aber JS-upstream ist selbst 2 µs per Call → wir gewinnen.</li>
+<li>500-char: FFI ~500 ns auf ~8 µs Rust = 6 %.</li>
+<li>Unicode-heavy: FFI ~500 ns auf ~3,5 µs Rust = 14 %.</li>
+</ul>
+<p>Überall Green.</p>
+<h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
+<table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
+<tr><td>C.1</td><td>Input-type minimization (<code>&amp;str</code> statt <code>String</code>)</td><td>🟡 marginal</td><td><code>&amp;str</code> wäre möglich, spart ~50 ns pro Call. Sub-prozent-Gewinn bei aktuellen Margins</td></tr>
+<tr><td>C.2</td><td>Output-type minimization</td><td>❌ not applicable</td><td><code>String</code>-Output ist natürlich</td></tr>
+<tr><td>C.3</td><td>Batch API (<code>slugifyMany</code>)</td><td>🟡 potential</td><td>CSV-Import-mit-Slug-Generation könnte profitieren. Nicht gemessen</td></tr>
+<tr><td>C.4</td><td>Stateful API</td><td>❌ not applicable</td><td>Options sind per-call leichtgewichtig</td></tr>
+<tr><td>C.5</td><td>Parallelization</td><td>❌ not applicable</td><td>Single-string single-threaded</td></tr>
+<tr><td>C.6</td><td>Algorithm swap</td><td>❌ not applicable</td><td><code>deunicode</code> + <code>unicode-normalization</code> sind best-in-class</td></tr>
+<tr><td>C.7</td><td>Allocator tuning (pre-alloc Output-Capacity)</td><td>🟡 marginal</td><td><code>String::with_capacity</code> basierend auf Input-Length × 1,5 — mikro-Optimierung</td></tr>
+<tr><td>C.8</td><td>Bundle-size</td><td>⚠️ accepted trade-off</td><td>Unicode-Tables sind der Bulk; nicht reduzierbar ohne Scope-Cut (z.B. transliterate-optional)</td></tr>
+</tbody></table>
+<h2 id="action-plan">Action plan</h2>
+<p><strong>Keep-as-is.</strong> Green über alle Szenarien, keine offene Front.</p>
+<p>Maintenance:</p>
+<ol>
+<li><strong>Bench-Matrix erweitern</strong> (Sprachen, Separator-Options, Strict-Mode).</li>
+<li><strong><code>slugifyMany</code>-Bench</strong> falls Batch-Hebel portfolio-relevant wird.</li>
+<li><strong>Binary-Size-Reduktion als Fast-Follow</strong> falls Serverless-User Complaints kommen: feature-gated <code>deunicode</code> (Ascii-only / Latin-only / Full) könnte 60–70 % sparen. Bisher keine Nachfrage.</li>
+</ol>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/slugify</code></li>
+<li>Bench: <code>crates/slugify/__bench__/index.bench.ts</code></li>
+<li>Lib: <code>crates/slugify/src/lib.rs</code></li>
+<li>Cargo: <code>crates/slugify/Cargo.toml</code></li>
+<li>Bundle-trade-off Diskussion: <code>docs/perf-review.md:115</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"2.3–4.5× faster"</code></li>
+</ul>
