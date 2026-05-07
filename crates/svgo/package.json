@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/svgo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fast SVG optimizer — quick-xml-powered subset of svgo's preset-default plugins.",
   "main": "index.js",
   "types": "index.d.ts",

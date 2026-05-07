@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/tiktoken",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fast BPE tokenizer for OpenAI models — Rust-powered drop-in for tiktoken and gpt-tokenizer",
   "keywords": [
     "tiktoken",

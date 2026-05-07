@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/xlsx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "XLSX read + write via calamine/rust_xlsxwriter. Buffer in, rows out; rows in, Buffer out.",
   "main": "index.js",
   "types": "index.d.ts",
