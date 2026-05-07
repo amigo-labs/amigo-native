@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/slugify",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Blazing fast slugify powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",

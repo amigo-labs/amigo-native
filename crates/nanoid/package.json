@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/nanoid",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Fast crypto-safe URL-friendly ID generator (pure JS, pool-amortised entropy)",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",

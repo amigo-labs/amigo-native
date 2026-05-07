@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/inflate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Rust-powered zlib / deflate / gzip via flate2 (zlib-rs backend)",
   "main": "index.js",
   "types": "index.d.ts",

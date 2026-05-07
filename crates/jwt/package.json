@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/jwt",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Rust-powered JWT sign/verify via the jsonwebtoken crate",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",
