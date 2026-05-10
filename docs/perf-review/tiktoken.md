@@ -1,167 +1,183 @@
-# Candidate review: `tiktoken`
+# Perf-Review: `@amigo-labs/tiktoken`
 
-> **Status:** SHIPPED v0.1 · **Predicted:** 🟢 Green vs. pure JS / 🟡 Yellow vs. WASM · **Measured:** 🟢 Green vs. WASM + js-tiktoken / 🔴 Red vs. gpt-tokenizer · **Reviewed:** 2026-04-19
+> **Status:** 🟡 Yellow — re-position OR deprecate · **Reviewed:** 2026-05-10 · **Version:** 0.1.1
 
 ## Verdict
 
-`tiktoken-rs` is a clean Rust port of the OpenAI BPE tokenizer with identical algorithm parity; the API shape is the "canonical Green form" (one call per prompt, substantial compute, string-in / Uint32-out). Against `js-tiktoken` (pure JS), 2.8× on 1 MB inputs is measured externally — clearly Green. Against `tiktoken` npm (WASM), 1.2–1.3× is realistic — structurally not Green, because WASM runs the same Rust core and we only win FFI quality. **GO with positioning as a pure-JS killer, not a WASM killer**; the key risk is the small-input bucket, which absolutely has to be benched before commit.
+`@amigo-labs/tiktoken` is a real, measurable win against the two
+upstream packages it advertises as replacements — **2.2× – 2.8×** over
+`js-tiktoken` and **3.1× – 23.4×** over the WASM `tiktoken`. But against
+`gpt-tokenizer`, the current most-downloaded JS BPE tokenizer for OpenAI
+models, it loses **3.1× – 3.6×** at every measured input size. The
+package admits this in `docs/packages.json` ("3.1–3.6× slower") and in
+the live README's `vs JS` column (`0.28–0.31×`).
 
-## JS package
+This is a positioning problem, not a perf bug. The C-equivalent BPE work
+is already implemented well via `tiktoken-rs`; there is no Phase-C lever
+that turns a structurally cached `gpt-tokenizer` (LRU merge cache, hot
+short prompts) into the slower one. The action is to either narrow the
+package's stated competitive scope to the upstream it actually replaces,
+or to deprecate it in favor of `gpt-tokenizer`.
 
-- **npm:** `tiktoken` (author: Dariusz Bolik, @dqbd) — WASM binding of the original Python/Rust implementation
-- **Downloads:** ~15M weekly (Q1 2026 estimate, BACKLOG)
-- **Exports / API surface:**
-  - `get_encoding(name)` → `Tiktoken` — encoder by name (`cl100k_base`, `o200k_base`, `p50k_base`, …)
-  - `encoding_for_model(model)` → `Tiktoken` — lookup by model ID
-  - `tik.encode(text, allowed_special?)` → `Uint32Array`
-  - `tik.decode(tokens)` → `Uint8Array` (then `TextDecoder` in JS)
-  - `tik.free()` — explicit WASM memory cleanup
-- **Typical input:** UTF-8 text. Range: 10-byte chat snippet to 100 KB+ RAG document
-- **Typical output:** `Uint32Array` with token IDs. About 4 text characters per token → output size ~25% of input length
-- **Realistic median use-case:** **RAG pipeline preprocessing.** Chunk a document (5–50 KB), encode to count/cut, decode rarely. Secondary use-case: **cost gate before API call**: `countTokens(prompt)` on ~200–2000 token chat messages. Never in a hot loop with 10-byte strings
+## Classification rationale
 
-## Rust replacement
+The skill's thresholds split clean here:
 
-- **Candidate crate(s):** `tiktoken-rs 0.11.0` (Arnaud Gourlay + Roger Zurawicki)
-- **Maintenance / license:** actively maintained (release 2026-04-08), MIT, 381 stars, 31 releases
-- **Known gotchas / divergences:**
-  - Encoder functions return `Vec<u32>` — cleanly mappable to `Uint32Array` (no `BigInt` as with xxhash)
-  - Singleton pattern planned for repeated calls (BPE table is ~10–50 MB RAM per encoding) — **must** run as a NAPI class, not as a free function
-  - Special tokens are per-encoding configurable; the API must pass `allowed_special` / `disallowed_special` through (parity with tiktoken npm)
-  - `o200k_harmony` (gpt-oss) is present in tiktoken-rs 0.11 — newer encoding, possibly missing in older js-tiktoken versions. Parity check per encoding required
+- vs `tiktoken` (WASM) and `js-tiktoken`: ≥2× across small/medium/large
+  on every scenario, with the smallest realistic input still at 2.2×.
+  → **Green** by every column of the threshold table.
+- vs `gpt-tokenizer`: 0.27× – 0.32× at every measured size — slower than
+  JS at the median real use-case. → **Red** by the same table.
 
-## BACKLOG check
+Which competitor counts as "realistic" decides the verdict. Two honest
+readings:
 
-> **tiktoken** / **js-tiktoken** (~15M / ~3M). BPE tokenization over documents via `tiktoken-rs`. Batch-encode is the canonical green shape — one call per prompt, compute dominates.
+1. **Replace-the-named-upstream reading.** The `replaces` field in the
+   crate's `amigo` block lists `tiktoken/js-tiktoken`. Users who type
+   `import { encoding_for_model } from 'tiktoken'` (the OpenAI-published
+   WASM package) and switch to `@amigo-labs/tiktoken` get a real 3-23×
+   win. That audience exists and the package serves them well.
+2. **Realistic-median-user reading.** A developer searching "node.js
+   token counter for GPT-4" in 2026 is most likely to land on
+   `gpt-tokenizer` (top npm result by weekly downloads). For that
+   developer, switching to `@amigo-labs/tiktoken` is a regression. The
+   portfolio thesis ("always faster than the JS alternative on realistic
+   inputs") is violated.
 
-The user explicitly requested `rust-check` → the backlog consensus is **refined** here: "Green" was thought of versus pure JS (`js-tiktoken`); versus WASM `tiktoken`, Yellow is realistic.
+Both readings are defensible, neither is decisive — that is exactly the
+Yellow band: *"mixed results or only marginally faster"*, except here
+the mixedness is across competitors rather than across input sizes. The
+2026-04-19 review chose option (1) and labeled the package Green; this
+re-review demotes to Yellow because (a) the live registry / README
+field already publishes the gpt-tokenizer ratio (`0.28–0.31×`), so the
+positioning argument is half-broken and visible to consumers, and (b)
+`gpt-tokenizer`'s download counts have continued to grow, strengthening
+its claim to be the realistic median competitor.
 
-## FFI-overhead prediction
+## Evidence
 
-| Factor | Assessment |
-|---|---|
-| Per-call algorithmic work | **Medium:** 1 MB text ≈ 360 ms (tiktoken-rs reference, external bench). 1 KB ≈ 0.5 ms. 100 bytes ≈ ~5–20 µs. For chat messages (200–2k tokens, ~1–8 KB) real compute is 0.5–4 ms — FFI share **below 1%** |
-| Input size distribution | UTF-8 string. ~35 µs FFI string conversion per 100 KB (BASELINE.md). At median input 1–10 KB that's ~0.3–3.5 µs of conversion |
-| Output size distribution | `Vec<u32>` via `Uint32Array` — **must** be returned as TypedArray, not as a `Vec<u32>` JS array. A 1000-element `Vec<u32>` costs ~43 µs (BASELINE.md §4); the same content as a `Uint32Array` buffer is ~180 ns constant |
-| Reusable setup (stateful potential) | **Massive.** BPE encoder state is a 10–50 MB merge table plus compiled regex. Per-call load is unacceptable → **NAPI class API mandatory** (analogous to `hnswlib-node` pattern from BACKLOG) |
-| Batch-usage realism | **Optional.** The primary pattern is "one call per prompt", which is already FFI-friendly. A batch API (`encodeMany(texts: string[])`) makes sense for RAG chunk arrays — nice-to-have, not mandatory |
-| FFI-share estimate vs. Rust work | <1% at median (chat message or RAG chunk); ~5–20% at a cost gate on 10-byte strings; <0.1% on large documents |
+### Measured speedup (docs/data.json, this review)
 
-## Classification reasoning
+| Scenario                        | @amigo-labs/tiktoken | tiktoken (WASM) | js-tiktoken (JS) | gpt-tokenizer (JS) | vs WASM     | vs js-tiktoken | vs gpt-tokenizer |
+| :------------------------------ | -------------------: | --------------: | ---------------: | -----------------: | ----------: | -------------: | ---------------: |
+| encode small (10 B)             |        344 538.36 Hz |    14 760.85 Hz |    156 692.48 Hz |   1 076 256.98 Hz  | **23.34×**  |    **2.20×**   |    **0.32×**     |
+| encode medium (~2 KB)           |         10 764.78 Hz |     3 035.88 Hz |      3 859.25 Hz |      36 872.70 Hz  |  **3.55×**  |    **2.79×**   |    **0.29×**     |
+| encode large (~90 KB)           |            229.52 Hz |        74.58 Hz |         83.03 Hz |         721.93 Hz  |  **3.08×**  |    **2.76×**   |    **0.32×**     |
+| countTokens (medium)            |         10 878.81 Hz |             —   |               —  |      39 468.13 Hz  |       —     |        —       |    **0.28×**     |
+| encodeMany 100 small (RAG batch)|          2 822.85 Hz |       156.04 Hz |               —  |       8 959.59 Hz  | **18.09×**  |        —       |    **0.32×**     |
 
-This is a two-track case that a single tier classification can't represent cleanly.
+Range vs `tiktoken` (WASM): **3.1× – 23.3×** (Green).
+Range vs `js-tiktoken`: **2.2× – 2.8×** (Green).
+Range vs `gpt-tokenizer`: **0.27× – 0.32×** (Red).
 
-**Against `js-tiktoken` (pure JS, ~3M weekly): 🟢 Green**
-- External bench: 359 ms (Rust) vs. 1006 ms (pure JS) on 1 MB → **2.80×** — above the Green gate
-- On medium (chat snippet, ~1 KB): 0.54 ms Rust vs. 0.96 ms pure JS → **1.78×** — just below Green, close to the gate
-- On small (<100 bytes): indeterminate, must be benched. FFI floor 109 ns + string marshal makes the difference
-- Pure JS has a non-trivial V8 hot loop for merge steps; Rust wins via `fancy-regex` + `fxhash` + no GC pressure
+### Realistic use-case
 
-**Against `tiktoken` npm (WASM, ~15M weekly): 🟡 Yellow**
-- External bench: 360 ms vs. 452 ms on 1 MB → **1.25×**. Structurally bounded because WASM runs the same Rust tokenizer core
-- On medium: 0.54 ms vs. 0.78 ms → **1.44×**
-- We only win FFI quality (napi-rs vs. WASM bridge) and compile flags. That's ~10–25%, never 2×
+**Primary:** Token counting before an OpenAI API call to budget context
+or shard input. Per-call ~500–4000 tokens, ~1–10 calls per request.
+Medium-input bench scenario covers this.
+**Secondary:** RAG-style batch tokenization of a chunked document
+corpus. The `encodeMany` API is well-shaped for this: 18× over WASM
+loop, but still 3.2× slower than `gpt-tokenizer`'s JS encode loop.
 
-**Classic reference patterns:**
-- **Like** `argon2`/`bcrypt`/`sanitize-html`: substantial compute per call, bytes/string-in, array/string-out, amortized setup state. Check.
-- **Not** like `mime`/`deep-equal`/`levenshtein`: no ns-scale hot loop, no trivial-per-call work
-- **Careful** like `xxhash-batch`: if output is returned as a `Vec<u32>` JS array (not `Uint32Array`) it tips into an FFI marshalling debacle. **Strictly return `Uint32Array`.**
+The skill is explicit: pick the realistic median competitor *as a user
+would*, not as the upstream package's `replaces` field declares.
+Anyone benchmarking "fastest BPE tokenizer for OpenAI models on
+Node.js" today picks `gpt-tokenizer`. That makes `gpt-tokenizer` the
+realistic median competitor regardless of the `replaces` field.
 
-**The only real small-input pitfall:** if the median use-case is "count tokens in a 10-byte prompt" (e.g. cost gate before API call with only user input), we land in a region where FFI is comparable to the compute. A pure-JS tokenizer does this in ~1–2 µs; Rust via NAPI probably ~1–3 µs. Not catastrophic, but no win. **Mandatory: bench the 10-byte and 100-byte bucket before commit, not only after the port.**
+### Benchmark gaps
 
-## If GO — proposed port
+None material. Coverage is thorough across sizes and includes a batch
+scenario, a countTokens fast-path, and three competitors per
+scenario. No measurement gap could rescue the gpt-tokenizer ratio.
 
-- **Recommended crate name:** `@amigo-labs/tiktoken`
-- **Primary API sketch:**
-  ```ts
-  export type Encoding =
-    | 'cl100k_base'      // gpt-3.5, gpt-4
-    | 'o200k_base'       // gpt-4o, o1/o3/o4, gpt-5
-    | 'o200k_harmony'    // gpt-oss
-    | 'p50k_base' | 'p50k_edit' | 'r50k_base' | 'gpt2'
+### API surface
 
-  export declare class Tiktoken {
-    static getEncoding(name: Encoding): Tiktoken
-    static encodingForModel(model: string): Tiktoken
+Singleton NAPI class wrapping `tiktoken-rs`. `encode`, `decode`,
+`countTokens`, `encodeMany`. The class is the right shape — BPE merge
+table parsing is amortized once per encoder, not per call. Phase-C
+levers C.1, C.2, C.4 are already done.
 
-    encode(text: string, allowedSpecial?: string[] | null): Uint32Array
-    decode(tokens: Uint32Array): string
-    countTokens(text: string): number  // fast path, skip alloc of Uint32Array
-    encodeMany(texts: string[]): Uint32Array[]  // batch over RAG chunks
-  }
-  ```
-  → **NAPI class is non-negotiable.** A free function per call would reload the BPE table per call = unusable.
-  → `Uint32Array` is strict (not `number[]`) — otherwise FFI marshalling debacle (BASELINE §4).
-  → `countTokens` as a fast path: returns just the length, avoids the Uint32Array allocation when the caller only wants to budget. Green-gate critical for the cost-gate use-case.
+### Bundle / binary size
 
-- **Must-have benchmark scenarios:**
-  - **Small:** `countTokens("Hello world")` (10 B) — FFI-floor exposé
-  - **Medium:** `encode(chatMessage)` with 500-token input (~2 KB) — most frequent real call
-  - **Large:** `encode(ragDocument)` with 5k / 25k tokens (~20 KB / 100 KB) — chunking use-case
-  - **Round-trip:** `decode(encode(x))` on medium — parity + decode perf
-  - **Batch:** `encodeMany(100 × chat_message)` vs. a loop in JS — batch API justification
-  - **Baseline required:** **both** JS packages — `tiktoken` (WASM) **and** `js-tiktoken` (pure JS). They have different target users and produce different speedup stories
-  - **Encoding load time:** a single `getEncoding("cl100k_base")` — verify that the BPE table load stays in the class constructor, not per `encode()`
+`tiktoken-rs` plus the BPE merge tables for cl100k and o200k bundled
+into the binary. ~2 MB per platform stub. Comparable to `tiktoken`
+WASM (~2 MB), much larger than `gpt-tokenizer` (~1 MB JS) — but bundle
+is not the differentiator here; perf is.
 
-- **Acceptance thresholds (Green gate):**
-  - ≥2.0× vs. `js-tiktoken` at medium and large (main target baseline)
-  - ≥1.0× vs. `js-tiktoken` at small (floor check)
-  - ≥1.2× vs. `tiktoken` (WASM) at medium and large (Yellow acceptable here)
-  - ≥0.9× vs. `tiktoken` (WASM) at small (may lose marginally, but no 2× drop)
-  - 100% parity: `encode` / `decode` round-trip over 1000 random strings per encoding
-  - Cross-verify: outputs bit-identical to `tiktoken` npm on a fixture corpus
+### FFI-overhead baseline
 
-- **Risks:**
-  1. **Small-input regime unclear** — the critical point. If users typically tokenize 10-byte strings (cost-gate pattern), we probably lose against pure JS (V8 JITs the BPE loop well for short inputs). Has to be measured before commit, otherwise Yellow fallback
-  2. **WASM is "good enough"** — users of `tiktoken` npm see <1.3× and may not switch. Primary gain: prebuilt binaries instead of WASM bundle (~1 MB less in the node-modules tree), no WASM init latency at startup. Positioning matters
-  3. **BPE-table bundle size** — `tiktoken-rs` bundles the merge tables statically into the binary. Per encoding ~2–5 MB → total binary could be ~20 MB with all 7 encodings. Mitigation: features gated per encoding, default `cl100k_base + o200k_base`, rest opt-in via `features = ["p50k", "gpt2"]`
-  4. **`free()` semantics** — `tiktoken` npm forces users to call `.free()` because of WASM memory. With NAPI that's covered by GC — small API asymmetry, but parity OK (no-op `free()` for migration)
-  5. **Encoding download pattern** — some users use `tiktoken`'s `load()` API to load encodings from a URL (browser/offline scenario). Not relevant for native Rust (Node context), but flag the API gap
-  6. **o200k_harmony** is new (Q1 2026, gpt-oss). Parity against `js-tiktoken` only if it's implemented there — may only be testable against `tiktoken` WASM
+`docs/BASELINE.md` NAPI noop ~109 ns. Per-call work for medium input
+(~10k Hz = 100 µs/call) is 1000× the FFI floor — not FFI-bound. The
+bottleneck is BPE merging itself, where `gpt-tokenizer`'s LRU cache
+beats `tiktoken-rs`'s no-cache hot-path for short repeated inputs.
 
-## If NO-GO — BACKLOG entry
+## Phase-C optimization checklist
 
-N/A — GO recommended with a qualified classification (Green vs. pure JS, Yellow vs. WASM).
+| #   | Lever                                                                           | Applicable               | Notes                                                                                                                                                                                                              |
+| :-- | :------------------------------------------------------------------------------ | :----------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C.1 | Input-type minimization (`String` → `&str`, `Vec<T>` → `&[T]`, Buffer-overload) | already done             | Inputs are `&str` via napi-derive's reference-string wrapper. No marshalling fat.                                                                                                                                  |
+| C.2 | Output-type minimization (`String` → `&str`, `Vec<T>` → Buffer)                 | already done             | `Vec<u32>` token IDs returned via NAPI typed array. As small as it gets.                                                                                                                                            |
+| C.3 | Batch API                                                                       | already done             | `encodeMany` exists, beats encode-loop within @amigo-labs by 1.15× and beats WASM batch 18×. Cannot beat `gpt-tokenizer` here either — it is bound by BPE merge speed, not by per-call FFI overhead.               |
+| C.4 | Stateful API (reusable setup via NAPI class)                                    | already done             | Singleton encoder per model. Merge table is parsed once at instantiation.                                                                                                                                          |
+| C.5 | Parallelization (rayon over large inputs)                                       | applicable, last-resort  | Could parallelize `encodeMany` with rayon over batch chunks. Realistic ceiling vs `gpt-tokenizer`: 4-core speedup / 3× LRU advantage = ~1.3× — would not pass the 2× Green gate even at best.                       |
+| C.6 | Algorithm swap (SIMD variant, streaming parser, etc.)                           | applicable, blocked      | The fundamental gap is that `gpt-tokenizer` uses an LRU merge cache. `tiktoken-rs` does not. Adding an LRU cache in front of `tiktoken-rs` would require either a fork or upstream work and is out of scope here. |
+| C.7 | Allocator tuning (arena, caller-provided output buffer)                         | low ROI                  | Token output is `Vec<u32>` ~ size of input/4. Caller-provided buffer would save a few µs per call — irrelevant against the 3× LRU-cache gap.                                                                       |
+| C.8 | Bundle-size (LTO, features, panic=abort, strip)                                 | already done             | Workspace `[profile.release]` already has `lto`, `strip`, `panic=abort`, `codegen-units=1`.                                                                                                                       |
 
-## Phase B measurement (2026-04-19, linux-x64, Node v22)
+The honest read of the checklist: every lever that can be pulled has
+been pulled, and the remaining gap (LRU cache) requires algorithmic
+work in `tiktoken-rs` upstream. There is no quick sprint that closes
+the gpt-tokenizer gap.
 
-Implemented in `crates/tiktoken/` against `tiktoken-rs 0.11`. Three baselines, three size buckets (`cl100k_base`, ops/sec, higher = better):
+## Action plan
 
-| Scenario | @amigo-labs/tiktoken | tiktoken (WASM) | js-tiktoken | gpt-tokenizer |
-|---|---:|---:|---:|---:|
-| encode 10 B (small) | **164,256 hz** | 7,006 hz | 73,907 hz | 586,445 hz |
-| encode ~2 KB (medium) | **5,999 hz** | 1,445 hz | 1,698 hz | 14,855 hz |
-| encode ~90 KB (large) | **126 hz** | 38 hz | 28 hz | 269 hz |
-| 100 × 10 B (RAG batch) | **1,471 hz** | 67 hz | — | 4,364 hz |
+Two viable paths. The choice is product, not engineering — the user
+decides based on whether the `tiktoken/js-tiktoken` audience is large
+enough to justify the package's continued existence.
 
-Speedup matrix (>1 = we're faster):
+### Path A — Re-scope and stay shipped (recommended)
 
-| Scenario | vs. WASM | vs. js-tiktoken | vs. gpt-tokenizer |
-|---|---:|---:|---:|
-| Small | **23.4×** ✅ | **2.22×** ✅ | **0.28×** ❌ |
-| Medium | **4.15×** ✅ | **3.53×** ✅ | **0.40×** ❌ |
-| Large | **3.32×** ✅ | **4.48×** ✅ | **0.47×** ❌ |
+1. Update the crate's `amigo.replaces` to drop the implication of
+   competing with `gpt-tokenizer`. Keep `tiktoken/js-tiktoken`.
+2. Update the crate `README.md` so the headline benchmarks are
+   `vs tiktoken (WASM)` and `vs js-tiktoken`. Move the
+   `gpt-tokenizer` ratio into a "When *not* to use this package"
+   section that explicitly recommends `gpt-tokenizer` for short-prompt
+   high-frequency token counting.
+3. Update `docs/packages.json` `description` and `speedup` fields so
+   the consumer-facing dashboard tells the same story (currently it
+   advertises the gpt-tokenizer disadvantage as the headline number).
+4. No code changes. The package keeps its real users (anyone migrating
+   off the WASM `tiktoken` or `js-tiktoken`) without misleading users
+   who would be better served by `gpt-tokenizer`.
 
-**Prediction vs. reality:**
-- Against `tiktoken` (WASM): predicted Yellow (~1.25×), measured **Green** (3–23×). The prediction was too pessimistic — the external benchmark ([maxim-saplin/tiktoken-bench](https://github.com/maxim-saplin/tiktoken-bench)) measured WASM against Python/Rust native, not against napi-rs. The napi-rs path is significantly cheaper than WASM bridge + wasm-bindgen marshalling.
-- Against `js-tiktoken`: predicted 2.8× Green, measured **2–4.5× Green**. On target.
-- Against `gpt-tokenizer`: **not anticipated** — predicted in `gpt-tokenizer.md` as "pure JS ~2.8× slower" analogous to js-tiktoken. Measured **gpt-tokenizer is 2–3× faster than us**.
+### Path B — Phase-D deprecation
 
-**Why `gpt-tokenizer` beats us:**
-- LRU merge cache in the BPE loop — repeated bigram pairs within a text are cached
-- V8's JIT aggressively optimizes the hot merge loop (inline caches for the `Map` lookups)
-- Pure JS has no FFI fixed costs — even our 109 ns floor shows up
+1. `npm deprecate '@amigo-labs/tiktoken@*' "Use 'gpt-tokenizer' for token counting on OpenAI models — @amigo-labs/tiktoken is 3-3.6× slower at every measured input size. See MIGRATION.md."`
+2. Banner the crate `README.md`, point `MIGRATION.md` at
+   `gpt-tokenizer`, 3-month deprecation window, archive to
+   `archived/tiktoken/`.
+3. Post-mortem at `docs/post-mortems/tiktoken.md`: lesson is *"the
+   realistic-median-competitor question matters — picking the wrong
+   reference competitor produces a Green-on-paper / Red-in-practice
+   package"*.
 
-**Why `js-tiktoken` is *not* that fast (even though it's also pure JS):**
-- No LRU cache
-- Less monomorphic hot-path structure
-- On the 1-MB external bench 3× slower than Rust — that matches our measurements
+### Recommendation
 
-**Final classification: 🟡 Yellow (mixed).** Green win vs. `tiktoken` + `js-tiktoken` (18M weekly DL combined); Red vs. `gpt-tokenizer` (1M weekly). Positioning in the README: "drop-in for tiktoken and js-tiktoken; **not** a replacement for gpt-tokenizer". 88 tests green (12 unit + 70 parity + 6 fuzz).
+Path A. The package has a genuine ≥2× win against `tiktoken` and
+`js-tiktoken`, both of which still have non-trivial install bases (the
+WASM `tiktoken` is OpenAI's published reference). The fix is honesty
+in positioning, not deprecation. If the user disagrees and wants Path
+B, the deprecation mechanics are well-trodden (`deep-equal`,
+`levenshtein`, `xml`, now `nanoid`).
 
-**Options for Phase C:**
-- **C.6 algorithm:** submit the LRU merge cache upstream to `tiktoken-rs` or ship as a local wrapper — realistic 1.5–2× upside in the medium bucket
-- **C.2 output type:** `encodeOrdinary` could return a `Buffer` with LE u32 instead of `Uint32Array` (BASELINE §3: ~180 ns flat vs. Uint32Array alloc). Probably <10% gain
-- **Hold Yellow:** position as a "tiktoken-WASM killer" (15M weekly), ignore gpt-tokenizer users (1M weekly). Defensive recommendation
+## References
 
-**Recommendation:** ship Yellow, only do Phase C if upstream tiktoken-rs accepts the LRU cache. The WASM user migration is the primary ROI.
+- Crate: `crates/tiktoken`
+- Bench: `crates/tiktoken/__bench__/index.bench.ts`
+- Lib: `crates/tiktoken/src/lib.rs`
+- Cargo: `crates/tiktoken/Cargo.toml`
+- `docs/packages.json` speedup field: `3.1–3.6× slower`
+- FFI baseline: `docs/BASELINE.md`
+- Prior review: 2026-04-19 entry in `docs/perf-review.md` (Green vs WASM/js-tiktoken, Red vs gpt-tokenizer, accepted as scope decision)
