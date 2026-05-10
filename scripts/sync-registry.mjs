@@ -6,7 +6,6 @@
  * Source of truth: `crates/<name>/package.json` → the `"amigo"` block.
  * Outputs:
  *   docs/packages.json          — packages[] (sorted by crate name) + marquee PACKAGES count
- *   README.md                   — the Packages table between <!-- PACKAGES_TABLE:START/END -->
  *   .github/workflows/release.yml — the workflow_dispatch options between # PACKAGES:START/END
  *
  * The `speedup` field in docs/packages.json is preserved per entry, because it is
@@ -23,11 +22,8 @@ import { fileURLToPath } from 'node:url'
 const root = process.cwd()
 const cratesDir = join(root, 'crates')
 const packagesJsonPath = join(root, 'docs', 'packages.json')
-const readmePath = join(root, 'README.md')
 const releaseYamlPath = join(root, '.github', 'workflows', 'release.yml')
 
-const README_START = '<!-- PACKAGES_TABLE:START -->'
-const README_END = '<!-- PACKAGES_TABLE:END -->'
 const RELEASE_START = '# PACKAGES:START'
 const RELEASE_END = '# PACKAGES:END'
 
@@ -112,40 +108,6 @@ function postMortemSet_() {
   return out
 }
 
-function columnWidths(rows) {
-  const widths = Array.from({ length: rows[0].length }, () => 0)
-  for (const row of rows) {
-    row.forEach((cell, i) => {
-      if (cell.length > widths[i]) widths[i] = cell.length
-    })
-  }
-  return widths
-}
-
-function renderReadmeTable(crates) {
-  const headers = ['Package', 'Description', 'Replaces', 'vs JS', 'Parity', 'Status']
-  const rows = crates.map(({ dir, amigo }) => {
-    const link = `[\`@amigo-labs/${dir}\`](./crates/${dir})`
-    const replaces = amigo.replaces ? `\`${amigo.replaces}\`` : '—'
-    const vsJs = amigo.vsJs ?? 'TBD'
-    const vsJsFmt = vsJs === 'TBD' ? 'TBD' : `**${vsJs}**`
-    return [
-      link,
-      amigo.tableDescription ?? amigo.description,
-      replaces,
-      vsJsFmt,
-      amigo.parity ?? 'TBD',
-      amigo.status ?? 'Drop-in',
-    ]
-  })
-  const widths = columnWidths([headers, ...rows])
-  const pad = (cell, w) => cell + ' '.repeat(w - cell.length)
-  const headerLine = `| ${headers.map((h, i) => pad(h, widths[i])).join(' | ')} |`
-  const sepLine = `| ${widths.map((w) => `:${'-'.repeat(w - 1)}`).join(' | ')} |`
-  const bodyLines = rows.map((r) => `| ${r.map((c, i) => pad(c, widths[i])).join(' | ')} |`)
-  return [headerLine, sepLine, ...bodyLines].join('\n')
-}
-
 function updateReleaseYaml(yaml, crates) {
   const startIdx = yaml.indexOf(RELEASE_START)
   const endIdx = yaml.indexOf(RELEASE_END)
@@ -193,19 +155,6 @@ function checkNpmStubVersions(crates) {
   return mismatches
 }
 
-function updateReadme(readme, tableBlock) {
-  const startIdx = readme.indexOf(README_START)
-  const endIdx = readme.indexOf(README_END)
-  if (startIdx === -1 || endIdx === -1) {
-    throw new Error(
-      `README markers missing. Add ${README_START} and ${README_END} around the packages table.`,
-    )
-  }
-  const before = readme.slice(0, startIdx + README_START.length)
-  const after = readme.slice(endIdx)
-  return `${before}\n${tableBlock}\n${after}`
-}
-
 function main() {
   const check = process.argv.includes('--check')
   const crates = loadCrates()
@@ -217,23 +166,18 @@ function main() {
   const nextPkg = buildPackagesJson(crates, existingPkg)
   const nextPkgStr = `${JSON.stringify(nextPkg, null, 2)}\n`
   const existingPkgStr = readFileSync(packagesJsonPath, 'utf-8')
-  const readme = readFileSync(readmePath, 'utf-8')
-  const table = renderReadmeTable(crates)
-  const nextReadme = updateReadme(readme, table)
   const releaseYaml = readFileSync(releaseYamlPath, 'utf-8')
   const nextReleaseYaml = updateReleaseYaml(releaseYaml, crates)
   const pkgChanged = nextPkgStr !== existingPkgStr
-  const readmeChanged = nextReadme !== readme
   const releaseChanged = nextReleaseYaml !== releaseYaml
 
   const stubMismatches = checkNpmStubVersions(crates)
 
   if (check) {
-    let stale = pkgChanged || readmeChanged || releaseChanged
+    let stale = pkgChanged || releaseChanged
     if (stale) {
       console.error('sync-registry: outputs are stale. Run `node scripts/sync-registry.mjs` and commit the result.')
       if (pkgChanged) console.error('  - docs/packages.json')
-      if (readmeChanged) console.error('  - README.md')
       if (releaseChanged) console.error('  - .github/workflows/release.yml')
     }
     if (stubMismatches.length) {
@@ -258,11 +202,9 @@ function main() {
   }
 
   if (pkgChanged) writeFileSync(packagesJsonPath, nextPkgStr)
-  if (readmeChanged) writeFileSync(readmePath, nextReadme)
   if (releaseChanged) writeFileSync(releaseYamlPath, nextReleaseYaml)
   const summary = []
   if (pkgChanged) summary.push('docs/packages.json')
-  if (readmeChanged) summary.push('README.md')
   if (releaseChanged) summary.push('.github/workflows/release.yml')
   const tail = summary.length ? `wrote ${summary.join(', ')}` : 'no changes'
   console.log(`sync-registry: ${crates.length} crates — ${tail}.`)
