@@ -33,19 +33,6 @@
         {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
       ]
     },
-    "crates/bcrypt": {
-      "package-name": "@amigo-labs/bcrypt",
-      "component": "bcrypt",
-      "extra-files": [
-        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
-        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
-      ]
-    },
     "crates/bm25": {
       "package-name": "@amigo-labs/bm25",
       "component": "bm25",
@@ -322,19 +309,6 @@
     "crates/text-splitters": {
       "package-name": "@amigo-labs/text-splitters",
       "component": "text-splitters",
-      "extra-files": [
-        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
-        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
-        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
-      ]
-    },
-    "crates/tiktoken": {
-      "package-name": "@amigo-labs/tiktoken",
-      "component": "tiktoken",
       "extra-files": [
         {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
         {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},

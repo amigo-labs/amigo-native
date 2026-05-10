@@ -88,8 +88,6 @@
 # One label per shipped package. Apply whichever matches the PR/issue.
 - name: "pkg: argon2"
   color: ededed
-- name: "pkg: bcrypt"
-  color: ededed
 - name: "pkg: commonmark"
   color: ededed
 - name: "pkg: csv"
@@ -109,8 +107,6 @@
 - name: "pkg: sanitize-html"
   color: ededed
 - name: "pkg: slugify"
-  color: ededed
-- name: "pkg: tiktoken"
   color: ededed
 - name: "pkg: xxhash"
   color: ededed

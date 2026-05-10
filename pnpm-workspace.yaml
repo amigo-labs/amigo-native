@@ -2,5 +2,4 @@ packages:
   - "crates/*"
 onlyBuiltDependencies:
   - argon2
-  - bcrypt
   - esbuild

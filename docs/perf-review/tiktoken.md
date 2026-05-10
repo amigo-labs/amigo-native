@@ -1,6 +1,11 @@
 # Perf-Review: `@amigo-labs/tiktoken`
 
-> **Status:** 🟡 Yellow — re-position OR deprecate · **Reviewed:** 2026-05-10 · **Version:** 0.1.1
+> **Status:** 🗄️ **ARCHIVED 2026-05-10** (Path B chosen) · **Reviewed:** 2026-05-10 · **Version:** 0.1.1
+>
+> The maintainer chose Path B (deprecation in favor of `gpt-tokenizer`).
+> See [post-mortem](../post-mortems/tiktoken.md) and
+> [archived/tiktoken/](../../archived/tiktoken/). The Yellow analysis below
+> stands as the rationale for the decision.
 
 ## Verdict
 

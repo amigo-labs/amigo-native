@@ -1,6 +1,11 @@
 # Perf-Review: `@amigo-labs/bcrypt`
 
-> **Status:** 🔴 Red — recommend Phase-D deprecation · **Reviewed:** 2026-05-10 · **Version:** 0.1.1
+> **Status:** 🗄️ **ARCHIVED 2026-05-10** · **Reviewed:** 2026-05-10 · **Version:** 0.1.1
+>
+> The maintainer accepted the Red verdict and archived. See
+> [post-mortem](../post-mortems/bcrypt.md) and
+> [archived/bcrypt/](../../archived/bcrypt/). The Red analysis below
+> stands as the rationale for the decision.
 
 ## Verdict
 

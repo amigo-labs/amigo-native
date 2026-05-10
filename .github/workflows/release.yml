@@ -14,7 +14,6 @@ on:
         options:
           # PACKAGES:START
           - argon2
-          - bcrypt
           - bm25
           - commonmark
           - csv
@@ -37,7 +36,6 @@ on:
           - stemmer
           - svgo
           - text-splitters
-          - tiktoken
           - turndown
           - typst
           - xlsx
