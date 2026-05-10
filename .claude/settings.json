@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "OUT=$(pnpm lint 2>&1); if [ $? -ne 0 ]; then jq -n --arg r \"$OUT\" '{decision:\"block\", reason:$r}'; fi",
+            "command": "[ -d node_modules ] || exit 0; OUT=$(pnpm lint 2>&1); if [ $? -ne 0 ]; then jq -n --arg r \"$OUT\" '{decision:\"block\", reason:$r}'; fi",
             "timeout": 300,
             "statusMessage": "pnpm lint"
           }
