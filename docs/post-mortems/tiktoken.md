@@ -83,3 +83,38 @@ Note: `crates/text-splitters` continues to use `tiktoken-rs` directly
 correct and unaffected by this archival — token *counting* inside a
 larger workload is a different shape from token *encoding* as the
 primary product.
+
+## Migration recipe
+
+`@amigo-labs/tiktoken` was an encoder-class API. `gpt-tokenizer` ships
+function exports per encoding. Mapping:
+
+```js
+// Before — @amigo-labs/tiktoken
+import { Tiktoken } from '@amigo-labs/tiktoken'
+
+const enc = new Tiktoken('cl100k_base')   // or 'o200k_base'
+const ids = enc.encode('hello world')
+const text = enc.decode(ids)
+const n = enc.countTokens('hello world')
+const batch = enc.encodeMany(['a', 'b', 'c'])
+```
+
+```js
+// After — gpt-tokenizer
+//   - cl100k_base  → 'gpt-tokenizer/encoding/cl100k_base'
+//   - o200k_base   → 'gpt-tokenizer/model/gpt-4o' (or any o200k model)
+import { encode, decode, countTokens } from 'gpt-tokenizer/encoding/cl100k_base'
+
+const ids = encode('hello world')
+const text = decode(ids)
+const n = countTokens('hello world')
+const batch = ['a', 'b', 'c'].map(encode)
+```
+
+Output IDs are identical (both wrap the same OpenAI BPE tables). No
+class instance to keep around — the encoding tables load once on first
+import. For per-model selection, `gpt-tokenizer` also exposes
+`gpt-tokenizer/model/<name>` entry points (e.g. `gpt-4o`, `gpt-4`,
+`gpt-3.5-turbo`) that pick the right encoding automatically.
+
