@@ -41,7 +41,7 @@ fn extract_hostname(input: &str) -> Option<String> {
     };
     // path / query / fragment terminator
     let end = after_userinfo
-        .find(|c: char| c == '/' || c == '?' || c == '#')
+        .find(['/', '?', '#'])
         .unwrap_or(after_userinfo.len());
     let hostport = &after_userinfo[..end];
     // Strip port (but preserve IPv6 brackets which contain colons).
@@ -73,10 +73,7 @@ fn is_ip(host: &str) -> bool {
 }
 
 fn to_ascii_idn(host: &str) -> Option<String> {
-    match idna::domain_to_ascii(host) {
-        Ok(s) => Some(s),
-        Err(_) => None,
-    }
+    idna::domain_to_ascii(host).ok()
 }
 
 fn parse_one(input: &str, _opts: &ParseOptions) -> ParseResult {

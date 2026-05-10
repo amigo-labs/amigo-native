@@ -93,37 +93,30 @@ impl Decompressor {
         }
     }
 
-    fn make(&self) -> Result<zstd::bulk::Decompressor<'static>> {
-        match &self.dictionary {
-            Some(dict) => zstd::bulk::Decompressor::with_dictionary(dict),
-            None => zstd::bulk::Decompressor::new(),
+    fn decompress_one(&self, input: &[u8]) -> Result<Vec<u8>> {
+        use std::io::Read;
+        let mut decoder = match &self.dictionary {
+            Some(dict) => zstd::stream::read::Decoder::with_dictionary(input, dict),
+            None => zstd::stream::read::Decoder::with_buffer(input),
         }
-        .map_err(|e| Error::from_reason(format!("zstd decompressor init: {}", e)))
+        .map_err(|e| Error::from_reason(format!("zstd decoder init: {}", e)))?;
+        let mut out = Vec::new();
+        decoder
+            .read_to_end(&mut out)
+            .map_err(|e| Error::from_reason(format!("zstd decompress: {}", e)))?;
+        Ok(out)
     }
 
     #[napi]
     pub fn decompress(&self, input: Buffer) -> Result<Buffer> {
-        let mut d = self.make()?;
-        // upper-bound on decompressed size: use frame content if known, else
-        // a generous heuristic. zstd-rs has `Decompressor::decompress` which
-        // takes a capacity; we use a guess of 4× the input size, growing.
-        let capacity = input.len().saturating_mul(4).max(1024);
-        d.decompress(input.as_ref(), capacity)
-            .map(Into::into)
-            .map_err(|e| Error::from_reason(format!("zstd decompress: {}", e)))
+        Ok(self.decompress_one(input.as_ref())?.into())
     }
 
     #[napi(js_name = "decompressMany")]
     pub fn decompress_many(&self, inputs: Vec<Buffer>) -> Result<Vec<Buffer>> {
-        let mut d = self.make()?;
-        let mut out: Vec<Buffer> = Vec::with_capacity(inputs.len());
-        for input in &inputs {
-            let capacity = input.len().saturating_mul(4).max(1024);
-            let v = d
-                .decompress(input.as_ref(), capacity)
-                .map_err(|e| Error::from_reason(format!("zstd decompress: {}", e)))?;
-            out.push(v.into());
-        }
-        Ok(out)
+        inputs
+            .iter()
+            .map(|b| self.decompress_one(b.as_ref()).map(Into::into))
+            .collect()
     }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'vitest'
 // Import target: the amigo-labs package under test
 // import { something } from '../index.js'
 

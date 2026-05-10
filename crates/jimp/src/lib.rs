@@ -85,7 +85,7 @@ impl Jimp {
 
     #[napi]
     pub fn rotate(&mut self, deg: i32) -> Result<()> {
-        let normalized = ((deg % 360) + 360) % 360;
+        let normalized = deg.rem_euclid(360);
         self.img = match normalized {
             0 => self.img.clone(),
             90 => image::imageops::rotate90(&self.img),
@@ -146,8 +146,7 @@ impl Jimp {
             let v = if clamped < 0.0 {
                 ((f - 0.5) * (1.0 + clamped)) + 0.5
             } else if clamped > 0.0 {
-                let cv = (f - 0.5) / (1.0 - clamped).max(1e-9) + 0.5;
-                cv
+                (f - 0.5) / (1.0 - clamped).max(1e-9) + 0.5
             } else {
                 f
             };

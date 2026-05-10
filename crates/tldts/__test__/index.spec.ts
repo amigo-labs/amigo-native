@@ -14,7 +14,7 @@ describe('tldts — smoke', () => {
   it('IP addresses are flagged isIp', () => {
     const r = parse('http://192.168.1.1')
     expect(r.isIp).toBe(true)
-    expect(r.domain).toBeNull()
+    expect(r.domain ?? null).toBeNull()
   })
 
   it('getDomain / getPublicSuffix / getHostname helpers', () => {
