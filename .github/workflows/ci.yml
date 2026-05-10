@@ -97,17 +97,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check crate registry is in sync
         run: node scripts/sync-registry.mjs --check
-      # Lint script split into per-tool steps so a CI failure points to the
-      # exact failing sub-step (`pnpm run lint` chains three commands with
-      # `&&` and only exposes the last propagated exit code in the GitHub
-      # Actions UI). The combined `pnpm run lint` script is preserved for
-      # local use.
-      - name: oxlint
-        run: pnpm exec oxlint --ignore-pattern 'crates/sanitize-html/__conformance__/upstream/**' .
-      - name: cargo fmt --check
-        run: cargo fmt --check
-      - name: cargo clippy --workspace -- -D warnings
-        run: cargo clippy --workspace -- -D warnings
+      - run: pnpm run lint
 
   audit-rust:
     runs-on: ubuntu-latest

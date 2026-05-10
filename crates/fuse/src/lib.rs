@@ -146,7 +146,7 @@ impl Fuse {
             }
         }
 
-        hits.sort_by(|a, b| b.1.cmp(&a.1));
+        hits.sort_by_key(|&(_, raw, _)| std::cmp::Reverse(raw));
         let cap = limit.map(|n| n as usize).unwrap_or(usize::MAX);
         hits.into_iter()
             .take(cap)
