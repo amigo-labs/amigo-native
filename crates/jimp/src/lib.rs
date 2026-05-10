@@ -102,14 +102,23 @@ impl Jimp {
 
     #[napi]
     pub fn greyscale(&mut self) {
-        // image-rs grayscale returns a single-channel image; map back to RGBA.
-        let gray = image::imageops::grayscale(&self.img);
-        let mut out = image::RgbaImage::new(gray.width(), gray.height());
-        for (x, y, p) in gray.enumerate_pixels() {
-            let v = p[0];
-            out.put_pixel(x, y, image::Rgba([v, v, v, 255]));
+        // Convert each RGBA pixel to luma in place, preserving the source
+        // alpha. Using image-rs's `grayscale` helper drops alpha because
+        // it returns a single-channel image; we want jimp-parity, which
+        // preserves transparency.
+        for px in self.img.pixels_mut() {
+            let r = px[0] as f32;
+            let g = px[1] as f32;
+            let b = px[2] as f32;
+            // Rec. 601 luma — same coefficients as `image::imageops::grayscale`.
+            let y = (0.2989 * r + 0.587 * g + 0.114 * b)
+                .round()
+                .clamp(0.0, 255.0) as u8;
+            px[0] = y;
+            px[1] = y;
+            px[2] = y;
+            // px[3] (alpha) intentionally left unchanged.
         }
-        self.img = out;
     }
 
     #[napi]

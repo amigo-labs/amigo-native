@@ -10,6 +10,12 @@ export interface DecodedPng {
 
 export declare function decodeRgba(input: Buffer): DecodedPng
 
+/**
+ * Encoder options. v0.1 has no tunables — the encoder always uses
+ * image-rs `png`'s default DEFLATE settings, regardless of any value
+ * passed in `deflate_level`. The field is preserved for the v0.2
+ * wire-up so callers don't need an API churn when it lands.
+ */
 export interface EncodeOptions {
   deflateLevel?: number
 }

@@ -6,8 +6,7 @@
   "types": "index.d.ts",
   "files": [
     "index.js",
-    "index.d.ts",
-    "README.md"
+    "index.d.ts"
   ],
   "napi": {
     "binaryName": "jpeg-js",
@@ -61,7 +60,7 @@
     "replaces": "jpeg-js",
     "vsJs": "TBD",
     "parity": "rgba-only",
-    "status": "Drop-in",
+    "status": "Subset",
     "competitors": [
       "jpeg-js@0.4.4"
     ]

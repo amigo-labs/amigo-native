@@ -6,8 +6,7 @@
   "types": "index.d.ts",
   "files": [
     "index.js",
-    "index.d.ts",
-    "README.md"
+    "index.d.ts"
   ],
   "napi": {
     "binaryName": "fuse",
@@ -62,7 +61,7 @@
     "replaces": "fuse.js",
     "vsJs": "TBD",
     "parity": "ranking-only",
-    "status": "Drop-in",
+    "status": "Subset",
     "competitors": [
       "fuse.js@7.0.0",
       "fuzzysort@3.0.0"

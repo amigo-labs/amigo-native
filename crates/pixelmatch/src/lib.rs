@@ -215,7 +215,11 @@ fn draw_gray(src: &[u8], out: &mut [u8], alpha: f64) {
         let b = src[pos + 2] as f64;
         let a = src[pos + 3] as f64;
         let val = blend(rgb2y(r, g, b), alpha * a / 255.0);
-        let v = val.round().clamp(0.0, 255.0) as u8;
+        // Match upstream `pixelmatch`'s JS Uint8Array assignment semantics:
+        // direct float→Uint8 truncation (no rounding) per ECMAScript ToUint8.
+        // Rust `as u8` is saturating for out-of-range f64 in current
+        // toolchains, so this is bit-identical to upstream.
+        let v = val as u8;
         out[pos] = v;
         out[pos + 1] = v;
         out[pos + 2] = v;

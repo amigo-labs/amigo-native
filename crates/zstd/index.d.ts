@@ -7,7 +7,15 @@ export declare class Compressor {
 }
 
 export declare class Decompressor {
-  constructor(dictionary?: Buffer | undefined | null)
+  /**
+   * Build a decompressor.
+   *
+   * `max_output_size` caps the size of any single decompressed payload
+   * to defend against decompression bombs: untrusted zstd input can
+   * expand by 1000×+ on a few KB of compressed bytes, exhausting
+   * memory. The default is 256 MiB; pass `0` to disable the cap.
+   */
+  constructor(dictionary?: Buffer | undefined | null, maxOutputSize?: bigint | undefined | null)
   decompress(input: Buffer): Buffer
   decompressMany(inputs: Array<Buffer>): Array<Buffer>
 }

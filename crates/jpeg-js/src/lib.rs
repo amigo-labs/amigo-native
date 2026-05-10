@@ -93,6 +93,17 @@ fn encode_rgba_inner(pixels: &[u8], width: u32, height: u32, quality: u8) -> Res
             pixels.len()
         )));
     }
+    // JPEG dimensions are 16-bit per the spec (`Y_size`/`X_size` SOF
+    // fields). Refuse silently-truncating casts up-front so callers see a
+    // clear error instead of corrupted output.
+    if width > u16::MAX as u32 || height > u16::MAX as u32 {
+        return Err(Error::from_reason(format!(
+            "JPEG dimensions must each be ≤ {} (got {}×{})",
+            u16::MAX,
+            width,
+            height
+        )));
+    }
 
     let mut out: Vec<u8> = Vec::new();
     let encoder = jpeg_encoder::Encoder::new(&mut out, quality);

@@ -13,9 +13,12 @@ export interface FuseKey {
 
 export interface FuseOptions {
   keys?: Array<FuseKey>
-  includeScore?: boolean
   threshold?: number
-  limit?: number
+  /**
+   * Default `limit` applied when `Fuse.search` is called without one.
+   * Per-call `limit` always wins. `None` (default) means "no cap".
+   */
+  defaultLimit?: number
 }
 
 export interface FuseResult {

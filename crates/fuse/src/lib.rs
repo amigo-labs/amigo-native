@@ -9,7 +9,7 @@ use nucleo_matcher::{
 //
 // Parity contract is *ranking direction* (closer matches rank higher),
 // not bit-identical scores with `fuse.js` (whose Bitap-based scoring is
-// idiosyncratic). See docs/perf-review/fuse.js.md for the rationale.
+// idiosyncratic). See docs/perf-review/fuse.md for the rationale.
 //
 // The state-heavy build-once / query-many shape is what makes this Green:
 // records + their weighted fields live in the `Fuse` NAPI class, queries
@@ -24,9 +24,10 @@ pub struct FuseKey {
 #[napi(object)]
 pub struct FuseOptions {
     pub keys: Option<Vec<FuseKey>>,
-    pub include_score: Option<bool>,
     pub threshold: Option<f64>,
-    pub limit: Option<u32>,
+    /// Default `limit` applied when `Fuse.search` is called without one.
+    /// Per-call `limit` always wins. `None` (default) means "no cap".
+    pub default_limit: Option<u32>,
 }
 
 #[napi(object)]
@@ -45,6 +46,7 @@ pub struct Fuse {
     keys: Vec<(String, f64)>,
     records: Vec<Record>,
     threshold: f64,
+    default_limit: Option<u32>,
 }
 
 fn extract_fields(json_record: &str, keys: &[(String, f64)]) -> Vec<String> {
@@ -71,9 +73,8 @@ impl Fuse {
     pub fn new(records_json: Vec<String>, options: Option<FuseOptions>) -> Result<Self> {
         let opts = options.unwrap_or(FuseOptions {
             keys: None,
-            include_score: None,
             threshold: None,
-            limit: None,
+            default_limit: None,
         });
         let keys: Vec<(String, f64)> = match opts.keys {
             Some(ks) => ks
@@ -102,6 +103,7 @@ impl Fuse {
             keys,
             records,
             threshold: opts.threshold.unwrap_or(0.6),
+            default_limit: opts.default_limit,
         })
     }
 
@@ -147,7 +149,10 @@ impl Fuse {
         }
 
         hits.sort_by_key(|&(_, raw, _)| std::cmp::Reverse(raw));
-        let cap = limit.map(|n| n as usize).unwrap_or(usize::MAX);
+        let cap = limit
+            .or(self.default_limit)
+            .map(|n| n as usize)
+            .unwrap_or(usize::MAX);
         hits.into_iter()
             .take(cap)
             .map(|(idx, _raw, score)| FuseResult {

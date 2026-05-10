@@ -6,8 +6,7 @@
   "types": "index.d.ts",
   "files": [
     "index.js",
-    "index.d.ts",
-    "README.md"
+    "index.d.ts"
   ],
   "napi": {
     "binaryName": "jimp",
@@ -62,7 +61,7 @@
     "replaces": "jimp",
     "vsJs": "TBD",
     "parity": "scoped-v0.1",
-    "status": "Drop-in",
+    "status": "Subset",
     "competitors": [
       "jimp@1.6.0"
     ]
