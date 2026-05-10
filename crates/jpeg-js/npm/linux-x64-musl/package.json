@@ -1,0 +1,24 @@
+{
+  "name": "@amigo-labs/jpeg-js-linux-x64-musl",
+  "version": "0.1.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "jpeg-js.linux-x64-musl.node",
+  "files": [
+    "jpeg-js.linux-x64-musl.node"
+  ],
+  "description": "Prebuilt binary for @amigo-labs/jpeg-js on linux-x64-musl",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/jpeg-js"
+  }
+}

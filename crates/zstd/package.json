@@ -1,0 +1,72 @@
+{
+  "name": "@amigo-labs/zstd",
+  "version": "0.1.0",
+  "description": "Zstandard compression via the reference libzstd C library. Includes Compressor / Decompressor classes + dictionary training.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "zstd",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@mongodb-js/zstd": "^2.0.0",
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "fzstd": "^0.1.0",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/zstd"
+  },
+  "keywords": [
+    "zstd",
+    "zstandard",
+    "compression",
+    "compress",
+    "decompress",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "zstd",
+    "category": "archive",
+    "description": "Zstandard compress/decompress via libzstd, with reusable Compressor / Decompressor contexts and trained-dictionary support.",
+    "tableDescription": "Zstandard compression + dictionaries",
+    "replaces": "@mongodb-js/zstd",
+    "vsJs": "TBD",
+    "parity": "—",
+    "status": "Drop-in",
+    "competitors": [
+      "@mongodb-js/zstd@2.0.0",
+      "fzstd@0.1.0"
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "name": "@amigo-labs/fuse",
+  "version": "0.1.0",
+  "description": "Fuzzy search index built on nucleo-matcher. Stateful build-once / query-many class API.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "fuse",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "fuse.js": "^7.0.0",
+    "fuzzysort": "^3.0.0",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/fuse"
+  },
+  "keywords": [
+    "fuse",
+    "fuzzy",
+    "search",
+    "fuzzy-search",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "fuse",
+    "category": "search",
+    "description": "Fuzzy text search index over JSON records, with weighted fields. SIMD-accelerated via nucleo-matcher.",
+    "tableDescription": "Fuzzy search index (fuse.js shape) over JSON records",
+    "replaces": "fuse.js",
+    "vsJs": "TBD",
+    "parity": "ranking-only",
+    "status": "Drop-in",
+    "competitors": [
+      "fuse.js@7.0.0",
+      "fuzzysort@3.0.0"
+    ]
+  }
+}

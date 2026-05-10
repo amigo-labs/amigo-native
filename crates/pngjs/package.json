@@ -1,0 +1,71 @@
+{
+  "name": "@amigo-labs/pngjs",
+  "version": "0.1.0",
+  "description": "PNG decode/encode via image-rs `png` crate. RGBA output, no native deps in build.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "pngjs",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "pngjs": "^7.0.0",
+    "upng-js": "^2.1.0",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/pngjs"
+  },
+  "keywords": [
+    "png",
+    "image",
+    "decode",
+    "encode",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "pngjs",
+    "category": "document",
+    "description": "PNG decode/encode to RGBA pixel buffers. Pure-Rust DEFLATE via flate2 + zlib-rs.",
+    "tableDescription": "PNG decode/encode (RGBA) via image-rs `png`",
+    "replaces": "pngjs",
+    "vsJs": "TBD",
+    "parity": "rgba-only",
+    "status": "Drop-in",
+    "competitors": [
+      "pngjs@7.0.0",
+      "upng-js@2.1.0"
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "name": "@amigo-labs/jpeg-js",
+  "version": "0.1.0",
+  "description": "JPEG decode/encode via jpeg-decoder + jpeg-encoder. RGBA output, pure-Rust (no libjpeg C dep).",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "jpeg-js",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "jpeg-js": "^0.4.4",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/jpeg-js"
+  },
+  "keywords": [
+    "jpeg",
+    "image",
+    "decode",
+    "encode",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "jpeg-js",
+    "category": "document",
+    "description": "JPEG decode/encode to RGBA pixel buffers. Pure-Rust via jpeg-decoder + jpeg-encoder.",
+    "tableDescription": "JPEG decode/encode (RGBA) via jpeg-decoder",
+    "replaces": "jpeg-js",
+    "vsJs": "TBD",
+    "parity": "rgba-only",
+    "status": "Drop-in",
+    "competitors": [
+      "jpeg-js@0.4.4"
+    ]
+  }
+}

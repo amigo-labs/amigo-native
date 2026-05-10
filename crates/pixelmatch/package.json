@@ -1,0 +1,71 @@
+{
+  "name": "@amigo-labs/pixelmatch",
+  "version": "0.1.0",
+  "description": "Pixel-level image diff. Rust port of mapbox/pixelmatch — bit-identical output, SIMD-friendly per-pixel loop.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "pixelmatch",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/pixelmatch"
+  },
+  "keywords": [
+    "pixelmatch",
+    "image",
+    "diff",
+    "visual-regression",
+    "snapshot",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "pixelmatch",
+    "category": "util",
+    "description": "Pixel-level RGBA image diff with YIQ delta + anti-aliasing detection, bit-identical to mapbox/pixelmatch.",
+    "tableDescription": "Pixel-level image diff (mapbox/pixelmatch parity)",
+    "replaces": "pixelmatch",
+    "vsJs": "TBD",
+    "parity": "strict",
+    "status": "Drop-in",
+    "competitors": [
+      "pixelmatch@7.1.0"
+    ]
+  }
+}

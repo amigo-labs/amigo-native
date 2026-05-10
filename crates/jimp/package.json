@@ -1,0 +1,70 @@
+{
+  "name": "@amigo-labs/jimp",
+  "version": "0.1.0",
+  "description": "Scoped v0.1 of jimp — PNG/JPEG decode + encode, resize, crop, flip, rotate, greyscale, brightness, contrast, composite. Via image-rs.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "napi": {
+    "binaryName": "jimp",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "jimp": "^1.6.0",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/jimp"
+  },
+  "keywords": [
+    "jimp",
+    "image",
+    "resize",
+    "crop",
+    "rotate",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "jimp",
+    "category": "document",
+    "description": "Scoped jimp port: PNG/JPEG decode/encode + resize + crop + flip + rotate (90° multiples) + greyscale + brightness + contrast + composite, via image-rs.",
+    "tableDescription": "Image library (scoped jimp v0.1: PNG/JPEG + 10 ops)",
+    "replaces": "jimp",
+    "vsJs": "TBD",
+    "parity": "scoped-v0.1",
+    "status": "Drop-in",
+    "competitors": [
+      "jimp@1.6.0"
+    ]
+  }
+}

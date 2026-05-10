@@ -1,0 +1,24 @@
+{
+  "name": "@amigo-labs/pngjs-win32-x64-msvc",
+  "version": "0.1.0",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "pngjs.win32-x64-msvc.node",
+  "files": [
+    "pngjs.win32-x64-msvc.node"
+  ],
+  "description": "Prebuilt binary for @amigo-labs/pngjs on win32-x64-msvc",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/pngjs"
+  }
+}
