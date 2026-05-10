@@ -1,0 +1,218 @@
+<h1 id="candidate-review-zstd">Candidate review: <code>zstd</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟡 GO (conditional) · <strong>Predicted:</strong> Yellow with Green-on-WASM, Yellow-on-native · <strong>Reviewed:</strong> 2026-05-10</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p>Zstandard compression is structurally a Green-shape workload — buffer-in /
+buffer-out, substantial CPU work, no per-byte FFI cost on the V8 side.
+The portfolio’s existing native competitor benchmark for compression
+(<code>inflate</code> vs <code>node:zlib</code>) clears 1.12–1.67× across all sizes after
+Phase-C, which is the realistic upper bound to expect against
+<code>@mongodb-js/zstd</code> (the canonical native N-API competitor). Against
+WASM (<code>@bokuweb/zstd-wasm</code>, <code>zstd-codec</code>) and pure-JS-decode-only
+(<code>fzstd</code>) the win is unambiguous — well beyond 2×. <strong>Recommendation:
+GO</strong>, but the v0.1 charter must include a trained-dictionary API and
+a streaming class API up-front; without those, zstd ends up shaped
+exactly like bcrypt (same C source, no measurable win against
+<code>@mongodb-js/zstd</code>) and risks a Red re-classification.</p>
+<h2 id="js-package">JS package</h2>
+<ul>
+<li><strong>npm:</strong> <code>zstd</code> is the algorithm; the realistic comparison set on
+npm is <code>@mongodb-js/zstd</code> (native N-API, prebuilds), <code>zstd-codec</code>
+(emscripten WASM), <code>@bokuweb/zstd-wasm</code> (WASM), and <code>fzstd</code>
+(pure-JS, decompress-only)</li>
+<li><strong>Downloads (week of 2026-05-02):</strong> <code>@mongodb-js/zstd</code> 816k,
+<code>zstd-codec</code> 697k, <code>fzstd</code> 269k (decompression in browser
+bundles), aggregate zstd-in-npm ≈ 1.8M/wk</li>
+<li><strong>Exports / API surface:</strong> <code>compress(buf, level?) → Uint8Array</code>,
+<code>decompress(buf) → Uint8Array</code>, plus streaming readable/writable
+on <code>@mongodb-js/zstd</code> and <code>zstd-codec</code>. Trained-dictionary API
+is exposed only by <code>zstd-codec</code>.</li>
+<li><strong>Typical input:</strong> 10 KB – 10 MB binary payloads (HTTP body,
+Kafka message batch, MongoDB BSON document, log-line batches).</li>
+<li><strong>Typical output:</strong> 1 KB – 10 MB compressed / decompressed
+<code>Uint8Array</code>. Output size is the same order of magnitude as input.</li>
+<li><strong>Realistic median use-case:</strong> one-shot compress / decompress of a
+100 KB – 1 MB payload on an RPC / message / storage boundary.
+Trained dictionaries on small repeating payloads (~1 KB JSON docs,
+Protobuf messages) are the killer secondary use-case.</li>
+</ul>
+<h2 id="rust-replacement">Rust replacement</h2>
+<ul>
+<li><strong>Candidate crate(s):</strong> <code>zstd</code> (canonical Rust binding to the
+reference <code>libzstd</code> C library). For dictionary support: <code>zstd-safe</code>
+(lower-level safe wrapper exposing the dictionary API). For
+pure-Rust experimental: <code>ruzstd</code> (decompression-only, no SIMD).</li>
+<li><strong>Maintenance / license:</strong> <code>zstd</code> 0.13.x is actively maintained
+(gyscos/zstd-rs), BSD/MIT, widely used (Cargo itself depends on
+it). <code>libzstd</code> upstream (Facebook) is mature, BSD-licensed,
+actively maintained.</li>
+<li><strong>Known gotchas / divergences:</strong>
+<ul>
+<li>The <code>zstd</code> crate links <code>libzstd</code> C by default. Same C source as
+<code>@mongodb-js/zstd</code>’s C++ binding. Per-cycle parity is real — the
+win must come from elsewhere (FFI overhead, batch API, better
+defaults, dictionary support, prebuild reliability).</li>
+<li><code>pure</code> feature uses <code>ruzstd</code> (decompression only). Not a real
+alternative for v0.1.</li>
+<li>SIMD support is opt-in via <code>experimental</code> feature; reference
+<code>libzstd</code> already uses SSE2/AVX2 internally where available.</li>
+</ul>
+</li>
+</ul>
+<h2 id="backlog-check">BACKLOG check</h2>
+<p>No entry in <code>BACKLOG.md</code> for <code>zstd</code>, <code>@mongodb-js/zstd</code>, <code>zstd-codec</code>,
+<code>fzstd</code>, or any zstd-spelling variant. Fresh territory.</p>
+<h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
+<table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
+<tr><td>Per-call algorithmic work</td><td>High. Compress 100 KB ≈ 1–5 ms, 10 MB ≈ 30–80 ms (level 3 default). Decompress ~2× faster than compress. Per-call work dwarfs the 109 ns NAPI floor and the ~180 ns flat Buffer transfer cost (<code>docs/BASELINE.md:23, 29</code>). FFI share is rounding error.</td></tr>
+<tr><td>Input size distribution</td><td>Wide. 1 KB – 10 MB realistic. Buffer-flat marshalling (zero-copy) means the same code path handles the full range.</td></tr>
+<tr><td>Output size distribution</td><td>Same order of magnitude as input; same Buffer-flat path.</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td><strong>High.</strong> Compression contexts (<code>ZSTD_CCtx</code>) and trained dictionaries (<code>ZSTD_CDict</code>) amortize across many calls. A NAPI class holding a reusable context + loaded dictionary is the bm25 / minisearch Green-recipe applied to compression.</td></tr>
+<tr><td>Batch-usage realism</td><td>Medium. Kafka-style batched compression and log-line bulk-compress workloads exist. A <code>compressMany(buffers, dict?)</code> overload that reuses the context across N inputs is the highest-leverage batch API.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>&lt;1% even at the small end (1 KB compress ≈ 100 µs, FFI ≈ 360 ns). Not FFI-bound at any realistic input.</td></tr>
+</tbody></table>
+<h2 id="classification-reasoning">Classification reasoning</h2>
+<p>The shape is unambiguously Green-friendly: bytes-in / bytes-out,
+substantial compute per call, mature Rust binding, stateful contexts
+available, dictionary API available. This is the <code>inflate</code> /
+<code>encoding</code> / <code>jose</code> shape, not the <code>mime</code> / <code>nanoid</code> / <code>deep-equal</code>
+shape.</p>
+<p>The risk is not whether Rust can win against pure-JS or WASM — it
+trivially can. The risk is the bcrypt scenario: <code>@mongodb-js/zstd</code>
+already wraps the same reference C library, and a naive
+<code>@amigo-labs/zstd</code> would be wrapping the same C library too, leaving
+no algorithmic headroom. The bcrypt review (<code>docs/perf-review/bcrypt.md</code>)
+documents this trap clearly: 1.01–1.03× is Red, not Yellow.</p>
+<p>The differentiators that keep <code>@amigo-labs/zstd</code> in Yellow / Green
+territory rather than collapsing to bcrypt-Red are:</p>
+<ol>
+<li><strong>Reusable compression contexts via NAPI class.</strong> <code>@mongodb-js/zstd</code>
+allocates a fresh <code>ZSTD_CCtx</code> per call in its synchronous path. A
+reusable <code>Compressor</code> class amortizes that allocation across N
+calls. On 1 KB inputs (the typical “log-line / RPC payload” size),
+context-allocation cost is a meaningful share of the 100 µs work
+— likely 5–15%. That alone is the difference between 1.05× and
+1.20×.</li>
+<li><strong>Trained dictionaries as a first-class API.</strong> For repeating small
+payloads (the Kafka / log / RPC sweet spot), dictionaries cut
+output size by 3–10× and compression cost by 2–3×. Many Node
+teams skip dictionaries because the existing API is awkward.
+Making it ergonomic is a real win — and structurally a Green
+workload (dict load amortizes, per-call work stays substantial).</li>
+<li><strong>NAPI-rs over <code>node-addon-api</code>.</strong> <code>@mongodb-js/zstd</code> uses
+<code>node-addon-api</code> (C++); NAPI-rs has measurably lower per-call
+overhead in published benchmarks. Worth 50–100 ns / call on small
+inputs.</li>
+</ol>
+<p>Against WASM (<code>@bokuweb/zstd-wasm</code>, <code>zstd-codec</code>) the win is large
+(WASM zstd is 2–4× slower than native libzstd at large sizes, much
+worse on small inputs due to startup / boundary cost).</p>
+<p>Against <code>fzstd</code> (pure-JS decompression) the win is unambiguous and
+expected to clear 5–10× — <code>fzstd</code> exists for browser bundles where
+binary size matters more than speed.</p>
+<p><strong>Predicted classification:</strong> 🟡 Yellow against <code>@mongodb-js/zstd</code> on
+the naive one-shot path; 🟢 Green once the stateful <code>Compressor</code> class</p>
+<ul>
+<li>dictionary API ship; 🟢 Green-by-a-wide-margin against any WASM /
+pure-JS alternative on every size.</li>
+</ul>
+<h2 id="if-go-proposed-port">If GO — proposed port</h2>
+<ul>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/zstd</code></li>
+<li><strong>Primary API sketch:</strong>
+<pre><code class="language-ts">// One-shot drop-ins (parity:strict with @mongodb-js/zstd)
+export function compress(input: Buffer, level?: number): Buffer
+export function decompress(input: Buffer): Buffer
+
+// Stateful class — the differentiator
+export class Compressor {
+  constructor(options?: { level?: number; dictionary?: Buffer })
+  compress(input: Buffer): Buffer
+  compressMany(inputs: Buffer[]): Buffer[]
+}
+export class Decompressor {
+  constructor(options?: { dictionary?: Buffer })
+  decompress(input: Buffer): Buffer
+  decompressMany(inputs: Buffer[]): Buffer[]
+}
+
+// Dictionary training
+export function trainDictionary(
+  samples: Buffer[],
+  dictSize?: number
+): Buffer
+</code></pre>
+</li>
+<li><strong>Must-have benchmark scenarios:</strong>
+<ul>
+<li>compress / decompress at 1 KB, 100 KB, 10 MB on text and on
+incompressible random data</li>
+<li>compress with levels 1, 3 (default), 9, 19</li>
+<li><code>Compressor</code> class reuse over 1000 × 1 KB payloads
+(where the context-allocation amortization shows)</li>
+<li>trained-dictionary compress on 1 KB JSON docs (the killer
+secondary use-case)</li>
+<li>decompress under malformed input (panic-safety)</li>
+<li>vs <code>@mongodb-js/zstd</code> (native N-API, the realistic competitor)</li>
+<li>vs <code>@bokuweb/zstd-wasm</code> and <code>zstd-codec</code> (WASM baselines)</li>
+<li>vs <code>fzstd</code> (decompression-only pure-JS baseline)</li>
+</ul>
+</li>
+<li><strong>Acceptance thresholds (Green gate):</strong>
+<ul>
+<li>≥1.5× vs <code>@mongodb-js/zstd</code> on the <code>Compressor</code> class reuse
+path (1000 × 1 KB) — otherwise re-classify as Yellow.</li>
+<li>≥2× vs <code>@bokuweb/zstd-wasm</code> on every size.</li>
+<li>≥1.0× vs <code>@mongodb-js/zstd</code> on the one-shot path
+(parity floor — anything below is bcrypt-Red).</li>
+</ul>
+</li>
+<li><strong>Risks:</strong>
+<ul>
+<li><strong>bcrypt-trap</strong>: same upstream C library on both sides. If
+<code>Compressor</code> class / dictionary path does not measurably beat
+<code>@mongodb-js/zstd</code>, the package is Red and must be deprecated.
+Do not ship without this measurement.</li>
+<li><strong>Streaming API</strong>: zstd’s streaming compress is widely used in
+Node (<code>createCompressor()</code> returns a <code>Transform</code>). A drop-in
+streaming shim over the NAPI boundary risks the xml-style
+event-per-chunk antipattern (<code>docs/post-mortems/xml.md</code> if
+present). v0.1 should ship one-shot + batch first and defer
+streaming to v0.2 with a “compress this whole stream in one
+Rust call, return a single Buffer” shape, not per-chunk
+callbacks.</li>
+<li><strong>Level=22 / ultra modes</strong>: Ultra-high compression levels are
+extremely slow and rarely used. Scope parity to levels 1–19
+(the <code>libzstd</code> default range); document <code>--long</code> and ultra
+modes as out-of-scope for v0.1.</li>
+</ul>
+</li>
+</ul>
+<h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
+<p>Not applicable (verdict is GO). For posterity, if the
+<code>Compressor</code>-class benchmark fails to beat <code>@mongodb-js/zstd</code>, the
+NO-GO entry would read:</p>
+<pre><code class="language-markdown">- [`zstd`] (npm: many) — **[MEASURED]** identical to
+  `@mongodb-js/zstd` on the one-shot path; stateful `Compressor`
+  class did not amortize sufficiently to clear 1.5× even on
+  1000 × 1 KB workload. See `docs/perf-review/zstd.md` for the
+  bcrypt-trap pattern: same upstream `libzstd` C library on both
+  sides, no algorithmic headroom.
+</code></pre>
+<p>Section in <code>BACKLOG.md</code>: <strong>[MEASURED] — shipped+deprecated or
+candidate-and-archived after benchmarking</strong></p>
+<h2 id="references">References</h2>
+<ul>
+<li>BASELINE: <code>docs/BASELINE.md</code> (NAPI floor 109 ns, Buffer flat ~180 ns
+to 10 MB — <code>docs/BASELINE.md:23, 29</code>)</li>
+<li>Portfolio neighbour: <code>crates/inflate/</code> + <code>docs/perf-review/inflate.md</code>
+(compression, same Buffer-flat shape, 1.12–1.67× over <code>node:zlib</code>
+post-Phase-C)</li>
+<li>Bcrypt trap reference: <code>docs/perf-review/bcrypt.md</code> (same-C-source
+pattern, structurally unreachable Green)</li>
+<li>Stateful-class Green pattern: <code>crates/bm25/</code>, <code>crates/minisearch/</code></li>
+<li>Rust crate: <a href="https://crates.io/crates/zstd">https://crates.io/crates/zstd</a></li>
+<li>Upstream C library: <a href="https://github.com/facebook/zstd">https://github.com/facebook/zstd</a></li>
+<li>Primary native competitor: <a href="https://www.npmjs.com/package/@mongodb-js/zstd">https://www.npmjs.com/package/@mongodb-js/zstd</a></li>
+</ul>

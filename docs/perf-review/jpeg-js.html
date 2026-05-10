@@ -1,0 +1,197 @@
+<h1 id="candidate-review-jpeg-js">Candidate review: <code>jpeg-js</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 GO · <strong>Predicted:</strong> Green vs pure-JS, Yellow vs sharp · <strong>Reviewed:</strong> 2026-05-10</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><code>jpeg-js</code> is the canonical pure-JS JPEG decoder/encoder on npm, and a
+direct format companion to <code>pngjs</code>. The shape is identical to the
+<code>pngjs</code> review: buffer-in / buffer-out, substantial compute (IDCT +
+dequantization + Huffman decode + color conversion), Buffer-flat
+marshalling. Pure-JS JPEG decode is notoriously slow because the
+IDCT loops do not benefit from V8’s optimizer in the way arithmetic-
+heavy native code does; <code>jpeg-decoder</code> (Rust, image-rs) routinely
+clears 10–30× over pure-JS <code>jpeg-js</code>. <strong>Recommendation: GO.</strong>
+Pairs cleanly with <code>pngjs</code> to fill the “image decode” slot.</p>
+<h2 id="js-package">JS package</h2>
+<ul>
+<li><strong>npm:</strong> <code>jpeg-js</code></li>
+<li><strong>Downloads (week of 2026-05-02):</strong> 7.8M (used heavily by <code>jimp</code>,
+<code>pdf-lib</code>, <code>react-native-pdf-jpeg</code>, and headless screenshot
+pipelines)</li>
+<li><strong>Exports / API surface:</strong>
+<ul>
+<li><code>decode(input: Buffer, opts?) → { width, height, data, ... }</code>
+where <code>data</code> is RGBA pixels</li>
+<li><code>encode(imageData, quality?) → { width, height, data }</code></li>
+<li>Options: <code>useTArray</code>, <code>formatAsRGBA</code>, <code>colorTransform</code>,
+<code>tolerantDecoding</code>, <code>maxResolutionInMP</code>, <code>maxMemoryUsageInMB</code></li>
+</ul>
+</li>
+<li><strong>Typical input:</strong> JPEG byte buffer, 10 KB – 50 MB. Photos are
+the dominant case; smaller compressed-thumb buffers (10–50 KB)
+are also common.</li>
+<li><strong>Typical output:</strong> RGBA pixel buffer (<code>width × height × 4</code>
+bytes). 4K photo = ~32 MB; thumbnail = ~50 KB.</li>
+<li><strong>Realistic median use-case:</strong>
+<ul>
+<li><strong>OCR / vision preprocessing</strong>: decode scanned photos /
+documents on the way into an LLM-vision pipeline.</li>
+<li><strong>Image processing libraries</strong>: <code>jimp</code> calls <code>jpeg-js</code> under
+the hood for JPEG support.</li>
+<li><strong>PDF rendering</strong>: <code>pdf-lib</code> and similar embed JPEG via
+<code>jpeg-js</code> for output assets.
+Most realistic median: a single 1 MB photo decoded once,
+returning a ~12–32 MB RGBA buffer.</li>
+</ul>
+</li>
+</ul>
+<h2 id="rust-replacement">Rust replacement</h2>
+<ul>
+<li><strong>Candidate crate(s):</strong> <code>jpeg-decoder</code> (canonical Rust JPEG
+decoder from the image-rs project). For encoding: <code>jpeg-encoder</code>
+(image-rs) or <code>mozjpeg-rs</code> (libmozjpeg bindings, the gold-
+standard JPEG encoder).</li>
+<li><strong>Maintenance / license:</strong> <code>jpeg-decoder</code> 0.3.x is part of
+image-rs, MIT/Apache-2.0, very actively maintained. <code>mozjpeg-rs</code>
+wraps the Mozilla mozjpeg fork — same C source as
+libjpeg-turbo with quality improvements.</li>
+<li><strong>Known gotchas / divergences:</strong>
+<ul>
+<li>Progressive JPEGs: <code>jpeg-decoder</code> supports them but with a
+slower path. Bench separately.</li>
+<li>Color spaces: pure-JS <code>jpeg-js</code> returns RGBA always.
+<code>jpeg-decoder</code> returns native (YCbCr / RGB / grayscale) by
+default. Force RGBA output in the parity API; expose
+<code>decode_native</code> as a fast path.</li>
+<li>Encoder choice: <code>jpeg-encoder</code> (pure Rust) vs <code>mozjpeg-rs</code>
+(libmozjpeg C). The latter produces 5–15% smaller files at
+the same visual quality. Pick <code>mozjpeg-rs</code> for v0.1.</li>
+<li>EXIF / metadata: <code>jpeg-js</code> strips by default; <code>jpeg-decoder</code>
+can expose APP markers. Parity decision: strip by default,
+expose <code>parseExif</code> as opt-in.</li>
+</ul>
+</li>
+</ul>
+<h2 id="backlog-check">BACKLOG check</h2>
+<p>No entry in <code>BACKLOG.md</code> for <code>jpeg-js</code>, <code>jpeg</code>, <code>mozjpeg</code>, or any
+JPEG-spelling variant. Fresh territory.</p>
+<h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
+<table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
+<tr><td>Per-call algorithmic work</td><td>Very high. 1 MB JPEG decode in <code>jpeg-js</code> is ~50–150 ms; in <code>jpeg-decoder</code> (Rust) ~5–15 ms. The Rust work alone is 10⁴× the 109 ns NAPI floor (<code>docs/BASELINE.md:23</code>).</td></tr>
+<tr><td>Input size distribution</td><td>10 KB – 50 MB. Buffer-flat marshalling on the input side.</td></tr>
+<tr><td>Output size distribution</td><td>Large RGBA buffer. 4K photo = 32 MB. Buffer-flat hand-off via V8 handle — same ~180 ns regardless of size (<code>docs/BASELINE.md:29</code>).</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td>Low. JPEG decode has no per-call state worth amortizing. Encoder can optionally hold a reusable Huffman table for batched encodes, but the win is small. v0.1: one-shot only.</td></tr>
+<tr><td>Batch-usage realism</td><td>Medium. <code>decodeMany(buffers)</code> real for thumbnail-galleries / catalog ingestion pipelines. Worth v0.2.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>&lt;0.05% at 1 MB (300 ns / 10 ms). Not FFI-bound at any realistic input.</td></tr>
+</tbody></table>
+<h2 id="classification-reasoning">Classification reasoning</h2>
+<p>This is the cleanest possible Green-shape for an image codec:</p>
+<ol>
+<li>The per-call work in pure JS is enormous (<code>jpeg-js</code> is a
+reference for “slow pure-JS”).</li>
+<li>The Rust crate is highly optimized and SIMD-capable.</li>
+<li>The I/O surface is bytes-in / bytes-out with no marshalling
+penalty (Buffer-flat on both sides — <code>docs/BASELINE.md:29</code>).</li>
+<li>There is no Node built-in JPEG decode (unlike <code>zlib</code> for
+inflate / <code>crypto</code> for hashing) — the entire userland market
+is up for grabs.</li>
+</ol>
+<p>Realistic competitor set:</p>
+<ol>
+<li><strong><code>jpeg-js</code> (pure JS)</strong> — the headline, 10–30× win expected.</li>
+<li><strong><code>sharp</code> (native libvips / libjpeg-turbo)</strong> — different
+problem (full pipeline). Same bcrypt-trap caveat as <code>pngjs</code>.</li>
+<li><strong><code>@napi-rs/canvas</code></strong> — same caveat.</li>
+<li><strong><code>mozjpeg-js</code></strong> (emscripten WASM) — slower than native.</li>
+</ol>
+<p>Pattern-match: identical to <code>pngjs</code> for prediction purposes. Both
+are buffer-in / buffer-out, both DEFLATE-equivalent in CPU
+intensity. Pair them in v0.1.</p>
+<p><strong>Predicted classification:</strong> 🟢 Green vs <code>jpeg-js</code> (expected
+10–30×). 🟡 Yellow vs <code>sharp</code> (same-shape competitor, libjpeg-turbo
+is itself very fast). Position the crate against the pure-JS
+baseline and document the <code>sharp</code> comparison honestly.</p>
+<h2 id="if-go-proposed-port">If GO — proposed port</h2>
+<ul>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/jpeg-js</code></li>
+<li><strong>Primary API sketch:</strong>
+<pre><code class="language-ts">export type DecodedImage = {
+  width: number
+  height: number
+  data: Buffer  // RGBA, width * height * 4 bytes
+}
+
+export type DecodeOptions = {
+  useTArray?: boolean        // ignored in v0.1 (always typed)
+  formatAsRGBA?: boolean     // default true
+  colorTransform?: boolean
+  tolerantDecoding?: boolean
+  maxResolutionInMP?: number
+  maxMemoryUsageInMB?: number
+}
+
+export type EncodeOptions = {
+  quality?: number    // 0-100
+  progressive?: boolean
+  optimizeCoding?: boolean
+}
+
+export function decode(input: Buffer, opts?: DecodeOptions): DecodedImage
+export function encode(image: DecodedImage, quality?: number): { data: Buffer; width: number; height: number }
+
+// Fast paths
+export function decodeRgba(input: Buffer): {
+  width: number; height: number; pixels: Buffer
+}
+export function encodeRgba(
+  pixels: Buffer, width: number, height: number, opts?: EncodeOptions
+): Buffer
+</code></pre>
+</li>
+<li><strong>Must-have benchmark scenarios:</strong>
+<ul>
+<li>decode at 100 KB (thumbnail), 1 MB (web photo), 10 MB (raw
+photo)</li>
+<li>encode at the same sizes at quality 75 and quality 95</li>
+<li>progressive vs baseline JPEG decode</li>
+<li>vs <code>jpeg-js</code> (the headline pure-JS competitor)</li>
+<li>vs <code>sharp</code> (the native competitor)</li>
+<li>vs <code>mozjpeg-js</code> (the WASM baseline)</li>
+</ul>
+</li>
+<li><strong>Acceptance thresholds (Green gate):</strong>
+<ul>
+<li>≥10× vs <code>jpeg-js</code> at 100 KB</li>
+<li>≥20× vs <code>jpeg-js</code> at 10 MB</li>
+<li>≥1.0× vs <code>sharp</code> (parity floor; below this is the bcrypt-trap)</li>
+</ul>
+</li>
+<li><strong>Risks:</strong>
+<ul>
+<li><strong><code>sharp</code> overlap</strong>: same positioning as <code>pngjs</code>. Pure-JPEG-
+decode is the niche; full pipeline goes to <code>sharp</code>.</li>
+<li><strong>Memory pressure</strong>: large output buffers. Document.</li>
+<li><strong>Encoder choice</strong>: <code>mozjpeg-rs</code> requires the libmozjpeg C
+source. <code>jpeg-encoder</code> (pure Rust) is the fallback for the
+no-C-dep posture. Decide before v0.1; document in BACKLOG if
+deferred.</li>
+<li><strong>CMYK / grayscale paths</strong>: scope to RGB / RGBA in v0.1;
+document CMYK as out-of-scope.</li>
+</ul>
+</li>
+</ul>
+<h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
+<p>Not applicable (verdict is GO).</p>
+<h2 id="references">References</h2>
+<ul>
+<li>BASELINE: <code>docs/BASELINE.md</code> (Buffer-flat to 10 MB —
+<code>docs/BASELINE.md:29</code>)</li>
+<li>Companion crate review: <code>docs/perf-review/pngjs.md</code> (same shape,
+same Green prediction, same <code>sharp</code>-positioning advice)</li>
+<li>Closest portfolio neighbour: <code>crates/inflate/</code> (DEFLATE / bytes-
+in / bytes-out reference Green)</li>
+<li>Streaming antipattern: <code>docs/post-mortems/xml.md</code> if present</li>
+<li>Rust crates: <a href="https://crates.io/crates/jpeg-decoder">https://crates.io/crates/jpeg-decoder</a>,
+<a href="https://crates.io/crates/mozjpeg">https://crates.io/crates/mozjpeg</a></li>
+<li>Upstream JS: <a href="https://github.com/jpeg-js/jpeg-js">https://github.com/jpeg-js/jpeg-js</a></li>
+</ul>

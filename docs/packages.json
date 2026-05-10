@@ -158,7 +158,8 @@
       "speedup": "TBD",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/fuse",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/fuse",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/fuse/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/fuse/README.md",
+      "perfReviewUrl": "/perf-review/fuse.md"
     },
     {
       "name": "graph-layout",

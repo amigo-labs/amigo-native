@@ -1,0 +1,250 @@
+<h1 id="candidate-review-jimp">Candidate review: <code>jimp</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟡 GO (conditional on scoped v0.1) · <strong>Predicted:</strong> Yellow on the broad surface, Green on the scoped core · <strong>Reviewed:</strong> 2026-05-10</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><code>jimp</code> is the npm answer to “I just want a JS image library with no
+native dependencies”. Pure-JS decode (PNG/JPEG/BMP/GIF/TIFF) +
+encode + ~30 image-processing operations (resize, blit, blur,
+quantize, normalize, posterize, contrast, brightness, etc.). The
+core shape is fundamentally Green (buffer-in / buffer-out / per-
+pixel loop is exactly what Rust SIMD wins at), and <code>image-rs</code> is
+the canonical Rust umbrella crate that covers all the same formats
+and operations. The catch is parity surface: ~30 operations × ~10
+chainable mutators × the format matrix is too much for v0.1, and an
+incomplete port helps nobody. <strong>Recommendation: GO</strong>, but only if
+v0.1 explicitly scopes to: decode + encode (PNG, JPEG) + resize +
+crop + the 5 most-used filters. The long tail goes into v0.2 or
+becomes a permanent BACKLOG item.</p>
+<h2 id="js-package">JS package</h2>
+<ul>
+<li><strong>npm:</strong> <code>jimp</code></li>
+<li><strong>Downloads (week of 2026-05-02):</strong> 3.1M (one of the top-3 “no
+native deps” image libraries on npm; pulled in by many test
+runners, template engines, screenshot pipelines)</li>
+<li><strong>Exports / API surface:</strong>
+<ul>
+<li><code>Jimp.read(input: Buffer | string) → Promise&lt;Jimp&gt;</code></li>
+<li><code>image.resize(w, h)</code>, <code>.crop(x, y, w, h)</code>, <code>.flip()</code>,
+<code>.rotate(deg)</code>, <code>.blit(src, x, y)</code>, <code>.composite(...)</code>,
+<code>.blur(radius)</code>, <code>.gaussian(radius)</code>, <code>.brightness(v)</code>,
+<code>.contrast(v)</code>, <code>.posterize(n)</code>, <code>.quantize(opts)</code>,
+<code>.dither565()</code>, <code>.greyscale()</code>, <code>.invert()</code>, <code>.normalize()</code>,
+<code>.sepia()</code>, <code>.opacity(v)</code>, <code>.fade(v)</code>, <code>.opaque()</code>,
+<code>.background(color)</code>, <code>.color(actions)</code>, <code>.cover(w, h)</code>,
+<code>.contain(w, h)</code>, <code>.scale(factor)</code>, <code>.print(font, x, y, text)</code>,
+<code>.getBuffer(mime, cb)</code>, <code>.write(path, cb)</code>, etc.</li>
+<li>Class-based chainable API.</li>
+</ul>
+</li>
+<li><strong>Typical input:</strong> image file or buffer, 10 KB – 50 MB.</li>
+<li><strong>Typical output:</strong> processed image as Buffer (encoded) or raw
+RGBA pixels.</li>
+<li><strong>Realistic median use-case:</strong>
+<ul>
+<li><strong>Thumbnail generation in build pipelines</strong>: read a few
+hundred photos, resize them to thumbnails, encode out.</li>
+<li><strong>Test fixtures</strong>: programmatic image generation for visual
+regression tests.</li>
+<li><strong>Server-side avatar / image manipulation</strong> where pulling in
+<code>sharp</code> (libvips, native build) is a deployment headache.
+<code>jimp</code>’s entire reason for existing is “no native deps, just
+npm install and go”.</li>
+</ul>
+</li>
+</ul>
+<h2 id="rust-replacement">Rust replacement</h2>
+<ul>
+<li><strong>Candidate crate(s):</strong> <code>image</code> (the image-rs umbrella crate;
+covers decode / encode / resize / colorops / pixel manipulation).
+Optionally <code>fast_image_resize</code> for SIMD-accelerated resize,
+<code>imageproc</code> for filter / morphology operations.</li>
+<li><strong>Maintenance / license:</strong> <code>image</code> 0.25.x is the canonical
+image crate, MIT/Apache-2.0, extremely actively maintained.
+<code>imageproc</code> is mature, <code>fast_image_resize</code> is high-performance.</li>
+<li><strong>Known gotchas / divergences:</strong>
+<ul>
+<li><strong>Format coverage trade-off</strong>: <code>image</code> covers PNG/JPEG/BMP/
+GIF/TIFF/WebP/AVIF/etc. v0.1 should scope to PNG + JPEG to
+keep binary size and parity-test scope reasonable.</li>
+<li><strong>Chainable API translation</strong>: <code>jimp</code> uses a stateful mutator
+chain. Rust ports of this typically expose either (a) a NAPI
+class with the image buffer on the Rust side and chained
+methods returning <code>&amp;mut self</code>, or (b) a “spec the pipeline as
+a config, run it once” API. Option (a) is more drop-in but
+pays NAPI overhead per chained call; option (b) is faster but
+breaks the <code>jimp</code> ergonomics. Pick (a) with the chained
+methods coalescing into a single Rust pass via a fluent
+builder.</li>
+<li><strong>Font / <code>print</code> API</strong>: <code>jimp</code> ships its own bitmap font
+format. <code>rusttype</code> / <code>ab_glyph</code> (Rust) work with TTF/OTF
+instead. Scope <code>print</code> out of v0.1.</li>
+<li><strong>Color model parity</strong>: <code>jimp</code> uses 32-bit ARGB internally
+(not RGBA). The Rust port should normalize to RGBA on the
+boundary and document.</li>
+</ul>
+</li>
+</ul>
+<h2 id="backlog-check">BACKLOG check</h2>
+<p>No entry in <code>BACKLOG.md</code> for <code>jimp</code>, <code>image</code>, or related. Fresh
+territory.</p>
+<h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
+<table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
+<tr><td>Per-call algorithmic work</td><td>Very high. Decode 1 MB JPEG = ~50 ms in pure JS; resize 4K image = ~200 ms in pure JS. Most jimp operations are CPU-bound pixel loops. Rust SIMD pulls ahead by 10–50× per operation.</td></tr>
+<tr><td>Input size distribution</td><td>10 KB – 50 MB images. Buffer-flat marshalling.</td></tr>
+<tr><td>Output size distribution</td><td>Up to 32 MB RGBA. Buffer-flat.</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td><strong>Very high.</strong> The image data lives on the Rust side across an entire mutator chain (resize → blur → crop → encode). Each chained call avoids re-marshalling the pixel buffer. This is the killer lever — a 5-operation chain on a 4K image saves 5 × 32 MB of pixel copies.</td></tr>
+<tr><td>Batch-usage realism</td><td>High for thumbnail-pipeline workloads (process 100 photos in one job). <code>Jimp.readMany</code> worth v0.2.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>&lt;1% per chained operation when the image stays on the Rust side. &gt;20% if each operation re-marshals the pixel buffer back to V8 (do not do this).</td></tr>
+</tbody></table>
+<h2 id="classification-reasoning">Classification reasoning</h2>
+<p>The shape is mostly Green: buffer-in / buffer-out, heavy per-pixel
+work, stateful mutator chain. The Rust crate ecosystem
+(<code>image</code> + <code>fast_image_resize</code> + <code>imageproc</code>) covers every operation
+in <code>jimp</code>’s surface area, and at higher quality.</p>
+<p>The classification risk is parity scope. Three failure modes:</p>
+<ol>
+<li><strong>Too much surface for v0.1</strong>: shipping <code>@amigo-labs/jimp</code> with
+only 5 of 30 operations confuses users. They install it, find
+half their code broken, file issues, leave. The <code>core-js</code>
+review (if present) documents this exact failure mode for
+wide-surface ports.</li>
+<li><strong>Format-matrix bloat</strong>: shipping every format pulls in dozens
+of MB of Rust dependencies. Each platform stub balloons. The
+<code>inflate</code> crate (<code>zlib-rs</code> only, no <code>miniz_oxide</code> /
+<code>cloudflare-zlib</code>) is the right precedent.</li>
+<li><strong><code>sharp</code> overlap</strong>: anyone willing to install a native binary
+already uses <code>sharp</code>. <code>@amigo-labs/jimp</code>’s niche is exactly
+the <code>jimp</code> audience: people who do not want a <code>node-gyp</code> /
+libvips dependency. If <code>@amigo-labs/jimp</code> ships precompiled
+binaries (NAPI-rs default), they ALREADY have a native
+binary — the differentiation moves to “install reliability”
+and “API ergonomics”, not “no native”.</li>
+</ol>
+<p>The mitigation for all three: scope v0.1 narrowly. PNG + JPEG +
+resize + crop + flip / rotate / greyscale / brightness / contrast
+covers ~80% of real-world <code>jimp</code> use. Defer everything else.</p>
+<p>Pattern-match: this is the <code>core-js</code> shape — a sprawling JS library
+with many entry points, most rarely used. The correct answer is
+<strong>not</strong> a 1:1 port; the correct answer is the 80/20 core, sharply
+positioned in the README.</p>
+<p><strong>Predicted classification:</strong> 🟢 Green on the scoped core (resize at
+4K = expected 20–50× vs <code>jimp</code>); 🟡 Yellow if v0.1 ships the full
+surface (parity tests will exhaust the team before the perf wins
+land).</p>
+<h2 id="if-go-proposed-port">If GO — proposed port</h2>
+<ul>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/jimp</code></li>
+<li><strong>v0.1 scope (commit to this in the README):</strong>
+<ul>
+<li>Decode: PNG, JPEG (delegate to <code>crates/pngjs</code> and
+<code>crates/jpeg-js</code> once those ship, share the <code>png</code> /
+<code>jpeg-decoder</code> crates).</li>
+<li>Encode: PNG, JPEG.</li>
+<li>Operations: <code>resize</code>, <code>crop</code>, <code>flip</code>, <code>rotate</code> (multiples of
+90°), <code>greyscale</code>, <code>invert</code>, <code>brightness</code>, <code>contrast</code>,
+<code>composite</code>, <code>getBuffer</code>.</li>
+<li>Color: 32-bit RGBA internally, parity with jimp’s input
+convention.</li>
+</ul>
+</li>
+<li><strong>Out of scope for v0.1 (documented):</strong>
+<ul>
+<li>GIF / BMP / TIFF / WebP decode.</li>
+<li><code>blur</code>, <code>gaussian</code>, <code>posterize</code>, <code>quantize</code>, <code>dither565</code>,
+<code>print</code> (font rendering), <code>normalize</code>, <code>sepia</code>, <code>opacity</code>,
+<code>fade</code>, <code>color(actions)</code>, arbitrary-angle rotation.</li>
+<li>All BACKLOG-able as “if user demand justifies the parity
+cost”.</li>
+</ul>
+</li>
+<li><strong>Primary API sketch:</strong>
+<pre><code class="language-ts">export class Jimp {
+  static read(input: Buffer | string): Promise&lt;Jimp&gt;
+  static create(width: number, height: number, color?: number): Jimp
+
+  readonly width: number
+  readonly height: number
+
+  resize(w: number, h: number): this
+  crop(x: number, y: number, w: number, h: number): this
+  flip(horizontal: boolean, vertical: boolean): this
+  rotate(deg: 90 | 180 | 270): this
+  greyscale(): this
+  invert(): this
+  brightness(v: number): this
+  contrast(v: number): this
+  composite(src: Jimp, x: number, y: number): this
+
+  getBuffer(mime: 'image/png' | 'image/jpeg', opts?: object): Promise&lt;Buffer&gt;
+  getBufferSync(mime: 'image/png' | 'image/jpeg'): Buffer
+  bitmap(): { width: number; height: number; data: Buffer }
+}
+</code></pre>
+</li>
+<li><strong>Must-have benchmark scenarios:</strong>
+<ul>
+<li>end-to-end “read + resize 4K to thumbnail + encode JPEG”
+pipeline</li>
+<li>resize at 100 KB / 1 MB / 10 MB (the headline operation)</li>
+<li>crop, flip, rotate at 1 MB</li>
+<li>5-operation chain (resize → crop → brightness → contrast →
+encode) to validate the stateful-chain win</li>
+<li>vs <code>jimp</code> (the headline competitor)</li>
+<li>vs <code>sharp</code> (the native competitor — honest comparison)</li>
+</ul>
+</li>
+<li><strong>Acceptance thresholds (Green gate):</strong>
+<ul>
+<li>≥20× vs <code>jimp</code> on the resize-4K-to-thumbnail pipeline</li>
+<li>≥10× vs <code>jimp</code> on the 5-operation chain</li>
+<li>≥1.0× vs <code>sharp</code> on the resize path (Yellow expected; if Red,
+document the positioning explicitly in the README)</li>
+</ul>
+</li>
+<li><strong>Risks:</strong>
+<ul>
+<li><strong>Scope creep on operations</strong>: every issue filed asking for
+<code>blur</code> / <code>gaussian</code> / <code>print</code> is a temptation to expand v0.1.
+Resist; document the v0.1 charter and the “we’ll add this if
+enough people ask” promise.</li>
+<li><strong><code>sharp</code> overlap</strong>: position the crate as “the drop-in
+<code>jimp</code> replacement, with a fast path”. Not as a <code>sharp</code>
+competitor.</li>
+<li><strong>API churn between jimp v0 and v1</strong>: jimp 1.x changes the
+API (made <code>read</code> truly async, removed some operations).
+Decide which to target — v1 is the smarter long-term choice.</li>
+<li><strong>Stateful-chain coalescing</strong>: the Rust port should
+internally coalesce chained operations where possible
+(e.g. resize → crop → encode can fuse the resize and crop
+into a single pass). This is a Phase-C lever, not v0.1
+blocker.</li>
+</ul>
+</li>
+</ul>
+<h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
+<pre><code class="language-markdown">- [`jimp`] — **[PARITY] expensive**: jimp has ~30 image operations
+  across 5+ formats; full parity is a multi-quarter port. v0.1
+  scope (PNG/JPEG + 10 ops) would be a confusing partial port.
+  Considered 2026-05-10. Recommend per-format crates
+  (`@amigo-labs/pngjs`, `@amigo-labs/jpeg-js`, ...) and a
+  `pixelmatch` for the diff niche instead.
+</code></pre>
+<p>Section in <code>BACKLOG.md</code>: <strong>[PARITY] too expensive — surface area
+exceeds reasonable v0.1 port effort</strong></p>
+<h2 id="references">References</h2>
+<ul>
+<li>BASELINE: <code>docs/BASELINE.md</code> (Buffer-flat to 10 MB —
+<code>docs/BASELINE.md:29</code>; stateful classes amortize chained calls)</li>
+<li>Companion crate reviews: <code>docs/perf-review/pngjs.md</code>,
+<code>docs/perf-review/jpeg-js.md</code> (format-specific Green
+predictions; v0.1 jimp shares their decode/encode paths)</li>
+<li>Wide-surface antipattern reference: <code>docs/perf-review/core-js.md</code>
+if present</li>
+<li>Stateful-class Green pattern: <code>crates/bm25/</code>,
+<code>crates/minisearch/</code></li>
+<li>Rust crates: <a href="https://crates.io/crates/image">https://crates.io/crates/image</a>,
+<a href="https://crates.io/crates/fast_image_resize">https://crates.io/crates/fast_image_resize</a>,
+<a href="https://crates.io/crates/imageproc">https://crates.io/crates/imageproc</a></li>
+<li>Upstream JS: <a href="https://github.com/jimp-dev/jimp">https://github.com/jimp-dev/jimp</a></li>
+</ul>

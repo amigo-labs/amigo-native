@@ -1,0 +1,221 @@
+<h1 id="candidate-review-tldts">Candidate review: <code>tldts</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟡 GO (conditional on batch API) · <strong>Predicted:</strong> Yellow per-call, Green for batch · <strong>Reviewed:</strong> 2026-05-10</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><code>tldts</code> is a Public-Suffix-List-driven domain parser. The shape is
+half-Green, half-FFI-trap: the trie traversal is a textbook stateful
+load-once-query-many workload (Green-shape), but a single
+<code>parse('example.com')</code> call costs ~1 µs in pure JS, leaving little
+headroom over the 109 ns NAPI floor + ~234 ns string round-trip
+(<code>docs/BASELINE.md:23, 24</code>). The package only wins decisively when
+the realistic call shape is “parse N hostnames in one call” or
+“parse this batch of 1M log lines” — analytics pipelines, cookie-jar
+scope checks, log enrichment. <strong>Recommendation: GO</strong>, but the v0.1
+charter must lead with a batch / array-of-strings API; a Rust port
+of the single-call API alone is a Yellow / Red risk that would
+repeat the <code>mime</code> post-mortem.</p>
+<h2 id="js-package">JS package</h2>
+<ul>
+<li><strong>npm:</strong> <code>tldts</code> (and <code>tldts-experimental</code> for the smaller “TLD list
+only” variant). <code>psl</code>, <code>parse-domain</code>, <code>tld-extract</code> are siblings.</li>
+<li><strong>Downloads (week of 2026-05-02):</strong> <code>tldts</code> 47.5M, <code>psl</code> 46.4M
+(the older alternative — still the larger absolute number,
+surprisingly close). Aggregate domain-parsing on npm ≈ 95M / wk
+across these two, much of it transitive through cookie / fetch
+libraries.</li>
+<li><strong>Exports / API surface:</strong> <code>parse(url) → { hostname, domain, subdomain, publicSuffix, isIcann, isPrivate, isIp }</code>, plus
+shortcut helpers: <code>getDomain(url)</code>, <code>getPublicSuffix(url)</code>,
+<code>getHostname(url)</code>, <code>getSubdomain(url)</code>. Options for ICANN-only
+/ private-domain inclusion and detect-IP flags.</li>
+<li><strong>Typical input:</strong> hostname or URL string, 5–80 chars.</li>
+<li><strong>Typical output:</strong> small object with 4–8 string fields; total
+output size 20–200 bytes.</li>
+<li><strong>Realistic median use-case:</strong>
+<ul>
+<li><strong>Per-call</strong>: middleware on incoming requests parses one
+<code>Host</code> header per request (~1 µs JS, called once per request).</li>
+<li><strong>Batch</strong>: log enrichment / analytics pipeline parses millions
+of URLs from a log file (where total work is meaningful).</li>
+<li><strong>Stateful</strong>: per-request cookie scope check against a long-
+lived suffix trie (one parse call but the trie is reused
+forever).</li>
+</ul>
+</li>
+</ul>
+<h2 id="rust-replacement">Rust replacement</h2>
+<ul>
+<li><strong>Candidate crate(s):</strong> <code>publicsuffix</code> (canonical Rust binding,
+loads the IANA PSL into a trie). <code>addr</code> is a higher-level
+alternative built on <code>publicsuffix</code>. For IDN parity: <code>idna</code>
+(Servo’s IDN implementation).</li>
+<li><strong>Maintenance / license:</strong> <code>publicsuffix</code> 2.x is actively
+maintained (rushmorem/publicsuffix), MIT/Apache-2.0. <code>idna</code> is
+Servo project, very actively maintained.</li>
+<li><strong>Known gotchas / divergences:</strong>
+<ul>
+<li>PSL data shipping: <code>tldts</code> bundles a versioned PSL blob and
+re-publishes weekly. The Rust crate either bundles the same
+blob at build time (semver bump per PSL update) or accepts a
+runtime-loaded list (parity-friendlier, lower release cadence).
+The bundled-at-build-time approach matches how <code>tldts</code> works
+today.</li>
+<li>IDN / punycode handling: <code>tldts</code> performs unicode-to-ASCII via
+its bundled <code>punycode</code> shim. Rust must use <code>idna</code> to match
+semantics.</li>
+<li><code>tldts</code> vs <code>psl</code> divergence on edge cases (single-label
+hostnames, private domains): pick one. <code>tldts</code> is the larger
+target.</li>
+</ul>
+</li>
+</ul>
+<h2 id="backlog-check">BACKLOG check</h2>
+<p>No entry in <code>BACKLOG.md</code> for <code>tldts</code>, <code>psl</code>, <code>parse-domain</code>, or
+related. Fresh territory.</p>
+<h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
+<table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
+<tr><td>Per-call algorithmic work</td><td><strong>Low at the single-call boundary.</strong> <code>tldts.parse('foo.example.com')</code> runs in ~0.5–1.5 µs (trie traversal of ~5 labels). NAPI floor 109 ns + ~234 ns string round-trip ≈ 350 ns is a meaningful share of that 1 µs. Per-call Rust port: 1.5–3× at best, 1.0× plausible.</td></tr>
+<tr><td>Input size distribution</td><td>Narrow: hostnames are 5–80 chars almost always. No “large input” regime to amortize FFI over.</td></tr>
+<tr><td>Output size distribution</td><td>Small struct with 4–8 strings. Marshalling cost ~200–400 ns via V8 object construction. Comparable to the Rust work.</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td><strong>Very high on the data side</strong>: the suffix trie loads once (~200 KB of PSL data → ~150k labels) and is queried per call. But this is <em>implicit</em> state — both <code>tldts</code> and the Rust port hold it as a static / lazy-initialized data structure. Not a “NAPI class” lever, just a one-time-init lever.</td></tr>
+<tr><td>Batch-usage realism</td><td><strong>Critical lever.</strong> Analytics / log enrichment workloads parse N hostnames in tight loops. <code>parseMany(urls: Buffer[]) → Buffer</code> returning packed <code>Uint32Array</code> of offsets or struct-of-arrays is where the Green win lives.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>Per-call: 30–50% (FFI-bound). Batch (1M urls in one call): &lt;1%. The two paths have opposite classifications.</td></tr>
+</tbody></table>
+<h2 id="classification-reasoning">Classification reasoning</h2>
+<p>The single-call shape is dangerously close to the <code>mime</code> / <code>dotenv</code>
+FFI-trap post-mortem family: tiny per-call work, small string in,
+small object out, called in tight loops. The BASELINE table is
+unambiguous: 100 KB string round-trip is 35 µs, scaling at
+0.35 ns / byte. A 50-char hostname pays ~125 ns just for the string
+conversion, before the trie walk. Pure-JS <code>tldts</code> runs the trie walk
+in plain V8 with the suffix list in a JS object — that is fast.</p>
+<p>The single-call path is therefore likely 🟡 Yellow at best, possibly
+🔴 Red. This is the same shape that killed <code>nanoid</code> (260 ns JS vs
+1500 ns NAPI).</p>
+<p>The batch path is a different package. A <code>parseMany(urls: Buffer[])</code>
+call with N=10k–1M flips the ratio: 1M small allocations + 1M trie
+walks in pure-JS dominate; one big call into Rust with zero per-item
+FFI overhead is a clean Green.</p>
+<p>The stateful-trie aspect (load PSL once into a Rust trie) is real but
+not a <code>Compressor</code>-class-style lever — <code>tldts</code> already does this in
+pure JS. It’s the <em>batch loop boundary</em> that matters, not the trie
+storage.</p>
+<p><strong>Predicted classification:</strong> 🔴 Red on the naive per-call API,
+🟢 Green on the batch API. The package only ships if the batch API
+is first-class.</p>
+<h2 id="if-go-proposed-port">If GO — proposed port</h2>
+<ul>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/tldts</code> (matches the
+upstream npm name verbatim, simplest migration)</li>
+<li><strong>Primary API sketch:</strong>
+<pre><code class="language-ts">type ParseResult = {
+  hostname: string | null
+  domain: string | null
+  subdomain: string | null
+  publicSuffix: string | null
+  isIcann: boolean
+  isPrivate: boolean
+  isIp: boolean
+}
+
+type ParseOptions = {
+  allowPrivateDomains?: boolean
+  detectIp?: boolean
+  extractHostname?: boolean
+}
+
+// Parity drop-in (per-call; expected Yellow)
+export function parse(input: string, opts?: ParseOptions): ParseResult
+export function getDomain(input: string, opts?: ParseOptions): string | null
+export function getPublicSuffix(input: string, opts?: ParseOptions): string | null
+export function getHostname(input: string): string | null
+export function getSubdomain(input: string, opts?: ParseOptions): string | null
+
+// The Green-shape batch API
+export function parseMany(
+  inputs: string[] | Buffer,  // Buffer = newline-separated UTF-8 hostnames
+  opts?: ParseOptions
+): {
+  domains: (string | null)[]
+  publicSuffixes: (string | null)[]
+  flags: Uint8Array  // bit-packed isIcann/isPrivate/isIp/etc.
+}
+
+// Stateful class (optional — primarily for tooling that wants to
+// load a custom PSL or pin to a PSL snapshot)
+export class Parser {
+  constructor(options?: {
+    psl?: Buffer  // override default bundled PSL
+    allowPrivateDomains?: boolean
+  })
+  parse(input: string): ParseResult
+  parseMany(inputs: string[] | Buffer): ParseManyResult
+}
+</code></pre>
+</li>
+<li><strong>Must-have benchmark scenarios:</strong>
+<ul>
+<li>Single <code>parse('foo.bar.example.com')</code> — vs <code>tldts</code>, <code>psl</code></li>
+<li>1k / 10k / 100k urls in a tight loop, calling <code>parse</code> per item
+— vs <code>tldts</code>, <code>psl</code></li>
+<li>10k / 100k / 1M urls via <code>parseMany(buffer)</code> — the Green-path</li>
+<li>Long-lived <code>Parser</code> instance vs free functions (rule out
+re-init cost)</li>
+<li>IDN / punycode round-trip — parity verification</li>
+<li>Edge cases: localhost, IP literals (v4 + v6), single-label
+hostnames, trailing dots</li>
+</ul>
+</li>
+<li><strong>Acceptance thresholds (Green gate):</strong>
+<ul>
+<li>≥1.0× vs <code>tldts</code> on the per-call path (parity floor — anything
+below this is Red and the package does not ship)</li>
+<li>≥5× vs <code>tldts</code> on <code>parseMany(100k)</code> (the batch path —
+Green-gate)</li>
+<li>Output parity verified against <code>tldts</code> test suite (port the
+table-driven cases)</li>
+</ul>
+</li>
+<li><strong>Risks:</strong>
+<ul>
+<li><strong>Per-call FFI floor</strong>: documented in BASELINE. If the per-call
+parity is below 1.0× even after <code>&amp;str</code> / Buffer overload, the
+per-call API ships with a “use parseMany for bulk workloads”
+note in the README. Do not paper over this with a fake speedup.</li>
+<li><strong>PSL update cadence</strong>: bundling the PSL means a republish per
+PSL change. Decide whether <code>@amigo-labs/tldts</code> will track
+upstream <code>tldts</code> weekly or pin to monthly snapshots. Document
+the chosen cadence in the README.</li>
+<li><strong>Mime-trap regression</strong>: if the per-call path benchmarks worse
+than <code>tldts</code> and the user prefers single-call ergonomics, the
+portfolio loses adoption to <code>tldts</code>. The batch API + clear
+README guidance is the mitigation. If neither is acceptable,
+NO-GO.</li>
+</ul>
+</li>
+</ul>
+<h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
+<pre><code class="language-markdown">- [`tldts`] — **[FFI] per-call shape too small**: typical
+  `tldts.parse('host.example.com')` is ~1 µs in pure JS; NAPI floor
+  + string round-trip eats most of that. Batch-API approach would
+  win on log-enrichment workloads, but the realistic call shape in
+  the npm ecosystem is per-request (cookie scope, middleware), so
+  the headline drop-in path stays FFI-bound. Considered 2026-05-10,
+  see `docs/perf-review/tldts.md`.
+</code></pre>
+<p>Section in <code>BACKLOG.md</code>: <strong>[FFI] too small — per-call work below
+the NAPI floor or string-marshalling cost</strong></p>
+<h2 id="references">References</h2>
+<ul>
+<li>BASELINE: <code>docs/BASELINE.md</code> (NAPI floor 109 ns, string 35 µs /
+100 KB → 0.35 ns / byte; small-input regime is the dangerous one
+for this shape)</li>
+<li>FFI-trap precedents: <code>docs/perf-review/dotenv.md</code>,
+<code>docs/perf-review/mime.md</code> (if present),
+<code>docs/post-mortems/nanoid.md</code> (if present)</li>
+<li>Portfolio Green-pattern reference: <code>crates/sentences/</code> (batch
+offset-packed output)</li>
+<li>Rust crate: <a href="https://crates.io/crates/publicsuffix">https://crates.io/crates/publicsuffix</a>,
+<a href="https://crates.io/crates/idna">https://crates.io/crates/idna</a></li>
+<li>Upstream JS: <a href="https://github.com/remusao/tldts">https://github.com/remusao/tldts</a></li>
+</ul>
