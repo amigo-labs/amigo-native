@@ -17,8 +17,9 @@ Pairs cleanly with `pngjs` to fill the "image decode" slot.
 ## JS package
 
 - **npm:** `jpeg-js`
-- **Downloads:** ~5M / week (used heavily by `jimp`, `pdf-lib`,
-  `react-native-pdf-jpeg`, and headless screenshot pipelines)
+- **Downloads (week of 2026-05-02):** 7.8M (used heavily by `jimp`,
+  `pdf-lib`, `react-native-pdf-jpeg`, and headless screenshot
+  pipelines)
 - **Exports / API surface:**
   - `decode(input: Buffer, opts?) → { width, height, data, ... }`
     where `data` is RGBA pixels

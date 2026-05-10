@@ -21,9 +21,11 @@ repeat the `mime` post-mortem.
 
 - **npm:** `tldts` (and `tldts-experimental` for the smaller "TLD list
   only" variant). `psl`, `parse-domain`, `tld-extract` are siblings.
-- **Downloads:** `tldts` ~10M / week, `psl` ~25M / week (the older
-  alternative). Aggregate ~50M / week including transitive
-  dependencies (cookie / fetch libraries).
+- **Downloads (week of 2026-05-02):** `tldts` 47.5M, `psl` 46.4M
+  (the older alternative — still the larger absolute number,
+  surprisingly close). Aggregate domain-parsing on npm ≈ 95M / wk
+  across these two, much of it transitive through cookie / fetch
+  libraries.
 - **Exports / API surface:** `parse(url) → { hostname, domain,
   subdomain, publicSuffix, isIcann, isPrivate, isIp }`, plus
   shortcut helpers: `getDomain(url)`, `getPublicSuffix(url)`,

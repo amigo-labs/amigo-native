@@ -23,9 +23,9 @@ exactly like bcrypt (same C source, no measurable win against
   npm is `@mongodb-js/zstd` (native N-API, prebuilds), `zstd-codec`
   (emscripten WASM), `@bokuweb/zstd-wasm` (WASM), and `fzstd`
   (pure-JS, decompress-only)
-- **Downloads:** `@mongodb-js/zstd` ~250k/wk, `zstd-codec` ~150k/wk,
-  `fzstd` ~600k/wk (decompression in browser bundles), aggregate
-  zstd-in-npm ≈ 1M+/wk
+- **Downloads (week of 2026-05-02):** `@mongodb-js/zstd` 816k,
+  `zstd-codec` 697k, `fzstd` 269k (decompression in browser
+  bundles), aggregate zstd-in-npm ≈ 1.8M/wk
 - **Exports / API surface:** `compress(buf, level?) → Uint8Array`,
   `decompress(buf) → Uint8Array`, plus streaming readable/writable
   on `@mongodb-js/zstd` and `zstd-codec`. Trained-dictionary API

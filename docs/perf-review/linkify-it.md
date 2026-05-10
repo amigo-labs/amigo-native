@@ -16,9 +16,11 @@ GO.**
 ## JS package
 
 - **npm:** `linkify-it`
-- **Downloads:** ~5M / week (used heavily as a `markdown-it`
-  dependency; pulled in transitively by hundreds of markdown
-  renderers, chat UIs, comment systems)
+- **Downloads (week of 2026-05-02):** 25.5M (much higher than the
+  intuitive estimate — `linkify-it` is the de-facto auto-link
+  engine in the markdown / chat-renderer ecosystem and is pulled
+  in transitively by hundreds of packages, headed by `markdown-it`
+  itself)
 - **Exports / API surface:**
   - `new LinkifyIt(schemas?, options?)`
   - `linkify.match(text) → Match[] | null` where
@@ -47,9 +49,10 @@ GO.**
   battle-tested in `mdcat`, `comrak`, and `linkify-cli`). Smaller
   feature surface than `linkify-it` (no fuzzy IP, simpler schema
   model), so v0.1 parity scope must be set carefully.
-- **Maintenance / license:** `linkify` 0.10.x is actively
-  maintained (robinst/linkify), MIT/Apache-2.0, used in production
-  by many Rust markdown / terminal tools.
+- **Maintenance / license:** `linkify` 0.11.0 (released
+  2026-04-12), actively maintained (robinst/linkify),
+  MIT/Apache-2.0, used in production by many Rust markdown /
+  terminal tools.
 - **Known gotchas / divergences:**
   - `linkify-it` supports `fuzzyLink`, `fuzzyEmail`, `fuzzyIP`. The
     Rust `linkify` crate has equivalents for URL and email but not

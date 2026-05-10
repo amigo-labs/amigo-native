@@ -21,9 +21,9 @@ becomes a permanent BACKLOG item.
 ## JS package
 
 - **npm:** `jimp`
-- **Downloads:** ~2–3M / week (one of the top-3 "no native deps"
-  image libraries on npm; pulled in by many test runners,
-  template engines, screenshot pipelines)
+- **Downloads (week of 2026-05-02):** 3.1M (one of the top-3 "no
+  native deps" image libraries on npm; pulled in by many test
+  runners, template engines, screenshot pipelines)
 - **Exports / API surface:**
   - `Jimp.read(input: Buffer | string) → Promise<Jimp>`
   - `image.resize(w, h)`, `.crop(x, y, w, h)`, `.flip()`,

@@ -17,9 +17,9 @@ the v0.1 cost low. **Recommendation: GO.**
 ## JS package
 
 - **npm:** `pixelmatch`
-- **Downloads:** ~4M / week (Mapbox-authored, used in Cypress,
-  Playwright, BackstopJS, jest-image-snapshot, visual-regression
-  CI tools)
+- **Downloads (week of 2026-05-02):** 8.8M (Mapbox-authored, used
+  in Cypress, Playwright, BackstopJS, jest-image-snapshot, and
+  the long tail of visual-regression CI tools)
 - **Exports / API surface:**
   - `pixelmatch(img1, img2, output, width, height, options?)`
     → number of differing pixels
@@ -47,8 +47,9 @@ the v0.1 cost low. **Recommendation: GO.**
   Alternatively a direct port of the Mapbox pixelmatch algorithm
   in safe Rust — the algorithm is ~150 lines, well-documented.
   `dssim` for higher-quality SSIM-based diffs (optional v0.2).
-- **Maintenance / license:** `image-compare` 0.4.x is actively
-  maintained, MIT. Mozilla `dssim` is mature.
+- **Maintenance / license:** `image-compare` 0.5.0 (released
+  2025-08-18), actively maintained, MIT. Mozilla `dssim` is
+  mature.
 - **Known gotchas / divergences:**
   - The pixelmatch YIQ delta formula is specific; a direct Rust
     port of the JS algorithm guarantees bit-identical output for

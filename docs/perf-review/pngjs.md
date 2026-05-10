@@ -17,9 +17,11 @@ drop-in. **Recommendation: GO.**
 ## JS package
 
 - **npm:** `pngjs`
-- **Downloads:** ~3M / week (often pulled in transitively by
-  testing tools — pixelmatch, jest-image-snapshot — and headless-
-  browser screenshot pipelines)
+- **Downloads (week of 2026-05-02):** 34.0M (much higher than the
+  intuitive estimate — `pngjs` is one of the most transitively-
+  pulled image dependencies on npm, used by pixelmatch,
+  jest-image-snapshot, headless-browser screenshot pipelines,
+  and a long tail of PDF / canvas / asset toolchains)
 - **Exports / API surface:**
   - `PNG.sync.read(buffer) → { width, height, data, ... }` — the
     one-shot decode path
@@ -46,10 +48,10 @@ drop-in. **Recommendation: GO.**
   Rust PNG codec). For SIMD-accelerated DEFLATE inside the
   decoder, link via `flate2` with the `zlib-rs` backend — the same
   setup `crates/inflate` already uses successfully.
-- **Maintenance / license:** `png` 0.17.x is part of the image-rs
-  organisation, MIT/Apache-2.0, very actively maintained
-  (used by `image-rs`, `resvg`, `tiny-skia`, and many production
-  tools).
+- **Maintenance / license:** `png` 0.18.1 (released 2026-02-14),
+  part of the image-rs organisation, MIT/Apache-2.0, very
+  actively maintained (used by `image-rs`, `resvg`, `tiny-skia`,
+  and many production tools).
 - **Known gotchas / divergences:**
   - APNG (animated PNG): `png` supports the APNG chunks but not as
     a turnkey "decode all frames" API. Scope to single-frame for

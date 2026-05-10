@@ -17,8 +17,8 @@ that pure-JS cannot match. **Recommendation: GO.**
 ## JS package
 
 - **npm:** `fuse.js`
-- **Downloads:** ~10M / week (one of the top-50 most-downloaded
-  search-related packages on npm)
+- **Downloads (week of 2026-05-02):** 9.4M (one of the top-50
+  most-downloaded search-related packages on npm)
 - **Exports / API surface:** `new Fuse(list, options)`,
   `fuse.search(query, options?) → result[]`,
   `fuse.add(doc)`, `fuse.remove(predicate)`, `fuse.setCollection(list)`,
