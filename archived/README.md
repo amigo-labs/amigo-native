@@ -10,6 +10,7 @@ tree so the code can be restored if a future investigation needs it.
 |---|---|---|
 | `@amigo-labs/deep-equal` | [deep-equal/](deep-equal/) | `5b92e44` |
 | `@amigo-labs/levenshtein` | [levenshtein/](levenshtein/) | `3a308be` |
+| `@amigo-labs/nanoid` | [nanoid/](nanoid/) | `c95b3e6` |
 | `@amigo-labs/xml` | [xml/](xml/) | `cdade50` (never published) |
 
 Everything here is out of CI, out of the pnpm/cargo workspace, and out of

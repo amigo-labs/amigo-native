@@ -33,7 +33,7 @@
     },
     {
       "k": "PACKAGES",
-      "v": "31"
+      "v": "30"
     },
     {
       "k": "NODE",
@@ -224,17 +224,6 @@
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/minisearch",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/minisearch/README.md",
       "perfReviewUrl": "/perf-review/minisearch.md"
-    },
-    {
-      "name": "nanoid",
-      "title": "NanoID",
-      "category": "crypto",
-      "description": "Fast crypto-safe URL-friendly ID generator with pool-amortised entropy. Pure JS — the NAPI FFI boundary was bigger than the entire ID-generation path.",
-      "speedup": "up to 1.13× faster / 1.1× slower",
-      "npmUrl": "https://www.npmjs.com/package/@amigo-labs/nanoid",
-      "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/nanoid",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/nanoid/README.md",
-      "perfReviewUrl": "/perf-review/nanoid.md"
     },
     {
       "name": "pdf",

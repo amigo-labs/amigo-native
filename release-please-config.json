@@ -228,10 +228,6 @@
         {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
       ]
     },
-    "crates/nanoid": {
-      "package-name": "@amigo-labs/nanoid",
-      "component": "nanoid"
-    },
     "crates/pdf": {
       "package-name": "@amigo-labs/pdf",
       "component": "pdf",

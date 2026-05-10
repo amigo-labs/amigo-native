@@ -1,6 +1,6 @@
 [workspace]
 members = ["crates/*"]
-exclude = ["crates/_template", "crates/nanoid"]
+exclude = ["crates/_template"]
 resolver = "2"
 
 [workspace.dependencies]

@@ -29,7 +29,6 @@ on:
           - jwt
           - language-detect
           - minisearch
-          - nanoid
           - pdf
           - pdf-parse
           - sanitize-html

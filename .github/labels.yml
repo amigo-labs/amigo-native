@@ -106,8 +106,6 @@
   color: ededed
 - name: "pkg: jwt"
   color: ededed
-- name: "pkg: nanoid"
-  color: ededed
 - name: "pkg: sanitize-html"
   color: ededed
 - name: "pkg: slugify"

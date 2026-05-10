@@ -26,7 +26,6 @@ body:
         - inflate
         - jose
         - jwt
-        - nanoid
         - sanitize-html
         - slugify
         - tiktoken
