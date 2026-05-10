@@ -1,155 +1,149 @@
-# Candidate review: `bcrypt`
+# Perf-Review: `@amigo-labs/bcrypt`
 
-> **Status:** SHIPPED v0.1 (C backend) · **Predicted:** 🟢 Green · **Measured (Rust):** 🔴 Red · **Measured (C vendor):** 🟡 Yellow · **Reviewed:** 2026-04-19
+> **Status:** 🗄️ **ARCHIVED 2026-05-10** · **Reviewed:** 2026-05-10 · **Version:** 0.1.1
+>
+> The maintainer accepted the Red verdict and archived. See
+> [post-mortem](../post-mortems/bcrypt.md) and
+> [archived/bcrypt/](../../archived/bcrypt/). The Red analysis below
+> stands as the rationale for the decision.
 
 ## Verdict
 
-`bcrypt` is the next-best argon2 sibling crate: identical FFI math (per-call ≥10 ms hash compute, FFI floor under 0.001% of the work), well-established Rust crate (`bcrypt 0.18.0`, actively maintained), two real baselines with clearly measured weaknesses (`bcrypt`-npm is C++-via-node-gyp, `bcryptjs` is pure JS and 30% slower). Expected win ≥1.4× vs. `bcrypt`-npm (analogous to argon2 vs. argon2-npm) and ≥1.8× vs. `bcryptjs` — Green across all realistic cost factors (4–14).
+`@amigo-labs/bcrypt` runs Solar Designer's `crypt_blowfish` C source through
+NAPI; the upstream `bcrypt` npm package runs the *same* C code through
+`node-gyp`. Both end up calling effectively identical Blowfish key
+schedules at effectively identical cycles per cost. Today's measurements
+show **1.01–1.03× over `bcrypt` (npm)** at every cost setting — well below
+the 1.5× Red gate — and **1.28–1.38× over `bcryptjs`**, also below the gate.
+The 2× Green threshold is structurally unreachable: when three
+implementations all wrap the same canonical C, no FFI cleverness can move
+the needle.
 
-## JS package
+## Classification rationale
 
-- **npm:** `bcrypt` (3.5M weekly), `bcryptjs` (6.5M weekly) — combined ~10M weekly, top-100 range
-- **Downloads:** 10M weekly total; 8,021 npm packages depend on `bcrypt`
-- **Exports / API surface:** `hash(pw, rounds, cb)`, `hashSync(pw, rounds)`, `compare(pw, hash, cb)`, `compareSync(pw, hash)`, `genSalt(rounds)`, `getRounds(hash)`
-- **Typical input:** password as string (UTF-8, ≤72 bytes — anything longer is truncated by the algorithm itself) + cost factor (default 10–12)
-- **Typical output:** modular-crypt-format string, ~60 bytes ASCII (`$2b$12$...`)
-- **Realistic median use-case:** **web app auth.** 1 hash at signup, 1 verify per login attempt. Cost factor 10–12 → 50–300 ms per call. Never batched (each call needs an independent salt + is deliberately expensive)
+The 2026-04-19 review classified bcrypt 🟡 Yellow at 1.10–1.42× over
+`bcrypt`-npm; today's measurements compress that range to **1.01–1.03×**.
+Whether that is a regression or just bench-noise convergence, both ranges
+fall below the *across-the-board ~1.5×* Yellow band — the package only
+qualified for Yellow under the previous numbers by stretching the band.
 
-## Rust replacement
+The skill's Red criteria apply directly:
 
-- **Candidate crate(s):** `bcrypt 0.18.0` (RustCrypto-aligned, Vincent Prouillet)
-- **Maintenance / license:** actively maintained (released 30 days ago), MIT/Apache, MSRV 1.85
-- **Known gotchas / divergences:**
-  - 72-byte truncation applies in both implementations — parity trivial, but check it explicitly in tests
-  - The Rust crate also offers `non_truncating_hash` / `non_truncating_verify` (returns `BcryptError::Truncation` above 72 bytes); for parity we expose the truncating variant as the default and could offer the strict variant as opt-in
-  - `DEFAULT_COST = 12` in Rust, `10` in `bcrypt`-npm — we go with `12` (more modern default) and document the difference
+1. **<1.5× even at large.** cost=10 (industry default for password
+   hashing) shows 1.027×. There is no "large input" where the ratio
+   improves — the Blowfish key schedule is the entire workload, and it
+   runs in lockstep across all three packages.
+2. **Parity not maintainable at acceptable cost.** All three competitors
+   already compile to the same machine code path. The only legitimate
+   non-perf advantage is *install reliability*: `@amigo-labs/bcrypt`
+   ships precompiled binaries, while `bcrypt`-npm requires `node-gyp` and
+   a C++ toolchain at install time. That is a deployment win, not a perf
+   win, and it does not justify a Green-or-Yellow perf classification.
 
-## BACKLOG check
+The portfolio thesis ("always faster than the JS alternative on
+realistic inputs") is not violated against `bcryptjs` — we beat the
+pure-JS implementation 1.28–1.38× — but the realistic competitor for
+anyone who already uses native bindings is `bcrypt`-npm. Against that
+competitor we are tied.
 
-No entry in `BACKLOG.md`. Fresh candidate.
+## Evidence
 
-## FFI-overhead prediction
+### Measured speedup (docs/data.json, this review)
 
-| Factor | Assessment |
-|---|---|
-| Per-call algorithmic work | **50–300 ms** at cost 10–12; **~1 ms** at cost 4 (test minimum). Hash work is the product — **deliberately expensive** |
-| Input size distribution | Password ≤72 bytes UTF-8 (algorithm limit). String conversion ~100–200 ns, <0.0001% of compute |
-| Output size distribution | ~60 bytes ASCII hash string. String conversion ~150 ns, irrelevant |
-| Reusable setup (stateful potential) | None. Cost factor is an argument, not precompiled state. (Unlike e.g. `jwt` with key caching) |
-| Batch-usage realism | **N/A**. Each hash needs an independent salt; batching makes no algorithmic sense. Do not implement |
-| FFI-share estimate vs. Rust work | **<0.001%** at cost 10–12; **<0.02%** at cost 4. Structurally invisible |
+| Scenario                          | @amigo-labs/bcrypt | bcrypt (C++)  | bcryptjs (JS) | vs bcrypt   | vs bcryptjs |
+| :-------------------------------- | -----------------: | ------------: | ------------: | ----------: | ----------: |
+| hash, cost 4 (low)                |        1 108.03 Hz |   1 096.41 Hz |     866.91 Hz | **1.011×**  |  **1.278×** |
+| hash, cost 10 (industry default)  |          19.91 Hz  |      19.39 Hz |      14.44 Hz | **1.027×**  |  **1.378×** |
+| verify, cost 10                   |          19.91 Hz  |      19.42 Hz |      14.45 Hz | **1.025×**  |  **1.377×** |
 
-## Classification reasoning
+Range vs `bcrypt`-npm: **1.01× – 1.03×**. Range vs `bcryptjs`:
+**1.28× – 1.38×**.
 
-`bcrypt` is the textbook Green shape: bytes-in / bytes-out (short strings on both sides), substantial CPU work per call, no FFI hot loops. It matches the `argon2` profile 1:1 — and argon2 is measured in the repo as:
+### Realistic use-case
 
-- 1.43× faster than `argon2` npm (C++-via-node-gyp)
-- 2.45× faster than `hash-wasm` (WASM)
+Password hashing on registration / login at cost 10–12. A typical
+service does <100 of these per second per process; the 0.5 Hz absolute
+delta vs `bcrypt`-npm at cost 10 is unobservable in production. Users
+who chose `bcrypt`-npm did so because of native speed; they will not
+switch for a 2.5% improvement.
 
-(Source: `docs/data.json`, `argon2 - hash (low-cost)`)
+### Benchmark gaps
 
-The 1.43× win vs. C++ bindings comes entirely from cleaner napi-rs FFI (no Vec/array marshalling, no double-parsing of options). The exact same dynamic should apply to `bcrypt` vs. `bcrypt`-npm — same node-gyp problem (slower build, more fragile platform bindings, older NAN API).
+- No batch / parallel-hashing scenario. Argon2-style "verify many at
+  once" is the only call shape where rayon could plausibly help, but
+  bcrypt is rarely batched in practice.
+- No cost=12 (the modern default). Cost scales geometrically — at
+  cost=12 the ratio is bounded by the same Blowfish loop, so the
+  conclusion does not move.
 
-Comparison points from post-mortems:
-- **Not** like `deep-equal`/`mime`: no per-property FFI hop, no ns-scale JS work
-- **Not** like `levenshtein`: no V8-JIT-competitive DP pattern (the Blowfish schedule is bit twiddling, not a loop hot path V8 can inline)
-- **Like** `argon2`/`jwt`: crypto-heavy compute, single call per user action, bytes-in/bytes-out
+### API surface
 
-## If GO — proposed port
+Sync + async hash/verify. Reads buffer-or-string passwords, returns
+60-byte ASCII bcrypt strings. Setting/output buffers are stack-sized
+(`HASH_BUF_LEN = 64`, `SETTING_BUF_LEN = 32`). FFI surface is already
+minimal — there is no marshalling fat to trim.
 
-- **Recommended crate name:** `@amigo-labs/bcrypt`
-- **Primary API sketch:**
-  ```ts
-  export interface BcryptOptions {
-    cost?: number  // 4–31, default 12
-  }
+### Bundle / binary size
 
-  export declare function hash(password: string, options?: BcryptOptions | null): Promise<string>
-  export declare function hashSync(password: string, options?: BcryptOptions | null): string
-  export declare function verify(hash: string, password: string): Promise<boolean>
-  export declare function verifySync(hash: string, password: string): boolean
-  ```
-  → **Deliberately identical to `crates/argon2/index.d.ts`.** Allows direct adaptation of the argon2 source layout and the conformance test setup.
+Vendored `crypt_blowfish` C source compiled per platform via the `cc`
+crate. Six platform stubs in `npm/`. Smaller than `bcrypt`-npm because
+no `node-gyp` build script is shipped to consumers, but this is not
+the differentiator the perf review judges on.
 
-- **Must-have benchmark scenarios:**
-  - `hash` at cost 4 (smallest realistic — test suites)
-  - `hash` at cost 10 (industry standard)
-  - `hash` at cost 12 (`bcrypt` Rust crate default, also our default)
-  - `verify` at cost 10 (most common real-world call: login)
-  - **Both JS baselines required:** `bcrypt` (npm, C++) **and** `bcryptjs` (pure JS) — different user segments
+### FFI-overhead baseline
 
-- **Acceptance thresholds (Green gate):**
-  - ≥1.4× vs. `bcrypt` npm at cost 10 (mirrors argon2 result)
-  - ≥1.8× vs. `bcryptjs` at cost 10
-  - ≥1.0× vs. both at cost 4 (floor check)
-  - 100% parity on 72-byte truncation, cost range 4–31, hash format `$2a$`/`$2b$`/`$2y$`
+`docs/BASELINE.md` NAPI noop ~109 ns. Per-call work at cost=10 is
+~50 ms. FFI overhead is rounding error here — the package is not
+FFI-floor-bound, it is genuinely algorithm-bound, which is the
+hardest perf-review situation: nothing to optimize.
 
-- **Risks:**
-  1. **Adoption risk with `bcryptjs` users:** they choose pure JS deliberately (edge runtime, bundle size, no node-gyp). A native crate primarily reaches the `bcrypt`-npm users. Acceptable — `bcrypt`-npm alone has 3.5M weekly.
-  2. **Cost-factor default discrepancy:** `bcrypt`-npm's default is 10, the Rust crate's default is 12. We take 12 as the more modern recommendation and document the change in the README.
-  3. **Bundle size:** ~1 MB binary (argon2 is the reference) vs. 9 KB for bcryptjs. Acceptable compared to `bcrypt`-npm's 324 KB + node-gyp build footprint.
-  4. **Algorithm variants:** `bcrypt`-npm accepts `$2a$`, `$2b$`, `$2y$`. The Rust crate verifies all three and hashes as `$2b$`. Parity OK.
+## Phase-C optimization checklist
 
-## If NO-GO — BACKLOG entry
+| #   | Lever                                                                           | Applicable           | Notes                                                                                                                                |
+| :-- | :------------------------------------------------------------------------------ | :------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| C.1 | Input-type minimization (`String` → `&str`, `Vec<T>` → `&[T]`, Buffer-overload) | already done         | Buffer + string overloads already accepted. Per-call FFI floor is ~109 ns vs 50 ms work — no measurable gain available.              |
+| C.2 | Output-type minimization (`String` → `&str`, `Vec<T>` → Buffer)                 | already done         | Output is a 60-byte ASCII string. Switching to `Buffer` would save ~30 ns on a 50 ms call.                                           |
+| C.3 | Batch API                                                                       | not applicable       | Bcrypt is intentionally serial in real workloads; users do not want to commit a thread pool to "verify N login attempts at once".    |
+| C.4 | Stateful API (reusable setup via NAPI class)                                    | n/a                  | No reusable state — each hash uses a fresh salt and a fresh key schedule.                                                            |
+| C.5 | Parallelization (rayon over large inputs)                                       | not applicable       | Same as C.3. Bcrypt's whole purpose is to burn CPU; parallelizing inverts the threat model.                                          |
+| C.6 | Algorithm swap (SIMD variant, streaming parser, etc.)                           | n/a                  | Solar Designer's `crypt_blowfish` is the canonical reference. There is no faster Blowfish implementation in any language.            |
+| C.7 | Allocator tuning (arena, caller-provided output buffer)                         | already done         | All buffers are stack-sized constants. Nothing to tune.                                                                              |
+| C.8 | Bundle-size (LTO, features, panic=abort, strip)                                 | applicable, low ROI  | Could shave a few KB off the platform stubs, but irrelevant — the install footprint of bcrypt-npm is dominated by its build script. |
 
-N/A — GO recommended.
+The checklist confirms what the prior review already said: *"2× Green
+gate structurally unreachable (identical algorithm in both competitors)."*
+What the prior review did not call out is that **structurally
+unreachable Green is the definition of Red**, not Yellow, when the
+realistic competitor is the C++ binding rather than the pure-JS one.
 
-## Phase B measurement (2026-04-19, linux-x64, Node v22.22.2)
+## Action plan — Phase D (deprecation)
 
-Implemented in `crates/bcrypt/`. Actual bench results vs. the argon2-pattern prediction:
+1. **Mark on the registry.**
+   `npm deprecate '@amigo-labs/bcrypt@*' "Use 'bcrypt' (npm) for native speed or 'bcryptjs' for pure JS — @amigo-labs/bcrypt offers no measurable perf advantage. See MIGRATION.md. Consider @amigo-labs/argon2 for new projects."`
+2. **Banner the crate `README.md`** with a "deprecated, use `bcrypt`
+   (or `argon2` for new projects)" notice.
+3. **`MIGRATION.md`** — point to `bcrypt` for binary-compatible drop-in
+   and to `@amigo-labs/argon2` for new code that wants memory-hard
+   hashing on the Yellow-but-acknowledged ceiling.
+4. **3-month deprecation window**, then archive to `archived/bcrypt/`.
+5. **`docs/post-mortems/bcrypt.md`** — short post-mortem with the
+   transferable lesson: *"Algorithm-bound primitives where the canonical
+   implementation is a C library cannot be ported usefully — the C
+   port wraps the same C source, and any speed difference is noise."*
+6. **`docs/packages.json`** — drop the entry once archived.
 
-| Scenario | @amigo-labs/bcrypt | bcrypt npm (C++) | bcryptjs (pure JS) | Speedup |
-|---|---:|---:|---:|---|
-| hash cost 4 | **848.75 hz** | 748.70 hz | 696.96 hz | 1.13× / 1.22× ✅ |
-| hash cost 10 | 14.64 hz | **16.18 hz** | 12.99 hz | **0.90×** / 1.13× ⚠️ |
-| verify cost 10 | 14.71 hz | **16.23 hz** | 12.95 hz | **0.91×** / 1.14× ⚠️ |
+Note: `@amigo-labs/argon2` is also algorithm-bound (perf-review notes
+"ceiling reached" at 1.36×), but argon2 has *intrinsic* memory-hardness
+advantages over bcrypt and may justify keeping. That is its own
+re-review, not this one.
 
-**Result: 🟡 Yellow, not Green.** The prediction was wrong.
+## References
 
-**Why the argon2 analogy doesn't carry over:**
-- argon2 vs. argon2-npm: 1.43× faster (measured) → we extrapolated that to bcrypt
-- bcrypt vs. bcrypt-npm: 0.90× — we lose at the realistic cost (10)
-- Hypothesis: bcrypt-npm's C++ implementation (`bcrypt-pbkdf` C code with a hand-tuned Blowfish schedule) is significantly faster than RustCrypto's `blowfish` crate. argon2 has no similarly optimized C competitor — Rust wins there through cleaner FFI; for bcrypt the C competitor is algorithmically competitive
-
-**What we win anyway:**
-- vs. `bcryptjs` (6.5M weekly, larger user base than bcrypt-npm) we win at **every** cost level — 1.13–1.22× (small up to standard)
-- at cost 4 (test use cases) also vs. bcrypt-npm
-- cross-platform prebuilds without node-gyp build dependency
-
-**Options for Phase C / D:**
-- **C.6 algorithm swap:** evaluate the `bcrypt` crate with alternative Blowfish backends. `bcrypt = "0.18"` uses `blowfish 0.9` — probably no SIMD/ASM variant available
-- **Hold Yellow:** honestly position as a "bcryptjs replacement with native speed", not as a bcrypt-npm killer
-- **Re-review in 6 months** if the `blowfish` crate gets a faster variant
-
-**Recommendation:** hold Yellow, don't prioritize Phase C. The `bcryptjs` → @amigo-labs/bcrypt migration is a clear win; bcrypt-npm users have less reason to switch (other than build friction). The README has to make this positioning explicit.
-
-## Phase C sprint (2026-04-19, same session)
-
-User picked **Option C: deep investment** despite <30% probability-of-Green estimate.
-
-**Action:** pure-Rust `bcrypt` crate fully replaced with vendored Solar Designer `crypt_blowfish` C source (public domain, identical code base as bcrypt-npm). Compile flags: `-O3 -fomit-frame-pointer -funroll-loops` via `cc 1.x`.
-
-| Scenario | Before (Rust) | After (C vendor) | Δ vs. bcrypt npm | Δ vs. bcryptjs |
-|---|---:|---:|---|---|
-| hash cost 4 | 848.75 hz | **980.98 hz** | 0.90× → **1.42×** | 1.22× → **1.56×** |
-| hash cost 10 | 14.64 hz | **17.62 hz** | 0.90× → **1.10×** | 1.13× → **1.37×** |
-| verify cost 10 | 14.71 hz | **17.62 hz** | 0.91× → **1.09×** | 1.14× → **1.36×** |
-
-**Flip from 🔴 Red → 🟡 Yellow.** We now win in **every** scenario against both competitors.
-
-**Why did this work?**
-- bcrypt-npm uses _an older version_ of crypt_blowfish (from the [node.bcrypt.js repo](https://github.com/kelektiv/node.bcrypt.js), last synced several years ago) plus node-gyp's default compile flags
-- We use the _current_ upstream version + aggressive compile flags + cleaner napi-rs FFI vs. NAN
-- Result: ~10% faster at identical algorithm. Exactly the argon2 pattern, now verified for bcrypt.
-
-**Why not Green (≥2×)?**
-- Both implementations compile the same Blowfish inner loop. The algorithm is not parallelizable (data dependencies between rounds).
-- The 1.10× wall at cost 10 is a _structural_ ceiling — only breakable by radical algorithmic changes (which don't exist)
-- The 2× Green gate is not reachable. **Yellow is the end state.**
-
-**40/40 tests passing** with the C backend (incl. 32 cross-verify against bcrypt-npm + bcryptjs). Identical hash outputs since we use an identical algorithm implementation.
-
-**Final classification:** 🟡 Yellow. Acceptable as Yellow because:
-- we win every realistic competitor comparison
-- bundle discipline: `bcrypt`-npm needs node-gyp + python; we ship prebuilt binaries
-- cross-verify correctness guaranteed by the identical algorithm
+- Crate: `crates/bcrypt`
+- Bench: `crates/bcrypt/__bench__/index.bench.ts`
+- Lib: `crates/bcrypt/src/lib.rs`
+- Cargo: `crates/bcrypt/Cargo.toml`
+- C source: `crates/bcrypt/csrc/` (Solar Designer crypt_blowfish, public domain)
+- `docs/packages.json` speedup field: `~equal`
+- FFI baseline: `docs/BASELINE.md`
+- Prior review: 2026-04-19 entry in `docs/perf-review.md` (Yellow, ceiling acknowledged)

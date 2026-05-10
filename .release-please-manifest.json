@@ -1,6 +1,5 @@
 {
   "crates/argon2": "0.1.1",
-  "crates/bcrypt": "0.1.1",
   "crates/bm25": "0.1.1",
   "crates/commonmark": "0.1.1",
   "crates/csv": "0.1.1",
@@ -15,7 +14,6 @@
   "crates/jwt": "0.1.1",
   "crates/language-detect": "0.1.1",
   "crates/minisearch": "0.1.1",
-  "crates/nanoid": "0.2.1",
   "crates/pdf": "0.1.1",
   "crates/pdf-parse": "0.1.1",
   "crates/sanitize-html": "0.2.1",
@@ -24,7 +22,6 @@
   "crates/stemmer": "0.1.1",
   "crates/svgo": "0.1.1",
   "crates/text-splitters": "0.1.1",
-  "crates/tiktoken": "0.1.1",
   "crates/turndown": "0.1.1",
   "crates/typst": "0.1.1",
   "crates/xlsx": "0.1.1",

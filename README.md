@@ -9,53 +9,7 @@
   <a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
 </p>
 
-<p align="center">Rust-powered npm packages under the <code>@amigo-labs</code> scope.</p>
-
-Monorepo using [napi-rs](https://napi.rs) for native Node.js addons, cross-compile CI, and independent npm packages per crate.
-
-## Packages
-
-<!-- PACKAGES_TABLE:START -->
-| Package                                                   | Description                                              | Replaces                   | vs JS          | Parity | Status      |
-| :-------------------------------------------------------- | :------------------------------------------------------- | :------------------------- | :------------- | :----- | :---------- |
-| [`@amigo-labs/argon2`](./crates/argon2)                   | Argon2id password hashing (sync + async)                 | `argon2/hash-wasm`         | **1.36x**      | —      | Drop-in     |
-| [`@amigo-labs/bcrypt`](./crates/bcrypt)                   | Bcrypt password hashing (sync + async)                   | `bcrypt/bcryptjs`          | **1.03-1.07x** | 100%   | Drop-in     |
-| [`@amigo-labs/bm25`](./crates/bm25)                       | BM25 full-text search                                    | `wink-bm25-text-search`    | **14x**        | 100%   | Compatible  |
-| [`@amigo-labs/commonmark`](./crates/commonmark)           | CommonMark + GFM renderer via `pulldown-cmark`           | `marked/markdown-it`       | **6.8x**       | 100%   | Alternative |
-| [`@amigo-labs/csv`](./crates/csv)                         | CSV parsing/serialization via BurntSushi's `csv`         | `csv-parse/papaparse`      | **1.55-1.94x** | —      | Drop-in     |
-| [`@amigo-labs/deepmerge`](./crates/deepmerge)             | Recursive object merge                                   | `deepmerge`                | **3-6.2x**     | 100%   | Compatible  |
-| [`@amigo-labs/diff`](./crates/diff)                       | Text diff via `similar`, offset-packed hot-path          | `diff`                     | **0.26-26x**   | 100%   | Compatible  |
-| [`@amigo-labs/encoding`](./crates/encoding)               | Character encoding via `encoding_rs`                     | `iconv-lite`               | **0.61-32x**   | 100%   | Alternative |
-| [`@amigo-labs/file-type`](./crates/file-type)             | Magic-byte file detection via `infer`                    | `file-type`                | **28x**        | 100%   | Alternative |
-| [`@amigo-labs/force-layout`](./crates/force-layout)       | Force-directed graph layout (batch)                      | `d3-force`                 | **3.5-6.6x**   | 100%   | Compatible  |
-| [`@amigo-labs/graph-layout`](./crates/graph-layout)       | Hierarchical DAG layout, spec in, positions out          | `dagre`                    | **31-66x**     | 100%   | Compatible  |
-| [`@amigo-labs/inflate`](./crates/inflate)                 | zlib deflate/inflate/gzip via `flate2` (zlib-rs)         | `pako`                     | **0.96-12x**   | 100%   | Compatible  |
-| [`@amigo-labs/jose`](./crates/jose)                       | Ed25519 JWK + RFC 7638 thumbprints                       | `jose (subset)`            | **1.57-4.4x**  | 100%   | Alternative |
-| [`@amigo-labs/jwt`](./crates/jwt)                         | JWT sign/verify via `jsonwebtoken` crate                 | `jsonwebtoken`             | **1.65-7.8x**  | 100%   | Drop-in     |
-| [`@amigo-labs/language-detect`](./crates/language-detect) | Language detection via `whatlang`                        | `franc`                    | **3-16x**      | 100%   | Alternative |
-| [`@amigo-labs/minisearch`](./crates/minisearch)           | In-memory full-text search + autocomplete                | `minisearch`               | **1.23-51x**   | 100%   | Compatible  |
-| [`@amigo-labs/nanoid`](./crates/nanoid)                   | Crypto-safe URL-safe IDs via `nanoid` crate              | `nanoid`                   | **0.96-1.11x** | 100%   | Drop-in     |
-| [`@amigo-labs/pdf`](./crates/pdf)                         | PDF generation, spec-in / Buffer-out                     | `pdfkit`                   | TBD            | 100%   | Subset      |
-| [`@amigo-labs/pdf-parse`](./crates/pdf-parse)             | PDF text + metadata extraction                           | `pdf-parse`                | **0.46-2.5x**  | 100%   | Compatible  |
-| [`@amigo-labs/sanitize-html`](./crates/sanitize-html)     | HTML sanitization via Mozilla's `ammonia`                | `sanitize-html`            | **1.65-3.8x**  | —      | Compatible  |
-| [`@amigo-labs/sentences`](./crates/sentences)             | Sentence splitter, multi-language + offset hot-path      | `sbd`                      | TBD            | 100%   | Compatible  |
-| [`@amigo-labs/slugify`](./crates/slugify)                 | Unicode-aware slugification via `deunicode`              | `slugify`                  | **2.4-5.3x**   | —      | Alternative |
-| [`@amigo-labs/stemmer`](./crates/stemmer)                 | Porter/Snowball stemmer (batch-only) via `rust-stemmers` | `natural (stemmer subset)` | **7.1-8.3x**   | 100%   | Alternative |
-| [`@amigo-labs/svgo`](./crates/svgo)                       | SVG optimizer, 8 preset-default plugins                  | `svgo`                     | **15-27x**     | 100%   | Subset      |
-| [`@amigo-labs/text-splitters`](./crates/text-splitters)   | RAG splitters, tiktoken-aware                            | `@langchain/textsplitters` | **0.22-2.5x**  | 100%   | Compatible  |
-| [`@amigo-labs/tiktoken`](./crates/tiktoken)               | OpenAI BPE tokenizer (cl100k, o200k) via `tiktoken-rs`   | `tiktoken/js-tiktoken`     | **0.28-0.31x** | 100%   | Drop-in     |
-| [`@amigo-labs/turndown`](./crates/turndown)               | HTML → Markdown, CommonMark + GFM                        | `turndown`                 | **10-16x**     | 100%   | Subset      |
-| [`@amigo-labs/typst`](./crates/typst)                     | Typst compiler, source → PDF                             | `typst-js`                 | TBD            | 100%   | New         |
-| [`@amigo-labs/xlsx`](./crates/xlsx)                       | XLSX read + write                                        | `xlsx`                     | **2.3-3x**     | 100%   | Subset      |
-| [`@amigo-labs/xxhash`](./crates/xxhash)                   | XXH32/64/XXH3 hashing with batch + streaming API         | `xxhash-wasm/xxhashjs`     | **0.34-2.7x**  | —      | Drop-in     |
-| [`@amigo-labs/zip`](./crates/zip)                         | ZIP read/write via `zip` crate                           | `yauzl/adm-zip/jszip`      | **1.88-9.3x**  | 100%   | Alternative |
-<!-- PACKAGES_TABLE:END -->
-
-> The table above is regenerated from each crate's `package.json` `"amigo"` block by
-> `scripts/sync-registry.mjs`. Don't edit it by hand.
-
-Full benchmark data lives in [`docs/data.json`](./docs/data.json) (auto-generated by CI) and is rendered on the [dashboard](https://amigo-labs.github.io/amigo-native/).
-Parity scores populated once each package's `__conformance__/upstream.spec.ts` is filled from the upstream test suite.
+Monorepo of Rust-powered npm packages under `@amigo-labs`, built with [napi-rs](https://napi.rs). See the [dashboard](https://amigo-native.amigo-labs.workers.dev/) for the package catalog, benchmarks, and install instructions.
 
 ## Quick start
 

@@ -1,110 +1,134 @@
 # Perf-Review: `@amigo-labs/nanoid`
 
-> **Status:** 🟡 Yellow (perf-review.md label) / ~Parität-mit-Wins (measured) · **Reviewed:** 2026-04-21 · **Version:** 0.2.0
+> **Status:** 🔴 Red — recommend Phase-D deprecation · **Reviewed:** 2026-05-10 · **Version:** 0.2.1
 
 ## Verdict
 
-**Pure-JS seit 0.2.0** (Commit `794396b`) — der NAPI-Pfad wurde entfernt, weil der FFI-Floor (~1,5 µs pro Call im Rust-Original) größer war als der gesamte JS-Pfad zum Generieren einer 21-Char-ID (~260 ns in nanoid@5). Das ist die definitive Portfolio-Lehre zu Short-Work-Hot-Call-Shapes, dokumentiert in `docs/BASELINE.md:37–45`. **Aktuelle Messung:** Single-Call **0,95× vs nanoid@5** (leicht langsamer), Batch-1000 **1,14× vs nanoid@5** (schneller), CustomAlphabet **1,06× vs nanoid@5**, size=128 **1,07× vs nanoid@5**. Gegen `crypto.randomUUID`: Single-Call 1,05×, Batch 1,0×. Insgesamt ~Parität mit leichten situationsabhängigen Wins.
-
-Die Paket-Daseinsberechtigung ist **nicht mehr primär Perf**, sondern: (a) Zero-Dependency-Maintenance-Zusage, (b) selbe API wie nanoid@5, (c) Batch-API mit gemessenen Wins für generate-many-Workloads, (d) Dokumentation der FFI-Lehre im Repo selbst.
+`@amigo-labs/nanoid` has carried **no Rust** since 0.2.0 (`794396b`); the
+`crates/nanoid/` directory ships only `wrapper.js` over Node's built-in
+`crypto.randomFillSync`, with the same 128-ID pool strategy as `nanoid@5`
+itself. Against the upstream `nanoid` package the realistic median scenario
+(single default-size call) measures **0.91×** — slower — and the best
+remaining win is **1.17×** on the batch path. The portfolio thesis ("always
+faster than the JS alternative on realistic inputs") does not hold here, and
+because there is no native code to optimize, no Phase-C lever can rescue it.
 
 ## Classification rationale
 
-nanoid ist der **gemessene Präzedenzfall** für "don't NAPI if per-call work is smaller than the NAPI floor":
+The skill thresholds put nanoid in Red on two independent counts:
 
-1. **Rust-Version wurde gebaut und gemessen → Red.** Phase-B-Messung zeigte ~1500 ns pro NAPI-Call vs. ~260 ns pure-nanoid@5 = **0,17×**. Native Rust konnte nicht gewinnen weil Rust-Work < FFI-Floor.
-2. **Pure-JS-Rewrite ist die Portfolio-Entscheidung.** `wrapper.js` nutzt `crypto.randomFillSync` + Pool-Amortisation über 128 IDs — identisch zu nanoid@5's Strategy.
-3. **Yellow-Label wegen Single-Call-0,95×.** Gegen nanoid@5 im Einzel-Call leicht unter 1× (Messrauschen, aber konsistent). In der Klassifikations-Regel aus `docs/perf-review.md:14` ("nie langsamer als 1× auf realistischem Minimum") ist das Gate-Verfehlung → nicht Green.
-4. **Batch-Win rechtfertigt Existenz.** Batch-1000 liefert 1,14× vs. nanoid@5-Loop — das ist ein **echter** Hebel für User die Massen-IDs generieren. Der Win kommt aus Pool-Pre-Allocation und Array-Construction-Efficiency.
+1. **Realistic median is slower than upstream.** A single default-size
+   `nanoid()` is the dominant call shape (request-id assignment, row-id on
+   insert, cookie-token mint). At that size we run at 4.86 M Hz vs upstream's
+   5.34 M Hz — a 0.91× ratio. The Red criterion *"slower than JS at the
+   median real use-case"* applies directly.
+2. **Best speedup is 1.17×, well below the 1.5× Red gate.** Even in the
+   best-case batch scenario the win is too small to justify the additional
+   `@amigo-labs` dependency hop, the slightly larger install surface, and
+   the maintenance overhead of a separate package.
+
+This is not a perf regression to be sprinted on — it is a structural
+mismatch. The original Rust port was correctly retired in 0.2.0 because
+the FFI floor (~109 ns NAPI noop, ~180 ns Buffer echo from
+`docs/BASELINE.md`) is on the same order as the entire JS path's per-call
+budget for a 21-byte ID. After dropping back to pure JS, the package is
+now a same-language reimplementation of `nanoid@5`'s strategy, which by
+construction cannot be meaningfully faster than the original on the
+common path.
 
 ## Evidence
 
-### Measured speedup (docs/data.json, 2026-04-18)
+### Measured speedup (docs/data.json, this review)
 
-| Scenario | @amigo-labs/nanoid | nanoid@5 | crypto.randomUUID | vs. nanoid | vs. randomUUID |
-|---|---:|---:|---:|---:|---:|
-| single call (default size=21) | 3 937 989 Hz | 4 146 987 Hz | 3 737 946 Hz | **0,95×** | **1,05×** |
-| batch 1000 × default | 5 511 Hz | 4 823 Hz | 5 521 Hz | **1,14×** | **1,00×** |
-| customAlphabet (hex, 32 chars) | 3 189 255 Hz | 3 017 009 Hz | — | **1,06×** | — |
-| single call size=128 | 988 439 Hz | 928 149 Hz | — | **1,07×** | — |
+| Scenario                            | @amigo-labs/nanoid | nanoid@5     | randomUUID   | vs nanoid | vs randomUUID |
+| :---------------------------------- | -----------------: | -----------: | -----------: | --------: | ------------: |
+| single call (default size=21)       |       4 857 128 Hz | 5 343 615 Hz | 5 142 779 Hz | **0.91×** |     **0.94×** |
+| batch 1 000 × default               |           7 060 Hz |     6 008 Hz |     7 730 Hz | **1.17×** |     **0.91×** |
+| customAlphabet (hex, 32 chars)      |       3 679 495 Hz | 3 680 656 Hz |            — | **1.00×** |             — |
+| single call size=128                |       1 273 179 Hz | 1 125 564 Hz |            — | **1.13×** |             — |
+
+Range vs `nanoid@5`: **0.91× – 1.17×**. Median: parity. Worst case: a
+realistic call shape where we lose.
 
 ### Realistic use-case
 
-**Primär-Case:** ID-Generierung in Datenmodell-Creation — 1–10 IDs pro User-Request, streamed over Request-Handler-Loop. **Sekundär:** Batch-Generation für Test-Fixtures, Seed-Data, URL-Tokens — 100–10 000 IDs in einem Pass.
-
-Single-Call-Case ist der dominant User-Pfad (Datenbank-Insert-Time, Cookie-Set-Time, Request-ID-Assign-Time). Batch-Case ist Workload-spezifisch.
+**Primary:** Single-ID generation inside HTTP handlers and ORM hooks —
+1 to 10 calls per request. This is the path where 0.91× hurts.
+**Secondary:** Bulk seed-data / fixture generation — 100 to 10 000 IDs in
+a tight loop. This is the only scenario where the package is faster than
+upstream (1.17×), but the absolute throughput (7 060 Hz for 1 000 IDs =
+~7 M IDs/sec) is well past where any real workload is bottlenecked.
 
 ### Benchmark gaps
 
-- **Extreme size (size=512+, URL-token-Case) nicht getestet.** Größere IDs brauchen mehr Pool-Refills — der Pool-Size-Multiplier=128 verschiebt sich ungünstig bei größeren IDs.
-- **Rejection-Sampling-Path** (non-power-of-two Alphabet) nicht separat gebenched. Siehe `customRandom()` step-size-Heuristik — eigener Bench-Slot lohnt.
-- **Parität mit nanoid@3 (CommonJS-only) nicht relevant** (wir matchen nanoid@5).
+None that would change the verdict. Even if a missing bucket showed a
+1.3–1.5× win, the median single-call regression is the disqualifier.
 
 ### API surface
 
-```js
-// wrapper.js exports
-nanoid(size = 21)                        // → string
-nanoidCustom(alphabet, size)             // → string
-nanoidBatch(count, size)                 // → string[]
-nanoidCustomBatch(alphabet, count, size) // → string[]
-customAlphabet(alphabet, defaultSize)    // → (size?) => string (curried generator)
-```
-
-- Pure JS, keine NAPI-Grenze, keine Buffer-Marshalling.
-- Pool-Strategie: 128 IDs worth of entropy pro `randomFillSync`-Syscall.
-- Power-of-two-Alphabet: mask + index (no rejection sampling).
-- Non-power-of-two: rejection sampling mit step-size-heuristic.
-- `Array.from(alphabet)` für Unicode-grapheme-safe Custom-Alphabets.
+Pure JS — `nanoid()`, `customAlphabet()`, `customRandom()`, all in
+`crates/nanoid/wrapper.js`. No `#[napi]`, no `Cargo.toml`, no `src/lib.rs`.
 
 ### Bundle / binary size
 
-**Kein Native-Binary.** Paket ist pure JS (~3 KB minifiziert). Keine `napi/`-Platform-Stubs nötig (war bei 0.1.x der Fall, in 0.2.0 entfernt).
-
-Dies ist der einzige Crate im Portfolio, der **nicht** die 6-target-`npm/`-Konvention erfüllt — und der `audit-crates` skill flagt das explizit **nicht** als Drift, weil nanoid pure-JS ist per Design.
+No native binaries (no `npm/<target>/` stubs needed). Wrapper plus types
+is on the order of a few KB — competitive, but `nanoid@5` itself is also
+tiny. Bundle is not a differentiator either way.
 
 ### FFI-overhead baseline
 
-**Nicht anwendbar — kein FFI.** Die Messung aus Phase-B, die zum Rescope führte: NAPI-Rust-Path ~1500 ns pro Call, pure-JS ~260 ns. 5,8× langsamer durch NAPI allein. Das ist der dokumentierte `docs/BASELINE.md:37`-Fall.
+Captured in `docs/BASELINE.md` (NAPI noop ~109 ns, Buffer echo ~180 ns).
+The whole reason the package went pure-JS in 0.2.0 is that those numbers
+exceed the per-call budget of `nanoid()` itself. The baseline is the
+*explanation* for why this Red classification is structural, not a
+sprint-fixable regression.
 
 ## Phase-C optimization checklist
 
-| # | Lever | Applicable | Notes |
-|---|---|---|---|
-| C.1 | Input-type minimization | ❌ not applicable | Kein FFI — alles pure JS |
-| C.2 | Output-type minimization | ❌ not applicable | Output ist `string` in JS-Land, kein Marshalling |
-| C.3 | Batch API | ✅ already done | `nanoidBatch` + `nanoidCustomBatch` shipping, 1,14× win measured |
-| C.4 | Stateful API | ✅ already done | `customAlphabet(alphabet)` returniert curried generator — compile einmal, reuse viele |
-| C.5 | Parallelization | ❌ not applicable | Workers wären overkill für 260 ns pro ID |
-| C.6 | Algorithm swap | ❌ not applicable | `crypto.randomFillSync` ist die schnellste Node-Primitive für Entropy; pool-amortization ist Standard |
-| C.7 | Allocator tuning | 🟡 marginal | Pool-size=128 könnte dynamisch adapten bei batch-heavy Workloads; sub-prozent-Gewinn |
-| C.8 | Bundle-size | ✅ already done | Pure JS, ~3 KB, keine Dependencies |
+| #   | Lever                                                                           | Applicable   | Notes                                                                                                                                |
+| :-- | :------------------------------------------------------------------------------ | :----------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| C.1 | Input-type minimization (`String` → `&str`, `Vec<T>` → `&[T]`, Buffer-overload) | n/a          | No Rust to minimize. The package has no NAPI surface.                                                                                |
+| C.2 | Output-type minimization (`String` → `&str`, `Vec<T>` → Buffer)                 | n/a          | No Rust outputs to shape.                                                                                                            |
+| C.3 | Batch API                                                                       | already done | `batch(count, size)` exists in `wrapper.js` and is the only scenario where we beat upstream (1.17×). Cannot grow further in pure JS. |
+| C.4 | Stateful API (reusable setup via NAPI class)                                    | n/a          | No setup cost worth amortizing — entropy pool already amortized per-call.                                                            |
+| C.5 | Parallelization (rayon over large inputs)                                       | n/a          | Pure JS; rayon is not in scope.                                                                                                      |
+| C.6 | Algorithm swap (SIMD variant, streaming parser, etc.)                           | n/a          | The algorithm *is* what `nanoid@5` does. A different algorithm would no longer be `nanoid`.                                          |
+| C.7 | Allocator tuning (arena, caller-provided output buffer)                         | n/a          | V8 owns allocations; no Rust allocator to tune.                                                                                      |
+| C.8 | Bundle-size (LTO, features, panic=abort, strip)                                 | n/a          | No native artifact.                                                                                                                  |
 
-## Action plan
+Every Phase-C lever is structurally unavailable. This is the diagnostic
+that confirms Red: when the optimization checklist is empty, there is no
+way back to Green.
 
-**Keep-as-is.** Portfolio-Status ist korrekt: Yellow-mit-Green-Aspekten, Existenz-Berechtigung durch Zero-Dep + Batch-Win + FFI-Doku-Value. Kein Sprint.
+## Action plan — Phase D (deprecation)
 
-Zwei kleine Follow-ups:
+1. **Mark on the registry.** Run
+   `npm deprecate '@amigo-labs/nanoid@*' "Use the upstream 'nanoid' package — @amigo-labs/nanoid offers no measurable advantage and is slower on the median single-call path. See MIGRATION.md."`
+   so installs surface the warning.
+2. **Add a deprecation banner to the crate `README.md`** at the top,
+   pointing at the upstream `nanoid` package.
+3. **Refresh `MIGRATION.md`** with the swap recipe (drop-in: change the
+   import, identical API surface).
+4. **3-month deprecation window.** Track the install graph; once weekly
+   downloads fall below the noise floor, archive.
+5. **Move to `archived/nanoid/`** alongside `archived/deep-equal/` and
+   friends, draft `docs/post-mortems/nanoid.md` summarizing the lesson:
+   *"NAPI cannot win when per-call work is smaller than the FFI floor;
+   a same-language reimplementation cannot win against the upstream it
+   imitates."*
+6. **Update `docs/packages.json`** to drop the entry once archived (the
+   `description` field already half-admits the situation:
+   *"Pure JS — the NAPI FFI boundary was bigger than the entire
+   ID-generation path."*).
 
-1. **Extreme-size-Bench** (size=512, Token-Use-Case) — aktuelle Lücke.
-2. **Rejection-Sampling-Alphabet-Bench** als separater Slot — step-size-Heuristik-Tuning erst nach Messung.
-
-Kein Phase-D-Risiko. Das Paket könnte theoretisch deprecated werden zugunsten direkter nanoid@5-Nutzung, aber die Argumente pro:
-- Zero-transitive-Dep-Garantie
-- Selbe API als Drop-in
-- Batch-API mit messbarem Win
-- Pädagogischer Wert als Portfolio-Referenz für "wann NAPI nicht gewinnt"
-
-…rechtfertigen die Maintenance-Kosten auf absehbare Zeit.
+The deprecation execution is not part of this review — that's a
+follow-up PR after the user agrees with the verdict.
 
 ## References
 
 - Crate: `crates/nanoid`
 - Bench: `crates/nanoid/__bench__/index.bench.ts`
-- Lib: `crates/nanoid/wrapper.js` (pure JS)
-- Types: `crates/nanoid/wrapper.d.ts`
-- Migration: `crates/nanoid/MIGRATION.md` (0.1.x → 0.2.0 Rust-removal)
-- Rescope commit: `794396b`
-- `docs/packages.json` speedup field: `"up to 1.06× faster / 1.05× slower"`
-- Summary row: `docs/perf-review.md` (Yellow, "Bereits pure-JS seit 794396b")
-- FFI-baseline precedent: `docs/BASELINE.md:37` (noop = 109 ns; nanoid Phase-B = 1500 ns NAPI vs 260 ns JS)
+- Wrapper (no Rust): `crates/nanoid/wrapper.js`
+- `docs/packages.json` speedup field: `up to 1.13× faster / 1.1× slower`
+- FFI baseline: `docs/BASELINE.md`
+- Prior review (German, superseded by this doc): git history of `docs/perf-review/nanoid.md`

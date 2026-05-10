@@ -17,7 +17,6 @@ body:
       description: Which `@amigo-labs/*` package is affected?
       options:
         - argon2
-        - bcrypt
         - commonmark
         - csv
         - deepmerge
@@ -26,10 +25,8 @@ body:
         - inflate
         - jose
         - jwt
-        - nanoid
         - sanitize-html
         - slugify
-        - tiktoken
         - xxhash
         - zip
         - other / multiple

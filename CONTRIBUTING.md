@@ -11,8 +11,8 @@ alternative on realistic inputs"*.
   suite and a verdict in [`docs/perf-review.md`](./docs/perf-review.md). A
   crate that can't stay Green on realistic medians gets deprecated — see the
   "Ported then deprecated" section of [`BACKLOG.md`](./BACKLOG.md).
-- **Parity is tracked.** Drop-in / Compatible / Alternative statuses in the
-  root [`README.md`](./README.md) table must match what
+- **Parity is tracked.** Drop-in / Compatible / Alternative statuses in
+  [`docs/packages.json`](./docs/packages.json) must match what
   `__conformance__/upstream.spec.ts` proves. Don't upgrade a label without
   the tests to back it.
 - **No new abstractions before three repeats.** Three similar call sites are
