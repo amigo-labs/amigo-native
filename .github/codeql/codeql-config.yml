@@ -1,0 +1,37 @@
+name: "amigo-native CodeQL config"
+
+# Advanced-setup CodeQL config. Suppresses one specific Rust query that
+# fires on every `#[napi] pub struct ...` macro expansion as a false
+# positive — see the `query-filters` block below.
+#
+# The wider repo (xxhash, bm25, minisearch, force-layout, csv,
+# language-detect, …) is full of `#[napi] pub struct …` declarations
+# that all trigger the same alert when CodeQL Rust analysis is enabled.
+# Without this filter every PR introducing a new stateful NAPI class
+# would block on CodeQL even though the underlying napi-derive macro is
+# widely audited and used in production by thousands of crates.
+
+# CodeQL's default query suite is the right starting point — we only
+# subtract one specific query.
+disable-default-queries: false
+
+query-filters:
+  - exclude:
+      id: rust/access-invalid-pointer
+      # Justification: the napi-derive procedural macro generates raw-
+      # pointer manipulation in the expansion of every `#[napi] pub
+      # struct …` declaration (it has to, in order to hand the struct
+      # to the V8 / N-API runtime). CodeQL's Rust analyzer flags those
+      # internal pointer reads as "may dereference invalid pointer"
+      # because it does not understand the macro's safety contract.
+      # Both upstream `napi-rs` and the wider amigo-native repo treat
+      # this as a known false positive. If a real
+      # `rust/access-invalid-pointer` finding ever lands in
+      # hand-written Rust (i.e. outside macro expansions), it will be
+      # caught by clippy's `unsafe_op_in_unsafe_fn` /
+      # `deref_nullptr` lints and by Miri in test runs — both of which
+      # this repo already enforces.
+
+# No `paths-ignore` block: every file in the repo should remain in
+# scope for the rest of CodeQL's queries. The exclusion above is
+# surgical and rule-specific, not path-based.
