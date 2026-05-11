@@ -1,0 +1,24 @@
+{
+  "name": "@amigo-labs/pngjs-linux-arm64-gnu",
+  "version": "0.1.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "main": "pngjs.linux-arm64-gnu.node",
+  "files": [
+    "pngjs.linux-arm64-gnu.node"
+  ],
+  "description": "Prebuilt binary for @amigo-labs/pngjs on linux-arm64-gnu",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/pngjs"
+  }
+}

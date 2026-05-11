@@ -1,0 +1,202 @@
+<h1 id="candidate-review-linkify-it">Candidate review: <code>linkify-it</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 GO · <strong>Predicted:</strong> Green for batch / large text, Yellow for tiny inputs · <strong>Reviewed:</strong> 2026-05-10</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><code>linkify-it</code> is the URL / email detection engine behind <code>markdown-it</code>,
+Slack-style chat renderers, and many in-text-linkification pipelines.
+It scans a text buffer character-by-character against a TLD table and
+schema list, returning a list of <code>{ start, end, kind }</code> spans. The
+shape is buffer-in / offsets-out — exactly the <code>sentences</code> /
+<code>turndown</code> text-processing Green pattern, with offset-packed
+<code>Uint32Array</code> output to avoid V8 object marshalling. <strong>Recommendation:
+GO.</strong></p>
+<h2 id="js-package">JS package</h2>
+<ul>
+<li><strong>npm:</strong> <code>linkify-it</code></li>
+<li><strong>Downloads (week of 2026-05-02):</strong> 25.5M (much higher than the
+intuitive estimate — <code>linkify-it</code> is the de-facto auto-link
+engine in the markdown / chat-renderer ecosystem and is pulled
+in transitively by hundreds of packages, headed by <code>markdown-it</code>
+itself)</li>
+<li><strong>Exports / API surface:</strong>
+<ul>
+<li><code>new LinkifyIt(schemas?, options?)</code></li>
+<li><code>linkify.match(text) → Match[] | null</code> where
+<code>Match = { schema, index, lastIndex, raw, text, url }</code></li>
+<li><code>linkify.test(text)</code> / <code>linkify.testSchemaAt(text, name, pos)</code>
+— pre-checks before a full match</li>
+<li><code>linkify.add(schema, definition)</code> / <code>linkify.set(options)</code> —
+schema customization</li>
+<li>Tunables: <code>fuzzyLink</code>, <code>fuzzyEmail</code>, <code>fuzzyIP</code></li>
+</ul>
+</li>
+<li><strong>Typical input:</strong> prose text, 100 B – 100 KB. Markdown source,
+chat messages, email bodies.</li>
+<li><strong>Typical output:</strong> an array of 0–100 match spans per call. Each
+span is a small object; total output is small relative to input.</li>
+<li><strong>Realistic median use-case:</strong>
+<ul>
+<li><strong>Markdown rendering</strong>: every paragraph in a markdown doc gets
+scanned for inline links. Many calls per document, each on
+short text.</li>
+<li><strong>Chat renderers</strong>: every chat message scanned once for
+auto-link.</li>
+<li><strong>Email body processing</strong>: one call per email body, ranging
+from a tweet-length few hundred bytes to ~100 KB.</li>
+</ul>
+</li>
+</ul>
+<h2 id="rust-replacement">Rust replacement</h2>
+<ul>
+<li><strong>Candidate crate(s):</strong> <code>linkify</code> (canonical Rust binding,
+battle-tested in <code>mdcat</code>, <code>comrak</code>, and <code>linkify-cli</code>). Smaller
+feature surface than <code>linkify-it</code> (no fuzzy IP, simpler schema
+model), so v0.1 parity scope must be set carefully.</li>
+<li><strong>Maintenance / license:</strong> <code>linkify</code> 0.11.0 (released
+2026-04-12), actively maintained (robinst/linkify),
+MIT/Apache-2.0, used in production by many Rust markdown /
+terminal tools.</li>
+<li><strong>Known gotchas / divergences:</strong>
+<ul>
+<li><code>linkify-it</code> supports <code>fuzzyLink</code>, <code>fuzzyEmail</code>, <code>fuzzyIP</code>. The
+Rust <code>linkify</code> crate has equivalents for URL and email but not
+for fuzzy IP detection (<code>192.168.1.1</code> in text without a
+scheme). For full parity, either reimplement fuzzy IP in the
+NAPI layer or scope it out for v0.1.</li>
+<li>TLD list synchronization: <code>linkify-it</code> ships a bundled TLD
+list and refreshes it per release; <code>linkify</code> uses a built-in
+TLD list compiled at crate build time. Pin a version and
+document the update story.</li>
+<li><code>linkify-it</code> supports per-instance schema mutation
+(<code>linkify.add('twitter:', { validate, normalize })</code>). The Rust
+crate is more static. v0.1 should ship the default schema set
+(<code>http</code>, <code>https</code>, <code>ftp</code>, <code>mailto</code>) and defer custom schemas.</li>
+</ul>
+</li>
+</ul>
+<h2 id="backlog-check">BACKLOG check</h2>
+<p>No entry in <code>BACKLOG.md</code> for <code>linkify-it</code>, <code>linkify</code>, <code>autolinker</code>,
+or related. Fresh territory.</p>
+<h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
+<table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
+<tr><td>Per-call algorithmic work</td><td>Substantial for any non-trivial text. A 10 KB blog post = ~10k chars to scan, with TLD lookup per <code>.</code>. Pure-JS <code>linkify-it</code> runs at ~10–50 µs / KB of text; Rust <code>linkify</code> runs at &lt;5 µs / KB. Per-call work dwarfs the NAPI floor (<code>docs/BASELINE.md:23</code>) for any text &gt; 1 KB.</td></tr>
+<tr><td>Input size distribution</td><td>100 B – 100 KB. The small end (100 B chat messages) is where FFI floor + string round-trip matter. String round-trip cost at 100 B is ~250 ns; per-call work is ~5 µs in pure JS, ~1 µs in Rust. Yellow at the tiny end.</td></tr>
+<tr><td>Output size distribution</td><td>Small. Span list of 0–100 entries. Pack to <code>Uint32Array</code> of <code>[index, lastIndex, schemaId, ...]</code> quadruples to keep marshalling flat.</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td>Yes for custom-schema instances (load schema list once, query many times), but the default-schema path already amortizes statically. The class API maps cleanly to a NAPI class for customization scenarios.</td></tr>
+<tr><td>Batch-usage realism</td><td>Medium. <code>matchMany(texts: string[])</code> is real for markdown rendering (one call per paragraph), but each individual call is non-trivial. The win comes from cheaper per-call FFI overhead, not from batch-only paths.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>&lt;5% at 1 KB+; ~30% at 100 B (the chat-message worst case — but pure-JS is fast there too).</td></tr>
+</tbody></table>
+<h2 id="classification-reasoning">Classification reasoning</h2>
+<p>The shape closely mirrors <code>crates/sentences/</code> (text-in, packed-
+offsets-out) and <code>crates/turndown/</code> (text-processing, buffer
+interface). Both shipped Green. The realistic input regime is mostly
+non-trivial text — markdown bodies, email content, blog posts —
+where the Rust scan-per-char advantage compounds over kilobytes.</p>
+<p>Pure-JS <code>linkify-it</code> is notably slow on long text because its
+character loop runs in V8 with per-char regex / TLD lookups.
+Rust <code>linkify</code> uses a finite-state automaton over byte slices —
+2-5× faster in published benchmarks, even before SIMD.</p>
+<p>The risk is the 100 B – 1 KB regime (chat messages, single tweet),
+where the JS work is already &lt;10 µs and FFI overhead is a meaningful
+share. This is <em>not</em> the dominant call shape but it is common enough
+that the per-call path must clear 1.0× even at small inputs.</p>
+<p>The offset-packed output (<code>Uint32Array</code> of quadruples rather than an
+array of <code>Match</code> objects) is essential. The <code>xml</code> post-mortem
+(<code>docs/perf-review/xml.md</code>) showed that returning AST-style objects
+across NAPI is the Red-path; offset packing is the documented
+Green-path mitigation.</p>
+<p><strong>Predicted classification:</strong> 🟢 Green at ≥1 KB text. 🟡 Yellow at
+&lt;500 B chat-message inputs. The combined classification is Green
+because the median realistic call (a paragraph or chat message
+within a render loop) sits firmly above the FFI-floor threshold.</p>
+<h2 id="if-go-proposed-port">If GO — proposed port</h2>
+<ul>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/linkify-it</code></li>
+<li><strong>Primary API sketch:</strong>
+<pre><code class="language-ts">type SchemaId = 'http' | 'https' | 'ftp' | 'mailto' | string
+type Match = {
+  schema: SchemaId
+  index: number
+  lastIndex: number
+  raw: string
+  text: string
+  url: string
+}
+
+type Options = {
+  fuzzyLink?: boolean
+  fuzzyEmail?: boolean
+  fuzzyIP?: boolean  // v0.1: silently ignored, parity stub
+}
+
+// Parity drop-in (Match objects)
+export class LinkifyIt {
+  constructor(options?: Options)
+  match(text: string): Match[] | null
+  test(text: string): boolean
+  add(schema: string, definition: any): this   // v0.1: throws
+  set(options: Options): this
+}
+
+// Offset-packed fast path
+export function matchOffsets(
+  text: string | Buffer,
+  options?: Options
+): Uint32Array  // [start, end, schemaId, ...] packed quadruples
+
+export const SCHEMA_IDS: Record&lt;SchemaId, number&gt;
+</code></pre>
+</li>
+<li><strong>Must-have benchmark scenarios:</strong>
+<ul>
+<li>100 B chat message (tiny-input regime — Yellow gate)</li>
+<li>1 KB / 10 KB blog post / email body (median use-case)</li>
+<li>100 KB markdown doc (large-input regime — Green ceiling)</li>
+<li>1000 × 1 KB messages via <code>matchOffsets</code> (batch / render-loop
+scenario)</li>
+<li><code>fuzzyLink</code>, <code>fuzzyEmail</code> on / off — quantify the cost</li>
+<li>vs <code>linkify-it</code> (the headline pure-JS competitor)</li>
+<li>vs <code>linkifyjs</code> (the SoapBox <code>linkifyjs</code> package)</li>
+<li>vs <code>autolinker.js</code></li>
+</ul>
+</li>
+<li><strong>Acceptance thresholds (Green gate):</strong>
+<ul>
+<li>≥3× vs <code>linkify-it</code> at 1 KB</li>
+<li>≥5× vs <code>linkify-it</code> at 10 KB</li>
+<li>≥1.0× vs <code>linkify-it</code> at 100 B (small-input floor; if below
+1.0×, document the crossover honestly and recommend <code>linkify- it</code> for those use-cases)</li>
+<li>Output parity verified against <code>linkify-it</code>’s test suite</li>
+</ul>
+</li>
+<li><strong>Risks:</strong>
+<ul>
+<li><strong><code>fuzzyIP</code> parity gap</strong>: scope out for v0.1 explicitly.
+Document in the README.</li>
+<li><strong>Custom schema API</strong>: scope out for v0.1. Document.</li>
+<li><strong>Tiny-input crossover</strong>: if 100 B benchmarks come in at
+&lt;0.8× even after <code>&amp;str</code> overload, document the small-input
+floor and recommend pure-JS <code>linkify-it</code> for tweet-length
+inputs.</li>
+<li><strong>TLD list freshness</strong>: pin the upstream <code>linkify</code> crate
+version and document the cadence.</li>
+</ul>
+</li>
+</ul>
+<h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
+<p>Not applicable (verdict is GO).</p>
+<h2 id="references">References</h2>
+<ul>
+<li>BASELINE: <code>docs/BASELINE.md</code> (NAPI floor 109 ns; string round-trip
+0.35 ns / byte means small-input regime needs care)</li>
+<li>Portfolio neighbours: <code>crates/sentences/</code> (offset-packed text
+output, Green), <code>crates/turndown/</code> (text-processing, Green),
+<code>crates/commonmark/</code> (markdown rendering — directly upstream of
+this use-case)</li>
+<li>AST-marshalling antipattern: <code>docs/perf-review/xml.md</code> (Red —
+returning AST objects across NAPI), explicit motivation for the
+<code>matchOffsets</code> fast path</li>
+<li>Rust crate: <a href="https://crates.io/crates/linkify">https://crates.io/crates/linkify</a></li>
+<li>Upstream JS: <a href="https://github.com/markdown-it/linkify-it">https://github.com/markdown-it/linkify-it</a></li>
+</ul>

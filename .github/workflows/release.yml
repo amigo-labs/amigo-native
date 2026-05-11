@@ -22,25 +22,33 @@ on:
           - encoding
           - file-type
           - force-layout
+          - fuse
           - graph-layout
           - inflate
+          - jimp
           - jose
+          - jpeg-js
           - jwt
           - language-detect
+          - linkify-it
           - minisearch
           - pdf
           - pdf-parse
+          - pixelmatch
+          - pngjs
           - sanitize-html
           - sentences
           - slugify
           - stemmer
           - svgo
           - text-splitters
+          - tldts
           - turndown
           - typst
           - xlsx
           - xxhash
           - zip
+          - zstd
           # PACKAGES:END
       version:
         description: Version to publish (e.g. 0.1.0)

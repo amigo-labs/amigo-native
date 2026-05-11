@@ -1,0 +1,205 @@
+<h1 id="candidate-review-pngjs">Candidate review: <code>pngjs</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 GO · <strong>Predicted:</strong> Green vs pure-JS, Yellow vs sharp · <strong>Reviewed:</strong> 2026-05-10</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><code>pngjs</code> is the canonical pure-JS PNG decoder/encoder on npm. It is a
+classic Green-shape workload: bytes-in / bytes-out, substantial
+compute (DEFLATE + per-row filter reversal + checksum), no
+per-element marshalling. The Rust <code>png</code> crate (image-rs) routinely
+clears 5–15× over pure-JS <code>pngjs</code> in published benchmarks. The only
+risk is the bcrypt-style “native competitor already exists” trap —
+but <code>sharp</code> solves a different problem (full image processing
+pipeline via libvips) and is rarely used purely as a PNG-decode
+drop-in. <strong>Recommendation: GO.</strong></p>
+<h2 id="js-package">JS package</h2>
+<ul>
+<li><strong>npm:</strong> <code>pngjs</code></li>
+<li><strong>Downloads (week of 2026-05-02):</strong> 34.0M (much higher than the
+intuitive estimate — <code>pngjs</code> is one of the most transitively-
+pulled image dependencies on npm, used by pixelmatch,
+jest-image-snapshot, headless-browser screenshot pipelines,
+and a long tail of PDF / canvas / asset toolchains)</li>
+<li><strong>Exports / API surface:</strong>
+<ul>
+<li><code>PNG.sync.read(buffer) → { width, height, data, ... }</code> — the
+one-shot decode path</li>
+<li><code>PNG.sync.write(png) → Buffer</code> — the one-shot encode path</li>
+<li><code>new PNG(options)</code> with <code>.parse()</code>, <code>.pack()</code>, <code>.on('parsed')</code>
+— the streaming path (Node <code>Transform</code> style)</li>
+</ul>
+</li>
+<li><strong>Typical input:</strong> PNG byte buffer, 10 KB – 50 MB.</li>
+<li><strong>Typical output:</strong> RGBA pixel buffer (<code>width × height × 4</code> bytes),
+uncompressed. 4K image = 32 MB. Encode goes the other direction.</li>
+<li><strong>Realistic median use-case:</strong>
+<ul>
+<li><strong>Test pipelines</strong>: <code>pixelmatch</code> decodes two PNGs and diffs
+them; <code>jest-image-snapshot</code> and Playwright snapshot diffs read
+a few PNGs per test.</li>
+<li><strong>OCR / vision preprocessing</strong>: decode scanned-document PNGs
+on the way into an LLM-vision pipeline.</li>
+<li><strong>Asset pipelines</strong>: encode generated charts / svgs-rendered-
+to-png in build steps.
+Most realistic median: a single 1 MB PNG decoded once, returning a
+~4–16 MB RGBA buffer.</li>
+</ul>
+</li>
+</ul>
+<h2 id="rust-replacement">Rust replacement</h2>
+<ul>
+<li><strong>Candidate crate(s):</strong> <code>png</code> (image-rs project, the canonical
+Rust PNG codec). For SIMD-accelerated DEFLATE inside the
+decoder, link via <code>flate2</code> with the <code>zlib-rs</code> backend — the same
+setup <code>crates/inflate</code> already uses successfully.</li>
+<li><strong>Maintenance / license:</strong> <code>png</code> 0.18.1 (released 2026-02-14),
+part of the image-rs organisation, MIT/Apache-2.0, very
+actively maintained (used by <code>image-rs</code>, <code>resvg</code>, <code>tiny-skia</code>,
+and many production tools).</li>
+<li><strong>Known gotchas / divergences:</strong>
+<ul>
+<li>APNG (animated PNG): <code>png</code> supports the APNG chunks but not as
+a turnkey “decode all frames” API. Scope to single-frame for
+v0.1; document APNG as out-of-scope.</li>
+<li>Interlaced PNGs (Adam7): supported by <code>png</code> but a slower path.
+Bench separately.</li>
+<li>Output color types: pure-JS <code>pngjs</code> returns RGBA always; <code>png</code>
+can return native bit depth (grayscale, RGB, RGBA, palette).
+<code>parity:strict</code> requires forcing RGBA output for the one-shot
+path; expose <code>decode_native</code> as a fast path for callers who
+want the native color type.</li>
+</ul>
+</li>
+</ul>
+<h2 id="backlog-check">BACKLOG check</h2>
+<p>No entry in <code>BACKLOG.md</code> for <code>pngjs</code>, <code>png</code>, <code>upng-js</code>, or any
+PNG-spelling variant. Fresh territory.</p>
+<h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
+<table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
+<tr><td>Per-call algorithmic work</td><td>High. 1 MB PNG decode in <code>pngjs</code> is ~30–80 ms; in <code>png</code> (Rust) ~3–8 ms. The Rust work alone is 1000× the 109 ns NAPI floor and the ~180 ns flat Buffer transfer cost (<code>docs/BASELINE.md:23, 29</code>).</td></tr>
+<tr><td>Input size distribution</td><td>10 KB – 50 MB. All buffer-flat — same code path.</td></tr>
+<tr><td>Output size distribution</td><td>Large. A 4K image = 32 MB RGBA. Buffer-flat marshalling (V8 handle, not memcpy — <code>docs/BASELINE.md:29</code>) handles this in ~180 ns regardless of size. Zero-copy hand-off via <code>Buffer::from_owned</code> is the obvious path.</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td>Low. PNG decode has no per-call state worth amortizing. Could expose a <code>Decoder</code> class for streaming-IDAT-chunks workloads, but those are rare in the realistic use-case. v0.1 should ship one-shot only.</td></tr>
+<tr><td>Batch-usage realism</td><td>Medium. <code>decodeMany(buffers)</code> is real for test pipelines that diff dozens of snapshots at once. Worth a v0.2 lever but not the headline.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>&lt;0.1% at 1 MB (300 ns / 5 ms). &lt;0.01% at 50 MB. Not FFI-bound at any realistic input.</td></tr>
+</tbody></table>
+<h2 id="classification-reasoning">Classification reasoning</h2>
+<p>The shape is the closest possible analogue to <code>crates/inflate</code> —
+DEFLATE-heavy, buffer-in / buffer-out, no per-call state. The inflate
+crate clears 1.12–1.67× vs the native <code>node:zlib</code> C binding after
+Phase-C, and 5.6–26× vs pure-JS <code>pako</code>. PNG decode is <em>strictly more
+work</em> per byte (DEFLATE + filter reversal + CRC), so the JS:Rust
+ratio should be at least as favourable vs pure-JS <code>pngjs</code>.</p>
+<p>The realistic competitor set is:</p>
+<ol>
+<li><strong><code>pngjs</code> (pure JS)</strong> — the headline competitor. Easy Green —
+expected 5–15×.</li>
+<li><strong><code>sharp</code> (native libvips)</strong> — different problem (full image
+pipeline). Few users pull <code>sharp</code> only for PNG decode; those who
+do already have a fast path. <strong>The bcrypt-trap risk lives here.</strong>
+Mitigation: position <code>@amigo-labs/pngjs</code> as the drop-in
+replacement for <code>pngjs</code>, not as a <code>sharp</code> replacement.</li>
+<li><strong><code>upng-js</code> (pure JS)</strong> — small bundle, slow.</li>
+<li><strong><code>@napi-rs/canvas</code></strong> — full canvas, includes PNG decode/encode.
+Same positioning as <code>sharp</code> — different problem.</li>
+</ol>
+<p>Pattern-match from the post-mortem: bytes-in / bytes-out + substantial
+compute + DEFLATE-heavy is the <code>inflate</code> / <code>encoding</code> shape. Green
+predicted; no realistic Yellow / Red downgrade path against the
+headline competitor <code>pngjs</code>.</p>
+<p><strong>Predicted classification:</strong> 🟢 Green vs pure-JS <code>pngjs</code> (expected
+5–15× depending on size). 🟡 Yellow vs <code>sharp</code> (libvips is itself
+SIMD-heavy C; same-shape competitor). Position the crate against the
+pure-JS baseline and document the <code>sharp</code> comparison honestly.</p>
+<h2 id="if-go-proposed-port">If GO — proposed port</h2>
+<ul>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/pngjs</code></li>
+<li><strong>Primary API sketch:</strong>
+<pre><code class="language-ts">// Parity drop-in for PNG.sync.read / PNG.sync.write
+export type PNG = {
+  width: number
+  height: number
+  data: Buffer    // RGBA, width * height * 4 bytes
+  depth: 8 | 16
+  interlace: boolean
+  palette: boolean
+}
+
+export type EncodeOptions = {
+  colorType?: 0 | 2 | 3 | 4 | 6
+  bitDepth?: 1 | 2 | 4 | 8 | 16
+  deflateLevel?: number    // 0-9
+  deflateStrategy?: number
+  filterType?: number
+}
+
+export const sync: {
+  read(input: Buffer): PNG
+  write(png: PNG, opts?: EncodeOptions): Buffer
+}
+
+// Fast paths bypassing pngjs's pure-JS object structure
+export function decodeRgba(input: Buffer): {
+  width: number; height: number; pixels: Buffer
+}
+export function encodeRgba(
+  pixels: Buffer, width: number, height: number, opts?: EncodeOptions
+): Buffer
+</code></pre>
+</li>
+<li><strong>Must-have benchmark scenarios:</strong>
+<ul>
+<li>decode at 100 KB, 1 MB, 10 MB on photographic and synthetic
+images</li>
+<li>encode at the same sizes</li>
+<li>vs <code>pngjs</code> (the headline pure-JS competitor)</li>
+<li>vs <code>sharp</code> (the native competitor — for honest comparison)</li>
+<li>vs <code>upng-js</code> (the WASM baseline)</li>
+<li>palette / grayscale / 16-bit native paths separately from RGBA</li>
+<li>interlaced (Adam7) inputs as a slow-path bench</li>
+</ul>
+</li>
+<li><strong>Acceptance thresholds (Green gate):</strong>
+<ul>
+<li>≥5× vs <code>pngjs</code> at 100 KB</li>
+<li>≥10× vs <code>pngjs</code> at 10 MB</li>
+<li>≥1.0× vs <code>sharp</code> on the decode path (anything below is
+documented as expected and the user is pointed at <code>sharp</code> for
+full-pipeline workloads)</li>
+<li>≥2× vs <code>upng-js</code></li>
+</ul>
+</li>
+<li><strong>Risks:</strong>
+<ul>
+<li><strong><code>sharp</code> positioning</strong>: <code>sharp</code> decodes PNG via libvips. For
+“decode → resize → encode” workloads, <code>sharp</code> is the right
+answer. <code>@amigo-labs/pngjs</code> is for “decode this PNG to RGBA so
+I can pass it to <code>pixelmatch</code> / my own pixel logic”. The README
+must say this in the first paragraph.</li>
+<li><strong>APNG / animated PNGs</strong>: out of scope for v0.1.</li>
+<li><strong>Output buffer size</strong>: a 4K image at 32 MB RGBA is large. The
+Buffer is V8-handle-flat in transit but the underlying memory
+is still 32 MB. Documents the memory cost so callers can free
+promptly.</li>
+<li><strong><code>pngjs</code> streaming API parity</strong>: pure-JS <code>pngjs</code> exposes a
+<code>Transform</code> stream interface. The Rust port should <em>not</em>
+reimplement event-per-chunk over the FFI boundary — see
+<code>docs/post-mortems/xml.md</code> if present. Document streaming as
+out-of-scope; provide the one-shot path only.</li>
+</ul>
+</li>
+</ul>
+<h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
+<p>Not applicable (verdict is GO).</p>
+<h2 id="references">References</h2>
+<ul>
+<li>BASELINE: <code>docs/BASELINE.md</code> (Buffer-flat ~180 ns to 10 MB —
+<code>docs/BASELINE.md:29</code>)</li>
+<li>Closest portfolio neighbour: <code>crates/inflate/</code> +
+<code>docs/perf-review/inflate.md</code> (DEFLATE shape, Green-likely tier)</li>
+<li>Streaming antipattern reference: <code>docs/post-mortems/xml.md</code>
+(event-per-chunk over NAPI = Red)</li>
+<li>Rust crate: <a href="https://crates.io/crates/png">https://crates.io/crates/png</a></li>
+<li>Image-rs project: <a href="https://github.com/image-rs/image">https://github.com/image-rs/image</a></li>
+<li>Upstream JS: <a href="https://github.com/lukeapage/pngjs">https://github.com/lukeapage/pngjs</a></li>
+</ul>

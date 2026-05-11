@@ -1,0 +1,24 @@
+{
+  "name": "@amigo-labs/linkify-it-linux-x64-gnu",
+  "version": "0.1.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "linkify-it.linux-x64-gnu.node",
+  "files": [
+    "linkify-it.linux-x64-gnu.node"
+  ],
+  "description": "Prebuilt binary for @amigo-labs/linkify-it on linux-x64-gnu",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/linkify-it"
+  }
+}

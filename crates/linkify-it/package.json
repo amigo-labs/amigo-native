@@ -1,0 +1,69 @@
+{
+  "name": "@amigo-labs/linkify-it",
+  "version": "0.1.0",
+  "description": "URL / email detection via the `linkify` Rust crate. Offset-packed fast path for batch workloads.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "napi": {
+    "binaryName": "linkify-it",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "linkify-it": "^5.0.0",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/linkify-it"
+  },
+  "keywords": [
+    "linkify",
+    "url",
+    "email",
+    "autolink",
+    "markdown",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "linkify-it",
+    "category": "text",
+    "description": "Find URLs and emails in text. Offset-packed Uint32Array fast path for batch / render-loop workloads.",
+    "tableDescription": "URL / email detection in text (linkify-it shape)",
+    "replaces": "linkify-it",
+    "vsJs": "TBD",
+    "parity": "default-schemas",
+    "status": "Compatible",
+    "competitors": [
+      "linkify-it@5.0.0"
+    ]
+  }
+}

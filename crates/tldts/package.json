@@ -1,0 +1,72 @@
+{
+  "name": "@amigo-labs/tldts",
+  "version": "0.1.0",
+  "description": "Hostname / URL → domain + public suffix parser. Bundled IANA PSL via the Rust `psl` crate.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "napi": {
+    "binaryName": "tldts",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "x86_64-pc-windows-msvc"
+    ]
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "test": "vitest run __test__",
+    "test:conformance": "vitest run __conformance__",
+    "test:all": "vitest run",
+    "bench": "vitest bench"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.7.0",
+    "psl": "^1.9.0",
+    "tldts": "^7.0.0",
+    "vitest": "^4.1.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amigo-labs/amigo-native",
+    "directory": "crates/tldts"
+  },
+  "keywords": [
+    "tld",
+    "tldts",
+    "domain",
+    "public-suffix",
+    "psl",
+    "url",
+    "rust",
+    "napi"
+  ],
+  "engines": {
+    "node": ">= 22"
+  },
+  "amigo": {
+    "title": "tldts",
+    "category": "util",
+    "description": "Parse domain / public suffix / subdomain from a hostname or URL. Bundled IANA PSL + idna; batch parseMany API.",
+    "tableDescription": "Domain + public-suffix parser (tldts shape)",
+    "replaces": "tldts",
+    "vsJs": "TBD",
+    "parity": "default-list",
+    "status": "Subset",
+    "competitors": [
+      "tldts@7.0.0",
+      "psl@1.9.0"
+    ]
+  }
+}
