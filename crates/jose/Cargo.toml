@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 napi = { workspace = true }
 napi-derive = { workspace = true }
 ed25519-dalek = { version = "2", features = ["pkcs8", "rand_core"] }
-rand_core = { version = "0.6", features = ["getrandom"] }
+rand_core = { version = "0.10", features = ["getrandom"] }
 sha2 = "0.10"
 base64 = "0.22"
 serde = { version = "1", features = ["derive"] }
