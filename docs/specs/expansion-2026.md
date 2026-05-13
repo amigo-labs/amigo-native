@@ -64,27 +64,60 @@ crates/
 ├── _<name>-core/          # pure Rust logic, no binding macros
 │   ├── src/lib.rs
 │   └── Cargo.toml         # only the algorithm's dependencies
-├── <name>/                # napi-rs binding (existing dir, slimmed)
-│   ├── src/lib.rs         # #[napi] wrappers calling into core
-│   ├── npm/<6 platforms>/
-│   ├── __test__/  __conformance__/  __bench__/
-│   └── Cargo.toml         # path dep on _<name>-core
-└── <name>-wasm/           # wasm-bindgen binding (new dir)
-    ├── src/lib.rs         # #[wasm_bindgen] wrappers calling into core
-    ├── pkg/               # wasm-pack output (gitignored)
-    ├── tests/             # wasm-bindgen-test
-    └── Cargo.toml         # path dep on _<name>-core
+└── <name>/                # one npm package, two Rust crates
+    ├── package.json       # conditional exports: ./node + ./browser
+    ├── index.js           # napi loader (existing, unchanged)
+    ├── index.d.ts
+    ├── npm/<6 platforms>/ # napi platform stubs (existing)
+    ├── Cargo.toml         # napi binding, cdylib, path dep on _<name>-core
+    ├── src/lib.rs         # #[napi] wrappers
+    ├── __test__/  __conformance__/  __bench__/
+    └── wasm/              # nested WASM binding crate
+        ├── Cargo.toml     # wasm-bindgen, cdylib, path dep on _<name>-core
+        ├── src/lib.rs     # #[wasm_bindgen] wrappers
+        ├── pkg/           # wasm-pack output, shipped in the npm tarball
+        └── tests/         # wasm-bindgen-test
 ```
 
-### npm naming
+### npm packaging
 
-- Node target: `@amigo-labs/<name>` (unchanged)
-- Browser target: `@amigo-labs/<name>-wasm`
+One npm package per crate, with conditional exports — same shape as
+[`yoga-layout`](https://www.npmjs.com/package/yoga-layout):
 
-Rationale: separate packages keep bundling semantics obvious (no
-`./browser` conditional exports magic), versioning independent if needed,
-and tree-shaking trivial. Both packages can be cut at the same version
-from the same release tag.
+```jsonc
+// crates/<name>/package.json
+{
+  "name": "@amigo-labs/<name>",
+  "main": "./index.js",
+  "browser": "./wasm/pkg/<name>_wasm.js",
+  "exports": {
+    ".": {
+      "node": "./index.js",
+      "browser": "./wasm/pkg/<name>_wasm.js",
+      "default": "./index.js"
+    }
+  },
+  "files": ["index.js", "index.d.ts", "wasm/pkg/**"]
+}
+```
+
+Rationale (decided 2026-05-13):
+
+- Consumers install `@amigo-labs/<name>` regardless of target; the
+  bundler picks the right artifact via `exports` conditions.
+- One package per crate keeps the registry footprint flat — no
+  `@amigo-labs/<name>-wasm` companion to maintain.
+- One version, one release tag, one CHANGELOG. Bugfixes go out
+  atomically to both bindings.
+- Vite, esbuild, webpack ≥ 5, Bun, Angular CLI all resolve `browser`
+  conditional exports correctly today. Historical bundler issues
+  (webpack 4, pre-0.73 Metro) are not relevant to amigo-native's
+  consumer base.
+
+The WASM artifact lives under `crates/<name>/wasm/pkg/` and is shipped
+inside the same npm tarball. Tarball size grows by the WASM payload
+(typically 50–400 KB gzipped); Node consumers download but never load
+it, which is acceptable given the size budget.
 
 ### Repository naming
 
@@ -117,7 +150,7 @@ Ordered by combined value × tractability:
 | `commonmark`     | `marked`/`markdown-it`| LLM-output rendering, doc viewers                    | Bundle size of `pulldown-cmark` + html escape; expect ~200 KB gz   |
 | `sanitize-html`  | `sanitize-html`/`DOMPurify` | Pilet sanitization, untrusted Markdown output | `ammonia` + `html5ever`: bundle size is the main risk (~200–400 KB)|
 | `xxhash`         | `xxhash-wasm`/`xxhashjs` | Pure compute; large payloads benefit                | No SIMD by default in WASM — evaluate `+simd128`                   |
-| `minisearch`     | `minisearch`          | Client-side search in pilets and docs                | Index serialization needs to be portable Node↔Browser              |
+| `minisearch`     | `minisearch`          | Client-side search in pilets and docs                | Index portability deferred (see decisions)                         |
 | `bm25`           | `wink-bm25-text-search` | Same as `minisearch` for finer-grained API         | Bundled into the same `_search-core` work                          |
 | `linkify-it`     | `linkify-it`          | Inline link detection in chat/Markdown UIs           | Already small; should be a clean WASM target                       |
 | `diff`           | `diff`                | Diff viewers in browser                              | API surface is larger; pick a subset                               |
@@ -139,8 +172,8 @@ Explicitly **not** in initial scope:
   but not in the first wave; reassess after the shortlist ships.
 
 This gives a first wave of **9 crates** to WASM-enable, with
-`_search-core` refactored once to serve both `minisearch-wasm` and
-`bm25-wasm`.
+`_search-core` reused for both the `minisearch` and `bm25` WASM
+bindings.
 
 ## Phase 1 — Core / binding split
 
@@ -169,21 +202,24 @@ Toolchain:
 
 Per crate:
 
-- `crates/<name>-wasm/Cargo.toml` with `crate-type = ["cdylib"]` and
-  `wasm-bindgen` dep
+- `crates/<name>/wasm/Cargo.toml` with `crate-type = ["cdylib"]` and
+  `wasm-bindgen` dep, path-depending on `_<name>-core`
 - Public API mirrors the napi surface where possible (same function
   names, parameter order, option struct fields). TypeScript types come
   from `wasm-bindgen`'s generated `.d.ts`; manual augmentation only
   where ergonomics require it.
-- `tests/` with `wasm-bindgen-test` covering the same scenarios as the
-  napi conformance suite. Headless browser execution in CI.
+- `crates/<name>/wasm/tests/` with `wasm-bindgen-test` covering the
+  same scenarios as the napi conformance suite. Headless browser
+  execution in CI.
 - README `__bench__/` snapshot vs. the replaced JS library (not vs. the
   napi build — the relevant comparison for browser consumers is against
   the incumbent JS package).
+- `crates/<name>/package.json` extended with `browser` and `exports`
+  fields pointing into `wasm/pkg/`; `files` extended to include the
+  WASM artifact directory.
 
-Bundle-size budget per crate: **≤ 500 KB gzipped** as a soft limit.
-Overruns get documented in the crate README plus a follow-up entry in
-`BACKLOG.md`; they don't block initial release.
+Bundle-size budget per crate: **≤ 500 KB gzipped** as a soft limit
+(see decisions § Bundle budget for enforcement strategy).
 
 ## Phase 4 — CI & release
 
@@ -193,21 +229,25 @@ Overruns get documented in the crate README plus a follow-up entry in
 
 - Existing `cargo test --workspace` continues to cover core + napi
 - Add a `wasm-test` job: `wasm-pack test --headless --chrome --firefox`
-  per `<name>-wasm` crate, fanning out by matrix
+  per crate that has a `wasm/` sub-crate, fanning out by matrix
 - Add a `bundle-size` soft check: `wasm-pack build --release` followed
-  by gzipped byte count, warn-only at first, hard-fail once budgets
-  stabilize
+  by gzipped byte count. **Warn-only initially.** After one full
+  release cycle of collected baselines, graduate to hard-fail per
+  crate at `baseline × 1.15`.
 
 ### Release (`.github/workflows/release.yml`)
 
-Existing tag-triggered flow stays. Add:
+Existing tag-triggered flow stays. The shape of changes is small
+because there is only one npm package per crate:
 
-- For tags matching `<name>@<version>` where `<name>-wasm/` exists,
-  also build and publish `@amigo-labs/<name>-wasm` at the same version
-- Use `wasm-pack publish` or equivalent (`wasm-pack build --target
-  bundler` + `npm publish`); keep provenance enabled for both packages
-- `release-please-config.json` extended to track the `-wasm` packages
-  in lockstep with their parents
+- Before `npm publish`, build the WASM artifact (`wasm-pack build
+  --target bundler --release` inside `crates/<name>/wasm/`) and place
+  `pkg/` where the parent `package.json`'s `files` field expects it
+- The single `npm publish` then ships both napi platform stubs (via
+  `optionalDependencies`) and the in-tarball WASM artifact
+- No changes to `release-please-config.json` (no new packages); no
+  additional provenance setup
+- Tag scheme unchanged: `<name>@<version>` cuts one release
 
 ### Cross-compile matrix
 
@@ -216,35 +256,41 @@ no matrix.
 
 ## Conformance & parity
 
-Each `<name>-wasm` crate gets:
+Each crate with a `wasm/` sub-crate gets:
 
-- A `__conformance__/` directory mirroring the napi crate's, run in
-  Node via `--target nodejs` and in browsers via headless wasm-bindgen
-  tests. Output parity between the two bindings is required.
+- WASM-side `wasm-bindgen-test` coverage equivalent to the napi
+  conformance suite. Output parity between the two bindings is required.
 - A divergences note if the WASM API has to diverge from the napi API
   (e.g. no `Buffer` in browsers; takes `Uint8Array` instead).
+- A note in `__conformance__/divergences.md` (existing convention)
+  capturing any napi-vs-WASM behavioural deltas.
 
 ## Documentation
 
-- `docs/packages.json` gains a `targets: ["node", "wasm"]` field per
+- `docs/packages.json` gains a `targets: ["node", "browser"]` field per
   crate, surfaced in the dashboard
 - Per-crate README gets an "Install for the browser" section once its
-  WASM build ships
+  WASM build ships (install command unchanged — `npm install
+  @amigo-labs/<name>` — bundler selects the target via conditional
+  exports)
 - `BENCHMARKS.md` extended with WASM-vs-JS comparison columns
 
 ## Roadmap
 
 1. **Preparation** — this document, plus an addendum to `CLAUDE.md`
-   describing the `_<name>-core` convention and the dual-target naming
-2. **Phase 1, pilot** — `slugify` core/napi split, validate pattern,
-   capture lessons in this doc
-3. **Phase 1, rest of shortlist** — apply pattern to the remaining
-   crates that need a core split (`sanitize-html`, `xxhash`,
-   `linkify-it`, `diff`, `csv`)
-4. **Phase 2, pilot** — `slugify-wasm` and `commonmark-wasm` in
-   parallel (different complexity profiles, useful comparison)
-5. **Phase 2, rest of shortlist** — remaining 7 WASM crates
-6. **Phase 4** — CI and release plumbing alongside Phase 2
+   describing the `_<name>-core` convention and the nested `wasm/`
+   sub-crate layout
+2. **Phase 1+2 pilot, slugify** — core/napi split *and* WASM binding
+   in one PR, with the conditional-exports `package.json` shape
+   validated end-to-end against Vite, esbuild, and the Node loader.
+   Capture lessons in this doc.
+3. **Phase 1, rest of shortlist** — apply core split to crates that
+   need it (`sanitize-html`, `xxhash`, `linkify-it`, `diff`, `csv`)
+4. **Phase 2, parallel WASM rollout** — `commonmark`, `sanitize-html`,
+   `xxhash`, `minisearch`, `bm25`, `linkify-it`, `diff`, `csv`. One
+   PR per crate, no big-bang merge.
+5. **Phase 4** — CI fan-out, bundle-size reporting, release-workflow
+   tweaks; lands alongside Phase 2 once two crates have shipped WASM
 
 Phases can overlap per crate: once `slugify` finishes Phase 1, its
 Phase 2 can begin independently of the other crates' Phase 1 status.
@@ -258,25 +304,27 @@ Phase 2 can begin independently of the other crates' Phase 1 status.
   directly)
 - Cross-binding shared TypeScript types beyond what `wasm-bindgen`
   generates
+- Cross-binding portable search-index serialization (deferred per
+  decision below; revisit if a concrete use case lands)
+
+## Decisions
+
+| ID  | Decision                                                                     | Date       |
+| :-- | :--------------------------------------------------------------------------- | :--------- |
+| D1  | One npm package per crate with conditional `exports` (yoga-layout shape).    | 2026-05-13 |
+| D2  | Bundle-size budget warn-only first; hard-fail at `baseline × 1.15` after one full release cycle of baselines. | 2026-05-13 |
+| D3  | `minisearch`/`bm25` ship without `toJSON`/`fromJSON` initially. Index portability between napi and WASM is deferred until a concrete consumer requires it. | 2026-05-13 |
 
 ## Open questions
 
-1. **Conditional exports vs. separate packages.** The recommendation is
-   separate packages (`<name>` + `<name>-wasm`). Worth a second opinion
-   before locking in.
-2. **`xxhash` SIMD.** Should the WASM build target `+simd128` by
+1. **`xxhash` SIMD.** Should the WASM build target `+simd128` by
    default, ship two variants, or skip SIMD? Decision contingent on
-   benchmark data.
-3. **`commonmark-wasm` and the XSS story.** The README must spell out
+   benchmark data — defer until the `xxhash` WASM build exists.
+2. **`commonmark` XSS guidance.** The package README must spell out
    that Markdown output is not safe by default and direct readers to
-   pair it with `sanitize-html-wasm`. Where does that note live —
-   crate README, dashboard, or both?
-4. **Index portability for `minisearch`.** Does the WASM build need to
-   read indexes serialized by the napi build, and vice versa? If yes,
-   `_search-core` needs a portable on-disk format spec.
-5. **Bundle-size budget enforcement.** Warn-only forever, or graduate
-   to hard-fail per crate once a baseline is captured? Lean toward
-   hard-fail after the first stable release.
+   pair it with `sanitize-html`'s WASM target. Crate README is the
+   primary location; the dashboard's per-crate page surfaces the same
+   text. Decide final wording during the `commonmark` WASM PR.
 
 ## Success metrics
 
@@ -284,9 +332,11 @@ After completion of the first wave:
 
 - 6 crates refactored into `_<name>-core` + binding (`slugify`,
   `sanitize-html`, `xxhash`, `linkify-it`, `diff`, `csv`); plus the
-  three already-split search/markdown crates kept as-is
-- 9 crates with a published `<name>-wasm` companion
+  three already-split search/markdown crates (`commonmark`,
+  `minisearch`, `bm25`) extended with a `wasm/` sub-crate
+- 9 crates shipping a WASM binding inside their existing
+  `@amigo-labs/<name>` npm package
 - At least one production-shaped integration documented (e.g.
-  `commonmark-wasm` + `sanitize-html-wasm` rendering LLM output in a
-  pilet)
+  `commonmark` + `sanitize-html` rendering LLM output in a pilet via
+  the browser conditional export)
 - `BENCHMARKS.md` shows WASM-vs-JS numbers for each shipped WASM crate
