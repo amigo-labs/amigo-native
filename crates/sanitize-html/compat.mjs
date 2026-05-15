@@ -812,14 +812,15 @@ function tokenizerTransform(
         // keeping the wrapper.
         if (frame.suppressContent) return
         frame.rawText += text
-        // Text inside raw-text elements (script/style/textarea) is already
-        // delivered undecoded by htmlparser2 — escaping it here would
-        // double-encode entities like `&amp;`.
+        // Text inside raw-text elements (script/style) is delivered
+        // undecoded by htmlparser2 — escaping it here would double-encode
+        // entities like `&amp;`. As of htmlparser2 12.x, <textarea> is
+        // RCDATA: entities are decoded on the way in, so we must escape
+        // its text again on the way out.
         const isRawTextFrame =
           frame !== root &&
           (frame.emittedName === 'script' ||
             frame.emittedName === 'style' ||
-            frame.emittedName === 'textarea' ||
             frame.emittedName === 'pre')
         const ctxTag = frame === root ? '' : frame.emittedName
         const filtered = textFilter ? (textFilter(text, ctxTag) ?? text) : text
