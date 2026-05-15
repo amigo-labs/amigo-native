@@ -396,6 +396,7 @@ enum Node {
     Decl(Vec<u8>),
     PI(Vec<u8>),
     DocType(Vec<u8>),
+    GeneralRef(Vec<u8>),
 }
 
 fn parse(svg: &str, cfg: &Resolved) -> Vec<Node> {
@@ -456,6 +457,9 @@ fn parse_until_end(reader: &mut Reader<&[u8]>, close: Option<&[u8]>) -> Vec<Node
             }
             Event::DocType(d) => {
                 out.push(Node::DocType(d.as_ref().to_vec()));
+            }
+            Event::GeneralRef(r) => {
+                out.push(Node::GeneralRef(r.as_ref().to_vec()));
             }
         }
     }
@@ -602,6 +606,11 @@ fn serialize_node(w: &mut Writer<Cursor<Vec<u8>>>, n: &Node) {
         Node::DocType(bs) => {
             let s = std::str::from_utf8(bs).unwrap_or("");
             w.write_event(Event::DocType(BytesText::new(s))).ok();
+        }
+        Node::GeneralRef(bs) => {
+            let s = std::str::from_utf8(bs).unwrap_or("");
+            w.write_event(Event::GeneralRef(quick_xml::events::BytesRef::new(s)))
+                .ok();
         }
     }
 }
