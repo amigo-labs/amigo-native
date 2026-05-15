@@ -12,6 +12,18 @@ Blazing fast slugify powered by Rust via [NAPI-RS](https://napi.rs). Converts an
 npm install @amigo-labs/slugify
 ```
 
+Same install command for Node and the browser. Bundlers select the
+right artifact via conditional `exports`: Node consumers get the
+NAPI-RS binary; browser consumers (Vite, esbuild, webpack ≥ 5,
+Angular CLI, Bun) get a WebAssembly build with the same JavaScript
+API. No separate `-wasm` package.
+
+> **Local development.** The WebAssembly artifact in `wasm/pkg/` is
+> build-time output (gitignored). `prepublishOnly` builds it before
+> `npm publish`, so published tarballs always contain it. For
+> in-tree work (workspace consumers, `pnpm pack`, local linking)
+> run `pnpm build:wasm` first.
+
 ## Usage
 
 ```ts

@@ -31,7 +31,7 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@langchain/textsplitters": "^0.1.0",
+    "@langchain/textsplitters": "^1.0.1",
     "@napi-rs/cli": "^3.6.2",
     "fast-check": "^4.8.0",
     "vitest": "^4.1.6"
