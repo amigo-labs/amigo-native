@@ -1,9 +1,9 @@
 {
   "crate": "jose",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-15T22:49:55.495Z",
+  "commit": "200ac91",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/jose/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jose",
-          "hz": 558706.79,
-          "rme": 0.19,
-          "samples": 1676124
+          "hz": 457421.75,
+          "rme": 0.17,
+          "samples": 1372266
         },
         {
           "name": "jose (panva, pure JS)",
-          "hz": 351824.58,
-          "rme": 6.32,
-          "samples": 1055475
+          "hz": 293350.65,
+          "rme": 6.26,
+          "samples": 880052
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jose",
-          "hz": 454418.97,
-          "rme": 0.2,
-          "samples": 1363257
+          "hz": 384165.86,
+          "rme": 0.16,
+          "samples": 1152498
         },
         {
           "name": "jose (panva, pure JS)",
-          "hz": 290624.71,
-          "rme": 5.76,
-          "samples": 871875
+          "hz": 247261.76,
+          "rme": 5.83,
+          "samples": 741786
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/jose",
-          "hz": 53701.48,
-          "rme": 0.2,
-          "samples": 161105
+          "hz": 45251.51,
+          "rme": 0.06,
+          "samples": 135755
         },
         {
           "name": "jose (panva, pure JS) — generateKeyPair Ed25519 + exportJWK",
-          "hz": 16017.1,
-          "rme": 0.99,
-          "samples": 48052
+          "hz": 10873.72,
+          "rme": 1.11,
+          "samples": 32622
         }
       ]
     }

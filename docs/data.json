@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-07",
-  "nodeVersion": "v24.14.1",
+  "generatedAt": "2026-05-15",
+  "nodeVersion": "v24.15.0",
   "platform": "linux x64",
   "benchmarks": {
     "suites": [
@@ -940,15 +940,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jose",
-            "hz": 558706.79,
-            "rme": 0.19,
-            "samples": 1676124
+            "hz": 457421.75,
+            "rme": 0.17,
+            "samples": 1372266
           },
           {
             "name": "jose (panva, pure JS)",
-            "hz": 351824.58,
-            "rme": 6.32,
-            "samples": 1055475
+            "hz": 293350.65,
+            "rme": 6.26,
+            "samples": 880052
           }
         ]
       },
@@ -958,15 +958,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jose",
-            "hz": 454418.97,
-            "rme": 0.2,
-            "samples": 1363257
+            "hz": 384165.86,
+            "rme": 0.16,
+            "samples": 1152498
           },
           {
             "name": "jose (panva, pure JS)",
-            "hz": 290624.71,
-            "rme": 5.76,
-            "samples": 871875
+            "hz": 247261.76,
+            "rme": 5.83,
+            "samples": 741786
           }
         ]
       },
@@ -976,15 +976,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jose",
-            "hz": 53701.48,
-            "rme": 0.2,
-            "samples": 161105
+            "hz": 45251.51,
+            "rme": 0.06,
+            "samples": 135755
           },
           {
             "name": "jose (panva, pure JS) — generateKeyPair Ed25519 + exportJWK",
-            "hz": 16017.1,
-            "rme": 0.99,
-            "samples": 48052
+            "hz": 10873.72,
+            "rme": 1.11,
+            "samples": 32622
           }
         ]
       },
@@ -2319,7 +2319,7 @@
   "sizes": {
     "argon2": {
       "@amigo-labs/argon2": {
-        "installSize": 469931,
+        "installSize": 24891,
         "type": "binary+shim"
       },
       "argon2": {
@@ -2331,23 +2331,9 @@
         "type": "node_modules"
       }
     },
-    "bcrypt": {
-      "@amigo-labs/bcrypt": {
-        "installSize": 413309,
-        "type": "binary+shim"
-      },
-      "bcrypt": {
-        "installSize": 1535328,
-        "type": "node_modules"
-      },
-      "bcryptjs": {
-        "installSize": 221783,
-        "type": "node_modules"
-      }
-    },
     "bm25": {
       "@amigo-labs/bm25": {
-        "installSize": 448393,
+        "installSize": 25017,
         "type": "binary+shim"
       },
       "wink-bm25-text-search": {
@@ -2361,7 +2347,7 @@
     },
     "commonmark": {
       "@amigo-labs/commonmark": {
-        "installSize": 924730,
+        "installSize": 26322,
         "type": "binary+shim"
       },
       "marked": {
@@ -2375,7 +2361,7 @@
     },
     "csv": {
       "@amigo-labs/csv": {
-        "installSize": 450634,
+        "installSize": 1770,
         "type": "binary+shim"
       },
       "csv-parse": {
@@ -2389,7 +2375,7 @@
     },
     "deepmerge": {
       "@amigo-labs/deepmerge": {
-        "installSize": 415962,
+        "installSize": 24882,
         "type": "binary+shim"
       },
       "deepmerge": {
@@ -2399,7 +2385,7 @@
     },
     "diff": {
       "@amigo-labs/diff": {
-        "installSize": 494450,
+        "installSize": 25994,
         "type": "binary+shim"
       },
       "diff": {
@@ -2409,7 +2395,7 @@
     },
     "encoding": {
       "@amigo-labs/encoding": {
-        "installSize": 615164,
+        "installSize": 3852,
         "type": "binary+shim"
       },
       "iconv-lite": {
@@ -2419,7 +2405,7 @@
     },
     "file-type": {
       "@amigo-labs/file-type": {
-        "installSize": 456888,
+        "installSize": 24840,
         "type": "binary+shim"
       },
       "file-type": {
@@ -2429,7 +2415,7 @@
     },
     "force-layout": {
       "@amigo-labs/force-layout": {
-        "installSize": 402678,
+        "installSize": 26254,
         "type": "binary+shim"
       },
       "d3-force": {
@@ -2437,9 +2423,23 @@
         "type": "node_modules"
       }
     },
+    "fuse": {
+      "@amigo-labs/fuse": {
+        "installSize": 24685,
+        "type": "binary+shim"
+      },
+      "fuse.js": {
+        "installSize": 423527,
+        "type": "node_modules"
+      },
+      "fuzzysort": {
+        "installSize": 45442,
+        "type": "node_modules"
+      }
+    },
     "graph-layout": {
       "@amigo-labs/graph-layout": {
-        "installSize": 435090,
+        "installSize": 26418,
         "type": "binary+shim"
       },
       "dagre": {
@@ -2453,7 +2453,7 @@
     },
     "inflate": {
       "@amigo-labs/inflate": {
-        "installSize": 521964,
+        "installSize": 25652,
         "type": "binary+shim"
       },
       "pako": {
@@ -2461,9 +2461,19 @@
         "type": "node_modules"
       }
     },
+    "jimp": {
+      "@amigo-labs/jimp": {
+        "installSize": 24772,
+        "type": "binary+shim"
+      },
+      "jimp": {
+        "installSize": 28499111,
+        "type": "node_modules"
+      }
+    },
     "jose": {
       "@amigo-labs/jose": {
-        "installSize": 487646,
+        "installSize": 487486,
         "type": "binary+shim"
       },
       "jose": {
@@ -2471,19 +2481,29 @@
         "type": "node_modules"
       }
     },
+    "jpeg-js": {
+      "@amigo-labs/jpeg-js": {
+        "installSize": 25062,
+        "type": "binary+shim"
+      },
+      "jpeg-js": {
+        "installSize": 76416,
+        "type": "node_modules"
+      }
+    },
     "jwt": {
       "@amigo-labs/jwt": {
-        "installSize": 1385820,
+        "installSize": 25740,
         "type": "binary+shim"
       },
       "jsonwebtoken": {
-        "installSize": 305823,
+        "installSize": 308054,
         "type": "node_modules"
       }
     },
     "language-detect": {
       "@amigo-labs/language-detect": {
-        "installSize": 661587,
+        "installSize": 26787,
         "type": "binary+shim"
       },
       "franc": {
@@ -2491,9 +2511,19 @@
         "type": "node_modules"
       }
     },
+    "linkify-it": {
+      "@amigo-labs/linkify-it": {
+        "installSize": 25183,
+        "type": "binary+shim"
+      },
+      "linkify-it": {
+        "installSize": 69380,
+        "type": "node_modules"
+      }
+    },
     "minisearch": {
       "@amigo-labs/minisearch": {
-        "installSize": 468249,
+        "installSize": 25857,
         "type": "binary+shim"
       },
       "minisearch": {
@@ -2503,7 +2533,7 @@
     },
     "pdf": {
       "@amigo-labs/pdf": {
-        "installSize": 1343351,
+        "installSize": 24991,
         "type": "binary+shim"
       },
       "pdfkit": {
@@ -2513,7 +2543,7 @@
     },
     "pdf-parse": {
       "@amigo-labs/pdf-parse": {
-        "installSize": 1905760,
+        "installSize": 25392,
         "type": "binary+shim"
       },
       "pdf-parse": {
@@ -2521,9 +2551,33 @@
         "type": "node_modules"
       }
     },
+    "pixelmatch": {
+      "@amigo-labs/pixelmatch": {
+        "installSize": 25222,
+        "type": "binary+shim"
+      },
+      "pixelmatch": {
+        "installSize": 670368,
+        "type": "node_modules"
+      }
+    },
+    "pngjs": {
+      "@amigo-labs/pngjs": {
+        "installSize": 25119,
+        "type": "binary+shim"
+      },
+      "pngjs": {
+        "installSize": 650529,
+        "type": "node_modules"
+      },
+      "upng-js": {
+        "installSize": 825409,
+        "type": "node_modules"
+      }
+    },
     "sanitize-html": {
       "@amigo-labs/sanitize-html": {
-        "installSize": 1369967,
+        "installSize": 26623,
         "type": "binary+shim"
       },
       "sanitize-html": {
@@ -2531,23 +2585,23 @@
         "type": "node_modules"
       },
       "isomorphic-dompurify": {
-        "installSize": 14525662,
+        "installSize": 14544026,
         "type": "node_modules"
       }
     },
     "sentences": {
       "@amigo-labs/sentences": {
-        "installSize": 418966,
+        "installSize": 25838,
         "type": "binary+shim"
       },
       "sbd": {
-        "installSize": 2100243,
+        "installSize": 2841412,
         "type": "node_modules"
       }
     },
     "slugify": {
       "@amigo-labs/slugify": {
-        "installSize": 988673,
+        "installSize": 24553,
         "type": "binary+shim"
       },
       "slugify": {
@@ -2557,17 +2611,17 @@
     },
     "stemmer": {
       "@amigo-labs/stemmer": {
-        "installSize": 794567,
+        "installSize": 26111,
         "type": "binary+shim"
       },
       "natural": {
-        "installSize": 65092179,
+        "installSize": 65092329,
         "type": "node_modules"
       }
     },
     "svgo": {
       "@amigo-labs/svgo": {
-        "installSize": 486037,
+        "installSize": 25117,
         "type": "binary+shim"
       },
       "svgo": {
@@ -2577,35 +2631,31 @@
     },
     "text-splitters": {
       "@amigo-labs/text-splitters": {
-        "installSize": 11776047,
+        "installSize": 26439,
         "type": "binary+shim"
       },
       "@langchain/textsplitters": {
-        "installSize": 37273791,
+        "installSize": 37254338,
         "type": "node_modules"
       }
     },
-    "tiktoken": {
-      "@amigo-labs/tiktoken": {
-        "installSize": 9154840,
+    "tldts": {
+      "@amigo-labs/tldts": {
+        "installSize": 26272,
         "type": "binary+shim"
       },
-      "tiktoken": {
-        "installSize": 23493857,
+      "tldts": {
+        "installSize": 3219164,
         "type": "node_modules"
       },
-      "js-tiktoken": {
-        "installSize": 22438170,
-        "type": "node_modules"
-      },
-      "gpt-tokenizer": {
-        "installSize": 40511469,
+      "psl": {
+        "installSize": 461812,
         "type": "node_modules"
       }
     },
     "turndown": {
       "@amigo-labs/turndown": {
-        "installSize": 1273450,
+        "installSize": 25578,
         "type": "binary+shim"
       },
       "turndown": {
@@ -2615,7 +2665,7 @@
     },
     "typst": {
       "@amigo-labs/typst": {
-        "installSize": 37651156,
+        "installSize": 24836,
         "type": "binary+shim"
       },
       "typst (CLI)": {
@@ -2623,7 +2673,7 @@
         "type": "node_modules"
       },
       "puppeteer": {
-        "installSize": 43684011,
+        "installSize": 28904491,
         "type": "node_modules"
       },
       "pdfmake": {
@@ -2633,7 +2683,7 @@
     },
     "xlsx": {
       "@amigo-labs/xlsx": {
-        "installSize": 1832617,
+        "installSize": 25697,
         "type": "binary+shim"
       },
       "xlsx": {
@@ -2647,7 +2697,7 @@
     },
     "xxhash": {
       "@amigo-labs/xxhash": {
-        "installSize": 427051,
+        "installSize": 25963,
         "type": "binary+shim"
       },
       "xxhash-wasm": {
@@ -2661,7 +2711,7 @@
     },
     "zip": {
       "@amigo-labs/zip": {
-        "installSize": 836868,
+        "installSize": 25724,
         "type": "binary+shim"
       },
       "yauzl": {
@@ -2670,6 +2720,20 @@
       },
       "adm-zip": {
         "installSize": 121920,
+        "type": "node_modules"
+      }
+    },
+    "zstd": {
+      "@amigo-labs/zstd": {
+        "installSize": 25344,
+        "type": "binary+shim"
+      },
+      "@mongodb-js/zstd": {
+        "installSize": 1236030,
+        "type": "node_modules"
+      },
+      "fzstd": {
+        "installSize": 65481,
         "type": "node_modules"
       }
     }

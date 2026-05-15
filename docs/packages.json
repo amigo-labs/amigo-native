@@ -198,7 +198,7 @@
       "title": "JOSE",
       "category": "crypto",
       "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
-      "speedup": "1.56–3.4× faster",
+      "speedup": "1.55–4.2× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/jose",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/jose",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/jose/README.md",
