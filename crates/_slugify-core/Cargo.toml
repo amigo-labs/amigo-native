@@ -1,0 +1,13 @@
+[package]
+name = "amigo-slugify-core"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+# Internal-only. No cdylib — consumed by @amigo-labs/slugify via
+# [dependencies]. Pattern parallels crates/_search-core/.
+
+[dependencies]
+unicode-normalization = "0.1"
+deunicode = "1"

@@ -1,0 +1,24 @@
+[package]
+name = "amigo-slugify-wasm"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+# rlib needed for wasm-bindgen-test integration tests; cdylib needed
+# for the actual WASM artifact emitted by wasm-pack.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+amigo-slugify-core = { path = "../../_slugify-core" }
+wasm-bindgen = "0.2"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[package.metadata.wasm-pack.profile.release]
+# wasm-opt is invoked from a pre-built binaryen binary downloaded by
+# wasm-pack at build time. In hermetic build environments without
+# internet (or where binaryen is provided system-wide), set this to
+# false and run wasm-opt as a separate step.
+wasm-opt = false
