@@ -6,6 +6,18 @@
 <h2 id="installation">Installation</h2>
 <pre><code class="language-bash">npm install @amigo-labs/slugify
 </code></pre>
+<p>Same install command for Node and the browser. Bundlers select the
+right artifact via conditional <code>exports</code>: Node consumers get the
+NAPI-RS binary; browser consumers (Vite, esbuild, webpack ≥ 5,
+Angular CLI, Bun) get a WebAssembly build with the same JavaScript
+API. No separate <code>-wasm</code> package.</p>
+<blockquote>
+<p><strong>Local development.</strong> The WebAssembly artifact in <code>wasm/pkg/</code> is
+build-time output (gitignored). <code>prepublishOnly</code> builds it before
+<code>npm publish</code>, so published tarballs always contain it. For
+in-tree work (workspace consumers, <code>pnpm pack</code>, local linking)
+run <code>pnpm build:wasm</code> first.</p>
+</blockquote>
 <h2 id="usage">Usage</h2>
 <pre><code class="language-ts">import { slugify, slugifyWithSeparator } from "@amigo-labs/slugify";
 
