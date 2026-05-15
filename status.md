@@ -62,6 +62,12 @@ exports. Full plan in [`docs/specs/expansion-2026.md`](docs/specs/expansion-2026
    `wasm-pack test --node`), `wasm-size` job (gzipped bytes after
    `wasm-opt -Oz` from system `binaryen`, warn-only per D2),
    toolchain install of `wasm32-unknown-unknown` + `wasm-pack` in CI.
+   **Plus** a `pack-verify` step: run `pnpm pack --dry-run` per
+   dual-target crate and grep the file list for the expected
+   `wasm/pkg/*` entries. Catches the case where `prepublishOnly`
+   doesn't run (e.g. local `npm pack`) and the tarball would ship
+   without the WASM artifact, breaking the `browser` conditional
+   export.
 4. **Follow-up PR: parent-vs-`index.js` CI guard.** One-liner in
    `scripts/sync-registry.mjs` that fails if a crate's `index.js`
    embeds a version different from its `package.json`. Prevents
