@@ -47,6 +47,7 @@
     "sax": "^1.4.1",
     "slugify": "^1.6.6",
     "tiktoken": "^1.0.21",
+    "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.1.5",
     "wrangler": "^4.40.0",
     "xxhash-wasm": "^1.1.0",

@@ -314,6 +314,56 @@ Phase 2 can begin independently of the other crates' Phase 1 status.
 | D1  | One npm package per crate with conditional `exports` (yoga-layout shape).    | 2026-05-13 |
 | D2  | Bundle-size budget warn-only first; hard-fail at `baseline × 1.15` after one full release cycle of baselines. | 2026-05-13 |
 | D3  | `minisearch`/`bm25` ship without `toJSON`/`fromJSON` initially. Index portability between napi and WASM is deferred until a concrete consumer requires it. | 2026-05-13 |
+| D4  | WASM binding crate lives at `crates/<name>/wasm/` as a nested workspace member. Workspace `members` glob extended to `["crates/*", "crates/*/wasm"]`. WASM Cargo.toml uses `crate-type = ["cdylib", "rlib"]` so `wasm-bindgen-test` integration tests can link against it. | 2026-05-15 |
+| D5  | `wasm-pack build --target bundler` is the primary build. `vite-plugin-wasm` added at workspace root so Node-side benchmarks can import the WASM artifact alongside the napi build. Single `vitest.config.ts` covers both. | 2026-05-15 |
+| D6  | `wasm-opt` runs as a separate post-build step (system `binaryen`), not as part of `wasm-pack`. The crate's `[package.metadata.wasm-pack.profile.release]` sets `wasm-opt = false` so hermetic builds succeed without internet. CI installs `binaryen` via apt and invokes `wasm-opt -Oz` after `wasm-pack build`. | 2026-05-15 |
+
+## Pilot — slugify (2026-05-15)
+
+End-to-end Phase 1 + Phase 2 walk-through, validating the conventions.
+Findings, in order of "would have hit any subsequent crate":
+
+1. **Workspace glob must include nested members.** `members = ["crates/*"]`
+   alone does not pick up `crates/<name>/wasm/`. Extended to
+   `["crates/*", "crates/*/wasm"]` (D4).
+2. **WASM crate needs `rlib` for integration tests.** A pure `cdylib`
+   compiles into a WASM module but cannot be referenced as
+   `extern crate amigo_slugify_wasm` from `tests/web.rs`. Adding `rlib`
+   to `crate-type` is harmless for the published artifact and unlocks
+   the test crate.
+3. **`wasm-opt` blocks hermetic builds.** `wasm-pack` tries to download
+   binaryen at build time. Disabled in `Cargo.toml`
+   (`[package.metadata.wasm-pack.profile.release] wasm-opt = false`);
+   the optimization happens later in CI via system `wasm-opt`. Cost is
+   one extra workflow step per release.
+4. **`vite-plugin-wasm` needed for Node benchmarks.** Vitest cannot
+   import `--target bundler` output directly because of the
+   "ESM integration proposal for Wasm" stub. Added at workspace root
+   so any crate's bench can include WASM as a comparator (D5).
+5. **`wasm-pack` writes its own `package.json` to `pkg/`.** The inner
+   `package.json` would shadow the parent's if naively bundled.
+   Solution: parent `package.json` `files` field lists individual
+   files in `wasm/pkg/`, not the directory, deliberately excluding the
+   inner `package.json` and `.gitignore`.
+6. **`pkg/` is build output, not source.** Added `crates/*/wasm/pkg/`
+   to `.gitignore`; `prepublishOnly` builds the artifact fresh.
+
+### Pilot benchmark numbers
+
+Run on Linux x64, slugify with three input shapes, three implementations:
+
+| Input              | napi (Mops/s)   | WASM (Mops/s)   | JS `slugify` (Mops/s) | napi / wasm | wasm / js |
+| :----------------- | --------------: | --------------: | --------------------: | ----------: | --------: |
+| 20-char ASCII      |            1.02 |            0.63 |                  0.32 |       1.61× |     1.95× |
+| 500-char ASCII     |          87 K/s |          50 K/s |                14 K/s |       1.75× |     3.46× |
+| Unicode-heavy 100c |            0.22 |            0.15 |                  0.06 |       1.46× |     2.41× |
+
+WASM (unoptimized — no `wasm-opt`) is 1.5–1.8× slower than napi but
+**2–3× faster than the JS competitor**. With `wasm-opt -Oz` in CI the
+gap to napi typically tightens further. Slugify WASM payload is
+**~635 KB unoptimized, ~246 KB gzipped**; after `wasm-opt -Oz`
+historically lands in the 60–120 KB gzipped range. Comfortable under
+the 500 KB budget.
 
 ## Open questions
 
