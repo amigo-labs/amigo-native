@@ -1,9 +1,9 @@
 {
   "crate": "svgo",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-15T22:56:47.248Z",
+  "commit": "0f664f8",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/svgo/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/svgo",
-          "hz": 201317.61,
-          "rme": 0.17,
-          "samples": 100659
+          "hz": 153871.07,
+          "rme": 0.16,
+          "samples": 76936
         },
         {
           "name": "svgo",
-          "hz": 8929.32,
-          "rme": 4.01,
-          "samples": 4466
+          "hz": 5854.25,
+          "rme": 2.19,
+          "samples": 2928
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/svgo",
-          "hz": 8436.1,
-          "rme": 0.11,
-          "samples": 4219
+          "hz": 6396.97,
+          "rme": 1.1,
+          "samples": 3199
         },
         {
           "name": "svgo",
-          "hz": 592.59,
-          "rme": 3.1,
-          "samples": 297
+          "hz": 428.68,
+          "rme": 4.2,
+          "samples": 215
         }
       ]
     }

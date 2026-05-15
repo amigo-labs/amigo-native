@@ -348,7 +348,7 @@
       "title": "Svgo",
       "category": "document",
       "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
-      "speedup": "14–23× faster",
+      "speedup": "15–26× faster",
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/svgo",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/svgo",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/svgo/README.md",
