@@ -9,8 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-unicode-normalization = "0.1"
-deunicode = "1"
+amigo-slugify-core = { path = "../_slugify-core" }
 
 [build-dependencies]
 napi-build = "2"

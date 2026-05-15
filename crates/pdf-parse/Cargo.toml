@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-pdf-extract = "0.9"
+pdf-extract = "0.10"
 lopdf = "0.40"
 
 [build-dependencies]

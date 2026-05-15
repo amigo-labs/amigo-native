@@ -9,6 +9,9 @@ node_modules/
 # napi-rs generated artifacts
 *.tgz
 
+# wasm-pack generated artifacts (built fresh in CI / before publish)
+crates/*/wasm/pkg/
+
 # OS
 .DS_Store
 Thumbs.db
