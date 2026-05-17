@@ -68,6 +68,16 @@ Serializes an array of objects to CSV. Optionally specify column order.
 | `flexible` | `boolean` | Allow records with varying field counts |
 | `trimFields` | `boolean` | Trim whitespace from fields |
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { parse, parseStr, stringify } from '@amigo-labs/csv'
+```
+
+WASM exposes `parseStr` (string input) and `parse` (Uint8Array) — the napi `Buffer` shape doesn't exist in the browser. All other entry points (`parseWithHeaders`, `stringify`, `stringifyObjects`, `countRows`, `parseToJson`) are present on both sides.
+
 ## Supported Platforms
 
 | Platform | Architecture |

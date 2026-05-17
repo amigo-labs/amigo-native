@@ -1,0 +1,29 @@
+<h1 id="amigo-labs-pixelmatch">@amigo-labs/pixelmatch</h1>
+<blockquote>
+<p>Rust port of <a href="https://github.com/mapbox/pixelmatch">mapbox/pixelmatch</a> — bit-identical output, pure compute on RGBA pixel buffers.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/pixelmatch
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { pixelmatch, countDiff } from '@amigo-labs/pixelmatch'
+
+const { numDiff, diff } = pixelmatch(img1Rgba, img2Rgba, width, height, {
+  threshold: 0.1,
+})
+
+// numDiff: number of mismatching pixels
+// diff: RGBA Uint8Array highlighting the differences
+
+// Lightweight variant — no diff buffer allocation.
+const onlyCount = countDiff(img1Rgba, img2Rgba, width, height)
+</code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { pixelmatch } from '@amigo-labs/pixelmatch'
+</code></pre>
+<p>Pure compute — no native deps. The WASM build is small (&lt;30 KB gzipped).</p>
+<h2 id="parity">Parity</h2>
+<p>Bit-identical to upstream mapbox/pixelmatch for the same <code>(img1, img2, options)</code> inputs. Upstream fixtures from <code>test/fixtures/</code> are exercised in <a href="./__conformance__/upstream.spec.ts"><code>__conformance__/upstream.spec.ts</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

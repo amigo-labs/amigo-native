@@ -1,4 +1,6 @@
-use csv::{ReaderBuilder, Trim, WriterBuilder};
+//! CSV parse/stringify — thin napi wrapper around `amigo-csv-core`.
+
+use amigo_csv_core as core;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::collections::HashMap;
@@ -15,40 +17,22 @@ pub struct CsvOptions {
     pub trim_fields: Option<bool>,
 }
 
-fn make_reader(opts: &CsvOptions) -> ReaderBuilder {
-    let mut builder = ReaderBuilder::new();
-    builder
-        .delimiter(opts.delimiter.unwrap_or(44) as u8)
-        .has_headers(opts.has_headers.unwrap_or(true))
-        .flexible(opts.flexible.unwrap_or(false))
-        .trim(if opts.trim_fields.unwrap_or(false) {
-            Trim::All
-        } else {
-            Trim::None
-        });
-    if let Some(q) = opts.quote_char {
-        builder.quote(q as u8);
+fn into_core(o: Option<CsvOptions>) -> core::CsvOptions {
+    let o = o.unwrap_or_default();
+    core::CsvOptions {
+        delimiter: o.delimiter,
+        has_headers: o.has_headers,
+        quote_char: o.quote_char,
+        escape_char: o.escape_char,
+        comment: o.comment,
+        flexible: o.flexible,
+        trim_fields: o.trim_fields,
     }
-    if let Some(e) = opts.escape_char {
-        builder.escape(Some(e as u8));
-    }
-    if let Some(c) = opts.comment {
-        builder.comment(Some(c as u8));
-    }
-    builder
 }
 
 #[napi]
 pub fn parse(input: Buffer, options: Option<CsvOptions>) -> Result<Vec<Vec<String>>> {
-    let opts = options.unwrap_or_default();
-    let mut reader = make_reader(&opts).from_reader(input.as_ref());
-
-    let mut rows = Vec::new();
-    for result in reader.records() {
-        let record = result.map_err(|e| Error::from_reason(e.to_string()))?;
-        rows.push(record.iter().map(|s| s.to_string()).collect());
-    }
-    Ok(rows)
+    core::parse(input.as_ref(), &into_core(options)).map_err(Error::from_reason)
 }
 
 #[napi(js_name = "parseWithHeaders")]
@@ -56,49 +40,12 @@ pub fn parse_with_headers(
     input: Buffer,
     options: Option<CsvOptions>,
 ) -> Result<Vec<HashMap<String, String>>> {
-    let opts = options.unwrap_or_default();
-    let mut builder = make_reader(&opts);
-    builder.has_headers(true);
-    let mut reader = builder.from_reader(input.as_ref());
-
-    let headers: Vec<String> = reader
-        .headers()
-        .map_err(|e| Error::from_reason(e.to_string()))?
-        .iter()
-        .map(|s| s.to_string())
-        .collect();
-
-    let mut rows = Vec::new();
-    for result in reader.records() {
-        let record = result.map_err(|e| Error::from_reason(e.to_string()))?;
-        let mut map = HashMap::new();
-        for (i, field) in record.iter().enumerate() {
-            if let Some(header) = headers.get(i) {
-                map.insert(header.clone(), field.to_string());
-            }
-        }
-        rows.push(map);
-    }
-    Ok(rows)
+    core::parse_with_headers(input.as_ref(), &into_core(options)).map_err(Error::from_reason)
 }
 
 #[napi]
 pub fn stringify(rows: Vec<Vec<String>>, options: Option<CsvOptions>) -> Result<String> {
-    let opts = options.unwrap_or_default();
-    let mut writer = WriterBuilder::new()
-        .delimiter(opts.delimiter.unwrap_or(44) as u8)
-        .from_writer(Vec::new());
-
-    for row in rows {
-        writer
-            .write_record(&row)
-            .map_err(|e| Error::from_reason(e.to_string()))?;
-    }
-
-    let bytes = writer
-        .into_inner()
-        .map_err(|e| Error::from_reason(e.to_string()))?;
-    String::from_utf8(bytes).map_err(|e| Error::from_reason(e.to_string()))
+    core::stringify(rows, &into_core(options)).map_err(Error::from_reason)
 }
 
 #[napi(js_name = "stringifyObjects")]
@@ -107,89 +54,15 @@ pub fn stringify_objects(
     columns: Option<Vec<String>>,
     options: Option<CsvOptions>,
 ) -> Result<String> {
-    let opts = options.unwrap_or_default();
-    let mut writer = WriterBuilder::new()
-        .delimiter(opts.delimiter.unwrap_or(44) as u8)
-        .from_writer(Vec::new());
-
-    let cols = columns.unwrap_or_else(|| {
-        if let Some(first) = rows.first() {
-            let mut keys: Vec<String> = first.keys().cloned().collect();
-            keys.sort();
-            keys
-        } else {
-            Vec::new()
-        }
-    });
-
-    writer
-        .write_record(&cols)
-        .map_err(|e| Error::from_reason(e.to_string()))?;
-
-    for row in &rows {
-        let values: Vec<&str> = cols.iter().map(|c| row.get(c).map_or("", |v| v)).collect();
-        writer
-            .write_record(&values)
-            .map_err(|e| Error::from_reason(e.to_string()))?;
-    }
-
-    let bytes = writer
-        .into_inner()
-        .map_err(|e| Error::from_reason(e.to_string()))?;
-    String::from_utf8(bytes).map_err(|e| Error::from_reason(e.to_string()))
+    core::stringify_objects(rows, columns, &into_core(options)).map_err(Error::from_reason)
 }
 
-/// Count rows without building JS arrays — pure Rust speed, zero FFI-per-row overhead.
 #[napi(js_name = "countRows")]
 pub fn count_rows(input: Buffer, options: Option<CsvOptions>) -> Result<u32> {
-    let opts = options.unwrap_or_default();
-    let mut reader = make_reader(&opts).from_reader(input.as_ref());
-    let mut count = 0u32;
-    for result in reader.records() {
-        result.map_err(|e| Error::from_reason(e.to_string()))?;
-        count += 1;
-    }
-    Ok(count)
+    core::count_rows(input.as_ref(), &into_core(options)).map_err(Error::from_reason)
 }
 
-/// Parse CSV and return rows as a flat JSON string.
-/// Avoids per-row FFI overhead — one large string transfer instead of N×M small ones.
-/// Use JSON.parse() on the JS side.
 #[napi(js_name = "parseToJson")]
 pub fn parse_to_json(input: Buffer, options: Option<CsvOptions>) -> Result<String> {
-    let opts = options.unwrap_or_default();
-    let mut reader = make_reader(&opts).from_reader(input.as_ref());
-
-    let mut out = String::from("[");
-    let mut first_row = true;
-    for result in reader.records() {
-        let record = result.map_err(|e| Error::from_reason(e.to_string()))?;
-        if !first_row {
-            out.push(',');
-        }
-        first_row = false;
-        out.push('[');
-        let mut first_field = true;
-        for field in record.iter() {
-            if !first_field {
-                out.push(',');
-            }
-            first_field = false;
-            out.push('"');
-            for ch in field.chars() {
-                match ch {
-                    '"' => out.push_str("\\\""),
-                    '\\' => out.push_str("\\\\"),
-                    '\n' => out.push_str("\\n"),
-                    '\r' => out.push_str("\\r"),
-                    '\t' => out.push_str("\\t"),
-                    c => out.push(c),
-                }
-            }
-            out.push('"');
-        }
-        out.push(']');
-    }
-    out.push(']');
-    Ok(out)
+    core::parse_to_json(input.as_ref(), &into_core(options)).map_err(Error::from_reason)
 }
