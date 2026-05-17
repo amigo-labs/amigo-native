@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-similar = { version = "2.6", features = ["text", "inline", "unicode"] }
+amigo-diff-core = { path = "../_diff-core" }
 
 [build-dependencies]
 napi-build = "2"
