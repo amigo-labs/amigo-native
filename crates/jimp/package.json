@@ -4,9 +4,28 @@
   "description": "Scoped v0.1 of jimp — PNG/JPEG decode + encode, resize, crop, flip, rotate, greyscale, brightness, contrast, composite. Via image-rs.",
   "main": "index.js",
   "types": "index.d.ts",
+  "browser": "./wasm/pkg/amigo_jimp_wasm.js",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./wasm/pkg/amigo_jimp_wasm.d.ts",
+        "default": "./wasm/pkg/amigo_jimp_wasm.js"
+      },
+      "default": {
+        "types": "./index.d.ts",
+        "default": "./index.js"
+      }
+    }
+  },
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "README.md",
+    "wasm/pkg/amigo_jimp_wasm.js",
+    "wasm/pkg/amigo_jimp_wasm_bg.js",
+    "wasm/pkg/amigo_jimp_wasm_bg.wasm",
+    "wasm/pkg/amigo_jimp_wasm.d.ts",
+    "wasm/pkg/amigo_jimp_wasm_bg.wasm.d.ts"
   ],
   "napi": {
     "binaryName": "jimp",
@@ -23,9 +42,12 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:all": "pnpm build && pnpm build:wasm",
+    "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "test:conformance": "vitest run __conformance__",
+    "test:wasm": "cd wasm && wasm-pack test --node",
     "test:all": "vitest run",
     "bench": "vitest bench"
   },
@@ -62,6 +84,7 @@
     "vsJs": "TBD",
     "parity": "scoped-v0.1",
     "status": "Subset",
+    "targets": ["node", "browser"],
     "competitors": [
       "jimp@1.6.0"
     ]
