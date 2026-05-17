@@ -20,7 +20,7 @@ function isCurrent(href: string): boolean {
 ---
 
 <header
-  class="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md"
+  class="sticky top-0 z-40 border-b border-line bg-bg/95 backdrop-blur-md supports-[backdrop-filter]:bg-bg/85"
 >
   <div
     class="mx-auto flex h-(--header-h) max-w-(--container) items-center gap-4 px-4 sm:px-6 lg:px-8"
@@ -30,7 +30,7 @@ function isCurrent(href: string): boolean {
       class="flex items-center gap-2 font-mono text-sm font-medium tracking-(--tracking-snug) text-fg hover:text-accent transition-colors"
       aria-label={`${brand.name} home`}
     >
-      <Logo size={22} />
+      <Logo size={28} />
       <span class="hidden sm:inline">
         {brand.name.split("-")[0]}<span class="text-accent">-{brand.name.split("-")[1]}</span>
       </span>
@@ -58,7 +58,7 @@ function isCurrent(href: string): boolean {
         href={brand.repoUrl}
         target="_blank"
         rel="noopener noreferrer"
-        class="hidden md:inline-flex h-9 items-center gap-2 rounded-md border border-line px-3 text-sm text-fg-muted hover:border-line-strong hover:text-fg transition-colors"
+        class="hidden md:inline-flex h-9 items-center gap-2 rounded-md border border-line bg-bg-elevated px-3 text-sm text-fg-muted hover:border-line-strong hover:text-fg transition-colors"
         aria-label={`${brand.name} repository on GitHub`}
       >
         <svg

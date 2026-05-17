@@ -48,7 +48,7 @@ export default function MobileDrawer({ nav, repoUrl, currentPath }: Props) {
         aria-controls="mobile-drawer"
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((v) => !v)}
-        class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line text-fg-muted hover:border-line-strong hover:text-fg transition-colors md:hidden"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-bg-elevated text-fg-muted hover:border-line-strong hover:text-fg transition-colors md:hidden"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -89,12 +89,13 @@ export default function MobileDrawer({ nav, repoUrl, currentPath }: Props) {
             aria-label="Close menu"
             tabIndex={-1}
             onClick={() => setOpen(false)}
-            class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            class="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
           <div
             ref={panelRef}
             id="mobile-drawer"
-            class="absolute right-0 top-0 h-full w-[320px] max-w-[100vw] border-l border-line bg-bg-elevated shadow-pop px-5 pt-5 pb-8 flex flex-col gap-2"
+            style={{ background: "var(--bg)" }}
+            class="absolute right-0 top-0 h-full w-[320px] max-w-[100vw] border-l border-line shadow-pop px-5 pt-5 pb-8 flex flex-col gap-2"
           >
             <div class="flex items-center justify-between pb-4 mb-2 border-b border-line">
               <span class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">

@@ -24,7 +24,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={mounted ? `Switch to ${next} theme` : "Toggle theme"}
       title={mounted ? `Switch to ${next} theme` : "Toggle theme"}
-      class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line text-fg-muted hover:border-line-strong hover:text-fg transition-colors"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-bg-elevated text-fg-muted hover:border-line-strong hover:text-fg transition-colors"
     >
       {/* Sun (visible in dark mode) */}
       <svg
