@@ -24,6 +24,11 @@ const histories = import.meta.glob<string>(
   { query: "?raw", import: "default" }
 ) as Record<string, Loader>;
 
+const topLevelDocs = import.meta.glob<string>(
+  "../../../docs/*.md",
+  { query: "?raw", import: "default" }
+) as Record<string, Loader>;
+
 function pick(map: Record<string, Loader>, suffix: string): Loader | undefined {
   const key = Object.keys(map).find((k) => k.endsWith(suffix));
   return key ? map[key] : undefined;
@@ -41,6 +46,11 @@ export async function loadPerfReview(slug: string): Promise<string | null> {
 
 export async function loadPostMortem(slug: string): Promise<string | null> {
   const loader = pick(postMortems, `/post-mortems/${slug}.md`);
+  return loader ? await loader() : null;
+}
+
+export async function loadTopLevelDoc(basename: string): Promise<string | null> {
+  const loader = pick(topLevelDocs, `/docs/${basename}.md`);
   return loader ? await loader() : null;
 }
 

@@ -20,6 +20,7 @@
     "@fontsource-variable/jetbrains-mono": "^5.2.5",
     "@tailwindcss/vite": "^4.1.13",
     "astro": "^5.14.0",
+    "marked": "^18.0.3",
     "preact": "^10.27.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2"

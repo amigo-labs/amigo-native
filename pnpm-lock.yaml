@@ -750,6 +750,9 @@ importers:
       astro:
         specifier: ^5.14.0
         version: 5.18.1(@types/node@25.6.0)(jiti@2.7.0)(lightningcss@1.32.0)(rollup@4.60.4)(typescript@5.9.3)(yaml@2.9.0)
+      marked:
+        specifier: ^18.0.3
+        version: 18.0.3
       preact:
         specifier: ^10.27.0
         version: 10.29.2
