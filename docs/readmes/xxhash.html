@@ -71,7 +71,7 @@ const firstHash = out.readBigUInt64LE(0);
 <p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
 <pre><code class="language-ts">import { xxh3_64, Xxh3Hasher } from '@amigo-labs/xxhash'
 </code></pre>
-<p>Both one-shot functions and the stateful hashers ship to the browser. 64-bit hashes come back as JS <code>BigInt</code> directly. WASM is roughly 1.5–2× faster than <code>xxhash-wasm</code> / <code>xxhashjs</code> on typical inputs; SIMD (<code>+simd128</code>) is deferred per the expansion-2026 spec open question Q1.</p>
+<p>Both one-shot functions and the stateful hashers ship to the browser. 64-bit hashes come back as JS <code>BigInt</code> directly. SIMD (<code>+simd128</code>) is deferred per the expansion-2026 spec open question Q1; speedup numbers vs <code>xxhash-wasm</code> / <code>xxhashjs</code> live on the <a href="https://amigo-native.amigo-labs.workers.dev/">dashboard</a>.</p>
 <h2 id="supported-platforms">Supported Platforms</h2>
 <table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
 <tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>

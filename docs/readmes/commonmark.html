@@ -64,20 +64,12 @@ const safe = sanitize(unsafe_but_html_free)
 <li>You need output byte-identical to GitHub’s renderer (usernames, issue refs, SHA autolinks).</li>
 </ul>
 <h2 id="performance">Performance</h2>
-<p>Measured on Linux x64 with <code>pnpm bench</code> (Vitest). Best of <code>render</code>, <code>renderBytes</code>, and <code>render({ headingIds: false, unsafeHtml: true })</code>:</p>
-<table><thead><tr><th>Size</th><th style="text-align: right">vs <code>marked</code></th><th style="text-align: right">vs <code>markdown-it</code></th></tr></thead><tbody>
-<tr><td>Small (~0.1 KB)</td><td style="text-align: right"><strong>8.05×</strong></td><td style="text-align: right">5.19×</td></tr>
-<tr><td>Medium (~2.8 KB)</td><td style="text-align: right"><strong>10.73×</strong></td><td style="text-align: right">7.63×</td></tr>
-<tr><td>Large (~81 KB)</td><td style="text-align: right"><strong>9.36×</strong></td><td style="text-align: right">7.56×</td></tr>
-<tr><td>Batch (500 × medium, <code>renderMany</code>)</td><td style="text-align: right"><strong>51.79×</strong></td><td style="text-align: right">42.65×</td></tr>
-</tbody></table>
-<p>Notes on the options that drive these numbers:</p>
+<p>Live benchmark numbers vs <code>marked</code> and <code>markdown-it</code> are on the <a href="https://amigo-native.amigo-labs.workers.dev/">dashboard</a> and in <a href="../../docs/data.json"><code>docs/data.json</code></a>. Notes on the options that move them:</p>
 <ul>
-<li><code>renderBytes(Buffer)</code> avoids the V8 UTF-16 → UTF-8 copy on input — about 5% faster than <code>render(string)</code> on small inputs; roughly parity once rendering dominates.</li>
-<li><code>{ headingIds: false, unsafeHtml: true }</code> enables the streaming fast-path: no event collection, no filter pass. ~1.23–1.37× faster than default options.</li>
-<li><code>renderMany</code> parallelises across cores via <code>rayon</code> for batches ≥ 8 docs where at least one doc is ≥ 512 bytes. On a 500-doc batch it’s <strong>5.45×</strong> faster than calling <code>render</code> in a per-call loop.</li>
+<li><code>renderBytes(Buffer)</code> avoids the V8 UTF-16 → UTF-8 copy on input — faster than <code>render(string)</code> on small inputs; roughly parity once rendering dominates.</li>
+<li><code>{ headingIds: false, unsafeHtml: true }</code> enables the streaming fast-path: no event collection, no filter pass.</li>
+<li><code>renderMany</code> parallelises across cores via <code>rayon</code> for batches ≥ 8 docs where at least one doc is ≥ 512 bytes.</li>
 </ul>
-<p>Numbers are re-published in <a href="../../docs/data.json"><code>docs/data.json</code></a> after each release.</p>
 <h2 id="conformance">Conformance</h2>
 <ul>
 <li>Spec compliance: <a href="https://spec.commonmark.org/0.30/">CommonMark 0.30</a> + <a href="https://github.github.com/gfm/">GFM</a> as per <code>pulldown-cmark</code>’s test suite.</li>

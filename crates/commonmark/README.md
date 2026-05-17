@@ -86,22 +86,11 @@ The XSS warning above applies doubly to browser usage — pair with [`@amigo-lab
 
 ## Performance
 
-Measured on Linux x64 with `pnpm bench` (Vitest). Best of `render`, `renderBytes`, and `render({ headingIds: false, unsafeHtml: true })`:
+Live benchmark numbers vs `marked` and `markdown-it` are on the [dashboard](https://amigo-native.amigo-labs.workers.dev/) and in [`docs/data.json`](../../docs/data.json). Notes on the options that move them:
 
-| Size | vs `marked` | vs `markdown-it` |
-|---|---:|---:|
-| Small (~0.1 KB) | **8.05×** | 5.19× |
-| Medium (~2.8 KB) | **10.73×** | 7.63× |
-| Large (~81 KB) | **9.36×** | 7.56× |
-| Batch (500 × medium, `renderMany`) | **51.79×** | 42.65× |
-
-Notes on the options that drive these numbers:
-
-- `renderBytes(Buffer)` avoids the V8 UTF-16 → UTF-8 copy on input — about 5% faster than `render(string)` on small inputs; roughly parity once rendering dominates.
-- `{ headingIds: false, unsafeHtml: true }` enables the streaming fast-path: no event collection, no filter pass. ~1.23–1.37× faster than default options.
-- `renderMany` parallelises across cores via `rayon` for batches ≥ 8 docs where at least one doc is ≥ 512 bytes. On a 500-doc batch it's **5.45×** faster than calling `render` in a per-call loop.
-
-Numbers are re-published in [`docs/data.json`](../../docs/data.json) after each release.
+- `renderBytes(Buffer)` avoids the V8 UTF-16 → UTF-8 copy on input — faster than `render(string)` on small inputs; roughly parity once rendering dominates.
+- `{ headingIds: false, unsafeHtml: true }` enables the streaming fast-path: no event collection, no filter pass.
+- `renderMany` parallelises across cores via `rayon` for batches ≥ 8 docs where at least one doc is ≥ 512 bytes.
 
 ## Conformance
 

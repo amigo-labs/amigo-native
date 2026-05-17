@@ -2,7 +2,7 @@
 <p><a href="https://www.npmjs.com/package/@amigo-labs/sanitize-html"><img src="https://img.shields.io/npm/v/@amigo-labs/sanitize-html" alt="npm version" /></a>
 <a href="https://www.npmjs.com/package/@amigo-labs/sanitize-html"><img src="https://img.shields.io/npm/dm/@amigo-labs/sanitize-html" alt="npm downloads" /></a>
 <a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/sanitize-html" alt="license" /></a></p>
-<p>Blazing fast HTML sanitization powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. A stream-based native Node.js sanitizer built directly on top of the <a href="https://crates.io/crates/html5ever"><code>html5ever</code></a> tokenizer — ~2–4× faster than the JS <code>sanitize-html</code> package on realistic inputs (2–100 KB).</p>
+<p>HTML sanitization powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. A stream-based native Node.js sanitizer built directly on top of the <a href="https://crates.io/crates/html5ever"><code>html5ever</code></a> tokenizer. Live benchmark numbers vs <code>sanitize-html</code> and <code>isomorphic-dompurify</code> are on the <a href="https://amigo-native.amigo-labs.workers.dev/">dashboard</a>.</p>
 <h2 id="installation">Installation</h2>
 <pre><code class="language-bash">npm install @amigo-labs/sanitize-html
 </code></pre>
@@ -38,13 +38,7 @@ const result = sanitize("&lt;div class='foo'&gt;bar&lt;/div&gt;", {
 <tr><td><code>linkRel</code></td><td><code>string</code></td><td>Value for <code>rel</code> attribute on <code>&lt;a href&gt;</code> (default: <code>"noopener noreferrer"</code>)</td></tr>
 </tbody></table>
 <h2 id="performance">Performance</h2>
-<p>Benchmarked against <code>sanitize-html</code> (npm) and <code>isomorphic-dompurify</code> (<code>npm run bench</code>):</p>
-<table><thead><tr><th>Input</th><th><code>@amigo-labs/sanitize-html</code></th><th>vs <code>sanitize-html</code> (npm)</th><th>vs <code>dompurify</code></th></tr></thead><tbody>
-<tr><td>small safe (~200 chars)</td><td>45,900 ops/s</td><td><strong>1.5×</strong> faster</td><td><strong>45×</strong> faster</td></tr>
-<tr><td>medium with XSS (~2 KB)</td><td>9,600 ops/s</td><td><strong>2.3×</strong> faster</td><td><strong>46×</strong> faster</td></tr>
-<tr><td>large doc (~100 KB)</td><td>360 ops/s</td><td><strong>3.9×</strong> faster</td><td><strong>36×</strong> faster</td></tr>
-</tbody></table>
-<p>The margin grows with input size because the streaming tokenizer avoids the DOM build cost that the JS alternatives pay.</p>
+<p>Live benchmark numbers vs upstream <code>sanitize-html</code> and <code>isomorphic-dompurify</code> are tracked on the <a href="https://amigo-native.amigo-labs.workers.dev/">dashboard</a> and in <a href="../../docs/data.json"><code>docs/data.json</code></a>. The margin grows with input size — the streaming tokenizer avoids the DOM build cost the JS alternatives pay.</p>
 <h2 id="install-for-the-browser">Install for the browser</h2>
 <p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
 <pre><code class="language-ts">import { sanitize } from '@amigo-labs/sanitize-html'

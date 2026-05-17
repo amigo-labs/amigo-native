@@ -94,7 +94,7 @@ The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — 
 import { xxh3_64, Xxh3Hasher } from '@amigo-labs/xxhash'
 ```
 
-Both one-shot functions and the stateful hashers ship to the browser. 64-bit hashes come back as JS `BigInt` directly. WASM is roughly 1.5–2× faster than `xxhash-wasm` / `xxhashjs` on typical inputs; SIMD (`+simd128`) is deferred per the expansion-2026 spec open question Q1.
+Both one-shot functions and the stateful hashers ship to the browser. 64-bit hashes come back as JS `BigInt` directly. SIMD (`+simd128`) is deferred per the expansion-2026 spec open question Q1; speedup numbers vs `xxhash-wasm` / `xxhashjs` live on the [dashboard](https://amigo-native.amigo-labs.workers.dev/).
 
 ## Supported Platforms
 
