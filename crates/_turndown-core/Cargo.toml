@@ -1,0 +1,12 @@
+[package]
+name = "amigo-turndown-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+html5ever = "0.39"
+markup5ever = "0.39"
+markup5ever_rcdom = "0.39"
