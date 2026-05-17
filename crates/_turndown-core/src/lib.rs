@@ -604,7 +604,7 @@ mod tests {
     use super::*;
 
     fn md(s: &str) -> String {
-        turndown(s.to_string(), None)
+        turndown(s, &TurndownOptions::default())
     }
 
     #[test]
@@ -661,8 +661,8 @@ mod tests {
             ..TurndownOptions::default()
         };
         let out = turndown(
-            "<pre><code class=\"language-rust\">fn main(){}</code></pre>".to_string(),
-            Some(opts),
+            "<pre><code class=\"language-rust\">fn main(){}</code></pre>",
+            &opts,
         );
         assert!(out.starts_with("```rust"));
         assert!(out.contains("fn main"));
@@ -685,7 +685,7 @@ mod tests {
             gfm: Some(true),
             ..TurndownOptions::default()
         };
-        let out = turndown("<p><del>gone</del></p>".to_string(), Some(opts));
+        let out = turndown("<p><del>gone</del></p>", &opts);
         assert!(out.contains("~~gone~~"));
     }
 
@@ -696,9 +696,8 @@ mod tests {
             ..TurndownOptions::default()
         };
         let out = turndown(
-            "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>"
-                .to_string(),
-            Some(opts),
+            "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>",
+            &opts,
         );
         assert!(out.contains("| A | B |"));
         assert!(out.contains("| --- | --- |"));
@@ -711,10 +710,7 @@ mod tests {
             remove: Some(vec!["aside".to_string()]),
             ..TurndownOptions::default()
         };
-        let out = turndown(
-            "<p>keep</p><aside>drop</aside><p>keep2</p>".to_string(),
-            Some(opts),
-        );
+        let out = turndown("<p>keep</p><aside>drop</aside><p>keep2</p>", &opts);
         assert!(!out.contains("drop"));
         assert!(out.contains("keep"));
     }
@@ -725,7 +721,7 @@ mod tests {
             bullet_list_marker: Some("-".to_string()),
             ..TurndownOptions::default()
         };
-        let out = turndown("<ul><li>a</li></ul>".to_string(), Some(opts));
+        let out = turndown("<ul><li>a</li></ul>", &opts);
         assert!(out.contains("- a"));
     }
 }

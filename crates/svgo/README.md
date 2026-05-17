@@ -82,6 +82,16 @@ FFI-crossing and destroy the performance thesis.
 See [`__conformance__/divergences.md`](./__conformance__/divergences.md)
 for known byte-level differences vs. upstream.
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { optimize } from '@amigo-labs/svgo'
+```
+
+`quick-xml` is small (~80 KB gzipped) — comfortably under the 500 KB browser budget. Useful for build-time SVG optimization in client-side workflows (e.g., dynamic icon-sprite generation).
+
 ## License
 
 MIT
