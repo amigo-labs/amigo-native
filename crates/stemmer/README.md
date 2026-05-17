@@ -36,6 +36,16 @@ s.tokenizeAndStemToBuffer('running quickly jumping')
 // <Buffer 72 75 6e ...> → "run\nquickli\njump"
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { Stemmer } from '@amigo-labs/stemmer'
+```
+
+`rust-stemmers` is small (~80 KB gzipped), well under the 500 KB budget.
+
 ## Why no `stem(word)`?
 
 Single-word stemming in JavaScript is ~30 ns of work. The NAPI FFI

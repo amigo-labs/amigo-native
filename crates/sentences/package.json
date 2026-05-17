@@ -4,10 +4,28 @@
   "description": "Multi-language sentence boundary detection with an offset-packed zero-copy hot-path.",
   "main": "index.js",
   "types": "index.d.ts",
+  "browser": "./wasm/pkg/amigo_sentences_wasm.js",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./wasm/pkg/amigo_sentences_wasm.d.ts",
+        "default": "./wasm/pkg/amigo_sentences_wasm.js"
+      },
+      "default": {
+        "types": "./index.d.ts",
+        "default": "./index.js"
+      }
+    }
+  },
   "files": [
     "index.js",
     "index.d.ts",
-    "README.md"
+    "README.md",
+    "wasm/pkg/amigo_sentences_wasm.js",
+    "wasm/pkg/amigo_sentences_wasm_bg.js",
+    "wasm/pkg/amigo_sentences_wasm_bg.wasm",
+    "wasm/pkg/amigo_sentences_wasm.d.ts",
+    "wasm/pkg/amigo_sentences_wasm_bg.wasm.d.ts"
   ],
   "napi": {
     "binaryName": "sentences",
@@ -24,9 +42,12 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:all": "pnpm build && pnpm build:wasm",
+    "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "test:conformance": "vitest run __conformance__",
+    "test:wasm": "cd wasm && wasm-pack test --node",
     "test:all": "vitest run",
     "bench": "vitest bench"
   },
@@ -64,6 +85,7 @@
     "vsJs": "TBD",
     "parity": "100%",
     "status": "Compatible",
+    "targets": ["node", "browser"],
     "competitors": [
       "sbd"
     ]

@@ -66,6 +66,16 @@ interface SplitOptions {
 }
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { split, splitToOffsets } from '@amigo-labs/sentences'
+```
+
+The bundled per-language abbreviation tables stay in the WASM artifact; no runtime resource loading.
+
 ## Parity
 
 We target **Pragmatic Segmenter** behaviour, not bit-exact `sbd`. See
