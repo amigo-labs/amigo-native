@@ -1,0 +1,11 @@
+[package]
+name = "amigo-jpeg-js-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+jpeg-decoder = "0.3"
+jpeg-encoder = "0.6"

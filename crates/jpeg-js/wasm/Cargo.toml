@@ -1,0 +1,20 @@
+[package]
+name = "amigo-jpeg-js-wasm"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+amigo-jpeg-js-core = { path = "../../_jpeg-js-core" }
+wasm-bindgen = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

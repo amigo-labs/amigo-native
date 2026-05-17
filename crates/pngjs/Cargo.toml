@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-png = "0.18"
+amigo-pngjs-core = { path = "../_pngjs-core" }
 
 [build-dependencies]
 napi-build = "2"

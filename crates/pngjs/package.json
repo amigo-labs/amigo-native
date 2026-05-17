@@ -4,9 +4,27 @@
   "description": "PNG decode/encode via image-rs `png` crate. RGBA output, no native deps in build.",
   "main": "index.js",
   "types": "index.d.ts",
+  "browser": "./wasm/pkg/amigo_pngjs_wasm.js",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./wasm/pkg/amigo_pngjs_wasm.d.ts",
+        "default": "./wasm/pkg/amigo_pngjs_wasm.js"
+      },
+      "default": {
+        "types": "./index.d.ts",
+        "default": "./index.js"
+      }
+    }
+  },
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "wasm/pkg/amigo_pngjs_wasm.js",
+    "wasm/pkg/amigo_pngjs_wasm_bg.js",
+    "wasm/pkg/amigo_pngjs_wasm_bg.wasm",
+    "wasm/pkg/amigo_pngjs_wasm.d.ts",
+    "wasm/pkg/amigo_pngjs_wasm_bg.wasm.d.ts"
   ],
   "napi": {
     "binaryName": "pngjs",
@@ -23,9 +41,12 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:all": "pnpm build && pnpm build:wasm",
+    "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "test:conformance": "vitest run __conformance__",
+    "test:wasm": "cd wasm && wasm-pack test --node",
     "test:all": "vitest run",
     "bench": "vitest bench"
   },
@@ -62,6 +83,7 @@
     "vsJs": "TBD",
     "parity": "rgba-only",
     "status": "Compatible",
+    "targets": ["node", "browser"],
     "competitors": [
       "pngjs@7.0.0",
       "upng-js@2.1.0"
