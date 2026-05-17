@@ -1,7 +1,23 @@
 <h1 id="perf-review-amigo-labs-argon2">Perf-Review: <code>@amigo-labs/argon2</code></h1>
 <blockquote>
-<p><strong>Status:</strong> 🟡 Yellow · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0</p>
+<p><strong>Status:</strong> 🟡 Yellow · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0 ·
+<strong>Targets:</strong> <code>node</code> (Node.js server-only group)</p>
 </blockquote>
+<h2 id="wasm-target-exclusion">WASM-target exclusion</h2>
+<p><code>argon2</code> is part of the <strong>Node.js server-only tier</strong> documented in
+<a href="../specs/expansion-2026.md#nodejs-server-only-tier"><code>docs/specs/expansion-2026.md</code></a>.
+It does not ship a WASM binding, deliberately:</p>
+<ul>
+<li><strong>Performance:</strong> Argon2 is memory-hard by design (default 64 MiB, t=3,
+p=4). WASM is ~2× slower than native for the inner blake2b loop, so
+the same security target costs roughly twice the CPU budget per hash.</li>
+<li><strong>Threat model:</strong> Client-side password hashing is an anti-pattern.
+Salts and hashes belong on the server. There is no use case for
+shipping the algorithm to the browser that improves on simply sending
+the password over TLS to a server endpoint.</li>
+</ul>
+<p>If a concrete edge/serverless use case appears, revisit. Until then this
+package stays napi-only with <code>targets: ["node"]</code> in the registry.</p>
 <h2 id="verdict">Verdict</h2>
 <p>CPU-bound password hashing — <strong>1.37× vs. upstream <code>argon2</code> (C bindings via node-gyp)</strong>, <strong>2.33× vs. <code>hash-wasm</code> WASM build</strong>. Upstream is already natively compiled (argon2-C via node-gyp), so this margin represents the entire Phase-C/D ceiling for this package: the algorithm is the Argon2-2015 spec, both sides drive <code>blake2b</code> core loops over the same algorithm — no order-of-magnitude headroom is available. Keep-as-is; no optimization sprint in sight that would clear measurement noise.</p>
 <h2 id="classification-rationale">Classification rationale</h2>
