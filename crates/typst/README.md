@@ -77,6 +77,16 @@ function compileMany(sources: string[], options?: CompileOptions): CompileResult
 - All Typst scripting: `#let`, `#if`, `#for`, `#show`, `#set`,
   math typesetting, tables, lists, user functions.
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+const { compile } = await import('@amigo-labs/typst')
+```
+
+⚠️ **Bundle is ~5 MB gzipped** (typst-pdf + bundled Libertinus fonts) — well over the 500 KB soft budget. Always lazy-import in a code-split route; never include in the initial chunk. The chrono `wasmbind` feature wires `today()` through to JavaScript's `Date.now()`.
+
 ## Scope cuts
 
 - **No `@preview/*` package resolution.** Supply-chain risk; stay
