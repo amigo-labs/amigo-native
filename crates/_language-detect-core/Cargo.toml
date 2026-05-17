@@ -1,0 +1,10 @@
+[package]
+name = "amigo-language-detect-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+whatlang = "0.18"

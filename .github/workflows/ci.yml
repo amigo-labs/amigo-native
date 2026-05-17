@@ -201,6 +201,11 @@ jobs:
   # expansion-2026.md D2 the budget is 500 KB gzipped, warn-only on
   # first pass — escalates to hard-fail at baseline × 1.15 after one
   # full release cycle of collected baselines.
+  #
+  # During the dual-target rollout per-crate build failures are tolerated
+  # (they show as ❌ in the summary table) — the job only fails if NO crate
+  # built successfully. This keeps the size signal flowing while specific
+  # crates' wasm bindings land one by one.
   bundle-size:
     runs-on: ubuntu-latest
     needs: detect-changes
@@ -215,7 +220,7 @@ jobs:
           shared-key: wasm-bundle-size
       - uses: taiki-e/install-action@v2
         with:
-          tool: wasm-pack
+          tool: wasm-pack,wasm-bindgen-cli
       - name: Install binaryen
         run: |
           sudo apt-get update
@@ -223,14 +228,13 @@ jobs:
       - name: Pre-flight diagnostics
         shell: bash
         run: |
-          which wasm-pack
-          wasm-pack --version
-          which wasm-opt
-          wasm-opt --version
+          which wasm-pack && wasm-pack --version
+          which wasm-bindgen && wasm-bindgen --version
+          which wasm-opt && wasm-opt --version
       - name: Build and measure
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           BUDGET=512000
           if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
             wasm_dirs=$(ls -d crates/*/wasm 2>/dev/null || true)
@@ -247,21 +251,35 @@ jobs:
           fi
           printf '| Crate | Raw .wasm | wasm-opt -Oz | Gzipped | Status |\n' >> "$GITHUB_STEP_SUMMARY"
           printf '| :--- | ---: | ---: | ---: | :--- |\n' >> "$GITHUB_STEP_SUMMARY"
+          built=0
+          failed=0
           for dir in $wasm_dirs; do
             crate=$(basename $(dirname "$dir"))
             if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then continue; fi
             echo "::group::bundle-size $crate"
-            (cd "$dir" && wasm-pack build --target bundler --release --out-dir pkg)
+            if ! (cd "$dir" && wasm-pack build --target bundler --release --out-dir pkg); then
+              echo "::warning::wasm-pack build failed for $crate"
+              printf '| %s | — | — | — | ❌ build failed |\n' "$crate" >> "$GITHUB_STEP_SUMMARY"
+              failed=$((failed + 1))
+              echo "::endgroup::"
+              continue
+            fi
             wasm=$(ls "$dir"/pkg/*_bg.wasm 2>/dev/null | head -1)
             if [ -z "$wasm" ]; then
               echo "::warning::no .wasm produced for $crate"
+              printf '| %s | — | — | — | ❌ no .wasm |\n' "$crate" >> "$GITHUB_STEP_SUMMARY"
+              failed=$((failed + 1))
               echo "::endgroup::"
               continue
             fi
             raw=$(stat -c%s "$wasm")
-            wasm-opt -Oz "$wasm" -o "$wasm.opt"
+            if ! wasm-opt -Oz "$wasm" -o "$wasm.opt"; then
+              echo "::warning::wasm-opt failed for $crate"
+              cp "$wasm" "$wasm.opt"
+            fi
             opt=$(stat -c%s "$wasm.opt")
             gz=$(gzip -c "$wasm.opt" | wc -c | tr -d ' ')
+            if [ -z "$gz" ]; then gz=0; fi
             if [ "$gz" -gt "$BUDGET" ]; then
               status="⚠️ over budget"
               echo "::warning::$crate gzipped ${gz} B exceeds 500 KB budget (warn-only per D2)"
@@ -269,8 +287,14 @@ jobs:
               status="✅"
             fi
             printf '| %s | %s B | %s B | %s B | %s |\n' "$crate" "$raw" "$opt" "$gz" "$status" >> "$GITHUB_STEP_SUMMARY"
+            built=$((built + 1))
             echo "::endgroup::"
           done
+          echo "Built: $built, Failed: $failed"
+          if [ "$built" = "0" ] && [ "$failed" -gt "0" ]; then
+            echo "::error::All wasm crates failed to build"
+            exit 1
+          fi
 
   build:
     runs-on: ubuntu-latest
