@@ -1,0 +1,115 @@
+---
+import Base from "~/layouts/Base.astro";
+import { brand, marquee, packages, heroTaglines } from "~/lib/packages";
+---
+
+<Base>
+  <section class="pt-12 pb-10 sm:pt-20 sm:pb-14">
+    <div class="flex flex-col gap-6">
+      <span
+        class="inline-flex w-fit items-center gap-2 rounded-full border border-line px-3 py-1 font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-muted"
+      >
+        <span class="size-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+        v2 · scaffolding
+      </span>
+      <h1
+        class="font-sans font-semibold leading-(--leading-tight) tracking-(--tracking-tight) text-fg text-4xl sm:text-5xl"
+      >
+        {brand.name.split("-")[0]}<span class="text-accent">-{brand.name.split("-")[1]}</span>
+      </h1>
+      <p class="max-w-2xl text-lg text-fg-muted">
+        {brand.tagline}
+      </p>
+      <p class="max-w-2xl text-base text-fg-subtle">
+        {brand.subline}
+      </p>
+
+      <div class="mt-2 flex flex-wrap gap-3">
+        <a
+          href="#packages"
+          class="inline-flex h-11 items-center gap-2 rounded-md bg-accent px-5 text-sm font-semibold text-accent-on hover:bg-accent-hot transition-colors"
+        >
+          Browse packages
+        </a>
+        <a
+          href="/getting-started"
+          class="inline-flex h-11 items-center gap-2 rounded-md border border-line px-5 text-sm font-medium text-fg hover:border-line-strong transition-colors"
+        >
+          Getting started
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section
+    aria-label="Project stats"
+    class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px overflow-hidden rounded-xl border border-line bg-line"
+  >
+    {marquee.map((stat) => (
+      <div class="flex flex-col gap-1 bg-bg-elevated p-4">
+        <span
+          class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+        >
+          {stat.k}
+        </span>
+        <span
+          class="font-mono text-md text-fg"
+          set:html={stat.v}
+        />
+      </div>
+    ))}
+  </section>
+
+  <section id="packages" class="mt-16">
+    <header class="mb-6 flex items-end justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-(--tracking-tight)">
+          Packages
+        </h2>
+        <p class="mt-1 text-sm text-fg-muted">
+          {packages.length} packages across {new Set(packages.map((p) => p.category)).size} categories.
+        </p>
+      </div>
+    </header>
+
+    <ul
+      role="list"
+      class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      {packages.map((pkg) => (
+        <li>
+          <a
+            href={`/packages/${pkg.name}`}
+            class="group flex h-full flex-col gap-3 rounded-xl border border-line bg-bg-elevated p-4 shadow-card transition-colors hover:border-line-strong"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+                {pkg.category}
+              </span>
+              <span class="font-mono text-2xs text-accent">
+                {pkg.speedup}
+              </span>
+            </div>
+            <h3 class="text-lg font-semibold tracking-(--tracking-snug) text-fg group-hover:text-accent transition-colors">
+              {pkg.title}
+            </h3>
+            <p class="text-sm text-fg-muted line-clamp-3">
+              {pkg.description}
+            </p>
+            <div class="mt-auto pt-2">
+              <code class="font-mono text-2xs text-fg-subtle">
+                @amigo-labs/{pkg.name}
+              </code>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <p class="mt-6 text-xs text-fg-subtle">
+      Phase 1 scaffolding. The catalog filter, featured benchmark, and
+      keyboard shortcuts arrive in phase 2. Hero tagline pool:
+      {heroTaglines.length} entries.
+    </p>
+  </section>
+</Base>

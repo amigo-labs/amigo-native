@@ -15,7 +15,11 @@
     "lint": "oxlint --ignore-pattern 'crates/sanitize-html/__conformance__/upstream/**' . && cargo fmt --check && cargo clippy --workspace -- -D warnings",
     "format": "prettier --write . && cargo fmt && taplo format",
     "deploy:dry": "wrangler deploy --dry-run",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "web:dev": "pnpm --filter @amigo-labs/web dev",
+    "web:build": "pnpm --filter @amigo-labs/web build",
+    "web:preview": "pnpm --filter @amigo-labs/web preview",
+    "web:check": "pnpm --filter @amigo-labs/web check"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.6.2",

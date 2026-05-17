@@ -40,3 +40,7 @@ sanitize-skip-categorization.md
 # Cloudflare Workers (local wrangler state)
 .wrangler/
 .dev.vars
+
+# Astro (web/)
+web/dist/
+web/.astro/
