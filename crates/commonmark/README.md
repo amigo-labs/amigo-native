@@ -60,6 +60,18 @@ const unsafe_but_html_free = render(userMarkdown)
 const safe = sanitize(unsafe_but_html_free)
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { render } from '@amigo-labs/commonmark'
+```
+
+`pulldown-cmark` is ~150–200 KB gzipped — under the 500 KB browser budget. The napi-only `renderBytes` / `renderBytesFast` variants are dropped from the browser build (no `Buffer`); `renderMany` runs serially in WASM (no rayon).
+
+The XSS warning above applies doubly to browser usage — pair with [`@amigo-labs/sanitize-html`](../sanitize-html) when rendering untrusted Markdown into the DOM.
+
 ## When to choose this package
 
 - **You control the Markdown source** (docs, README files, CMS authored by trusted editors) and want faster site builds.

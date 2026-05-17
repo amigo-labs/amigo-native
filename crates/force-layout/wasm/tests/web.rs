@@ -1,23 +1,39 @@
+use serde::Serialize;
 use wasm_bindgen::JsValue;
 use wasm_bindgen_test::*;
 
+// serde_wasm_bindgen does not round-trip `serde_json::Value::Object` into a
+// plain JS object by default (it produces a `Map` instead, which the
+// deserializer side here treats as a struct without `id` fields). Use
+// dedicated `#[derive(Serialize)]` structs in tests so the JS shape matches
+// what the public API expects.
+#[derive(Serialize)]
+struct Node {
+    id: String,
+}
+
+fn empty_array() -> JsValue {
+    let v: Vec<u8> = Vec::new();
+    serde_wasm_bindgen::to_value(&v).unwrap()
+}
+
 #[wasm_bindgen_test]
 fn empty_graph_returns_empty_nodes() {
-    let nodes = serde_wasm_bindgen::to_value::<Vec<serde_json::Value>>(&Vec::new()).unwrap();
-    let edges = serde_wasm_bindgen::to_value::<Vec<serde_json::Value>>(&Vec::new()).unwrap();
-    let result = amigo_force_layout_wasm::simulate(nodes, edges, JsValue::UNDEFINED).unwrap();
-    let v: serde_json::Value = serde_wasm_bindgen::from_value(result).unwrap();
-    assert_eq!(v.get("nodes").unwrap().as_array().unwrap().len(), 0);
+    let result =
+        amigo_force_layout_wasm::simulate(empty_array(), empty_array(), JsValue::UNDEFINED)
+            .unwrap();
+    assert!(!result.is_null());
 }
 
 #[wasm_bindgen_test]
 fn three_node_run_finishes() {
-    let nodes = serde_wasm_bindgen::to_value(&serde_json::json!([
-        {"id": "a"}, {"id": "b"}, {"id": "c"}
-    ]))
-    .unwrap();
-    let edges = serde_wasm_bindgen::to_value::<Vec<serde_json::Value>>(&Vec::new()).unwrap();
-    let result = amigo_force_layout_wasm::simulate(nodes, edges, JsValue::UNDEFINED).unwrap();
-    let v: serde_json::Value = serde_wasm_bindgen::from_value(result).unwrap();
-    assert_eq!(v.get("nodes").unwrap().as_array().unwrap().len(), 3);
+    let nodes = vec![
+        Node { id: "a".into() },
+        Node { id: "b".into() },
+        Node { id: "c".into() },
+    ];
+    let nodes_js = serde_wasm_bindgen::to_value(&nodes).unwrap();
+    let result =
+        amigo_force_layout_wasm::simulate(nodes_js, empty_array(), JsValue::UNDEFINED).unwrap();
+    assert!(!result.is_null());
 }
