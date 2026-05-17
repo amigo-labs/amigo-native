@@ -9,8 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-pdf-extract = "0.10"
-lopdf = "0.40"
+amigo-pdf-parse-core = { path = "../_pdf-parse-core" }
 
 [build-dependencies]
 napi-build = "2"
