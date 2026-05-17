@@ -55,7 +55,12 @@ function isDir(p) {
 
 function listCrates() {
   return readdirSync(CRATES_DIR, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && e.name !== '_template')
+    .filter((e) => e.isDirectory())
+    // Skip _template (scaffold) and the `_<name>-core` internal crates —
+    // those are pure-Rust libraries embedded as path deps by the dual-target
+    // wrappers; they don't ship to npm, so the audit's "missing platform
+    // stubs / docs entry / README" checks don't apply to them.
+    .filter((e) => e.name !== '_template' && !e.name.startsWith('_'))
     .map((e) => e.name)
     .sort()
 }
