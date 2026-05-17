@@ -1,19 +1,121 @@
 ---
 import Base from "~/layouts/Base.astro";
+import { loadTimeline, type TimelineEntry } from "~/lib/changelog";
+
+const entries = await loadTimeline();
+const dated = entries.filter((e) => e.date);
+const undated = entries.filter((e) => !e.date);
+
+function typePill(type: TimelineEntry["type"]) {
+  if (type === "release") {
+    return {
+      label: "Release",
+      class: "border-ok/40 bg-ok/10 text-ok",
+    };
+  }
+  return {
+    label: "Archived",
+    class: "border-archived/40 bg-archived/10 text-archived",
+  };
+}
 ---
 
 <Base
   title="Changelog"
-  description="Releases, deprecations, and perf-review verdict changes across all amigo-native packages."
+  description="Releases, deprecations, and archive timeline across all @amigo-labs/* packages."
 >
-  <div class="mx-auto max-w-3xl pt-10 pb-16">
-    <h1 class="text-3xl font-semibold tracking-(--tracking-tight)">
-      Changelog
-    </h1>
-    <p class="mt-3 text-lg text-fg-muted">
-      Phase 1 placeholder. The timeline lands in phase 5, fed from npm
-      release tags (<code class="font-mono text-sm">.release-please-manifest.json</code> +
-      git tags) and the post-mortems under <code class="font-mono text-sm">docs/post-mortems/</code>.
-    </p>
-  </div>
+  <nav class="pt-8 pb-4 font-mono text-xs text-fg-subtle" aria-label="Breadcrumb">
+    <a href="/" class="hover:text-fg">Packages</a>
+    <span class="mx-1">/</span>
+    <span class="text-fg">Changelog</span>
+  </nav>
+
+  <article class="mx-auto max-w-3xl pb-16">
+    <header class="mb-10">
+      <h1 class="text-3xl font-semibold tracking-(--tracking-tight) sm:text-4xl">
+        Changelog
+      </h1>
+      <p class="mt-3 text-lg text-fg-muted">
+        Recent archive events and currently shipped versions. Release dates
+        will appear here once the first round of versioned npm tags lands.
+      </p>
+    </header>
+
+    {dated.length > 0 && (
+      <section class="mb-12">
+        <h2 class="mb-4 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+          Timeline
+        </h2>
+        <ol role="list" class="flex flex-col gap-3">
+          {dated.map((entry) => {
+            const pill = typePill(entry.type);
+            return (
+              <li>
+                <a
+                  href={entry.href}
+                  class="group flex flex-col gap-2 rounded-xl border border-line bg-bg-elevated p-4 transition-colors hover:border-line-strong sm:flex-row sm:items-start sm:gap-5"
+                >
+                  <time
+                    datetime={entry.date}
+                    class="shrink-0 font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle sm:w-24"
+                  >
+                    {entry.date}
+                  </time>
+                  <div class="flex min-w-0 flex-1 flex-col gap-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span
+                        class:list={[
+                          "inline-flex h-5 items-center rounded-full border px-2 font-mono text-2xs uppercase tracking-(--tracking-wide)",
+                          pill.class,
+                        ]}
+                      >
+                        {pill.label}
+                      </span>
+                      <span
+                        class="truncate text-sm font-medium text-fg group-hover:text-accent"
+                      >
+                        {entry.title}
+                      </span>
+                    </div>
+                    <p class="text-sm text-fg-muted">{entry.summary}</p>
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    )}
+
+    {undated.length > 0 && (
+      <section>
+        <h2 class="mb-4 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+          Currently shipped
+        </h2>
+        <p class="mb-4 text-sm text-fg-muted">
+          {undated.length} packages, sourced from
+          <code class="font-mono text-xs">.release-please-manifest.json</code>.
+        </p>
+        <ul role="list" class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {undated.map((entry) => (
+            <li>
+              <a
+                href={entry.href}
+                class="group flex items-center justify-between rounded-md border border-line bg-bg-elevated px-3 py-2 transition-colors hover:border-line-strong"
+              >
+                <span class="text-sm text-fg group-hover:text-accent">
+                  {entry.title}
+                </span>
+                {entry.version && (
+                  <span class="font-mono text-2xs text-fg-subtle">
+                    v{entry.version}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </article>
 </Base>

@@ -14,12 +14,13 @@ compatibility_date = "2025-04-01"
 workers_dev = true
 
 [assets]
-directory = "./docs"
-# Hash-only routes today, but per-package URLs (#G2 in the docs roadmap) will
-# rely on this fallback so /pkg/argon2 lands on index.html and the SPA reads
-# the path. Existing files (/perf-review/*.md, /history/*.jsonl, …) are still
-# served directly first.
-not_found_handling = "single-page-application"
+directory = "./web/dist"
+# Astro emits one HTML file per route (incl. /packages/<slug>/index.html and
+# /404.html). Static-asset routing serves those directly; unknown paths fall
+# through to /404.html via the Cloudflare default 404 handler. The legacy
+# data files (docs/perf-review/*.md, docs/history/*.jsonl, …) remain
+# checked into the repo as the canonical content source — they are read at
+# build time by the Astro project rather than served as static URLs.
 
 # Custom domain — uncomment and set once a route is provisioned in Cloudflare.
 # Until then the worker is reachable at

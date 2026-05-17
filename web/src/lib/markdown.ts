@@ -12,13 +12,14 @@ const marked = new Marked({
 
 const renderer = new marked.Renderer();
 
-// Inject heading ids matching the slug pattern used elsewhere on the site
-// (lowercased, non-word chars to hyphen).
+// Inject heading ids matching the slug pattern used elsewhere on the site.
+// The allowlist below permits only word chars, whitespace, and hyphens —
+// which collapses any HTML markup inside a heading (<code>, <strong>, …)
+// to its plain-text equivalent without a separate tag-strip pass.
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/<[^>]+>/g, "")
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
     .trim()
     .replace(/\s+/g, "-");
 }
