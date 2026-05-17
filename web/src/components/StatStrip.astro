@@ -1,0 +1,19 @@
+---
+import { marquee } from "~/lib/packages";
+---
+
+<section
+  aria-label="Project stats"
+  class="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4 lg:grid-cols-4"
+>
+  {marquee.map((stat) => (
+    <div class="flex flex-col gap-1 bg-bg-elevated p-4">
+      <span
+        class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+      >
+        {stat.k}
+      </span>
+      <span class="font-mono text-md text-fg" set:html={stat.v} />
+    </div>
+  ))}
+</section>

@@ -161,3 +161,77 @@ textarea {
     --line: var(--line-strong);
   }
 }
+
+/* Keyboard shortcut overlay (created on demand by lib/keyboard.ts). */
+#shortcut-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+#shortcut-overlay .overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+#shortcut-overlay .overlay-panel {
+  position: relative;
+  width: min(520px, 100%);
+  border: 1px solid var(--line);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-pop);
+  padding: 20px 22px 18px;
+  color: var(--fg);
+}
+#shortcut-overlay h2 {
+  margin: 0 0 12px;
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: var(--tracking-snug);
+}
+#shortcut-overlay dl {
+  margin: 0 0 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 18px;
+  font-size: var(--text-sm);
+}
+#shortcut-overlay dl div {
+  display: contents;
+}
+#shortcut-overlay dt {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--fg-muted);
+}
+#shortcut-overlay dd {
+  margin: 0;
+  color: var(--fg);
+}
+#shortcut-overlay kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+}
+#shortcut-overlay [data-overlay-close] {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg-muted);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+#shortcut-overlay [data-overlay-close]:hover {
+  color: var(--fg);
+  border-color: var(--line-strong);
+}

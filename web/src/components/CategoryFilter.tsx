@@ -1,0 +1,158 @@
+/** @jsxImportSource preact */
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { categories, categoryLabel, type Category } from "~/lib/packages";
+
+interface Props {
+  /** Selector that matches the package-card anchors to filter. */
+  cardSelector?: string;
+  /** Selector for the catalog section as a whole (used to focus on apply). */
+  catalogSelector?: string;
+  /** Total package count for the "showing N of M" line. */
+  total: number;
+}
+
+const ALL = "all" as const;
+type Filter = typeof ALL | Category;
+
+export default function CategoryFilter({
+  cardSelector = "[data-pkg-card]",
+  catalogSelector = "#catalog",
+  total,
+}: Props) {
+  const [filter, setFilter] = useState<Filter>(ALL);
+  const [query, setQuery] = useState("");
+  const [visible, setVisible] = useState(total);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Apply filter to DOM on every change.
+  useEffect(() => {
+    const cards = document.querySelectorAll<HTMLElement>(cardSelector);
+    const q = query.trim().toLowerCase();
+    let shown = 0;
+    cards.forEach((card) => {
+      const cat = card.dataset.category ?? "";
+      const name = (card.dataset.name ?? "").toLowerCase();
+      const title = card.dataset.title ?? "";
+      const desc = card.dataset.description ?? "";
+      const matchesCat = filter === ALL || cat === filter;
+      const matchesQuery =
+        !q || name.includes(q) || title.includes(q) || desc.includes(q);
+      const show = matchesCat && matchesQuery;
+      card.style.display = show ? "" : "none";
+      if (show) shown++;
+    });
+    setVisible(shown);
+  }, [filter, query, cardSelector]);
+
+  // "/" focuses the search input from anywhere on the page.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) {
+        return;
+      }
+      e.preventDefault();
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  const filters = useMemo<{ value: Filter; label: string }[]>(
+    () => [
+      { value: ALL, label: "All" },
+      ...categories.map((c) => ({ value: c, label: categoryLabel[c] })),
+    ],
+    []
+  );
+
+  function clear() {
+    setQuery("");
+    setFilter(ALL);
+    inputRef.current?.focus();
+  }
+
+  return (
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <label class="relative w-full sm:max-w-xs">
+          <span class="sr-only">Filter packages</span>
+          <input
+            ref={inputRef}
+            type="search"
+            value={query}
+            onInput={(e) => setQuery((e.currentTarget as HTMLInputElement).value)}
+            placeholder="Filter packages…"
+            aria-label="Filter packages"
+            class="h-10 w-full rounded-md border border-line bg-bg-elevated pl-9 pr-9 text-sm placeholder:text-fg-subtle focus:border-line-strong"
+          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <kbd
+            class="absolute right-2 top-1/2 -translate-y-1/2 rounded border border-line bg-bg px-1.5 py-0.5 font-mono text-2xs text-fg-subtle"
+          >
+            /
+          </kbd>
+        </label>
+        <div
+          aria-live="polite"
+          class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+        >
+          showing {visible} of {total}
+          {(query || filter !== ALL) && (
+            <button
+              type="button"
+              onClick={clear}
+              class="ms-3 text-accent hover:text-accent-hot"
+            >
+              clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+        {filters.map((f) => {
+          const active = f.value === filter;
+          return (
+            <button
+              key={f.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => {
+                setFilter(f.value);
+                document
+                  .querySelector(catalogSelector)
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              class={`inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors ${
+                active
+                  ? "border-accent bg-accent-dim text-accent"
+                  : "border-line bg-bg-elevated text-fg-muted hover:border-line-strong hover:text-fg"
+              }`}
+            >
+              {f.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
