@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/@amigo-labs/sanitize-html)](https://www.npmjs.com/package/@amigo-labs/sanitize-html)
 [![license](https://img.shields.io/npm/l/@amigo-labs/sanitize-html)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
 
-HTML sanitization powered by Rust via [NAPI-RS](https://napi.rs). A stream-based native Node.js sanitizer built directly on top of the [`html5ever`](https://crates.io/crates/html5ever) tokenizer. Live benchmark numbers vs `sanitize-html` and `isomorphic-dompurify` are on the [dashboard](https://amigo-native.amigo-labs.workers.dev/).
+Blazing fast HTML sanitization powered by Rust via [NAPI-RS](https://napi.rs). A stream-based native Node.js sanitizer built directly on top of the [`html5ever`](https://crates.io/crates/html5ever) tokenizer — faster than the JS `sanitize-html` / `isomorphic-dompurify` packages on realistic inputs. Live numbers are on the [dashboard](https://amigo-native.amigo-labs.workers.dev/).
 
 ## Installation
 
