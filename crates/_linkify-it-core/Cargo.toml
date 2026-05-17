@@ -1,0 +1,10 @@
+[package]
+name = "amigo-linkify-it-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+linkify = "0.11"

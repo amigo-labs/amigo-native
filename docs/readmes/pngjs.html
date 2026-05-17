@@ -1,0 +1,24 @@
+<h1 id="amigo-labs-pngjs">@amigo-labs/pngjs</h1>
+<blockquote>
+<p>Rust-powered PNG decode/encode to RGBA pixel buffers. Compatible-shape alternative to <a href="https://www.npmjs.com/package/pngjs"><code>pngjs</code></a>, backed by the image-rs <a href="https://crates.io/crates/png"><code>png</code></a> crate (pure-Rust DEFLATE via flate2 + zlib-rs).</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/pngjs
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { decodeRgba, encodeRgba } from '@amigo-labs/pngjs'
+
+const { width, height, data } = decodeRgba(pngBuffer)
+// data is an RGBA Uint8Array of length width * height * 4
+
+const png = encodeRgba(rgba, width, height)
+</code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { decodeRgba, encodeRgba } from '@amigo-labs/pngjs'
+</code></pre>
+<p><code>png</code> is pure-Rust, no C dependency — the WASM build is straightforward.</p>
+<h2 id="parity">Parity</h2>
+<p>RGBA 8-bit on input and output. Source PNGs in palette / 16-bit / interlaced modes go through image-rs’s converter to 8-bit RGBA. See <a href="./__conformance__"><code>__conformance__/</code></a> and <a href="./__conformance__/divergences.md"><code>divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

@@ -69,6 +69,7 @@
     "vsJs": "1.57-4.4x",
     "parity": "100%",
     "status": "Alternative",
+    "targets": ["node"],
     "competitors": [
       "jose@5.9.0"
     ]

@@ -6,7 +6,7 @@
 
 JOSE key-format primitives powered by Rust via [NAPI-RS](https://napi.rs). Native Ed25519 JWK generation and RFC 7638 thumbprints — a fast companion to the [`jose`](https://www.npmjs.com/package/jose) npm package's key-handling subset.
 
-> **v0.1 scope.** Ed25519 key-pair generation and JWK thumbprints only. JWS sign/verify is provided by [`@amigo-labs/jwt`](https://www.npmjs.com/package/@amigo-labs/jwt). JWE encrypt/decrypt is roadmap for v0.2. **RSA key generation is not exposed** because Node's built-in `crypto.generateKeyPair('rsa')` (OpenSSL via the libuv thread-pool) is ~2.6× faster than any pure-Rust `rsa` crate we can link — see the "Notes on RSA" section below.
+> **v0.1 scope.** Ed25519 key-pair generation and JWK thumbprints only. JWS sign/verify is provided by [`@amigo-labs/jwt`](https://www.npmjs.com/package/@amigo-labs/jwt). JWE encrypt/decrypt is roadmap for v0.2. **RSA key generation is not exposed** because Node's built-in `crypto.generateKeyPair('rsa')` (OpenSSL via the libuv thread-pool) outpaces every pure-Rust `rsa` crate we can link — see the "Notes on RSA" section below.
 
 ## Installation
 
@@ -39,17 +39,11 @@ Computes the SHA-256 JWK thumbprint per RFC 7638. Returns a base64url-encoded st
 
 ## Performance
 
-Measured on linux-x64, Node v22.22.2, vs [`jose`](https://www.npmjs.com/package/jose) (panva):
-
-| Operation | @amigo-labs/jose | jose (pure JS) | Speedup |
-| --- | ---: | ---: | --- |
-| jwkThumbprint (Ed25519) | 399 k hz | 247 k hz | **1.62×** |
-| jwkThumbprint (RSA-2048) | 369 k hz | 168 k hz | **2.19×** |
-| generateEd25519KeyPair + exportJWK | 46.4 k hz | 6.66 k hz | **6.97×** |
+Live benchmark numbers vs [`jose`](https://www.npmjs.com/package/jose) (panva) are on the [dashboard](https://amigo-native.amigo-labs.workers.dev/) and in [`docs/data.json`](../../docs/data.json).
 
 ## Notes on RSA
 
-`generateRsaKeyPair` is **deliberately not exposed**. Node ships `crypto.generateKeyPair('rsa', …)` built-in, which uses OpenSSL's heavily-optimized BIGNUM prime-search via the libuv thread-pool. Pure-Rust `rsa` crates cannot match that throughput — measurement showed ~2.6× slower. If you need RSA keys, generate them via Node built-in and pass the resulting JWK to `jwkThumbprint`:
+`generateRsaKeyPair` is **deliberately not exposed**. Node ships `crypto.generateKeyPair('rsa', …)` built-in, which uses OpenSSL's heavily-optimized BIGNUM prime-search via the libuv thread-pool — pure-Rust `rsa` crates cannot match that throughput. If you need RSA keys, generate them via Node built-in and pass the resulting JWK to `jwkThumbprint`:
 
 ```ts
 import { generateKeyPair } from "node:crypto";
@@ -60,7 +54,7 @@ const { publicKey, privateKey } = await promisify(generateKeyPair)("rsa", {
   modulusLength: 2048,
 });
 const jwk = publicKey.export({ format: "jwk" });
-const kid = jwkThumbprint(jwk); // 2.19× faster than panva/jose's thumbprint
+const kid = jwkThumbprint(jwk);
 ```
 
 ## Roadmap

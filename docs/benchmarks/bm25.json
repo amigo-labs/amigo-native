@@ -1,9 +1,9 @@
 {
   "crate": "bm25",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-17T20:16:52.892Z",
+  "commit": "792802f",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/bm25/__bench__/index.bench.ts",
@@ -11,9 +11,9 @@
       "entries": [
         {
           "name": "@amigo-labs/bm25 addAll",
-          "hz": 345.54,
-          "rme": 0.59,
-          "samples": 173
+          "hz": 266,
+          "rme": 0.77,
+          "samples": 133
         }
       ]
     },
@@ -23,15 +23,15 @@
       "entries": [
         {
           "name": "@amigo-labs/bm25 search",
-          "hz": 22740.67,
-          "rme": 0.19,
-          "samples": 11371
+          "hz": 17352.45,
+          "rme": 0.16,
+          "samples": 8677
         },
         {
           "name": "okapibm25 (rebuild every query)",
-          "hz": 1854.48,
-          "rme": 0.42,
-          "samples": 928
+          "hz": 1448.39,
+          "rme": 0.37,
+          "samples": 725
         }
       ]
     }

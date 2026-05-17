@@ -1,7 +1,26 @@
 <h1 id="perf-review-amigo-labs-jwt">Perf-Review: <code>@amigo-labs/jwt</code></h1>
 <blockquote>
-<p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0</p>
+<p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.1.0 ·
+<strong>Targets:</strong> <code>node</code> (Node.js server-only group)</p>
 </blockquote>
+<h2 id="wasm-target-exclusion">WASM-target exclusion</h2>
+<p><code>jwt</code> is part of the <strong>Node.js server-only tier</strong> documented in
+<a href="../specs/expansion-2026.md#nodejs-server-only-tier"><code>docs/specs/expansion-2026.md</code></a>.
+It does not ship a WASM binding, deliberately:</p>
+<ul>
+<li><strong>Threat model:</strong> the sign path needs the <strong>private signing key</strong>.
+That key must never reach the browser, and a package that exposes both
+<code>sign</code> and <code>verify</code> from the same module makes the boundary easy to
+cross by accident. The publishing signal <code>import '@amigo-labs/jwt'</code>
+should mean “server-side”.</li>
+<li><strong>Use case:</strong> the only browser-relevant operation is decode
+(no signature check) or verify with a public/HMAC key, and <code>jose</code> /
+Web Crypto cover that without an additional WASM payload.</li>
+</ul>
+<p>If a concrete verify-only browser flow appears, the right shape is a
+separate <code>@amigo-labs/jwt-verify</code> package that exposes only the
+decode/verify paths. Until then this package stays napi-only with
+<code>targets: ["node"]</code> in the registry.</p>
 <h2 id="verdict">Verdict</h2>
 <p><strong>1,46×–5,20× vs. <code>jsonwebtoken</code> npm</strong> über alle 6 Algorithmus-Szenarien (HS256/RS256/ES256 × sign/verify). Crypto-bound — JWT-Arbeit ist HMAC- / RSA- / ECDSA-Signaturberechnung plus JSON-Parse/Stringify, beides in Rust via <code>jsonwebtoken</code> crate (Keats/uuid-Maintainer) mit RustCrypto-Backend. JS-upstream nutzt <code>node:crypto</code> + JavaScript-JSON; <code>node:crypto</code> selbst ist native-C aber der JavaScript-Glue (Header-Parse, Base64URL, Validation) ist der Overhead den wir eliminieren. Sauberes Green-Shape: Strings rein, Strings raus, keine Chain-API, keine Callbacks.</p>
 <h2 id="classification-rationale">Classification rationale</h2>

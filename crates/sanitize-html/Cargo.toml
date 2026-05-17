@@ -9,9 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-html5ever = "0.39"
-markup5ever = "0.39"
-markup5ever_rcdom = "0.39"
+amigo-sanitize-html-core = { path = "../_sanitize-html-core" }
 
 [build-dependencies]
 napi-build = "2"

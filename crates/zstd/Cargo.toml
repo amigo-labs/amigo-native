@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-zstd = "0.13"
+amigo-zstd-core = { path = "../_zstd-core" }
 
 [build-dependencies]
 napi-build = "2"

@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/@amigo-labs/sanitize-html)](https://www.npmjs.com/package/@amigo-labs/sanitize-html)
 [![license](https://img.shields.io/npm/l/@amigo-labs/sanitize-html)](https://github.com/amigo-labs/amigo-native/blob/main/LICENSE)
 
-Blazing fast HTML sanitization powered by Rust via [NAPI-RS](https://napi.rs). A stream-based native Node.js sanitizer built directly on top of the [`html5ever`](https://crates.io/crates/html5ever) tokenizer — ~2–4× faster than the JS `sanitize-html` package on realistic inputs (2–100 KB).
+Blazing fast HTML sanitization powered by Rust via [NAPI-RS](https://napi.rs). A stream-based native Node.js sanitizer built directly on top of the [`html5ever`](https://crates.io/crates/html5ever) tokenizer — faster than the JS `sanitize-html` / `isomorphic-dompurify` packages on realistic inputs. Live numbers are on the [dashboard](https://amigo-native.amigo-labs.workers.dev/).
 
 ## Installation
 
@@ -55,15 +55,17 @@ Returns `true` if the HTML contains no dangerous content (i.e. sanitization woul
 
 ## Performance
 
-Benchmarked against `sanitize-html` (npm) and `isomorphic-dompurify` (`npm run bench`):
+Live benchmark numbers vs upstream `sanitize-html` and `isomorphic-dompurify` are tracked on the [dashboard](https://amigo-native.amigo-labs.workers.dev/) and in [`docs/data.json`](../../docs/data.json). The margin grows with input size — the streaming tokenizer avoids the DOM build cost the JS alternatives pay.
 
-| Input | `@amigo-labs/sanitize-html` | vs `sanitize-html` (npm) | vs `dompurify` |
-| --- | --- | --- | --- |
-| small safe (~200 chars) | 45,900 ops/s | **1.5×** faster | **45×** faster |
-| medium with XSS (~2 KB) | 9,600 ops/s | **2.3×** faster | **46×** faster |
-| large doc (~100 KB) | 360 ops/s | **3.9×** faster | **36×** faster |
+## Install for the browser
 
-The margin grows with input size because the streaming tokenizer avoids the DOM build cost that the JS alternatives pay.
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { sanitize } from '@amigo-labs/sanitize-html'
+```
+
+`ammonia` + `html5ever` is ~250–400 KB gzipped (the heaviest text-category crate, but still under the 500 KB budget). The napi `Either<String, f64>` input quirk is dropped on the browser side — pass a string (or `null`/`undefined`) directly.
 
 ## Supported Platforms
 

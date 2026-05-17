@@ -1,0 +1,15 @@
+[package]
+name = "amigo-pdf-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+printpdf = { version = "0.9", default-features = false }
+
+# Force getrandom's wasm_js backend for transitive deps (printpdf →
+# fontdb → memmap2 → … usw.). Matches the workspace rustflag.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }

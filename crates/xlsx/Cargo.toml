@@ -9,8 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-calamine = "0.34"
-rust_xlsxwriter = "0.77"
+amigo-xlsx-core = { path = "../_xlsx-core" }
 
 [build-dependencies]
 napi-build = "2"

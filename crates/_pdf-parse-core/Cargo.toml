@@ -1,0 +1,19 @@
+[package]
+name = "amigo-pdf-parse-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+pdf-extract = "0.10"
+lopdf = "0.40"
+
+# Force the "wasm_js" feature on getrandom for wasm32. Transitive deps
+# (lopdf -> rand -> getrandom) pull v0.4 in without enabling the JS
+# backend by default; this opts the WASM build into the Web Crypto
+# randomness source.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+getrandom_04 = { package = "getrandom", version = "0.4", features = ["wasm_js"] }

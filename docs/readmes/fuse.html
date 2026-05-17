@@ -1,0 +1,32 @@
+<h1 id="amigo-labs-fuse">@amigo-labs/fuse</h1>
+<blockquote>
+<p>Rust-powered fuzzy search index built on <a href="https://crates.io/crates/nucleo-matcher"><code>nucleo-matcher</code></a>. Subset-shape alternative to <a href="https://www.npmjs.com/package/fuse.js"><code>fuse.js</code></a>; ranking direction matches (closer = higher), exact scores diverge — see <a href="../../docs/perf-review/fuse.md"><code>docs/perf-review/fuse.md</code></a>.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/fuse
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { Fuse } from '@amigo-labs/fuse'
+
+const records = [
+  JSON.stringify({ title: 'The Hitchhiker’s Guide', author: 'Adams' }),
+  JSON.stringify({ title: 'Brave New World',          author: 'Huxley' }),
+]
+const fuse = new Fuse(records, {
+  keys: [{ name: 'title', weight: 2.0 }, { name: 'author' }],
+  threshold: 0.4,
+})
+
+fuse.search('hitchhiker')
+// [{ refIndex: 0, score: 0.0… }]
+</code></pre>
+<p>Records are passed as JSON strings to skip the cost of <code>Vec&lt;serde_json::Value&gt;</code> marshalling across the FFI; the index keeps record fields in pre-extracted form.</p>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { Fuse } from '@amigo-labs/fuse'
+</code></pre>
+<p><code>nucleo-matcher</code> is small (~70 KB gzipped) — comfortably under the 500 KB browser budget.</p>
+<h2 id="parity">Parity</h2>
+<p>Ranking-direction parity with <code>fuse.js</code>. Bit-identical scores are not a goal — nucleo’s score model differs from fuse.js’s Bitap-based one. See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a> for the full delta.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

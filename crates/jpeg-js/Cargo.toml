@@ -9,8 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-jpeg-decoder = "0.3"
-jpeg-encoder = "0.6"
+amigo-jpeg-js-core = { path = "../_jpeg-js-core" }
 
 [build-dependencies]
 napi-build = "2"

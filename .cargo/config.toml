@@ -4,3 +4,11 @@ linker = "aarch64-linux-gnu-gcc"
 
 [target.x86_64-unknown-linux-musl]
 linker = "musl-gcc"
+
+# Opt the `wasm32-unknown-unknown` target into the `wasm_js` backend of
+# the `getrandom` crate. This is needed by transitive deps (chrono, rand,
+# lopdf, etc.) that ship to the browser via `_<name>-core` crates.
+# Without it, `cargo build --target wasm32-unknown-unknown` fails with
+# "The wasm32-unknown-unknown targets are not supported by default".
+[target.wasm32-unknown-unknown]
+rustflags = ["--cfg", 'getrandom_backend="wasm_js"']

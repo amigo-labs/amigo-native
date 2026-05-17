@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+amigo-sentences-core = { path = "../_sentences-core" }
 
 [build-dependencies]
 napi-build = "2"

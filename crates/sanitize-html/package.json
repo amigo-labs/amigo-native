@@ -4,10 +4,17 @@
   "description": "Blazing fast native HTML sanitizer powered by Rust and html5ever",
   "main": "index.js",
   "types": "index.d.ts",
+  "browser": "./wasm/pkg/amigo_sanitize_html_wasm.js",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "default": "./index.js"
+      "browser": {
+        "types": "./wasm/pkg/amigo_sanitize_html_wasm.d.ts",
+        "default": "./wasm/pkg/amigo_sanitize_html_wasm.js"
+      },
+      "default": {
+        "types": "./index.d.ts",
+        "default": "./index.js"
+      }
     },
     "./compat": {
       "types": "./compat.d.ts",
@@ -19,7 +26,12 @@
     "index.d.ts",
     "compat.mjs",
     "compat.d.ts",
-    "README.md"
+    "README.md",
+    "wasm/pkg/amigo_sanitize_html_wasm.js",
+    "wasm/pkg/amigo_sanitize_html_wasm_bg.js",
+    "wasm/pkg/amigo_sanitize_html_wasm_bg.wasm",
+    "wasm/pkg/amigo_sanitize_html_wasm.d.ts",
+    "wasm/pkg/amigo_sanitize_html_wasm_bg.wasm.d.ts"
   ],
   "napi": {
     "binaryName": "sanitize-html",
@@ -36,9 +48,12 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:all": "pnpm build && pnpm build:wasm",
+    "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "test:conformance": "vitest run __conformance__",
+    "test:wasm": "cd wasm && wasm-pack test --node",
     "test:all": "vitest run",
     "bench": "vitest bench"
   },
@@ -80,6 +95,7 @@
     "vsJs": "1.65-3.8x",
     "parity": "—",
     "status": "Compatible",
+    "targets": ["node", "browser"],
     "competitors": [
       "sanitize-html@2.17.0",
       "isomorphic-dompurify@2.16.0"

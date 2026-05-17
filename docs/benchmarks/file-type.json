@@ -1,9 +1,9 @@
 {
   "crate": "file-type",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-17T20:16:52.892Z",
+  "commit": "792802f",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/file-type/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/file-type (sync)",
-          "hz": 1801587.29,
-          "rme": 0.19,
-          "samples": 900794
+          "hz": 1470755.37,
+          "rme": 0.25,
+          "samples": 735378
         },
         {
           "name": "file-type (upstream async)",
-          "hz": 72131.05,
-          "rme": 2.56,
-          "samples": 36068
+          "hz": 63788.26,
+          "rme": 3.01,
+          "samples": 31896
         }
       ]
     },
@@ -29,21 +29,21 @@
       "entries": [
         {
           "name": "@amigo-labs/file-type (sync)",
-          "hz": 1655046.09,
-          "rme": 0.21,
-          "samples": 827524
+          "hz": 1371214.67,
+          "rme": 0.16,
+          "samples": 685608
         },
         {
           "name": "@amigo-labs/file-type (async)",
-          "hz": 46778.02,
-          "rme": 0.14,
-          "samples": 23390
+          "hz": 36339.32,
+          "rme": 0.21,
+          "samples": 18170
         },
         {
           "name": "file-type (upstream async)",
-          "hz": 1241.06,
-          "rme": 5.67,
-          "samples": 621
+          "hz": 1188.73,
+          "rme": 6.32,
+          "samples": 597
         }
       ]
     }

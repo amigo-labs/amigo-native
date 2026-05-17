@@ -1,6 +1,30 @@
 # Candidate review: `jose`
 
-> **Status:** SHIPPED v0.1 (rescoped) · **Predicted:** 🟢 Green-likely · **Measured:** 🟢 Green (RSA thumbprint, Ed25519 keygen) / 🟡 Yellow (Ed25519 thumbprint) · **Reviewed:** 2026-04-19
+> **Status:** SHIPPED v0.1 (rescoped) · **Predicted:** 🟢 Green-likely · **Measured:** 🟢 Green (RSA thumbprint, Ed25519 keygen) / 🟡 Yellow (Ed25519 thumbprint) · **Reviewed:** 2026-04-19 ·
+> **Targets:** `node` (Node.js server-only group)
+
+## WASM-target exclusion
+
+`jose` is part of the **Node.js server-only tier** documented in
+[`docs/specs/expansion-2026.md`](../specs/expansion-2026.md#nodejs-server-only-tier).
+It does not ship a WASM binding, deliberately:
+
+- **Threat model:** the package's primary surface is **private-key
+  operations** — JWK generation, signing-key handling. Shipping that
+  surface to the browser is an exfiltration risk even when callers
+  intend "verify only" (the same module can also sign), and the
+  packaging signal `import '@amigo-labs/jose'` would conflate signing
+  and verification flows for consumers.
+- **Use case:** signature verification with a *public* key is the only
+  browser-relevant operation, and it is small enough to do with the Web
+  Crypto API directly — no WASM payload needed.
+
+If a concrete verify-only browser use case appears, the right shape is a
+separate, smaller `@amigo-labs/jose-verify` package that exposes only the
+public-key paths. Until then this package stays napi-only with
+`targets: ["node"]` in the registry.
+
+
 
 ## Verdict
 

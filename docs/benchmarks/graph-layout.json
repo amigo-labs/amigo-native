@@ -1,9 +1,9 @@
 {
   "crate": "graph-layout",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-17T20:16:52.892Z",
+  "commit": "792802f",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/graph-layout/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/graph-layout",
-          "hz": 13480.95,
-          "rme": 0.29,
-          "samples": 6741
+          "hz": 10106.22,
+          "rme": 1.28,
+          "samples": 5054
         },
         {
           "name": "@dagrejs/dagre",
-          "hz": 189.1,
-          "rme": 3.81,
-          "samples": 95
+          "hz": 148.46,
+          "rme": 3.99,
+          "samples": 75
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/graph-layout",
-          "hz": 2435.26,
-          "rme": 0.37,
-          "samples": 1218
+          "hz": 1973.06,
+          "rme": 1.7,
+          "samples": 987
         },
         {
           "name": "@dagrejs/dagre",
-          "hz": 33.4557,
-          "rme": 3.02,
-          "samples": 17
+          "hz": 23.2906,
+          "rme": 3.38,
+          "samples": 12
         }
       ]
     }

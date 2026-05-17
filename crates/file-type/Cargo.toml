@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-infer = "0.19"
+amigo-file-type-core = { path = "../_file-type-core" }
 
 [build-dependencies]
 napi-build = "2"

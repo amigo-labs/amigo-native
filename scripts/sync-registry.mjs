@@ -27,6 +27,11 @@ const releaseYamlPath = join(root, '.github', 'workflows', 'release.yml')
 const RELEASE_START = '# PACKAGES:START'
 const RELEASE_END = '# PACKAGES:END'
 
+// Crates that intentionally stay Node.js-only. Source of truth for the
+// "targets" field both in docs/packages.json and (mirrored) in CI/audit.
+// See docs/specs/expansion-2026.md § Node.js server-only tier.
+const NODE_ONLY_CRATES = new Set(['argon2', 'jose', 'jwt'])
+
 function loadJson(path) {
   return JSON.parse(readFileSync(path, 'utf-8'))
 }
@@ -47,10 +52,20 @@ export function loadCrates(baseDir = cratesDir) {
   return out
 }
 
+function resolveTargets(dir, amigo) {
+  // Honour the per-crate `amigo.targets` if set, otherwise derive from
+  // the Node-only allow-list. This keeps the audit deterministic: the
+  // 3-crate Node-only group is exactly what NODE_ONLY_CRATES says it is.
+  if (Array.isArray(amigo.targets)) return amigo.targets
+  return NODE_ONLY_CRATES.has(dir) ? ['node'] : ['node', 'browser']
+}
+
 function buildPackagesJson(crates, existing) {
   const existingByName = new Map((existing.packages ?? []).map((p) => [p.name, p]))
   const reviewSet = perfReviewSet()
   const postMortemSet = postMortemSet_()
+  let nodeOnlyCount = 0
+  let dualCount = 0
   const packages = crates.map(({ dir, amigo }) => {
     const prev = existingByName.get(dir)
     const speedup = prev?.speedup ?? amigo.speedup ?? 'TBD'
@@ -59,12 +74,16 @@ function buildPackagesJson(crates, existing) {
     // to whatever was in docs/packages.json so a partial roll-out doesn't
     // erase data, and finally to "util".
     const category = amigo.category ?? prev?.category ?? 'util'
+    const targets = resolveTargets(dir, amigo)
+    if (targets.includes('browser')) dualCount++
+    else nodeOnlyCount++
     const entry = {
       name: dir,
       title: amigo.title,
       category,
       description: amigo.description,
       speedup,
+      targets,
       npmUrl: `https://www.npmjs.com/package/@amigo-labs/${dir}`,
       sourceUrl: `https://github.com/amigo-labs/amigo-native/tree/main/crates/${dir}`,
       readmeUrl: `https://github.com/amigo-labs/amigo-native/blob/main/crates/${dir}/README.md`,
@@ -77,9 +96,22 @@ function buildPackagesJson(crates, existing) {
     }
     return entry
   })
-  const marquee = (existing.marquee ?? []).map((m) =>
+  // Refresh marquee counters in place. PACKAGES stays at total crate count;
+  // TARGETS is added/refreshed to reflect the dual-target vs node-only split.
+  let marquee = existing.marquee ?? []
+  marquee = marquee.map((m) =>
     m.k === 'PACKAGES' ? { ...m, v: String(packages.length) } : m,
   )
+  const targetsValue = `NODE + BROWSER (${dualCount}) / NODE-ONLY (${nodeOnlyCount})`
+  const idx = marquee.findIndex((m) => m.k === 'TARGETS')
+  if (idx >= 0) marquee[idx] = { ...marquee[idx], v: targetsValue }
+  else {
+    // Insert TARGETS right after PACKAGES if PACKAGES exists; otherwise append.
+    const pkgIdx = marquee.findIndex((m) => m.k === 'PACKAGES')
+    const entry = { k: 'TARGETS', v: targetsValue }
+    if (pkgIdx >= 0) marquee.splice(pkgIdx + 1, 0, entry)
+    else marquee.push(entry)
+  }
   // Drop the legacy `candidates` block — the docs site no longer surfaces
   // unshipped reviews, and keeping it around invites stale data drift.
   const { candidates: _drop, ...rest } = existing

@@ -9,8 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-psl = "2"
-idna = "1"
+amigo-tldts-core = { path = "../_tldts-core" }
 
 [build-dependencies]
 napi-build = "2"

@@ -27,6 +27,16 @@ const out = inflateRaw(raw)
 
 Compression level is `0`–`9` (default `6`), matching pako.
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { gzip, ungzip } from '@amigo-labs/inflate'
+```
+
+`flate2` with the pure-Rust `zlib-rs` backend is wasm32-portable (no C dependency), and the 256 MiB decompression-bomb guard applies on both sides.
+
 ## Parity
 
 Tests in [`__conformance__/`](./__conformance__) run the upstream `pako` test suite against this implementation. See [`divergences.md`](./__conformance__/divergences.md) for documented differences.

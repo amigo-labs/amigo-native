@@ -397,3 +397,72 @@ Current state of this work — what's in flight, what shipped, what's
 next — lives in [`/status.md`](../../status.md) at the repo root.
 This spec is the design and decision record; `status.md` is the
 operational dashboard.
+
+## 2026-05-17 update — scope widened to all browser-eligible crates
+
+The original 9-crate shortlist (above) reflects the conservative first
+draft. Per consumer demand (Angular/React drop-ins) the scope was
+widened: **every public crate that can plausibly run in the browser
+ships a WASM binding**. The selection criteria collapse to a single
+exclusion principle, and the result is a 33-crate dual-target tier plus
+a 3-crate **Node.js server-only tier**.
+
+### Node.js server-only tier
+
+The three crates below intentionally **do not** ship a WASM binding.
+This is a deliberate category, not a TODO — the exclusion reason is
+either threat-model or performance, and won't change without a concrete
+new use case.
+
+| Crate    | Reason                                                                                                                                                                |
+| :------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `argon2` | Performance — Argon2 is memory-hard by design; the inner blake2b loop is ~2× slower in WASM. Browser password hashing is a security anti-pattern (server-side only).  |
+| `jose`   | Server-only crypto — the package's primary surface is private-key operations (JWK generation, signing). Exposing that to the browser is an exfiltration risk.         |
+| `jwt`    | Server-only crypto — sign-and-verify in the same module; private signing keys must not reach the browser. Browser verify-only flows can use the Web Crypto API.       |
+
+Each carries `amigo.targets: ["node"]` in its `package.json` and a
+"WASM-target exclusion" section in its `docs/perf-review/<name>.md`.
+
+**Single source of truth:** the constant
+`NODE_ONLY_CRATES = {argon2, jose, jwt}` is duplicated in four spots
+(`.claude/skills/audit-crates/scripts/audit.mjs`,
+`scripts/sync-registry.mjs`, `.github/workflows/ci.yml`,
+`.github/workflows/release.yml`). To add or remove a crate, edit all
+four together. The `audit-crates` skill verifies the invariants:
+Node-only crates must NOT have a `wasm/` directory; every other public
+crate must have one.
+
+### Updated rollout buckets (33 dual-target crates)
+
+The 33 dual-target crates are scaffolded in batches. Each batch follows
+the slugify pilot pattern (`_<name>-core` + napi shim + `wasm/` sub-crate).
+
+| Batch                | Crates                                                                                                                                                              |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Pilot                | `slugify`                                                                                                                                                           |
+| 1 — pure-string      | `linkify-it`, `diff`, `stemmer`, `sentences`, `language-detect`, `tldts`, `turndown`, `deepmerge`                                                                   |
+| 2 — buffer-heavy     | `xxhash`, `csv`, `encoding`, `file-type`, `inflate`, `pixelmatch`, `pngjs`, `jpeg-js`, `svgo`                                                                       |
+| 3 — option + classes | `commonmark`, `minisearch`, `bm25`, `fuse`, `sanitize-html`, `force-layout`, `graph-layout`                                                                          |
+| Edge cases           | `zstd` (ruzstd fallback for decompress; compress errors in WASM), `text-splitters` (tiktoken excluded for wasm32), `zip`, `jimp`, `pdf`, `pdf-parse`, `xlsx`, `typst` (bundle-size warnings) |
+
+Bundle-size budget per crate stays at **≤ 500 KB gzipped (warn-only)**
+per D2; large-bundle crates (`typst` ~5 MB gz, `pdf` ~1–2 MB gz, etc.)
+get an "Install for the browser" note in their READMEs suggesting
+`const { compile } = await import('@amigo-labs/<name>')` to amortise
+the payload across a code-split boundary.
+
+### Updated success metrics
+
+- **33 of 36 public crates** ship a WASM binding inside the existing
+  `@amigo-labs/<name>` npm package.
+- **3 crates** in the Node-only tier carry `targets: ["node"]` in the
+  registry and a documented exclusion note.
+- `BENCHMARKS.md` extended with WASM-vs-JS numbers for each shipped
+  WASM crate, plus a bundle-size baseline column for D2's eventual
+  hard-fail switch.
+- The dashboard (docs/packages.json) gains a `targets` facet so
+  consumers can filter dual-target vs. Node-only at a glance.
+- The audit-crates skill enforces the convention end-to-end:
+  dual-target requires `wasm/Cargo.toml`, `wasm/src/lib.rs`, a
+  `build:wasm` script, and the `browser` conditional export;
+  Node-only requires their absence + `targets: ["node"]`.

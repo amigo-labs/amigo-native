@@ -1,0 +1,18 @@
+[package]
+name = "amigo-xxhash-wasm"
+version = "0.2.1"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+amigo-xxhash-core = { path = "../../_xxhash-core" }
+wasm-bindgen = { workspace = true }
+
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

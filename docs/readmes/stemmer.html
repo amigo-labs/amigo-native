@@ -29,6 +29,11 @@ s.tokenizeAndStem('The quick brown fox jumps over the lazy dog', {
 s.tokenizeAndStemToBuffer('running quickly jumping')
 // &lt;Buffer 72 75 6e ...&gt; → "run\nquickli\njump"
 </code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { Stemmer } from '@amigo-labs/stemmer'
+</code></pre>
+<p><code>rust-stemmers</code> is small (~80 KB gzipped), well under the 500 KB budget.</p>
 <h2 id="why-no-stem-word">Why no <code>stem(word)</code>?</h2>
 <p>Single-word stemming in JavaScript is ~30 ns of work. The NAPI FFI
 floor alone is ~109 ns — you’d pay 3× the algorithm’s cost just to

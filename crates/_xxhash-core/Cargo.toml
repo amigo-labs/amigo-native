@@ -1,0 +1,10 @@
+[package]
+name = "amigo-xxhash-core"
+version = "0.2.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+xxhash-rust = { version = "0.8", features = ["xxh32", "xxh64", "xxh3"] }

@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+amigo-jimp-core = { path = "../_jimp-core" }
 
 [build-dependencies]
 napi-build = "2"

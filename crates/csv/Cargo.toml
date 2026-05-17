@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-csv = "1"
+amigo-csv-core = { path = "../_csv-core" }
 
 [build-dependencies]
 napi-build = "2"

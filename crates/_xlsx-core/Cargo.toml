@@ -1,0 +1,16 @@
+[package]
+name = "amigo-xlsx-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+calamine = "0.34"
+rust_xlsxwriter = "0.77"
+
+# Required by transitive deps that touch randomness; matches the
+# workspace-level `--cfg getrandom_backend="wasm_js"` rustflag.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }

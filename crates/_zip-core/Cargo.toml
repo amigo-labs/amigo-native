@@ -1,0 +1,10 @@
+[package]
+name = "amigo-zip-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+zip = { version = "8", default-features = false, features = ["deflate", "deflate-flate2"] }

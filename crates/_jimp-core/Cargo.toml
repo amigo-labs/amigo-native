@@ -1,0 +1,10 @@
+[package]
+name = "amigo-jimp-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }

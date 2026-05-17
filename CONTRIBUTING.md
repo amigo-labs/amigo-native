@@ -61,18 +61,50 @@ reasoning.
 
 Then:
 
-1. Implement the native surface in `crates/<name>/src/lib.rs` (napi-rs
-   `#[napi]` macros).
-2. Add the test suite at `crates/<name>/__test__/` and the upstream
+1. **Pure-Rust core** at `crates/_<name>-core/` (`publish = false`,
+   no napi / wasm-bindgen attributes — just the algorithm). This is
+   the single source of truth used by both bindings.
+2. Implement the napi surface in `crates/<name>/src/lib.rs` as a thin
+   wrapper that translates `Buffer` / `BigInt` / option structs
+   to/from the core types.
+3. Add the test suite at `crates/<name>/__test__/` and the upstream
    conformance corpus at `crates/<name>/__conformance__/`.
-3. Add benchmarks at `crates/<name>/__bench__/` that compare against the
+4. Add benchmarks at `crates/<name>/__bench__/` that compare against the
    JS alternative you're replacing.
-4. Populate the `amigo` block in `crates/<name>/package.json` — then run
+5. **Add the WASM sub-crate** at `crates/<name>/wasm/` mirroring the
+   slugify pilot:
+   - `wasm/Cargo.toml` with `crate-type = ["cdylib", "rlib"]`,
+     `wasm-bindgen` / `serde-wasm-bindgen` from `[workspace.dependencies]`,
+     a path dep on `amigo-<name>-core`, and
+     `[package.metadata.wasm-pack.profile.release] wasm-opt = false`.
+   - `wasm/src/lib.rs` with `#[wasm_bindgen]` wrappers and
+     `js_name = "camelCase"` to mirror the napi surface.
+   - `wasm/tests/web.rs` with `wasm-bindgen-test` parity coverage.
+   - In `package.json`: add `browser`, conditional `exports`,
+     `build:wasm` / `build:all` / `test:wasm` scripts, the five
+     `wasm/pkg/*` entries in `files`, extend `prepublishOnly` to
+     `pnpm build:wasm && napi pre-publish ...`, and set
+     `amigo.targets: ["node", "browser"]`.
+   - In the README: an "Install for the browser" section pointing
+     at the same `import` (the bundler picks the WASM artifact).
+6. Populate the `amigo` block in `crates/<name>/package.json` — then run
    `node scripts/sync-registry.mjs` to regenerate the root README table and
    `docs/packages.json` in one step. Don't edit those two files by hand.
-5. Add `MIGRATION.md` if the package isn't a 100 % drop-in.
-6. Add a platform-stub `npm/` directory per target (6 total — see existing
-   crates). The `audit-crates` skill checks this convention.
+7. Add `MIGRATION.md` if the package isn't a 100 % drop-in.
+8. Add a platform-stub `npm/` directory per target (6 total — see existing
+   crates). The `audit-crates` skill checks all conventions (napi stubs,
+   wasm scaffolding, package.json fields).
+
+**Default is dual-target.** A new crate should be browser-eligible unless
+there is a documented exclusion reason — see [`docs/specs/expansion-2026.md`](./docs/specs/expansion-2026.md)
+§ Node.js server-only tier. Joining that tier requires either a
+performance perf-review entry (memory-hard / FFI-floor-dominated) or a
+threat-model rationale (private-key crypto). Add the crate's name to the
+`NODE_ONLY_CRATES` constant in all four spots
+(`.claude/skills/audit-crates/scripts/audit.mjs`,
+`scripts/sync-registry.mjs`, `.github/workflows/ci.yml`,
+`.github/workflows/release.yml`) and to the policy table in
+`expansion-2026.md`.
 
 ## Changing an existing crate
 

@@ -1,0 +1,10 @@
+[package]
+name = "amigo-svgo-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+quick-xml = { version = "0.40", features = ["serialize"] }

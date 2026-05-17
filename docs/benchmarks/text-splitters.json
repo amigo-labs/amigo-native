@@ -1,9 +1,9 @@
 {
   "crate": "text-splitters",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-17T20:16:52.892Z",
+  "commit": "792802f",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/text-splitters/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/text-splitters splitText",
-          "hz": 292857.06,
-          "rme": 0.14,
-          "samples": 146429
+          "hz": 227361.85,
+          "rme": 0.22,
+          "samples": 113681
         },
         {
           "name": "@langchain/textsplitters",
-          "hz": 109902.98,
-          "rme": 0.4,
-          "samples": 54952
+          "hz": 85465.44,
+          "rme": 0.48,
+          "samples": 42733
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/text-splitters splitText",
-          "hz": 1698.58,
-          "rme": 0.24,
-          "samples": 850
+          "hz": 1330.24,
+          "rme": 0.67,
+          "samples": 666
         },
         {
           "name": "@langchain/textsplitters",
-          "hz": 1380.12,
-          "rme": 0.59,
-          "samples": 691
+          "hz": 1054.68,
+          "rme": 2.04,
+          "samples": 528
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/text-splitters splitText",
-          "hz": 23.3376,
-          "rme": 0.08,
-          "samples": 12
+          "hz": 17.9381,
+          "rme": 1.25,
+          "samples": 10
         },
         {
           "name": "@langchain/textsplitters",
-          "hz": 103.18,
-          "rme": 6.33,
-          "samples": 52
+          "hz": 79.8567,
+          "rme": 7.51,
+          "samples": 40
         }
       ]
     }

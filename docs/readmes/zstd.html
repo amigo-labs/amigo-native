@@ -1,0 +1,26 @@
+<h1 id="amigo-labs-zstd">@amigo-labs/zstd</h1>
+<blockquote>
+<p>Zstandard compression via the reference libzstd C library (Node) and <code>ruzstd</code> pure-Rust decoder (browser). Drop-in shape for <a href="https://www.npmjs.com/package/@mongodb-js/zstd"><code>@mongodb-js/zstd</code></a>.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/zstd
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { compress, decompress, Compressor, Decompressor } from '@amigo-labs/zstd'
+
+const small = compress(Buffer.from('hello world'.repeat(1000)), 3)
+const back = decompress(small)            // Buffer 'hello world…'
+
+// Reusable contexts:
+const c = new Compressor(3 /* level */)
+const blobs = c.compressMany([Buffer.from('a'), Buffer.from('b')])
+</code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { decompress } from '@amigo-labs/zstd'
+</code></pre>
+<p><strong>Browser is decompress-only.</strong> <code>compress</code>, <code>trainDictionary</code>, and the <code>Compressor</code> class throw “not available in the WASM build” — the libzstd C backend doesn’t compile for <code>wasm32-unknown-unknown</code>. The WASM build uses <a href="https://crates.io/crates/ruzstd"><code>ruzstd</code></a> (pure-Rust decoder).</p>
+<h2 id="parity">Parity</h2>
+<p>100% drop-in for <code>@mongodb-js/zstd</code>’s sync API on Node. See <a href="./__conformance__"><code>__conformance__/</code></a> and <a href="./MIGRATION.md"><code>MIGRATION.md</code></a>. Browser-side divergence (decompress-only) documented in <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

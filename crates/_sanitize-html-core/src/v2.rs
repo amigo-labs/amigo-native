@@ -2,11 +2,10 @@ use html5ever::tendril::StrTendril;
 use html5ever::tokenizer::{
     BufferQueue, TagKind, Token, TokenSink, TokenSinkResult, Tokenizer, TokenizerOpts,
 };
-use napi::bindgen_prelude::Either;
 use std::cell::RefCell;
 
+use crate::SanitizeOptions;
 use crate::rules::{Rules, escape_attr, escape_text, is_void};
-use crate::{SanitizeOptions, coerce_input};
 
 /// DoS guards. Both can be overridden per-call via `SanitizeOptions`;
 /// pass `0` to disable.
@@ -252,29 +251,23 @@ impl<'a> TokenSink for SanitizingSink<'a> {
     }
 }
 
-pub(crate) fn sanitize_impl(
-    html: Option<Either<String, f64>>,
-    options: Option<SanitizeOptions>,
-) -> String {
+pub(crate) fn sanitize_impl(html: &str, options: &SanitizeOptions) -> String {
     let max_input_bytes = options
-        .as_ref()
-        .and_then(|o| o.max_input_bytes)
+        .max_input_bytes
         .map(|n| if n == 0 { usize::MAX } else { n as usize })
         .unwrap_or(DEFAULT_MAX_INPUT_BYTES);
     let max_depth = options
-        .as_ref()
-        .and_then(|o| o.max_depth)
+        .max_depth
         .map(|n| n as usize)
         .unwrap_or(DEFAULT_MAX_DEPTH);
 
-    let html = coerce_input(html);
     if html.len() > max_input_bytes {
         // Oversized input is rejected outright rather than truncated mid-
         // tag (which would re-introduce the unbalanced-markup case the
         // implicit-close pass at the bottom of this function fixes).
         return String::new();
     }
-    let rules = Rules::from_options(&options);
+    let rules = Rules::from_options(options);
     let sink = SanitizingSink {
         rules: &rules,
         out: RefCell::new(String::with_capacity(html.len())),
@@ -283,7 +276,7 @@ pub(crate) fn sanitize_impl(
     };
     let tokenizer = Tokenizer::new(sink, TokenizerOpts::default());
     let buffer = BufferQueue::default();
-    buffer.push_back(StrTendril::from(html.as_str()));
+    buffer.push_back(StrTendril::from(html));
     let _ = tokenizer.feed(&buffer);
     tokenizer.end();
 

@@ -24,6 +24,11 @@ const PLATFORMS = [
 ]
 const REGISTRY_FIELDS = ['title', 'description', 'speedup', 'npmUrl', 'sourceUrl', 'readmeUrl']
 
+// Crates that intentionally stay Node.js-only and never get a WASM build.
+// Source of truth: docs/specs/expansion-2026.md § Node.js server-only tier.
+// Mirrored by scripts/sync-registry.mjs and .github/workflows/{ci,release}.yml.
+const NODE_ONLY_CRATES = new Set(['argon2', 'jose', 'jwt'])
+
 const asJson = process.argv.includes('--json')
 const asPlan = process.argv.includes('--plan')
 
@@ -50,7 +55,12 @@ function isDir(p) {
 
 function listCrates() {
   return readdirSync(CRATES_DIR, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && e.name !== '_template')
+    .filter((e) => e.isDirectory())
+    // Skip _template (scaffold) and the `_<name>-core` internal crates —
+    // those are pure-Rust libraries embedded as path deps by the dual-target
+    // wrappers; they don't ship to npm, so the audit's "missing platform
+    // stubs / docs entry / README" checks don't apply to them.
+    .filter((e) => e.name !== '_template' && !e.name.startsWith('_'))
     .map((e) => e.name)
     .sort()
 }
@@ -60,6 +70,7 @@ function auditCrate(name) {
   const pkg = readJson(join(dir, 'package.json')) ?? {}
   const scripts = pkg.scripts ?? {}
   const devDeps = pkg.devDependencies ?? {}
+  const amigoBlock = pkg.amigo ?? {}
 
   const npmDir = join(dir, 'npm')
   const missingPlatforms = PLATFORMS.filter((p) => !isDir(join(npmDir, p)))
@@ -70,8 +81,51 @@ function auditCrate(name) {
   const hasParitySpec = existsSync(join(dir, '__conformance__', 'parity.spec.ts'))
   const hasUpstreamSpec = existsSync(join(dir, '__conformance__', 'upstream.spec.ts'))
 
+  // ── WASM dual-target scaffolding (per expansion-2026 conventions) ──
+  // Required for every public crate NOT in NODE_ONLY_CRATES; forbidden for the
+  // 3-crate Node-only group. Internal `_<name>` crates are pure-Rust libraries
+  // (publish = false) — they get embedded as path deps in others' wasm sub-crates
+  // and do not produce their own WASM artifact, so they're skipped entirely.
+  const isInternal = name.startsWith('_')
+  const isNodeOnly = NODE_ONLY_CRATES.has(name)
+  const wasmDirPresent = isDir(join(dir, 'wasm'))
+  const wasmCargoPresent = existsSync(join(dir, 'wasm', 'Cargo.toml'))
+  const wasmLibPresent = existsSync(join(dir, 'wasm', 'src', 'lib.rs'))
+  const buildWasmScript = typeof scripts['build:wasm'] === 'string'
+  const exports_ = pkg.exports
+  const dotExport = exports_ && typeof exports_ === 'object' ? exports_['.'] : null
+  const browserExport = Boolean(
+    pkg.browser ||
+      (dotExport && typeof dotExport === 'object' && dotExport.browser),
+  )
+  const targetsField = Array.isArray(amigoBlock.targets) ? amigoBlock.targets : null
+
+  // For internal crates, the WASM check is N/A — always OK.
+  // For Node-only crates, all WASM scaffolding must be ABSENT.
+  // For dual-target crates, the four WASM markers (dir, Cargo, lib, script) + browser export must be PRESENT.
+  let wasmOk
+  if (isInternal) {
+    wasmOk = true
+  } else if (isNodeOnly) {
+    wasmOk =
+      !wasmDirPresent &&
+      !buildWasmScript &&
+      !browserExport &&
+      (targetsField === null || (targetsField.length === 1 && targetsField[0] === 'node'))
+  } else {
+    wasmOk =
+      wasmDirPresent &&
+      wasmCargoPresent &&
+      wasmLibPresent &&
+      buildWasmScript &&
+      browserExport &&
+      (targetsField === null || targetsField.includes('browser'))
+  }
+
   return {
     name,
+    isInternal,
+    isNodeOnly,
     // modern convention
     conformanceDir: isDir(join(dir, '__conformance__')),
     parityFile: hasParitySpec,
@@ -94,6 +148,14 @@ function auditCrate(name) {
     missingPlatforms,
     cargo: existsSync(join(dir, 'Cargo.toml')),
     lib: existsSync(join(dir, 'src', 'lib.rs')),
+    // wasm dual-target
+    wasmDirPresent,
+    wasmCargoPresent,
+    wasmLibPresent,
+    buildWasmScript,
+    browserExport,
+    targetsField,
+    wasmOk,
   }
 }
 
@@ -142,6 +204,7 @@ const missingFastCheck = crates.filter((r) => !r.fastCheck)
 const missingReadme = crates.filter((r) => !r.readme)
 const missingNpm = crates.filter((r) => !r.npmDir || r.missingPlatforms.length > 0)
 const missingBench = crates.filter((r) => !r.benchFile)
+const missingWasm = crates.filter((r) => !r.wasmOk)
 
 const clean =
   legacyCrates.length === 0 &&
@@ -152,6 +215,7 @@ const clean =
   missingReadme.length === 0 &&
   missingNpm.length === 0 &&
   missingBench.length === 0 &&
+  missingWasm.length === 0 &&
   docs.missingInPackagesJson.length === 0 &&
   docs.marqueeOk &&
   docs.fieldGaps.length === 0
@@ -317,6 +381,8 @@ if (asJson) {
       missingReadme: missingReadme.map((r) => r.name),
       missingNpm: missingNpm.map((r) => r.name),
       missingBench: missingBench.map((r) => r.name),
+      missingWasm: missingWasm.map((r) => r.name),
+      nodeOnly: [...NODE_ONLY_CRATES],
     },
   }
   console.log(JSON.stringify(out, null, 2))
@@ -337,9 +403,10 @@ lines.push('')
 lines.push('## Per-Crate Status')
 lines.push('')
 lines.push('_parity column: ✓ = `parity.spec.ts` or `upstream.spec.ts` present (either satisfies conformance coverage)_')
+lines.push(`_wasm column: ✓ = dual-target (wasm/ + build:wasm + browser export); N = Node-only group (${[...NODE_ONLY_CRATES].join(', ')})_`)
 lines.push('')
-lines.push('| Crate | `__conf__` | parity | fuzz | `test:conf` | `test:all` | fast-check | README | `npm/` | bench | legacy |')
-lines.push('|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|')
+lines.push('| Crate | `__conf__` | parity | fuzz | `test:conf` | `test:all` | fast-check | README | `npm/` | bench | wasm | legacy |')
+lines.push('|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|')
 for (const r of crates) {
   const legacy = r.legacyParityDir || r.legacyTestParityScript ? '⚠' : ''
   const npmCell = r.npmDir
@@ -347,8 +414,9 @@ for (const r of crates) {
       ? '✓'
       : `✗ (−${r.missingPlatforms.length})`
     : '✗'
+  const wasmCell = r.isInternal ? '—' : r.isNodeOnly ? (r.wasmOk ? 'N' : '✗') : mark(r.wasmOk)
   lines.push(
-    `| ${r.name} | ${mark(r.conformanceDir)} | ${mark(r.parityCoverage)} | ${mark(r.fuzzFile)} | ${mark(r.testConformanceScript)} | ${mark(r.testAllScript)} | ${mark(r.fastCheck)} | ${mark(r.readme)} | ${npmCell} | ${mark(r.benchFile)} | ${legacy} |`,
+    `| ${r.name} | ${mark(r.conformanceDir)} | ${mark(r.parityCoverage)} | ${mark(r.fuzzFile)} | ${mark(r.testConformanceScript)} | ${mark(r.testAllScript)} | ${mark(r.fastCheck)} | ${mark(r.readme)} | ${npmCell} | ${mark(r.benchFile)} | ${wasmCell} | ${legacy} |`,
   )
 }
 lines.push('')
@@ -454,6 +522,36 @@ if (missingNpm.length) {
   lines.push('')
 }
 
+if (missingWasm.length) {
+  lines.push('### 🟠 WASM dual-target scaffolding')
+  lines.push(`_Source of truth: \`NODE_ONLY_CRATES = { ${[...NODE_ONLY_CRATES].join(', ')} }\` (audit.mjs)._`)
+  lines.push('_Dual-target crates need: `wasm/Cargo.toml`, `wasm/src/lib.rs`, `build:wasm` script, `browser` export, `amigo.targets` including "browser"._')
+  lines.push('_Node-only crates must NOT have a `wasm/` directory and must declare `amigo.targets: ["node"]`._')
+  for (const r of missingWasm) {
+    const bits = []
+    if (r.isNodeOnly) {
+      if (r.wasmDirPresent) bits.push('remove `wasm/` directory')
+      if (r.buildWasmScript) bits.push('remove `build:wasm` script')
+      if (r.browserExport) bits.push('remove `browser` export')
+      if (!(r.targetsField && r.targetsField.length === 1 && r.targetsField[0] === 'node')) {
+        bits.push('set `amigo.targets: ["node"]`')
+      }
+      lines.push(`- [ ] **${r.name}** (Node-only) — ${bits.join('; ')}`)
+    } else {
+      if (!r.wasmDirPresent) bits.push('create `wasm/` sub-crate (mirror `crates/slugify/wasm/`)')
+      if (!r.wasmCargoPresent) bits.push('add `wasm/Cargo.toml`')
+      if (!r.wasmLibPresent) bits.push('add `wasm/src/lib.rs` with `#[wasm_bindgen]` wrappers')
+      if (!r.buildWasmScript) bits.push('add `build:wasm` script to package.json')
+      if (!r.browserExport) bits.push('add `browser` field + conditional `exports`')
+      if (!(r.targetsField && r.targetsField.includes('browser'))) {
+        bits.push('set `amigo.targets: ["node", "browser"]`')
+      }
+      lines.push(`- [ ] **${r.name}** — ${bits.join('; ')}`)
+    }
+  }
+  lines.push('')
+}
+
 if (
   docs.missingInPackagesJson.length ||
   !docs.marqueeOk ||
@@ -490,6 +588,7 @@ if (clean) {
     missingReadme.length +
     missingNpm.length +
     missingBench.length +
+    missingWasm.length +
     docs.missingInPackagesJson.length +
     docs.fieldGaps.length +
     (docs.marqueeOk ? 0 : 1)
