@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-printpdf = { version = "0.9", default-features = false }
+amigo-pdf-core = { path = "../_pdf-core" }
 
 [build-dependencies]
 napi-build = "2"
