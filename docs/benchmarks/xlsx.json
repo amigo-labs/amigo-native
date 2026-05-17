@@ -1,9 +1,9 @@
 {
   "crate": "xlsx",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-17T20:16:52.892Z",
+  "commit": "792802f",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/xlsx/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/xlsx readWorkbook",
-          "hz": 2641.09,
-          "rme": 0.68,
-          "samples": 1321
+          "hz": 2071.45,
+          "rme": 0.58,
+          "samples": 1036
         },
         {
           "name": "xlsx (SheetJS)",
-          "hz": 773.76,
-          "rme": 0.68,
-          "samples": 387
+          "hz": 586.96,
+          "rme": 1.05,
+          "samples": 294
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/xlsx readWorkbook",
-          "hz": 58.1144,
-          "rme": 0.86,
-          "samples": 30
+          "hz": 45.7881,
+          "rme": 0.81,
+          "samples": 23
         },
         {
           "name": "xlsx (SheetJS)",
-          "hz": 21.6943,
-          "rme": 5.49,
-          "samples": 11
+          "hz": 17.2209,
+          "rme": 7.57,
+          "samples": 10
         }
       ]
     },
@@ -47,9 +47,9 @@
       "entries": [
         {
           "name": "@amigo-labs/xlsx writeWorkbook",
-          "hz": 1377.5,
-          "rme": 2.13,
-          "samples": 689
+          "hz": 1067.88,
+          "rme": 1.87,
+          "samples": 534
         }
       ]
     },
@@ -59,9 +59,9 @@
       "entries": [
         {
           "name": "@amigo-labs/xlsx writeWorkbook",
-          "hz": 37.8569,
-          "rme": 0.2,
-          "samples": 19
+          "hz": 30.5703,
+          "rme": 0.32,
+          "samples": 16
         }
       ]
     }

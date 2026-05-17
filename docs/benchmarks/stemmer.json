@@ -1,9 +1,9 @@
 {
   "crate": "stemmer",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-17T20:16:52.892Z",
+  "commit": "792802f",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/stemmer/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 2645.7,
-          "rme": 3.01,
-          "samples": 1323
+          "hz": 2003.4,
+          "rme": 3.58,
+          "samples": 1002
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 342.77,
-          "rme": 1.31,
-          "samples": 172
+          "hz": 261.52,
+          "rme": 2.79,
+          "samples": 131
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 274.13,
-          "rme": 0.09,
-          "samples": 138
+          "hz": 208.42,
+          "rme": 0.14,
+          "samples": 105
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 34.2706,
-          "rme": 0.37,
-          "samples": 18
+          "hz": 26.5431,
+          "rme": 0.28,
+          "samples": 14
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 1955.98,
-          "rme": 0.22,
-          "samples": 978
+          "hz": 1471.55,
+          "rme": 0.19,
+          "samples": 736
         },
         {
           "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 224.45,
-          "rme": 0.71,
-          "samples": 113
+          "hz": 172.06,
+          "rme": 2.03,
+          "samples": 87
         }
       ]
     },
@@ -65,15 +65,15 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 198.31,
-          "rme": 0.26,
-          "samples": 100
+          "hz": 150.64,
+          "rme": 0.33,
+          "samples": 76
         },
         {
           "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 21.926,
-          "rme": 1.39,
-          "samples": 11
+          "hz": 17.3221,
+          "rme": 0.29,
+          "samples": 10
         }
       ]
     }

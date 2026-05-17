@@ -1,9 +1,9 @@
 {
   "crate": "pdf",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-17T20:16:52.892Z",
+  "commit": "792802f",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/pdf/__bench__/index.bench.ts",
@@ -11,9 +11,9 @@
       "entries": [
         {
           "name": "@amigo-labs/pdf generate",
-          "hz": 54294.49,
-          "rme": 0.31,
-          "samples": 27160
+          "hz": 42651.84,
+          "rme": 0.75,
+          "samples": 21326
         }
       ]
     },
@@ -23,9 +23,9 @@
       "entries": [
         {
           "name": "@amigo-labs/pdf generate",
-          "hz": 2826.39,
-          "rme": 0.33,
-          "samples": 1414
+          "hz": 2162.09,
+          "rme": 0.61,
+          "samples": 1082
         }
       ]
     },
@@ -35,9 +35,9 @@
       "entries": [
         {
           "name": "@amigo-labs/pdf generateMany",
-          "hz": 579.12,
-          "rme": 2.66,
-          "samples": 290
+          "hz": 455.95,
+          "rme": 2.73,
+          "samples": 229
         }
       ]
     }
