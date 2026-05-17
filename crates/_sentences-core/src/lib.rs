@@ -128,13 +128,11 @@ pub fn find_spans(text: &str, cfg: &Resolved) -> Vec<Span> {
             continue;
         }
 
-        if cfg.newline_boundaries && b == b'\n' {
-            if i + 1 < bytes.len() && bytes[i + 1] == b'\n' {
-                let end = i + 2;
-                emit(&mut spans, &mut sentence_start, end, text, cfg);
-                i = end;
-                continue;
-            }
+        if cfg.newline_boundaries && b == b'\n' && i + 1 < bytes.len() && bytes[i + 1] == b'\n' {
+            let end = i + 2;
+            emit(&mut spans, &mut sentence_start, end, text, cfg);
+            i = end;
+            continue;
         }
 
         i += 1;
