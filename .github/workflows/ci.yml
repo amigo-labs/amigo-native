@@ -9,6 +9,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Default to the minimum needed to checkout the repo. Jobs that need more
+# (test-conformance posts PR comments, benchmark pushes to main) override
+# this at the job level.
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: '24'
   # Crates that intentionally stay Node.js-only and never get a WASM build.
@@ -140,14 +146,25 @@ jobs:
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: wasm-test
-      - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+      - name: Pre-flight diagnostics
+        shell: bash
+        run: |
+          which wasm-pack
+          wasm-pack --version
+          which node
+          node --version
       - name: Test wasm sub-crates
         shell: bash
         run: |
@@ -196,11 +213,20 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: wasm-bundle-size
-      - name: Install wasm-pack and binaryen
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+      - name: Install binaryen
         run: |
-          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           sudo apt-get update
           sudo apt-get install -y binaryen
+      - name: Pre-flight diagnostics
+        shell: bash
+        run: |
+          which wasm-pack
+          wasm-pack --version
+          which wasm-opt
+          wasm-opt --version
       - name: Build and measure
         shell: bash
         run: |
@@ -235,7 +261,7 @@ jobs:
             raw=$(stat -c%s "$wasm")
             wasm-opt -Oz "$wasm" -o "$wasm.opt"
             opt=$(stat -c%s "$wasm.opt")
-            gz=$(gzip -c "$wasm.opt" | wc -c)
+            gz=$(gzip -c "$wasm.opt" | wc -c | tr -d ' ')
             if [ "$gz" -gt "$BUDGET" ]; then
               status="⚠️ over budget"
               echo "::warning::$crate gzipped ${gz} B exceeds 500 KB budget (warn-only per D2)"
