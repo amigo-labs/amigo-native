@@ -1,5 +1,5 @@
 [package]
-name = "amigo-minisearch-wasm"
+name = "amigo-force-layout-wasm"
 version = "0.1.1"
 edition = "2024"
 publish = false
@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-amigo-search-core = { path = "../../_search-core" }
+amigo-force-layout-core = { path = "../../_force-layout-core" }
 wasm-bindgen = { workspace = true }
 serde-wasm-bindgen = { workspace = true }
 serde = { version = "1", features = ["derive"] }
