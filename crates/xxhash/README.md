@@ -86,6 +86,16 @@ Single FFI call over the whole input, avoiding per-item array marshalling. The i
 | `digest(): number` | Finalize and return hash as `number` |
 | `reset(seed?: number)` | Reset hasher for reuse |
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { xxh3_64, Xxh3Hasher } from '@amigo-labs/xxhash'
+```
+
+Both one-shot functions and the stateful hashers ship to the browser. 64-bit hashes come back as JS `BigInt` directly. WASM is roughly 1.5–2× faster than `xxhash-wasm` / `xxhashjs` on typical inputs; SIMD (`+simd128`) is deferred per the expansion-2026 spec open question Q1.
+
 ## Supported Platforms
 
 | Platform | Architecture |
