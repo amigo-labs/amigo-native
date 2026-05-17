@@ -1,17 +1,24 @@
 # amigo-native docs — Cloudflare Worker (static-asset hosting)
 #
-# This worker has no JS code of its own; it just serves the docs/ directory.
-# Cloudflare's Git integration (configured in the Workers dashboard) deploys
-# this on every push to main and creates per-branch preview URLs for any
-# other branch — no GitHub Actions workflow or repo secrets needed.
+# This worker has no JS code of its own; it serves the Astro build output
+# from web/dist/. Cloudflare's Git integration (configured in the Workers
+# dashboard) deploys this on every push to main and creates per-branch
+# preview URLs for any other branch.
 #
-# Local: `pnpm exec wrangler deploy --dry-run` to validate this file without
-# touching production. `pnpm run deploy` for a manual deploy (still requires
+# Workers Builds reads the [build] block below and runs the listed command
+# before invoking `wrangler deploy`, so web/dist/ does not need to be
+# checked into the repo.
+#
+# Local: `pnpm run deploy:dry` to build + validate without touching
+# production. `pnpm run deploy` for a manual deploy (requires
 # CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID env vars).
 
 name = "amigo-native"
 compatibility_date = "2025-04-01"
 workers_dev = true
+
+[build]
+command = "corepack enable && pnpm install --frozen-lockfile && pnpm run web:build"
 
 [assets]
 directory = "./web/dist"
