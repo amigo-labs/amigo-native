@@ -61,6 +61,9 @@ permissions:
 
 env:
   NODE_VERSION: '24'
+  # Crates that intentionally stay Node.js-only and never get a WASM build.
+  # Mirrors NODE_ONLY_CRATES in ci.yml and in audit-crates.
+  NODE_ONLY_CRATES: 'argon2 jose jwt'
 
 jobs:
   resolve:
@@ -176,6 +179,36 @@ jobs:
 
       - name: List packages
         run: ls -R crates/${{ needs.resolve.outputs.crate }}/npm/
+
+      # ── WASM build (skipped for the Node.js server-only group) ──────────
+      # Builds the in-tarball WASM artifact via wasm-pack and runs
+      # wasm-opt -Oz to shrink the published payload. The crate's
+      # package.json `files` field ships wasm/pkg/* alongside the napi
+      # platform stubs, so the single `npm publish` below carries both.
+      - name: Set up Rust for WASM
+        if: ${{ !contains(fromJSON('["argon2","jose","jwt"]'), needs.resolve.outputs.crate) }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack and binaryen
+        if: ${{ !contains(fromJSON('["argon2","jose","jwt"]'), needs.resolve.outputs.crate) }}
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          sudo apt-get update
+          sudo apt-get install -y binaryen
+
+      - name: Build WASM artifact
+        if: ${{ !contains(fromJSON('["argon2","jose","jwt"]'), needs.resolve.outputs.crate) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm --filter @amigo-labs/${{ needs.resolve.outputs.crate }} run build:wasm
+          wasm=$(ls crates/${{ needs.resolve.outputs.crate }}/wasm/pkg/*_bg.wasm | head -1)
+          wasm-opt -Oz "$wasm" -o "$wasm.opt"
+          mv "$wasm.opt" "$wasm"
+          gz=$(gzip -c "$wasm" | wc -c)
+          echo "WASM artifact gzipped: ${gz} B"
 
       # After configuring trusted publishing for all packages, you can remove
       # NODE_AUTH_TOKEN and add "npm install -g npm@latest" to switch to OIDC.

@@ -74,10 +74,29 @@ For each crate (excluding `_template`):
 | `npm/` with 6 platform subdirs (`darwin-arm64`, `darwin-x64`, `linux-arm64-gnu`, `linux-x64-gnu`, `linux-x64-musl`, `win32-x64-msvc`) | NAPI-RS platform-stub packages — without them, `npm install` fails on that platform |
 | `__bench__/index.bench.ts` | Vitest benchmark suite consumed by `bench:report` |
 | Registered in `docs/packages.json` with all metadata fields | Appears on the GitHub Pages dashboard |
+| **WASM dual-target scaffolding** (`wasm/Cargo.toml`, `wasm/src/lib.rs`, `build:wasm` script, `browser` export, `amigo.targets`) | Browser bundlers (Vite, webpack, Angular CLI) resolve the `browser` conditional export. Required for every crate **not** in `NODE_ONLY_CRATES`. |
+
+### Node.js server-only group
+
+A small, explicit allow-list of crates intentionally stays Node-only and
+**must NOT** have a `wasm/` directory:
+
+| Crate | Reason |
+|---|---|
+| `argon2` | Performance — ~2× slower in WASM than native (memory-hard hash); browser password hashing is an anti-pattern |
+| `jose` | Server-only crypto — private signing keys must not ship to the browser |
+| `jwt` | Server-only crypto — same as jose |
+
+The list is the single source of truth — duplicated as a constant in
+`audit.mjs` (`NODE_ONLY_CRATES`), `scripts/sync-registry.mjs`,
+`.github/workflows/ci.yml`, and `.github/workflows/release.yml`. To add
+or remove a crate from the group, edit all four spots together. See
+`docs/specs/expansion-2026.md § Node.js server-only tier` for the policy.
 
 Globally:
 
 - `docs/packages.json` marquee `PACKAGES` value equals the crate count (`docs/data.json` is auto-generated benchmark output; `packages.json` holds the hand-edited brand/marquee/registry)
+- `docs/packages.json` marquee `TARGETS` reflects the dual-target / Node-only split
 - Legacy `__parity__/` dirs or `test:parity` scripts are flagged as **must modernize**
 
 ## Invocation flags

@@ -11,6 +11,11 @@ concurrency:
 
 env:
   NODE_VERSION: '24'
+  # Crates that intentionally stay Node.js-only and never get a WASM build.
+  # Source of truth: docs/specs/expansion-2026.md § Node.js server-only tier.
+  # Mirrored by .claude/skills/audit-crates/scripts/audit.mjs (NODE_ONLY_CRATES)
+  # and by .github/workflows/release.yml (the publish-job WASM build gate).
+  NODE_ONLY_CRATES: 'argon2 jose jwt'
 
 jobs:
   # ── change detection ────────────────────────────────────────────────────
@@ -123,6 +128,123 @@ jobs:
         with:
           shared-key: cargo-test
       - run: cargo test --workspace
+
+  # ── WASM test (wasm-bindgen-test under Node) ─────────────────────────────
+  # Builds and tests every crate's `wasm/` sub-crate using wasm-pack's Node
+  # target. Browser-headless (Chrome/Firefox) is deferred to a follow-up —
+  # wasm-bindgen-test semantics are identical between targets and Node is
+  # ~3× faster in CI. NODE_ONLY_CRATES are skipped: they have no wasm/ dir.
+  wasm-test:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: wasm-test
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Test wasm sub-crates
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
+            wasm_dirs=$(ls -d crates/*/wasm 2>/dev/null || true)
+          else
+            wasm_dirs=""
+            for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+              if echo " $NODE_ONLY_CRATES " | grep -q " $c "; then
+                echo "::notice::Skipping wasm-test for $c (Node-only group)"
+                continue
+              fi
+              [ -d "crates/$c/wasm" ] && wasm_dirs="$wasm_dirs crates/$c/wasm"
+            done
+          fi
+          if [ -z "$wasm_dirs" ]; then
+            echo "No wasm sub-crates to test."
+            exit 0
+          fi
+          for dir in $wasm_dirs; do
+            crate=$(basename $(dirname "$dir"))
+            if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then
+              continue
+            fi
+            echo "::group::wasm-pack test $dir"
+            (cd "$dir" && wasm-pack test --node)
+            echo "::endgroup::"
+          done
+
+  # ── Bundle size report (warn-only) ───────────────────────────────────────
+  # Builds each wasm sub-crate with --target bundler --release, runs
+  # wasm-opt -Oz, gzips, and reports size to GITHUB_STEP_SUMMARY. Per
+  # expansion-2026.md D2 the budget is 500 KB gzipped, warn-only on
+  # first pass — escalates to hard-fail at baseline × 1.15 after one
+  # full release cycle of collected baselines.
+  bundle-size:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: wasm-bundle-size
+      - name: Install wasm-pack and binaryen
+        run: |
+          curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          sudo apt-get update
+          sudo apt-get install -y binaryen
+      - name: Build and measure
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUDGET=512000
+          if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
+            wasm_dirs=$(ls -d crates/*/wasm 2>/dev/null || true)
+          else
+            wasm_dirs=""
+            for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+              if echo " $NODE_ONLY_CRATES " | grep -q " $c "; then continue; fi
+              [ -d "crates/$c/wasm" ] && wasm_dirs="$wasm_dirs crates/$c/wasm"
+            done
+          fi
+          if [ -z "$wasm_dirs" ]; then
+            echo "No wasm sub-crates to measure."
+            exit 0
+          fi
+          printf '| Crate | Raw .wasm | wasm-opt -Oz | Gzipped | Status |\n' >> "$GITHUB_STEP_SUMMARY"
+          printf '| :--- | ---: | ---: | ---: | :--- |\n' >> "$GITHUB_STEP_SUMMARY"
+          for dir in $wasm_dirs; do
+            crate=$(basename $(dirname "$dir"))
+            if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then continue; fi
+            echo "::group::bundle-size $crate"
+            (cd "$dir" && wasm-pack build --target bundler --release --out-dir pkg)
+            wasm=$(ls "$dir"/pkg/*_bg.wasm 2>/dev/null | head -1)
+            if [ -z "$wasm" ]; then
+              echo "::warning::no .wasm produced for $crate"
+              echo "::endgroup::"
+              continue
+            fi
+            raw=$(stat -c%s "$wasm")
+            wasm-opt -Oz "$wasm" -o "$wasm.opt"
+            opt=$(stat -c%s "$wasm.opt")
+            gz=$(gzip -c "$wasm.opt" | wc -c)
+            if [ "$gz" -gt "$BUDGET" ]; then
+              status="⚠️ over budget"
+              echo "::warning::$crate gzipped ${gz} B exceeds 500 KB budget (warn-only per D2)"
+            else
+              status="✅"
+            fi
+            printf '| %s | %s B | %s B | %s B | %s |\n' "$crate" "$raw" "$opt" "$gz" "$status" >> "$GITHUB_STEP_SUMMARY"
+            echo "::endgroup::"
+          done
 
   build:
     runs-on: ubuntu-latest

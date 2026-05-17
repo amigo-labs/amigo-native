@@ -1,6 +1,29 @@
 # Perf-Review: `@amigo-labs/jwt`
 
-> **Status:** 🟢 Green · **Reviewed:** 2026-04-21 · **Version:** 0.1.0
+> **Status:** 🟢 Green · **Reviewed:** 2026-04-21 · **Version:** 0.1.0 ·
+> **Targets:** `node` (Node.js server-only group)
+
+## WASM-target exclusion
+
+`jwt` is part of the **Node.js server-only tier** documented in
+[`docs/specs/expansion-2026.md`](../specs/expansion-2026.md#nodejs-server-only-tier).
+It does not ship a WASM binding, deliberately:
+
+- **Threat model:** the sign path needs the **private signing key**.
+  That key must never reach the browser, and a package that exposes both
+  `sign` and `verify` from the same module makes the boundary easy to
+  cross by accident. The publishing signal `import '@amigo-labs/jwt'`
+  should mean "server-side".
+- **Use case:** the only browser-relevant operation is decode
+  (no signature check) or verify with a public/HMAC key, and `jose` /
+  Web Crypto cover that without an additional WASM payload.
+
+If a concrete verify-only browser flow appears, the right shape is a
+separate `@amigo-labs/jwt-verify` package that exposes only the
+decode/verify paths. Until then this package stays napi-only with
+`targets: ["node"]` in the registry.
+
+
 
 ## Verdict
 

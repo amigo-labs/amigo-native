@@ -66,6 +66,7 @@
     "vsJs": "1.65-7.8x",
     "parity": "100%",
     "status": "Drop-in",
+    "targets": ["node"],
     "competitors": [
       "jsonwebtoken@9.0.2"
     ]
