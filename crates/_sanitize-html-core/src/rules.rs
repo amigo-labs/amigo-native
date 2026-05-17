@@ -230,7 +230,7 @@ pub struct Rules {
 }
 
 impl Rules {
-    pub fn from_options(opts: &Option<SanitizeOptions>) -> Self {
+    pub fn from_options(opts: &SanitizeOptions) -> Self {
         let mut tags: HashSet<String> = DEFAULT_TAGS.iter().map(|s| (*s).to_string()).collect();
         let mut clean_content_tags: HashSet<String> = DEFAULT_CLEAN_CONTENT_TAGS
             .iter()
@@ -267,38 +267,36 @@ impl Rules {
         let mut allowed_classes: HashMap<String, HashSet<String>> = HashMap::new();
         let mut allow_all_attributes = false;
 
-        if let Some(opts) = opts {
-            if let Some(custom) = &opts.allowed_tags {
-                tags = custom.iter().cloned().collect();
-                // Allowing script/style as tags must remove them from the
-                // drop-content set so their inner text survives.
-                for tag in &tags {
-                    clean_content_tags.remove(tag);
-                }
+        if let Some(custom) = &opts.allowed_tags {
+            tags = custom.iter().cloned().collect();
+            // Allowing script/style as tags must remove them from the
+            // drop-content set so their inner text survives.
+            for tag in &tags {
+                clean_content_tags.remove(tag);
             }
-            if let Some(custom) = &opts.allowed_attributes {
-                tag_attrs.clear();
-                for (tag, attrs) in custom {
-                    tag_attrs.insert(tag.clone(), attrs.iter().cloned().collect());
-                }
+        }
+        if let Some(custom) = &opts.allowed_attributes {
+            tag_attrs.clear();
+            for (tag, attrs) in custom {
+                tag_attrs.insert(tag.clone(), attrs.iter().cloned().collect());
             }
-            if let Some(custom) = &opts.allowed_classes {
-                for (tag, classes) in custom {
-                    allowed_classes.insert(tag.clone(), classes.iter().cloned().collect());
-                }
+        }
+        if let Some(custom) = &opts.allowed_classes {
+            for (tag, classes) in custom {
+                allowed_classes.insert(tag.clone(), classes.iter().cloned().collect());
             }
-            if let Some(custom) = &opts.allowed_schemes {
-                url_schemes = custom.iter().map(|s| s.to_lowercase()).collect();
-            }
-            if let Some(strip) = opts.strip_comments {
-                strip_comments = strip;
-            }
-            if let Some(rel) = &opts.link_rel {
-                link_rel = Some(rel.clone());
-            }
-            if let Some(true) = opts.allow_all_attributes {
-                allow_all_attributes = true;
-            }
+        }
+        if let Some(custom) = &opts.allowed_schemes {
+            url_schemes = custom.iter().map(|s| s.to_lowercase()).collect();
+        }
+        if let Some(strip) = opts.strip_comments {
+            strip_comments = strip;
+        }
+        if let Some(rel) = &opts.link_rel {
+            link_rel = Some(rel.clone());
+        }
+        if let Some(true) = opts.allow_all_attributes {
+            allow_all_attributes = true;
         }
 
         Rules {

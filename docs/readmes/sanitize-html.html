@@ -45,6 +45,11 @@ const result = sanitize("&lt;div class='foo'&gt;bar&lt;/div&gt;", {
 <tr><td>large doc (~100 KB)</td><td>360 ops/s</td><td><strong>3.9×</strong> faster</td><td><strong>36×</strong> faster</td></tr>
 </tbody></table>
 <p>The margin grows with input size because the streaming tokenizer avoids the DOM build cost that the JS alternatives pay.</p>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { sanitize } from '@amigo-labs/sanitize-html'
+</code></pre>
+<p><code>ammonia</code> + <code>html5ever</code> is ~250–400 KB gzipped (the heaviest text-category crate, but still under the 500 KB budget). The napi <code>Either&lt;String, f64&gt;</code> input quirk is dropped on the browser side — pass a string (or <code>null</code>/<code>undefined</code>) directly.</p>
 <h2 id="supported-platforms">Supported Platforms</h2>
 <table><thead><tr><th>Platform</th><th>Architecture</th></tr></thead><tbody>
 <tr><td>Linux</td><td>x64 (glibc), x64 (musl), arm64</td></tr>

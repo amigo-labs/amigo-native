@@ -65,6 +65,16 @@ Benchmarked against `sanitize-html` (npm) and `isomorphic-dompurify` (`npm run b
 
 The margin grows with input size because the streaming tokenizer avoids the DOM build cost that the JS alternatives pay.
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { sanitize } from '@amigo-labs/sanitize-html'
+```
+
+`ammonia` + `html5ever` is ~250–400 KB gzipped (the heaviest text-category crate, but still under the 500 KB budget). The napi `Either<String, f64>` input quirk is dropped on the browser side — pass a string (or `null`/`undefined`) directly.
+
 ## Supported Platforms
 
 | Platform | Architecture |
