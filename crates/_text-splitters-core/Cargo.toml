@@ -1,0 +1,21 @@
+[package]
+name = "amigo-text-splitters-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+text-splitter = { version = "0.24", features = ["markdown"] }
+
+# tiktoken-rs ships ~1.5 MB of BPE tables — way over the 500 KB browser
+# budget AND it's the only crate in this dep tree that doesn't compile
+# cleanly for wasm32. Confined to native targets; the wasm-side
+# `Sizer::Tiktoken` variant returns "not available in WASM build".
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tiktoken-rs = "0.11"
+
+# Force getrandom's wasm_js backend on wasm32 (matches workspace rustflag).
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
