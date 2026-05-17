@@ -1,6 +1,24 @@
 ---
 import Base from "~/layouts/Base.astro";
-import { packages, type Pkg } from "~/lib/packages";
+import Prose from "~/components/Prose.astro";
+import VerdictPill from "~/components/VerdictPill.astro";
+import BenchmarkBars from "~/components/BenchmarkBars.astro";
+import Sparkline from "~/components/Sparkline.astro";
+import InstallCommand from "~/components/InstallCommand";
+import {
+  packages,
+  packagesByCategory,
+  categoryLabel,
+  type Pkg,
+} from "~/lib/packages";
+import { suitesForCrate } from "~/lib/benchmarks";
+import {
+  loadReadme,
+  loadPerfReview,
+  loadPostMortem,
+  loadHistory,
+  extractPerfMeta,
+} from "~/lib/content";
 
 export function getStaticPaths() {
   return packages.map((pkg) => ({
@@ -14,82 +32,233 @@ interface Props {
 }
 
 const { pkg } = Astro.props;
+
+const [readme, perfHtml, postMortem, history] = await Promise.all([
+  loadReadme(pkg.name),
+  loadPerfReview(pkg.name),
+  loadPostMortem(pkg.name),
+  loadHistory(pkg.name),
+]);
+
+const meta = extractPerfMeta(perfHtml);
+const suites = suitesForCrate(pkg.name);
+const related = packagesByCategory(pkg.category)
+  .filter((p) => p.name !== pkg.name)
+  .slice(0, 3);
+
+// Use the first suite's ratio for the sparkline if available; fall back to
+// the amigo hz so we still show a trend for crates without competitors.
+const trendValues: number[] = (() => {
+  if (history.length === 0) return [];
+  const primary = history[0]?.suites[0]?.name;
+  if (!primary) return [];
+  const series = history
+    .map((row) => row.suites.find((s) => s.name === primary))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
+  const hasRatios = series.some((s) => s.ratio != null);
+  return hasRatios
+    ? series.map((s) => s.ratio ?? Number.NaN).filter(Number.isFinite)
+    : series.map((s) => s.amigo);
+})();
+
+const trendCaption = history.length
+  ? `${history.length} commits · last ${history[history.length - 1]?.date}`
+  : "";
+
+const sections: { id: string; label: string; show: boolean }[] = [
+  { id: "install", label: "Install", show: true },
+  { id: "benchmarks", label: "Benchmarks", show: suites.length > 0 },
+  { id: "readme", label: "README", show: Boolean(readme) },
+  { id: "perf-review", label: "Perf review", show: Boolean(perfHtml) },
+  { id: "post-mortem", label: "Post-mortem", show: Boolean(postMortem) },
+  { id: "related", label: "Related", show: related.length > 0 },
+];
+const visibleSections = sections.filter((s) => s.show);
 ---
 
 <Base title={pkg.title} description={pkg.description}>
-  <nav class="pt-8 pb-4 text-xs font-mono text-fg-subtle" aria-label="Breadcrumb">
+  <nav class="pt-8 pb-4 font-mono text-xs text-fg-subtle" aria-label="Breadcrumb">
     <a href="/" class="hover:text-fg">Packages</a>
     <span class="mx-1">/</span>
     <span class="text-fg">{pkg.name}</span>
   </nav>
 
-  <section class="pb-8">
-    <div class="flex flex-wrap items-baseline gap-3">
-      <h1 class="text-3xl font-semibold tracking-(--tracking-tight)">
+  <header class="pb-8">
+    <div class="flex flex-wrap items-center gap-3">
+      <h1 class="text-3xl font-semibold tracking-(--tracking-tight) sm:text-4xl">
         {pkg.title}
       </h1>
-      <span class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
-        {pkg.category}
+      <VerdictPill
+        verdict={meta.verdict}
+        label={meta.verdictLabel}
+        reviewedOn={meta.reviewedOn}
+      />
+      <span
+        class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+      >
+        {categoryLabel[pkg.category]}
       </span>
       <span class="font-mono text-sm text-accent">{pkg.speedup}</span>
     </div>
     <p class="mt-3 max-w-2xl text-lg text-fg-muted">{pkg.description}</p>
-  </section>
 
-  <section
-    id="install"
-    aria-labelledby="install-h"
-    class="mb-8 rounded-xl border border-line bg-bg-elevated p-4"
-  >
-    <h2 id="install-h" class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
-      Install
-    </h2>
-    <pre
-      class="overflow-x-auto rounded-md border border-line bg-bg-sunken px-3 py-2 font-mono text-sm"
-    ><code>pnpm add @amigo-labs/{pkg.name}</code></pre>
-  </section>
-
-  <section class="grid gap-3 sm:grid-cols-3 mb-12">
-    <a
-      href={pkg.npmUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="rounded-xl border border-line bg-bg-elevated p-4 hover:border-line-strong transition-colors"
-    >
-      <div class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
-        npm
-      </div>
-      <div class="mt-1 text-sm text-fg">View on npm →</div>
-    </a>
-    <a
-      href={pkg.sourceUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="rounded-xl border border-line bg-bg-elevated p-4 hover:border-line-strong transition-colors"
-    >
-      <div class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
-        source
-      </div>
-      <div class="mt-1 text-sm text-fg">View crate source →</div>
-    </a>
-    {pkg.readmeUrl && (
+    <div class="mt-5 flex flex-wrap gap-2 font-mono text-xs">
       <a
-        href={pkg.readmeUrl}
+        href={pkg.npmUrl}
         target="_blank"
         rel="noopener noreferrer"
-        class="rounded-xl border border-line bg-bg-elevated p-4 hover:border-line-strong transition-colors"
+        class="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-bg-elevated px-3 text-fg-muted hover:border-line-strong hover:text-fg"
       >
-        <div class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
-          readme
-        </div>
-        <div class="mt-1 text-sm text-fg">Read the docs →</div>
+        npm
       </a>
-    )}
-  </section>
+      <a
+        href={pkg.sourceUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-bg-elevated px-3 text-fg-muted hover:border-line-strong hover:text-fg"
+      >
+        source
+      </a>
+      {pkg.readmeUrl && (
+        <a
+          href={pkg.readmeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-bg-elevated px-3 text-fg-muted hover:border-line-strong hover:text-fg"
+        >
+          readme (raw)
+        </a>
+      )}
+    </div>
+  </header>
 
-  <p class="text-xs text-fg-subtle">
-    Phase 1 scaffolding. Benchmarks chart, footprint, embedded README,
-    perf-review section, post-mortem, and related packages arrive in
-    phase 3.
-  </p>
+  <div class="grid gap-10 lg:grid-cols-[1fr_220px]">
+    <div class="flex min-w-0 flex-col gap-12">
+      <section id="install" aria-labelledby="install-h" class="scroll-mt-(--header-h)">
+        <h2 id="install-h" class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+          Install
+        </h2>
+        <InstallCommand client:visible pkg={`@amigo-labs/${pkg.name}`} />
+      </section>
+
+      {suites.length > 0 && (
+        <section
+          id="benchmarks"
+          aria-labelledby="benchmarks-h"
+          class="scroll-mt-(--header-h)"
+        >
+          <header class="mb-3 flex items-end justify-between">
+            <h2 id="benchmarks-h" class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+              Benchmarks
+            </h2>
+            {trendValues.length > 1 && (
+              <span class="font-mono text-2xs text-fg-subtle">
+                Trend ({trendValues.length} pts)
+              </span>
+            )}
+          </header>
+          <div class="flex flex-col gap-4">
+            {suites.map((suite) => (
+              <BenchmarkBars suite={suite} compact />
+            ))}
+          </div>
+          {trendValues.length > 1 && (
+            <div class="mt-4 rounded-xl border border-line bg-bg-elevated p-4">
+              <Sparkline
+                values={trendValues}
+                label={`Performance trend for ${pkg.title}`}
+                caption={trendCaption}
+              />
+            </div>
+          )}
+        </section>
+      )}
+
+      {readme && (
+        <section id="readme" aria-labelledby="readme-h" class="scroll-mt-(--header-h)">
+          <h2 id="readme-h" class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+            README
+          </h2>
+          <Prose>
+            <Fragment set:html={readme} />
+          </Prose>
+        </section>
+      )}
+
+      {perfHtml && (
+        <section
+          id="perf-review"
+          aria-labelledby="perf-review-h"
+          class="scroll-mt-(--header-h)"
+        >
+          <h2 id="perf-review-h" class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+            Perf review
+          </h2>
+          <Prose>
+            <Fragment set:html={perfHtml} />
+          </Prose>
+        </section>
+      )}
+
+      {postMortem && (
+        <section
+          id="post-mortem"
+          aria-labelledby="post-mortem-h"
+          class="scroll-mt-(--header-h)"
+        >
+          <h2 id="post-mortem-h" class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+            Post-mortem
+          </h2>
+          <div class="rounded-xl border border-warn/30 bg-warn/5 p-4">
+            <p class="mb-3 font-mono text-xs text-warn">
+              This package is archived. The raw post-mortem is below.
+            </p>
+            <pre class="overflow-x-auto whitespace-pre-wrap font-mono text-sm text-fg-muted">{postMortem}</pre>
+          </div>
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <section id="related" aria-labelledby="related-h" class="scroll-mt-(--header-h)">
+          <h2 id="related-h" class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+            Related · {categoryLabel[pkg.category]}
+          </h2>
+          <ul role="list" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {related.map((r) => (
+              <li>
+                <a
+                  href={`/packages/${r.name}`}
+                  class="group flex h-full flex-col gap-1.5 rounded-xl border border-line bg-bg-elevated p-3 transition-colors hover:border-line-strong"
+                >
+                  <span class="font-mono text-2xs text-accent">{r.speedup}</span>
+                  <span class="text-sm font-medium text-fg group-hover:text-accent">
+                    {r.title}
+                  </span>
+                  <span class="line-clamp-2 text-xs text-fg-muted">{r.description}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+
+    <aside class="hidden lg:block">
+      <div class="sticky top-[calc(var(--header-h)+24px)] flex flex-col gap-3">
+        <span class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+          On this page
+        </span>
+        <nav aria-label="On this page" class="flex flex-col gap-1 text-sm">
+          {visibleSections.map((s) => (
+            <a
+              href={`#${s.id}`}
+              class="rounded-md px-2 py-1 text-fg-muted transition-colors hover:bg-bg-elevated hover:text-fg"
+            >
+              {s.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </aside>
+  </div>
 </Base>

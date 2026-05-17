@@ -1,0 +1,81 @@
+---
+interface Props {
+  /** Numeric series — typically the speedup ratio or hz over time. */
+  values: number[];
+  /** Accessible label describing what the line represents. */
+  label: string;
+  width?: number;
+  height?: number;
+  /** Optional supporting text rendered below the chart. */
+  caption?: string;
+}
+
+const { values, label, width = 280, height = 60, caption } = Astro.props;
+
+const clean = values.filter((v) => Number.isFinite(v));
+const empty = clean.length < 2;
+
+const min = empty ? 0 : Math.min(...clean);
+const max = empty ? 1 : Math.max(...clean);
+const range = max - min || 1;
+const padX = 4;
+const padY = 6;
+const stepX = (width - padX * 2) / Math.max(1, clean.length - 1);
+
+const points = clean.map((v, i) => {
+  const x = padX + i * stepX;
+  const y = height - padY - ((v - min) / range) * (height - padY * 2);
+  return { x, y };
+});
+
+const linePath = points
+  .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+  .join(" ");
+const areaPath = points.length
+  ? `${linePath} L${points[points.length - 1]!.x.toFixed(2)} ${height - padY} L${
+      points[0]!.x.toFixed(2)
+    } ${height - padY} Z`
+  : "";
+
+const last = points[points.length - 1];
+---
+
+<figure class="flex flex-col gap-2">
+  {empty ? (
+    <p class="font-mono text-2xs text-fg-subtle">
+      Not enough history to draw a trend.
+    </p>
+  ) : (
+    <svg
+      role="img"
+      aria-label={label}
+      viewBox={`0 0 ${width} ${height}`}
+      width="100%"
+      height={height}
+      preserveAspectRatio="none"
+      class="block"
+    >
+      <title>{label}</title>
+      <path d={areaPath} fill="var(--accent-dim)" />
+      <path
+        d={linePath}
+        fill="none"
+        stroke="var(--accent)"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+      {last && (
+        <circle
+          cx={last.x.toFixed(2)}
+          cy={last.y.toFixed(2)}
+          r="3"
+          fill="var(--accent)"
+        />
+      )}
+    </svg>
+  )}
+  {caption && (
+    <figcaption class="font-mono text-2xs text-fg-subtle">{caption}</figcaption>
+  )}
+</figure>
