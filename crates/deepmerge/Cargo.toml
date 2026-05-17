@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+amigo-deepmerge-core = { path = "../_deepmerge-core" }
 serde_json = "1"
 
 [build-dependencies]

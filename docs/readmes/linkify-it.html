@@ -1,0 +1,35 @@
+<h1 id="amigo-labs-linkify-it">@amigo-labs/linkify-it</h1>
+<blockquote>
+<p>Rust-powered URL + email detection. Drop-in shape for <a href="https://www.npmjs.com/package/linkify-it"><code>linkify-it</code></a> (default schemas), backed by the <a href="https://crates.io/crates/linkify"><code>linkify</code></a> crate (robinst/linkify). Compiled via NAPI-RS.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/linkify-it
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { matches, test, matchOffsets } from '@amigo-labs/linkify-it'
+
+matches('Visit https://example.com or email foo@example.com')
+// [
+//   { schema: 'url',   index: 6,  lastIndex: 25, text: 'https://example.com', url: 'https://example.com' },
+//   { schema: 'email', index: 35, lastIndex: 50, text: 'foo@example.com',     url: 'foo@example.com' },
+// ]
+
+test('https://example.com')        // true
+matchOffsets(Buffer.from('…'))     // Uint8Array of u32 LE triplets (start, end, kindId)
+</code></pre>
+<p><code>matchOffsets</code> returns a packed offset buffer — three <code>u32 LE</code> per match
+(<code>start</code>, <code>end</code>, <code>kindId</code>; <code>0</code> = url, <code>1</code> = email). Use this in render
+loops to skip per-match string marshalling.</p>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { matches } from '@amigo-labs/linkify-it'
+</code></pre>
+<p>Node consumers get the napi binary; browser consumers get the in-tarball <code>wasm/pkg/</code> artifact. <code>linkify</code> itself is small (~30 KB gzipped), well under the 500 KB browser budget.</p>
+<h2 id="parity">Parity</h2>
+<p><code>linkify</code> covers the default-schema URL + email path of upstream
+<code>linkify-it@5</code>. The wider option surface (<code>fuzzyIP</code>, custom-schema
+<code>add()</code>) is not implemented in v0.1 — see <a href="./MIGRATION.md"><code>MIGRATION.md</code></a>
+for the diff and <a href="./__conformance__"><code>__conformance__/</code></a> for the parity
+test suite.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

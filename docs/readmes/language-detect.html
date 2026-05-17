@@ -49,6 +49,11 @@ languageExists('xyz') // false
   ignore?: string[]   // ISO-639-3 deny-list, applied after `only`
 }
 </code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { detect } from '@amigo-labs/language-detect'
+</code></pre>
+<p>Node consumers get the napi binary; browser consumers get the in-tarball <code>wasm/pkg/</code> artifact. <code>whatlang</code>’s bundle is ~100 KB gzipped, well under the 500 KB browser budget.</p>
 <h2 id="migration-from-franc">Migration from <code>franc</code></h2>
 <p>See <code>MIGRATION.md</code> — nearly drop-in on common cases; the confidence
 scale is <code>[0, 1]</code> instead of <code>franc</code>’s internal range, and rare

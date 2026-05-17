@@ -1,0 +1,16 @@
+[package]
+name = "amigo-zstd-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+
+# `zstd` (zstd-sys → C) doesn't build for wasm32-unknown-unknown.
+# Use `ruzstd` (pure-Rust, decompress-only) for the WASM build and the
+# C-backed `zstd` for everything else.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+zstd = "0.13"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+ruzstd = "0.8"

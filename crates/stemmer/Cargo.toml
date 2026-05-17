@@ -9,8 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-rust-stemmers = "1.2"
-unicode-segmentation = "1.12"
+amigo-stemmer-core = { path = "../_stemmer-core" }
 
 [build-dependencies]
 napi-build = "2"

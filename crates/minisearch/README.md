@@ -66,6 +66,16 @@ interface SearchOptions {
 - **English stopwords** (opt-in at construction).
 - **Stateful NAPI class** — build once, query many.
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { MiniSearch } from '@amigo-labs/minisearch'
+```
+
+The `_search-core` tokenizer + BM25 scorer + prefix-trie is the same code on both sides, so ranking and autocomplete behavior is identical between Node and the browser.
+
 ## Scope cuts
 
 - No multi-field / weighted index (upstream's `fields` + `boost`).

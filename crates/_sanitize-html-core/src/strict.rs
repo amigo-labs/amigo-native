@@ -7,10 +7,9 @@ use html5ever::tree_builder::TreeBuilderOpts;
 use html5ever::{local_name, ns, parse_fragment};
 use markup5ever::interface::Attribute;
 use markup5ever_rcdom::{Handle, NodeData, RcDom};
-use napi::bindgen_prelude::Either;
 
+use crate::SanitizeOptions;
 use crate::rules::{Rules, escape_attr, escape_text, is_raw_text_element, is_void};
-use crate::{SanitizeOptions, coerce_input};
 
 // ---------------------------------------------------------------------------
 // Strict sanitization engine. Runs html5ever's full parser
@@ -190,21 +189,16 @@ fn emit_element(
 /// Same DoS guard as the fast path. See `v2::DEFAULT_MAX_INPUT_BYTES`.
 const DEFAULT_MAX_INPUT_BYTES: usize = 5 * 1024 * 1024;
 
-pub(crate) fn sanitize_impl(
-    html: Option<Either<String, f64>>,
-    options: Option<SanitizeOptions>,
-) -> String {
+pub(crate) fn sanitize_impl(html: &str, options: &SanitizeOptions) -> String {
     let max_input_bytes = options
-        .as_ref()
-        .and_then(|o| o.max_input_bytes)
+        .max_input_bytes
         .map(|n| if n == 0 { usize::MAX } else { n as usize })
         .unwrap_or(DEFAULT_MAX_INPUT_BYTES);
 
-    let html = coerce_input(html);
     if html.len() > max_input_bytes {
         return String::new();
     }
-    let rules = Rules::from_options(&options);
+    let rules = Rules::from_options(options);
 
     let opts = ParseOpts {
         tree_builder: TreeBuilderOpts {

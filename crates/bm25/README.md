@@ -61,6 +61,16 @@ interface SearchOptions {
   [`@amigo-labs/minisearch`](../minisearch/) (both wrap an internal
   `_search-core` crate).
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { Bm25Index } from '@amigo-labs/bm25'
+```
+
+The `_search-core` tokenizer + BM25 scorer is the same code on both sides, so ranking is identical between Node and the browser.
+
 ## Scope cuts
 
 - No multi-field weighted index (v0.2). Concatenate boosted text if

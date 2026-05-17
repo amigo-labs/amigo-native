@@ -1,0 +1,24 @@
+<h1 id="amigo-labs-jpeg-js">@amigo-labs/jpeg-js</h1>
+<blockquote>
+<p>Rust-powered JPEG decode/encode to RGBA pixel buffers. Subset-shape alternative to <a href="https://www.npmjs.com/package/jpeg-js"><code>jpeg-js</code></a>, backed by <a href="https://crates.io/crates/jpeg-decoder"><code>jpeg-decoder</code></a> + <a href="https://crates.io/crates/jpeg-encoder"><code>jpeg-encoder</code></a> (pure-Rust, no libjpeg-turbo C dependency).</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/jpeg-js
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import { decode, encode, decodeRgba, encodeRgba } from '@amigo-labs/jpeg-js'
+
+const { width, height, data } = decode(jpegBuffer)
+const jpeg = encodeRgba(rgba, width, height, { quality: 85 })
+</code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { decode, encodeRgba } from '@amigo-labs/jpeg-js'
+</code></pre>
+<p><code>jpeg-decoder</code> and <code>jpeg-encoder</code> are pure-Rust — the WASM build has no C dependency.</p>
+<h2 id="parity">Parity</h2>
+<p>RGBA 8-bit on input and output. CMYK JPEGs are explicitly rejected in v0.1
+(see <code>divergences.md</code>). See <a href="./__conformance__"><code>__conformance__/</code></a> for the
+parity test suite.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

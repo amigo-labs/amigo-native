@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+amigo-pixelmatch-core = { path = "../_pixelmatch-core" }
 
 [build-dependencies]
 napi-build = "2"

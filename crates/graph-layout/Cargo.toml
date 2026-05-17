@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+amigo-graph-layout-core = { path = "../_graph-layout-core" }
 
 [build-dependencies]
 napi-build = "2"

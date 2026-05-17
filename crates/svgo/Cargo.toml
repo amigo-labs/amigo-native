@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-quick-xml = { version = "0.40", features = ["serialize"] }
+amigo-svgo-core = { path = "../_svgo-core" }
 
 [build-dependencies]
 napi-build = "2"

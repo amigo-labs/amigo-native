@@ -16,5 +16,10 @@ if (result) {
 const sync = fileTypeFromBufferSync(buffer)
 </code></pre>
 <p>Returns <code>null</code> when the magic signature isn’t recognised. <code>infer</code> covers ~70 formats (images, audio/video, archives, fonts, documents) — see <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for the coverage gap vs <code>file-type</code>.</p>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { fileTypeFromBufferSync } from '@amigo-labs/file-type'
+</code></pre>
+<p>The async <code>fileTypeFromBuffer</code> variant is napi-only (no thread pool in WASM); the sync entry is what ships to the browser.</p>
 <h2 id="parity">Parity</h2>
 <p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run a representative subset of the upstream <code>file-type</code> test suite against this implementation.</p>

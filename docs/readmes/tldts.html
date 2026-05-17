@@ -1,0 +1,46 @@
+<h1 id="amigo-labs-tldts">@amigo-labs/tldts</h1>
+<blockquote>
+<p>Rust-powered domain / public-suffix parser. Subset-compatible shape with <a href="https://www.npmjs.com/package/tldts"><code>tldts</code></a>, backed by the <a href="https://crates.io/crates/psl"><code>psl</code></a> crate (bundled IANA Public Suffix List) plus <a href="https://crates.io/crates/idna"><code>idna</code></a>. Compiled via NAPI-RS.</p>
+</blockquote>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">npm install @amigo-labs/tldts
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-ts">import {
+  parse,
+  getDomain,
+  getPublicSuffix,
+  getHostname,
+  getSubdomain,
+  parseMany,
+} from '@amigo-labs/tldts'
+
+parse('https://www.example.co.uk/path')
+// {
+//   hostname: 'www.example.co.uk',
+//   domain: 'example.co.uk',
+//   subdomain: 'www',
+//   publicSuffix: 'co.uk',
+//   isIcann: true,
+//   isPrivate: false,
+//   isIp: false,
+// }
+
+getDomain('mail.example.com')        // 'example.com'
+getHostname('https://x.y.com:443/')  // 'x.y.com'
+
+// Batch — one FFI crossing amortises over N inputs.
+parseMany(['a.com', 'b.org'])
+</code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { parse } from '@amigo-labs/tldts'
+</code></pre>
+<p>The bundled IANA Public Suffix List (~50 KB gzipped) is embedded in the WASM artifact; no runtime resource loading.</p>
+<h2 id="parity">Parity</h2>
+<p>Subset of upstream <code>tldts@7</code>: the bundled IANA PSL covers the default
+(ICANN ∪ PRIVATE) list. <code>allow_private_domains</code> and <code>detect_ip</code> are
+documented no-ops in v0.1 — see the inline rustdoc on <code>ParseOptions</code>
+in <code>src/lib.rs</code>. <code>extract_hostname: false</code> is honoured.</p>
+<h2 id="license">License</h2>
+<p>MIT</p>

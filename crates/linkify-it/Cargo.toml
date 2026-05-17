@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-linkify = "0.11"
+amigo-linkify-it-core = { path = "../_linkify-it-core" }
 
 [build-dependencies]
 napi-build = "2"

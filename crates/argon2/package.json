@@ -64,6 +64,7 @@
     "vsJs": "1.36x",
     "parity": "—",
     "status": "Drop-in",
+    "targets": ["node"],
     "competitors": [
       "argon2@0.41.1",
       "hash-wasm@4.12.0"

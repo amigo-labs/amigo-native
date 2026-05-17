@@ -55,6 +55,16 @@ interface TurndownOptions {
 See [`__conformance__/divergences.md`](./__conformance__/divergences.md)
 for byte-level differences.
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { turndown } from '@amigo-labs/turndown'
+```
+
+Shares `html5ever` with `@amigo-labs/sanitize-html` — when both are loaded the bundler typically dedupes the parser overhead.
+
 ## License
 
 MIT

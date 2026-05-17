@@ -45,5 +45,10 @@ for rationale.</li>
 </ul>
 <p>See <a href="./__conformance__/divergences.md"><code>__conformance__/divergences.md</code></a>
 for byte-level differences.</p>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { turndown } from '@amigo-labs/turndown'
+</code></pre>
+<p>Shares <code>html5ever</code> with <code>@amigo-labs/sanitize-html</code> — when both are loaded the bundler typically dedupes the parser overhead.</p>
 <h2 id="license">License</h2>
 <p>MIT</p>

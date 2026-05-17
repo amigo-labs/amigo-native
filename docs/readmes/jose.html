@@ -4,7 +4,7 @@
 <a href="https://github.com/amigo-labs/amigo-native/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@amigo-labs/jose" alt="license" /></a></p>
 <p>JOSE key-format primitives powered by Rust via <a href="https://napi.rs">NAPI-RS</a>. Native Ed25519 JWK generation and RFC 7638 thumbprints — a fast companion to the <a href="https://www.npmjs.com/package/jose"><code>jose</code></a> npm package’s key-handling subset.</p>
 <blockquote>
-<p><strong>v0.1 scope.</strong> Ed25519 key-pair generation and JWK thumbprints only. JWS sign/verify is provided by <a href="https://www.npmjs.com/package/@amigo-labs/jwt"><code>@amigo-labs/jwt</code></a>. JWE encrypt/decrypt is roadmap for v0.2. <strong>RSA key generation is not exposed</strong> because Node’s built-in <code>crypto.generateKeyPair('rsa')</code> (OpenSSL via the libuv thread-pool) is ~2.6× faster than any pure-Rust <code>rsa</code> crate we can link — see the “Notes on RSA” section below.</p>
+<p><strong>v0.1 scope.</strong> Ed25519 key-pair generation and JWK thumbprints only. JWS sign/verify is provided by <a href="https://www.npmjs.com/package/@amigo-labs/jwt"><code>@amigo-labs/jwt</code></a>. JWE encrypt/decrypt is roadmap for v0.2. <strong>RSA key generation is not exposed</strong> because Node’s built-in <code>crypto.generateKeyPair('rsa')</code> (OpenSSL via the libuv thread-pool) outpaces every pure-Rust <code>rsa</code> crate we can link — see the “Notes on RSA” section below.</p>
 </blockquote>
 <h2 id="installation">Installation</h2>
 <pre><code class="language-bash">npm install @amigo-labs/jose
@@ -25,14 +25,9 @@ const kid = jwkThumbprint(publicJwk);
 <h3 id="jwkthumbprint-jwk-object-string"><code>jwkThumbprint(jwk: object): string</code></h3>
 <p>Computes the SHA-256 JWK thumbprint per RFC 7638. Returns a base64url-encoded string. Accepts public or private JWKs of <code>kty</code> <code>RSA</code>, <code>EC</code>, <code>OKP</code>, or <code>oct</code>; only the canonical required members are hashed.</p>
 <h2 id="performance">Performance</h2>
-<p>Measured on linux-x64, Node v22.22.2, vs <a href="https://www.npmjs.com/package/jose"><code>jose</code></a> (panva):</p>
-<table><thead><tr><th>Operation</th><th style="text-align: right">@amigo-labs/jose</th><th style="text-align: right">jose (pure JS)</th><th>Speedup</th></tr></thead><tbody>
-<tr><td>jwkThumbprint (Ed25519)</td><td style="text-align: right">399 k hz</td><td style="text-align: right">247 k hz</td><td><strong>1.62×</strong></td></tr>
-<tr><td>jwkThumbprint (RSA-2048)</td><td style="text-align: right">369 k hz</td><td style="text-align: right">168 k hz</td><td><strong>2.19×</strong></td></tr>
-<tr><td>generateEd25519KeyPair + exportJWK</td><td style="text-align: right">46.4 k hz</td><td style="text-align: right">6.66 k hz</td><td><strong>6.97×</strong></td></tr>
-</tbody></table>
+<p>Live benchmark numbers vs <a href="https://www.npmjs.com/package/jose"><code>jose</code></a> (panva) are on the <a href="https://amigo-native.amigo-labs.workers.dev/">dashboard</a> and in <a href="../../docs/data.json"><code>docs/data.json</code></a>.</p>
 <h2 id="notes-on-rsa">Notes on RSA</h2>
-<p><code>generateRsaKeyPair</code> is <strong>deliberately not exposed</strong>. Node ships <code>crypto.generateKeyPair('rsa', …)</code> built-in, which uses OpenSSL’s heavily-optimized BIGNUM prime-search via the libuv thread-pool. Pure-Rust <code>rsa</code> crates cannot match that throughput — measurement showed ~2.6× slower. If you need RSA keys, generate them via Node built-in and pass the resulting JWK to <code>jwkThumbprint</code>:</p>
+<p><code>generateRsaKeyPair</code> is <strong>deliberately not exposed</strong>. Node ships <code>crypto.generateKeyPair('rsa', …)</code> built-in, which uses OpenSSL’s heavily-optimized BIGNUM prime-search via the libuv thread-pool — pure-Rust <code>rsa</code> crates cannot match that throughput. If you need RSA keys, generate them via Node built-in and pass the resulting JWK to <code>jwkThumbprint</code>:</p>
 <pre><code class="language-ts">import { generateKeyPair } from "node:crypto";
 import { promisify } from "node:util";
 import { jwkThumbprint } from "@amigo-labs/jose";
@@ -41,7 +36,7 @@ const { publicKey, privateKey } = await promisify(generateKeyPair)("rsa", {
   modulusLength: 2048,
 });
 const jwk = publicKey.export({ format: "jwk" });
-const kid = jwkThumbprint(jwk); // 2.19× faster than panva/jose's thumbprint
+const kid = jwkThumbprint(jwk);
 </code></pre>
 <h2 id="roadmap">Roadmap</h2>
 <ul>

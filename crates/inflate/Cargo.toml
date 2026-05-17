@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-flate2 = { version = "1", default-features = false, features = ["zlib-rs"] }
+amigo-inflate-core = { path = "../_inflate-core" }
 
 [build-dependencies]
 napi-build = "2"

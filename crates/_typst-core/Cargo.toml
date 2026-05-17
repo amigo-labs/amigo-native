@@ -1,0 +1,24 @@
+[package]
+name = "amigo-typst-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+typst = "0.14"
+typst-pdf = "0.14"
+typst-assets = { version = "0.14", features = ["fonts"] }
+comemo = "0.5"
+ecow = "0.2"
+
+# `wasmbind` is the chrono feature that wires `Utc::now()` through to
+# JavaScript's `Date.now()` on wasm32 — without it the call panics at
+# runtime ("time not implemented on this platform").
+chrono = { version = "0.4", default-features = false, features = ["clock", "wasmbind"] }
+
+# getrandom for transitive deps when targeting wasm32. Matches the
+# workspace rustflag.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }

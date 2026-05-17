@@ -24,5 +24,10 @@ writer.add('data.bin', someBuffer, { compression: 'stored' })
 const archive = writer.finalize()   // Buffer
 </code></pre>
 <p>Compression methods: <code>deflate</code> (default) and <code>stored</code>. Deflate level is <code>0</code>–<code>9</code> (default <code>6</code>).</p>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { ZipReader, ZipWriter } from '@amigo-labs/zip'
+</code></pre>
+<p>The filesystem-source variant (<code>ZipReader.fromPath</code>) is napi-only — the browser build ships only <code>new ZipReader(uint8Array)</code> (i.e. the buffer-source variant). DEFLATE via flate2 (pure-Rust zlib-rs backend) is wasm32-portable.</p>
 <h2 id="parity">Parity</h2>
 <p>Tests in <a href="./__conformance__"><code>__conformance__/</code></a> run a representative subset of the upstream <code>yauzl</code>/<code>adm-zip</code> test suites against this implementation. See <a href="./__conformance__/divergences.md"><code>divergences.md</code></a> for documented differences.</p>

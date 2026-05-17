@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-zip = { version = "8", default-features = false, features = ["deflate", "deflate-flate2"] }
+amigo-zip-core = { path = "../_zip-core" }
 
 [build-dependencies]
 napi-build = "2"

@@ -1,7 +1,27 @@
 <h1 id="candidate-review-jose">Candidate review: <code>jose</code></h1>
 <blockquote>
-<p><strong>Status:</strong> SHIPPED v0.1 (rescoped) · <strong>Predicted:</strong> 🟢 Green-likely · <strong>Measured:</strong> 🟢 Green (RSA thumbprint, Ed25519 keygen) / 🟡 Yellow (Ed25519 thumbprint) · <strong>Reviewed:</strong> 2026-04-19</p>
+<p><strong>Status:</strong> SHIPPED v0.1 (rescoped) · <strong>Predicted:</strong> 🟢 Green-likely · <strong>Measured:</strong> 🟢 Green (RSA thumbprint, Ed25519 keygen) / 🟡 Yellow (Ed25519 thumbprint) · <strong>Reviewed:</strong> 2026-04-19 ·
+<strong>Targets:</strong> <code>node</code> (Node.js server-only group)</p>
 </blockquote>
+<h2 id="wasm-target-exclusion">WASM-target exclusion</h2>
+<p><code>jose</code> is part of the <strong>Node.js server-only tier</strong> documented in
+<a href="../specs/expansion-2026.md#nodejs-server-only-tier"><code>docs/specs/expansion-2026.md</code></a>.
+It does not ship a WASM binding, deliberately:</p>
+<ul>
+<li><strong>Threat model:</strong> the package’s primary surface is <strong>private-key
+operations</strong> — JWK generation, signing-key handling. Shipping that
+surface to the browser is an exfiltration risk even when callers
+intend “verify only” (the same module can also sign), and the
+packaging signal <code>import '@amigo-labs/jose'</code> would conflate signing
+and verification flows for consumers.</li>
+<li><strong>Use case:</strong> signature verification with a <em>public</em> key is the only
+browser-relevant operation, and it is small enough to do with the Web
+Crypto API directly — no WASM payload needed.</li>
+</ul>
+<p>If a concrete verify-only browser use case appears, the right shape is a
+separate, smaller <code>@amigo-labs/jose-verify</code> package that exposes only the
+public-key paths. Until then this package stays napi-only with
+<code>targets: ["node"]</code> in the registry.</p>
 <h2 id="verdict">Verdict</h2>
 <p><code>jose</code> (panva) is the only option in this triple tranche that actually holds the Green profile — <strong>but only if we scope</strong>. The full surface (JWT + JWS + JWE + JWK + JWKS caching + browser compat) is too big for a single crate and partially redundant with our <code>@amigo-labs/jwt</code>. Recommendation: <strong>scope = JWE encryption + JWK operations (RSA/EC key parsing/generation)</strong> — exactly the gap our jwt crate doesn’t cover. Per-call compute 100 µs–2 ms (RSA operations, AES-GCM encryption, ECDH-ES key agreement) → FFI overhead ≤ 1% → 2–4× speedup vs. pure-JS jose realistic.</p>
 <h2 id="js-package">JS package</h2>

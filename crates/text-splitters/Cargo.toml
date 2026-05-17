@@ -9,8 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-text-splitter = { version = "0.24", features = ["markdown"] }
-tiktoken-rs = "0.11"
+amigo-text-splitters-core = { path = "../_text-splitters-core" }
 
 [build-dependencies]
 napi-build = "2"

@@ -22,6 +22,16 @@ mergeAllJson([{ a: 1 }, { b: 2 }, { c: 3 }])
 
 Array strategy defaults to `"concat"`; pass `{ arrayMerge: 'overwrite' }` to replace instead.
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { mergeJson } from '@amigo-labs/deepmerge'
+```
+
+Node consumers get the napi binary; browser consumers get the in-tarball `wasm/pkg/` artifact (no separate package, no extra install step).
+
 ## Parity
 
 Tests in [`__conformance__/`](./__conformance__) run the upstream `deepmerge` test suite against this implementation. See [`divergences.md`](./__conformance__/divergences.md) for documented differences.

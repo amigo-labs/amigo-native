@@ -1,10 +1,12 @@
+//! HTML sanitization — thin napi wrapper around
+//! `amigo-sanitize-html-core`. Translates the napi `Either<String, f64>`
+//! input shape into a plain `&str` and the napi `SanitizeOptions` into
+//! the core's plain struct.
+
+use amigo_sanitize_html_core as core;
 use napi::bindgen_prelude::Either;
 use napi_derive::napi;
 use std::collections::HashMap;
-
-mod rules;
-mod strict;
-mod v2;
 
 #[napi(object)]
 pub struct SanitizeOptions {
@@ -14,23 +16,12 @@ pub struct SanitizeOptions {
     pub allowed_schemes: Option<Vec<String>>,
     pub strip_comments: Option<bool>,
     pub link_rel: Option<String>,
-    /// When `true`, every attribute not an event handler passes through.
-    /// Set by `compat.mjs` when the caller uses `allowedAttributes: false`.
     pub allow_all_attributes: Option<bool>,
-    /// Maximum nesting depth before a start tag is unwrapped (content kept,
-    /// tag dropped) instead of emitted. Defaults to 256. A pathological
-    /// `<div><div>…×100k…</div></div>` input no longer grows the frame
-    /// stack without bound. Pass `0` to disable the cap.
     pub max_depth: Option<u32>,
-    /// Hard cap on input length in bytes. Inputs longer than this are
-    /// truncated to a deterministic empty string. Defaults to 5 MiB. Pass
-    /// `0` to disable the cap.
     pub max_input_bytes: Option<u32>,
 }
 
 fn number_to_string(n: f64) -> String {
-    // Match JS Number.prototype.toString(): integers print without decimals,
-    // NaN/Infinity use their JS names.
     if n.is_nan() {
         return "NaN".to_string();
     }
@@ -47,7 +38,7 @@ fn number_to_string(n: f64) -> String {
     format!("{n}")
 }
 
-pub(crate) fn coerce_input(html: Option<Either<String, f64>>) -> String {
+fn coerce_input(html: Option<Either<String, f64>>) -> String {
     match html {
         None => String::new(),
         Some(Either::A(s)) => s,
@@ -55,26 +46,48 @@ pub(crate) fn coerce_input(html: Option<Either<String, f64>>) -> String {
     }
 }
 
-#[napi]
-pub fn sanitize(html: Option<Either<String, f64>>, options: Option<SanitizeOptions>) -> String {
-    v2::sanitize_impl(html, options)
+fn into_core(options: Option<SanitizeOptions>) -> core::SanitizeOptions {
+    let o = options.unwrap_or(SanitizeOptions {
+        allowed_tags: None,
+        allowed_attributes: None,
+        allowed_classes: None,
+        allowed_schemes: None,
+        strip_comments: None,
+        link_rel: None,
+        allow_all_attributes: None,
+        max_depth: None,
+        max_input_bytes: None,
+    });
+    core::SanitizeOptions {
+        allowed_tags: o.allowed_tags,
+        allowed_attributes: o.allowed_attributes,
+        allowed_classes: o.allowed_classes,
+        allowed_schemes: o.allowed_schemes,
+        strip_comments: o.strip_comments,
+        link_rel: o.link_rel,
+        allow_all_attributes: o.allow_all_attributes,
+        max_depth: o.max_depth,
+        max_input_bytes: o.max_input_bytes,
+    }
 }
 
-/// Strict sanitize. Same rule surface as `sanitize`, but drives html5ever's
-/// full TreeBuilder so SCRIPT_DATA / RAWTEXT / foreign-content state
-/// transitions happen correctly. Routed to by `compat.mjs` when the caller
-/// enables `<script>`/`<style>` or SVG/MathML tags, or opts out of case
-/// normalisation via `parser.lowerCaseTags: false`.
+#[napi]
+pub fn sanitize(html: Option<Either<String, f64>>, options: Option<SanitizeOptions>) -> String {
+    let s = coerce_input(html);
+    core::sanitize(&s, &into_core(options))
+}
+
 #[napi(js_name = "sanitizeStrict")]
 pub fn sanitize_strict(
     html: Option<Either<String, f64>>,
     options: Option<SanitizeOptions>,
 ) -> String {
-    strict::sanitize_impl(html, options)
+    let s = coerce_input(html);
+    core::sanitize_strict(&s, &into_core(options))
 }
 
 #[napi(js_name = "isClean")]
 pub fn is_clean(html: Option<Either<String, f64>>, options: Option<SanitizeOptions>) -> bool {
-    let coerced = coerce_input(html);
-    sanitize(Some(Either::A(coerced.clone())), options) == coerced
+    let s = coerce_input(html);
+    core::is_clean(&s, &into_core(options))
 }

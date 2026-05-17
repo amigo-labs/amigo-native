@@ -59,6 +59,16 @@ type DetectOptions = {
 }
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { detect } from '@amigo-labs/language-detect'
+```
+
+Node consumers get the napi binary; browser consumers get the in-tarball `wasm/pkg/` artifact. `whatlang`'s bundle is ~100 KB gzipped, well under the 500 KB browser budget.
+
 ## Migration from `franc`
 
 See `MIGRATION.md` — nearly drop-in on common cases; the confidence

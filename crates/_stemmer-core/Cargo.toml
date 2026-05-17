@@ -1,0 +1,11 @@
+[package]
+name = "amigo-stemmer-core"
+version = "0.1.1"
+edition = "2024"
+publish = false
+
+[lib]
+
+[dependencies]
+rust-stemmers = "1.2"
+unicode-segmentation = "1.12"

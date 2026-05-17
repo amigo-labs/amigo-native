@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
-xxhash-rust = { version = "0.8", features = ["xxh32", "xxh64", "xxh3"] }
+amigo-xxhash-core = { path = "../_xxhash-core" }
 
 [build-dependencies]
 napi-build = "2"

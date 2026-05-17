@@ -4,12 +4,30 @@
   "description": "Semantic drop-in for deepmerge with a Rust fast-path for plain JSON",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",
+  "browser": "./wasm/pkg/amigo_deepmerge_wasm.js",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./wasm/pkg/amigo_deepmerge_wasm.d.ts",
+        "default": "./wasm/pkg/amigo_deepmerge_wasm.js"
+      },
+      "default": {
+        "types": "./wrapper.d.ts",
+        "default": "./wrapper.js"
+      }
+    }
+  },
   "files": [
     "index.js",
     "index.d.ts",
     "wrapper.js",
     "wrapper.d.ts",
-    "README.md"
+    "README.md",
+    "wasm/pkg/amigo_deepmerge_wasm.js",
+    "wasm/pkg/amigo_deepmerge_wasm_bg.js",
+    "wasm/pkg/amigo_deepmerge_wasm_bg.wasm",
+    "wasm/pkg/amigo_deepmerge_wasm.d.ts",
+    "wasm/pkg/amigo_deepmerge_wasm_bg.wasm.d.ts"
   ],
   "keywords": [
     "deepmerge",
@@ -33,10 +51,13 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:all": "pnpm build && pnpm build:wasm",
+    "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "bench": "vitest bench",
     "test:conformance": "vitest run __conformance__",
+    "test:wasm": "cd wasm && wasm-pack test --node",
     "test:all": "vitest run",
     "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },
@@ -64,6 +85,7 @@
     "vsJs": "3-6.2x",
     "parity": "100%",
     "status": "Compatible",
+    "targets": ["node", "browser"],
     "competitors": [
       "deepmerge@4.3.1"
     ]

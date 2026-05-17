@@ -1,6 +1,26 @@
 # Perf-Review: `@amigo-labs/argon2`
 
-> **Status:** 🟡 Yellow · **Reviewed:** 2026-04-21 · **Version:** 0.1.0
+> **Status:** 🟡 Yellow · **Reviewed:** 2026-04-21 · **Version:** 0.1.0 ·
+> **Targets:** `node` (Node.js server-only group)
+
+## WASM-target exclusion
+
+`argon2` is part of the **Node.js server-only tier** documented in
+[`docs/specs/expansion-2026.md`](../specs/expansion-2026.md#nodejs-server-only-tier).
+It does not ship a WASM binding, deliberately:
+
+- **Performance:** Argon2 is memory-hard by design (default 64 MiB, t=3,
+  p=4). WASM is ~2× slower than native for the inner blake2b loop, so
+  the same security target costs roughly twice the CPU budget per hash.
+- **Threat model:** Client-side password hashing is an anti-pattern.
+  Salts and hashes belong on the server. There is no use case for
+  shipping the algorithm to the browser that improves on simply sending
+  the password over TLS to a server endpoint.
+
+If a concrete edge/serverless use case appears, revisit. Until then this
+package stays napi-only with `targets: ["node"]` in the registry.
+
+
 
 ## Verdict
 
