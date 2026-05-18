@@ -2,7 +2,7 @@
   "crates/argon2": "0.1.1",
   "crates/bm25": "0.1.1",
   "crates/commonmark": "0.1.1",
-  "crates/csv": "0.1.1",
+  "crates/csv": "0.2.0",
   "crates/deepmerge": "0.1.1",
   "crates/diff": "0.1.1",
   "crates/encoding": "0.1.1",
