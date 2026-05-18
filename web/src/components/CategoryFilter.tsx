@@ -50,6 +50,17 @@ export default function CategoryFilter({
       if (show) shown++;
     });
     setVisible(shown);
+
+    // Hide the section header for any category whose cards are all filtered
+    // out. Otherwise we render a "TEXT · 10" heading with nothing beneath it.
+    document
+      .querySelectorAll<HTMLElement>("[data-category-group]")
+      .forEach((group) => {
+        const anyVisible = Array.from(
+          group.querySelectorAll<HTMLElement>(cardSelector)
+        ).some((card) => card.style.display !== "none");
+        group.style.display = anyVisible ? "" : "none";
+      });
   }, [filter, targets, query, cardSelector]);
 
   // "/" focuses the search input from anywhere on the page.
