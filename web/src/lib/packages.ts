@@ -13,16 +13,26 @@ export type Category =
   | "util"
   | "graph";
 
+export type Target = "node" | "browser";
+
 export interface Pkg {
   name: string;
   title: string;
   category: Category;
   description: string;
   speedup: string;
+  /** Bundler-target capability. `["node"]` means the package ships only the
+   * napi binary (server-only tier); `["node", "browser"]` means it also
+   * carries a WASM build picked up via package.json conditional exports. */
+  targets: Target[];
   npmUrl: string;
   sourceUrl: string;
   readmeUrl?: string;
   perfReviewUrl?: string;
+}
+
+export function isDualTarget(pkg: Pkg): boolean {
+  return pkg.targets.includes("browser");
 }
 
 export interface MarqueeStat {

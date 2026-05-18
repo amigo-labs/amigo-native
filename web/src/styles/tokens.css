@@ -53,10 +53,10 @@
   --fg-muted: #585a60;
   --fg-subtle: #76787e;
 
-  --accent: #d9501a;
+  --accent: #c44612;
   --accent-hot: #b83f0e;
-  --accent-glow: rgba(217, 80, 26, 0.18);
-  --accent-dim: rgba(217, 80, 26, 0.06);
+  --accent-glow: rgba(196, 70, 18, 0.18);
+  --accent-dim: rgba(196, 70, 18, 0.06);
   --accent-on: #ffffff;
 
   --ok: #16876b;

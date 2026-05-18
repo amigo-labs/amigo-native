@@ -19,6 +19,8 @@
   --color-accent: var(--accent);
   --color-accent-hot: var(--accent-hot);
   --color-accent-on: var(--accent-on);
+  --color-accent-dim: var(--accent-dim);
+  --color-accent-glow: var(--accent-glow);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-bad: var(--bad);

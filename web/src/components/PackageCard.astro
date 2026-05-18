@@ -1,5 +1,6 @@
 ---
 import type { Pkg } from "~/lib/packages";
+import TargetsPill from "./TargetsPill.astro";
 
 interface Props {
   pkg: Pkg;
@@ -17,18 +18,22 @@ const { pkg, featured = false } = Astro.props;
   data-title={pkg.title.toLowerCase()}
   data-description={pkg.description.toLowerCase()}
   data-category={pkg.category}
+  data-targets={pkg.targets.join(" ")}
   class:list={[
     "group flex h-full flex-col gap-3 rounded-xl border border-line bg-bg-elevated p-4 shadow-card transition-colors hover:border-line-strong hover:bg-bg-elevated",
     featured && "ring-1 ring-accent/40",
   ]}
 >
-  <div class="flex items-center justify-between">
-    <span
-      class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
-    >
-      {pkg.category}
-    </span>
-    <span class="font-mono text-2xs text-accent">{pkg.speedup}</span>
+  <div class="flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 min-w-0">
+      <span
+        class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+      >
+        {pkg.category}
+      </span>
+      <TargetsPill targets={pkg.targets} />
+    </div>
+    <span class="shrink-0 font-mono text-2xs text-accent">{pkg.speedup}</span>
   </div>
   <h3
     class="text-lg font-semibold tracking-(--tracking-snug) text-fg transition-colors group-hover:text-accent"

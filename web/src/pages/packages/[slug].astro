@@ -2,6 +2,7 @@
 import Base from "~/layouts/Base.astro";
 import Prose from "~/components/Prose.astro";
 import VerdictPill from "~/components/VerdictPill.astro";
+import TargetsPill from "~/components/TargetsPill.astro";
 import BenchmarkBars from "~/components/BenchmarkBars.astro";
 import Sparkline from "~/components/Sparkline.astro";
 import InstallCommand from "~/components/InstallCommand";
@@ -93,6 +94,7 @@ const visibleSections = sections.filter((s) => s.show);
         label={meta.verdictLabel}
         reviewedOn={meta.reviewedOn}
       />
+      <TargetsPill targets={pkg.targets} size="full" />
       <span
         class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
       >
@@ -101,6 +103,26 @@ const visibleSections = sections.filter((s) => s.show);
       <span class="font-mono text-sm text-accent">{pkg.speedup}</span>
     </div>
     <p class="mt-3 max-w-2xl text-lg text-fg-muted">{pkg.description}</p>
+
+    <dl class="mt-4 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-fg-muted">
+      <div class="flex items-center gap-2">
+        <dt class="text-fg-subtle uppercase tracking-(--tracking-wide)">Targets</dt>
+        <dd>
+          <a
+            href="/getting-started#node-vs-browser"
+            class="text-fg hover:text-accent"
+          >
+            {pkg.targets.includes("browser") ? "Node + Browser" : "Node only"}
+          </a>
+        </dd>
+      </div>
+      {meta.version && (
+        <div class="flex items-center gap-2">
+          <dt class="text-fg-subtle uppercase tracking-(--tracking-wide)">Version</dt>
+          <dd class="text-fg">{meta.version}</dd>
+        </div>
+      )}
+    </dl>
 
     <div class="mt-5 flex flex-wrap gap-2 font-mono text-xs">
       <a

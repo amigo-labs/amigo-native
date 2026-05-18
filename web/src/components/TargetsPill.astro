@@ -1,0 +1,34 @@
+---
+import type { Target } from "~/lib/packages";
+
+interface Props {
+  targets: Target[];
+  /** Compact = small chip used on catalog cards. Full = larger pill used in
+   * the per-package header. */
+  size?: "compact" | "full";
+}
+
+const { targets, size = "compact" } = Astro.props;
+const dual = targets.includes("browser");
+const label = dual ? "Node + Browser" : "Node only";
+const title = dual
+  ? "Ships both a napi binary (Node) and a WASM build (bundlers, browsers)."
+  : "Server-only tier — ships a napi binary only; no WASM build.";
+
+const baseClasses = "inline-flex items-center gap-1.5 rounded-full border font-mono uppercase tracking-(--tracking-wide)";
+const sizeClasses =
+  size === "full"
+    ? "h-6 px-2.5 text-2xs"
+    : "h-5 px-2 text-[10px]";
+const colorClasses = dual
+  ? "border-ok/40 bg-ok/10 text-ok"
+  : "border-archived/40 bg-archived/15 text-fg-muted";
+---
+
+<span class:list={[baseClasses, sizeClasses, colorClasses]} title={title}>
+  <span
+    class:list={["size-1.5 rounded-full", dual ? "bg-ok" : "bg-archived"]}
+    aria-hidden="true"
+  ></span>
+  {label}
+</span>

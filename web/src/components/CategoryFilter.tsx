@@ -13,6 +13,7 @@ interface Props {
 
 const ALL = "all" as const;
 type Filter = typeof ALL | Category;
+type TargetsFilter = typeof ALL | "dual" | "node-only";
 
 export default function CategoryFilter({
   cardSelector = "[data-pkg-card]",
@@ -20,29 +21,36 @@ export default function CategoryFilter({
   total,
 }: Props) {
   const [filter, setFilter] = useState<Filter>(ALL);
+  const [targets, setTargets] = useState<TargetsFilter>(ALL);
   const [query, setQuery] = useState("");
   const [visible, setVisible] = useState(total);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Apply filter to DOM on every change.
+  // Apply category + targets + search filter to DOM on every change.
   useEffect(() => {
     const cards = document.querySelectorAll<HTMLElement>(cardSelector);
     const q = query.trim().toLowerCase();
     let shown = 0;
     cards.forEach((card) => {
       const cat = card.dataset.category ?? "";
+      const cardTargets = (card.dataset.targets ?? "").split(/\s+/);
+      const isDual = cardTargets.includes("browser");
       const name = (card.dataset.name ?? "").toLowerCase();
       const title = card.dataset.title ?? "";
       const desc = card.dataset.description ?? "";
       const matchesCat = filter === ALL || cat === filter;
+      const matchesTargets =
+        targets === ALL ||
+        (targets === "dual" && isDual) ||
+        (targets === "node-only" && !isDual);
       const matchesQuery =
         !q || name.includes(q) || title.includes(q) || desc.includes(q);
-      const show = matchesCat && matchesQuery;
+      const show = matchesCat && matchesTargets && matchesQuery;
       card.style.display = show ? "" : "none";
       if (show) shown++;
     });
     setVisible(shown);
-  }, [filter, query, cardSelector]);
+  }, [filter, targets, query, cardSelector]);
 
   // "/" focuses the search input from anywhere on the page.
   useEffect(() => {
@@ -69,11 +77,28 @@ export default function CategoryFilter({
     []
   );
 
+  const targetFilters: { value: TargetsFilter; label: string }[] = [
+    { value: ALL, label: "All targets" },
+    { value: "dual", label: "Node + Browser" },
+    { value: "node-only", label: "Node only" },
+  ];
+
   function clear() {
     setQuery("");
     setFilter(ALL);
+    setTargets(ALL);
     inputRef.current?.focus();
   }
+
+  function chipClasses(active: boolean): string {
+    return `inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors ${
+      active
+        ? "border-accent bg-accent-dim text-accent"
+        : "border-line bg-bg-elevated text-fg-muted hover:border-line-strong hover:text-fg"
+    }`;
+  }
+
+  const dirty = query !== "" || filter !== ALL || targets !== ALL;
 
   return (
     <div class="flex flex-col gap-3">
@@ -116,7 +141,7 @@ export default function CategoryFilter({
           class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
         >
           showing {visible} of {total}
-          {(query || filter !== ALL) && (
+          {dirty && (
             <button
               type="button"
               onClick={clear}
@@ -142,13 +167,33 @@ export default function CategoryFilter({
                   .querySelector(catalogSelector)
                   ?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              class={`inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors ${
-                active
-                  ? "border-accent bg-accent-dim text-accent"
-                  : "border-line bg-bg-elevated text-fg-muted hover:border-line-strong hover:text-fg"
-              }`}
+              class={chipClasses(active)}
             >
               {f.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        class="flex flex-wrap items-center gap-2"
+        role="group"
+        aria-label="Filter by bundler target"
+      >
+        <span class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+          Targets
+        </span>
+        {targetFilters.map((t) => {
+          const active = t.value === targets;
+          return (
+            <button
+              key={t.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setTargets(t.value)}
+              class={chipClasses(active)}
+            >
+              {t.label}
             </button>
           );
         })}
