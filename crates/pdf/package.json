@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/pdf",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "PDF generation — document-as-data API via printpdf. One FFI call per document, batch helper included.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -85,7 +85,10 @@
     "vsJs": "TBD",
     "parity": "100%",
     "status": "Subset",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "pdfkit"
     ]
