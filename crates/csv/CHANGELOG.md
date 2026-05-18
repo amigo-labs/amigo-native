@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/amigo-labs/amigo-native/compare/csv@0.1.1...csv@0.2.0) (2026-05-18)
+
+
+### Features
+
+* **csv,inflate,pixelmatch:** add WASM bindings via core splits ([cfa1a29](https://github.com/amigo-labs/amigo-native/commit/cfa1a29051654fb2ed197fe8bc11fa14ac4046db))
+* ship WASM bindings for all eligible crates (Angular/React support) ([792802f](https://github.com/amigo-labs/amigo-native/commit/792802f389e26463fad9269a0533d7f14cc8aa3f))
+
 ## [0.1.1](https://github.com/amigo-labs/amigo-native/compare/csv@0.1.0...csv@0.1.1) (2026-05-07)
 
 
