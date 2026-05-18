@@ -17,7 +17,7 @@
   "crates/pdf": "0.1.1",
   "crates/pdf-parse": "0.1.1",
   "crates/sanitize-html": "0.2.1",
-  "crates/sentences": "0.1.1",
+  "crates/sentences": "0.2.0",
   "crates/slugify": "0.1.1",
   "crates/stemmer": "0.1.1",
   "crates/svgo": "0.1.1",
