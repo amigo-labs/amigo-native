@@ -1,8 +1,9 @@
 /* Design tokens — single source of truth for both themes.
  * Tailwind v4 consumes the CSS variables below via @theme in globals.css.
  * Dark palette preserves the current site's colors verbatim.
- * Light palette is derived for WCAG AA contrast (verified in
- * scripts/check-contrast.mjs).
+ * Light palette is derived from the dark one with WCAG AA contrast in
+ * mind: accent darkens from #FF6B2B to #D9501A so it clears 4.5:1 on the
+ * off-white background.
  */
 
 :root,

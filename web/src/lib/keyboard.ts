@@ -189,11 +189,9 @@ export function installKeyboardShortcuts(): void {
       }
       case "t": {
         e.preventDefault();
+        // writeTheme already dispatches amigo:theme-changed, so any
+        // ThemeToggle island on the page re-renders its icon.
         writeTheme(readTheme() === "dark" ? "light" : "dark");
-        // The ThemeToggle island reads the theme from the DOM on toggle, but
-        // it does not subscribe to external changes — dispatch an event so
-        // other listeners (if any) can react.
-        window.dispatchEvent(new CustomEvent("amigo:theme-changed"));
         break;
       }
       case "g": {

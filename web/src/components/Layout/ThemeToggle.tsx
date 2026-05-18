@@ -9,6 +9,20 @@ export default function ThemeToggle() {
   useEffect(() => {
     setTheme(readTheme());
     setMounted(true);
+
+    // Stay in sync when the theme is changed elsewhere — by the `t`
+    // keyboard shortcut, by another ThemeToggle instance, or by a
+    // localStorage write in a different tab.
+    const sync = () => setTheme(readTheme());
+    window.addEventListener("amigo:theme-changed", sync);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "amigo-theme") sync();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("amigo:theme-changed", sync);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   const next: Theme = theme === "dark" ? "light" : "dark";

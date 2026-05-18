@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import preact from "@astrojs/preact";
 import mdx from "@astrojs/mdx";
@@ -13,8 +14,8 @@ export default defineConfig({
     plugins: [tailwindcss()],
     resolve: {
       alias: {
-        "~": new URL("./src", import.meta.url).pathname,
-        "@data": new URL("../docs", import.meta.url).pathname,
+        "~": fileURLToPath(new URL("./src", import.meta.url)),
+        "@data": fileURLToPath(new URL("../docs", import.meta.url)),
       },
     },
   },

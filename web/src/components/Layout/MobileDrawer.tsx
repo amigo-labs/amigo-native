@@ -19,22 +19,63 @@ export default function MobileDrawer({ nav, repoUrl, currentPath }: Props) {
 
   useEffect(() => {
     if (!open) return;
+
+    const focusables = () =>
+      Array.from(
+        panelRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      ).filter(
+        (el) => !el.hasAttribute("inert") && el.offsetParent !== null
+      );
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         setOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      // Focus trap: cycle Tab within the panel.
+      const items = focusables();
+      if (items.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey && (active === first || !panelRef.current?.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !panelRef.current?.contains(active))) {
+        e.preventDefault();
+        first.focus();
       }
     };
+
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
-    // Move focus into the panel.
-    const first = panelRef.current?.querySelector<HTMLElement>(
-      "a, button, [tabindex]:not([tabindex='-1'])"
-    );
-    first?.focus();
+
+    // Mark every sibling of <body> children other than the dialog as inert
+    // so screen readers and keyboard users can't reach background content.
+    const siblings = Array.from(document.body.children).filter(
+      (el) => el !== panelRef.current?.closest("[role='dialog']")
+    ) as HTMLElement[];
+    const restore: { el: HTMLElement; had: boolean }[] = [];
+    for (const el of siblings) {
+      restore.push({ el, had: el.hasAttribute("inert") });
+      if (!el.hasAttribute("inert")) el.setAttribute("inert", "");
+    }
+
+    focusables()[0]?.focus();
+
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      for (const { el, had } of restore) {
+        if (!had) el.removeAttribute("inert");
+      }
       triggerRef.current?.focus();
     };
   }, [open]);

@@ -3,7 +3,7 @@
 // perf-reviews are rendered upstream by scripts/render-*.mjs against
 // @amigo-labs/commonmark and consumed via lib/content.ts.
 
-import { Marked } from "marked";
+import { Marked, type Tokens } from "marked";
 
 const marked = new Marked({
   gfm: true,
@@ -13,9 +13,8 @@ const marked = new Marked({
 const renderer = new marked.Renderer();
 
 // Inject heading ids matching the slug pattern used elsewhere on the site.
-// The allowlist below permits only word chars, whitespace, and hyphens —
-// which collapses any HTML markup inside a heading (<code>, <strong>, …)
-// to its plain-text equivalent without a separate tag-strip pass.
+// The allowlist below permits only Unicode letters, numbers, whitespace,
+// and hyphens — so the ids never carry attribute-breaking characters.
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -24,10 +23,26 @@ function slugify(text: string): string {
     .replace(/\s+/g, "-");
 }
 
+// Walk the marked token tree to recover plain heading text. Slugifying the
+// rendered HTML would leak inline tag names (e.g. "code", "strong") into
+// the id when a heading contains `<code>` / `<strong>` children.
+function tokensToText(tokens: Tokens.Generic[] | undefined): string {
+  if (!tokens) return "";
+  let out = "";
+  for (const tok of tokens) {
+    if ("tokens" in tok && Array.isArray(tok.tokens)) {
+      out += tokensToText(tok.tokens as Tokens.Generic[]);
+    } else if (typeof (tok as Tokens.Text).text === "string") {
+      out += (tok as Tokens.Text).text;
+    }
+  }
+  return out;
+}
+
 renderer.heading = function ({ tokens, depth }) {
-  const text = this.parser.parseInline(tokens);
-  const id = slugify(text);
-  return `<h${depth} id="${id}">${text}</h${depth}>`;
+  const html = this.parser.parseInline(tokens);
+  const id = slugify(tokensToText(tokens));
+  return `<h${depth} id="${id}">${html}</h${depth}>`;
 };
 
 marked.use({ renderer });

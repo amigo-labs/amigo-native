@@ -29,4 +29,5 @@ export function writeTheme(theme: Theme): void {
   } catch {
     // ignore — Safari private mode, etc.
   }
+  window.dispatchEvent(new CustomEvent("amigo:theme-changed", { detail: theme }));
 }

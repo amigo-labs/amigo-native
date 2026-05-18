@@ -100,6 +100,12 @@ const VERDICT_PATTERNS: { token: string; verdict: Verdict; label: string }[] = [
   { token: "📦", verdict: "archived", label: "Archived" },
 ];
 
+// Capture the text between the rendered "<strong>Status:</strong>" label
+// and either the next inline label ("Reviewed:" / "Version:") or the end of
+// the surrounding paragraph. Anything else in the document body — perf
+// rubric explainers, verdict tables, etc. — is intentionally ignored.
+const STATUS_LINE = /Status:\s*<\/strong>\s*([\s\S]*?)(?:<strong>|<\/p>|$)/i;
+
 export function extractPerfMeta(html: string | null): PerfMeta {
   const empty: PerfMeta = {
     verdict: null,
@@ -109,13 +115,20 @@ export function extractPerfMeta(html: string | null): PerfMeta {
   };
   if (!html) return empty;
 
+  const statusFragment = STATUS_LINE.exec(html)?.[1] ?? "";
+
   let verdict: Verdict | null = null;
   let verdictLabel: string | null = null;
+  // Pick the first verdict emoji that appears in the status fragment so
+  // packages like inflate (which carries "🟡 Yellow / 🟢 Green-likely
+  // post-Phase-C" on the same line) still surface the official label.
+  let earliest = Number.POSITIVE_INFINITY;
   for (const p of VERDICT_PATTERNS) {
-    if (html.includes(p.token)) {
+    const idx = statusFragment.indexOf(p.token);
+    if (idx >= 0 && idx < earliest) {
+      earliest = idx;
       verdict = p.verdict;
       verdictLabel = p.label;
-      break;
     }
   }
 
