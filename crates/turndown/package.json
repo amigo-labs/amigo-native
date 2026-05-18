@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/turndown",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "HTML → Markdown via html5ever. CommonMark + GFM tables/strikethrough out of the box.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -87,7 +87,10 @@
     "vsJs": "10-16x",
     "parity": "100%",
     "status": "Subset",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "turndown"
     ]
