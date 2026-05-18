@@ -11,7 +11,7 @@
   "crates/graph-layout": "0.1.1",
   "crates/inflate": "0.1.1",
   "crates/jose": "0.1.1",
-  "crates/jwt": "0.1.1",
+  "crates/jwt": "0.2.0",
   "crates/language-detect": "0.1.1",
   "crates/minisearch": "0.1.1",
   "crates/pdf": "0.1.1",
