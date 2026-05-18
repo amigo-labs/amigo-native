@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/zip",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Rust-powered ZIP archive read/write via the zip crate",
   "main": "index.js",
   "types": "index.d.ts",
@@ -87,7 +87,10 @@
     "vsJs": "1.88-9.3x",
     "parity": "100%",
     "status": "Alternative",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "yauzl@3.2.0",
       "adm-zip@0.5.16"

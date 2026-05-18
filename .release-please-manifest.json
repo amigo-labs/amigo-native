@@ -26,5 +26,5 @@
   "crates/typst": "0.1.1",
   "crates/xlsx": "0.1.1",
   "crates/xxhash": "0.2.1",
-  "crates/zip": "0.1.1"
+  "crates/zip": "0.2.0"
 }
