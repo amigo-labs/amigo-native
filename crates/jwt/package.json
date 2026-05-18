@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/jwt",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Rust-powered JWT sign/verify via the jsonwebtoken crate",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",
@@ -66,7 +66,9 @@
     "vsJs": "1.65-7.8x",
     "parity": "100%",
     "status": "Drop-in",
-    "targets": ["node"],
+    "targets": [
+      "node"
+    ],
     "competitors": [
       "jsonwebtoken@9.0.2"
     ]
