@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/encoding",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Rust-powered character-encoding conversion via encoding_rs",
   "main": "index.js",
   "types": "index.d.ts",
@@ -87,7 +87,10 @@
     "vsJs": "0.61-32x",
     "parity": "100%",
     "status": "Alternative",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "iconv-lite@0.6.3"
     ]
