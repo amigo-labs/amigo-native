@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/file-type",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Rust-powered magic-byte file type detection via infer",
   "main": "index.js",
   "types": "index.d.ts",
@@ -84,7 +84,10 @@
     "vsJs": "28x",
     "parity": "100%",
     "status": "Alternative",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "file-type@19.6.0"
     ]
