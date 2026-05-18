@@ -140,12 +140,13 @@ export default function CategoryFilter({
     const tone =
       value === "dual"
         ? {
-            inactive: "border-ok/40 bg-ok/10 text-ok hover:bg-ok/20",
+            inactive:
+              "border-ok/70 bg-ok/20 text-ok hover:bg-ok/30",
             active: "border-ok bg-ok text-bg font-semibold shadow-sm",
           }
         : {
             inactive:
-              "border-archived/50 bg-archived/15 text-fg-muted hover:bg-archived/25",
+              "border-archived bg-archived/25 text-fg hover:bg-archived/40",
             active:
               "border-archived bg-archived text-bg font-semibold shadow-sm",
           };

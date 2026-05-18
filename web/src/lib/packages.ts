@@ -91,17 +91,17 @@ export const categoryLabel: Record<Category, string> = {
  */
 export const categoryChipClasses: Record<Category, string> = {
   crypto:
-    "border-cat-crypto/40 bg-cat-crypto/10 text-cat-crypto hover:bg-cat-crypto/20",
-  text: "border-cat-text/40 bg-cat-text/10 text-cat-text hover:bg-cat-text/20",
+    "border-cat-crypto/70 bg-cat-crypto/20 text-cat-crypto hover:bg-cat-crypto/30",
+  text: "border-cat-text/70 bg-cat-text/20 text-cat-text hover:bg-cat-text/30",
   search:
-    "border-cat-search/40 bg-cat-search/10 text-cat-search hover:bg-cat-search/20",
+    "border-cat-search/70 bg-cat-search/20 text-cat-search hover:bg-cat-search/30",
   document:
-    "border-cat-document/40 bg-cat-document/10 text-cat-document hover:bg-cat-document/20",
+    "border-cat-document/70 bg-cat-document/20 text-cat-document hover:bg-cat-document/30",
   archive:
-    "border-cat-archive/40 bg-cat-archive/10 text-cat-archive hover:bg-cat-archive/20",
-  util: "border-cat-util/40 bg-cat-util/10 text-cat-util hover:bg-cat-util/20",
+    "border-cat-archive/70 bg-cat-archive/20 text-cat-archive hover:bg-cat-archive/30",
+  util: "border-cat-util/70 bg-cat-util/20 text-cat-util hover:bg-cat-util/30",
   graph:
-    "border-cat-graph/40 bg-cat-graph/10 text-cat-graph hover:bg-cat-graph/20",
+    "border-cat-graph/70 bg-cat-graph/20 text-cat-graph hover:bg-cat-graph/30",
 };
 
 export const categorySolidClasses: Record<Category, string> = {
