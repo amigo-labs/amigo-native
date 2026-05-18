@@ -102,10 +102,10 @@ export default function CategoryFilter({
   }
 
   function chipClasses(active: boolean): string {
-    return `inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors ${
+    return `inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition-colors ${
       active
-        ? "border-accent bg-accent-dim text-accent"
-        : "border-line bg-bg-elevated text-fg-muted hover:border-line-strong hover:text-fg"
+        ? "border-accent bg-accent text-accent-on font-semibold shadow-sm"
+        : "border-line bg-bg-elevated text-fg-muted font-medium hover:border-line-strong hover:text-fg"
     }`;
   }
 
