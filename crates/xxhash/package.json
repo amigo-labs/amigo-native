@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/xxhash",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Blazing fast non-cryptographic hashing (XXHash) powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
@@ -85,7 +85,10 @@
     "vsJs": "0.34-2.7x",
     "parity": "—",
     "status": "Drop-in",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "xxhash-wasm@1.1.0",
       "xxhashjs@0.2.2"

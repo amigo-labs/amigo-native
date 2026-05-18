@@ -25,6 +25,6 @@
   "crates/turndown": "0.1.1",
   "crates/typst": "0.1.1",
   "crates/xlsx": "0.1.1",
-  "crates/xxhash": "0.2.1",
+  "crates/xxhash": "0.3.0",
   "crates/zip": "0.1.1"
 }
