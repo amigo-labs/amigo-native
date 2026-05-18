@@ -13,7 +13,7 @@
   "crates/jose": "0.1.1",
   "crates/jwt": "0.1.1",
   "crates/language-detect": "0.1.1",
-  "crates/minisearch": "0.1.1",
+  "crates/minisearch": "0.2.0",
   "crates/pdf": "0.1.1",
   "crates/pdf-parse": "0.1.1",
   "crates/sanitize-html": "0.2.1",
