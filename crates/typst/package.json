@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/typst",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Typst document compilation — Typst source in, PDF out. Bundled Libertinus fonts, offline-only package resolution.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -83,7 +83,10 @@
     "vsJs": "TBD",
     "parity": "100%",
     "status": "New",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "typst (CLI)",
       "puppeteer",
