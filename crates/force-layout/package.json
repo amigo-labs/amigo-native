@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/force-layout",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Force-directed graph layout — batch simulation, replaces d3-force for SSR / precompute workloads.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -85,7 +85,10 @@
     "vsJs": "3.5-6.6x",
     "parity": "100%",
     "status": "Compatible",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "d3-force"
     ]
