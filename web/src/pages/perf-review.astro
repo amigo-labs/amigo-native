@@ -1,0 +1,36 @@
+---
+import Base from "~/layouts/Base.astro";
+import Prose from "~/components/Prose.astro";
+import { loadTopLevelDoc } from "~/lib/content";
+import { renderMarkdown } from "~/lib/markdown";
+
+const source = await loadTopLevelDoc("perf-review");
+const html = source ? renderMarkdown(source) : null;
+---
+
+<Base
+  title="Perf review"
+  description="Honest classification of every @amigo-labs/* package against its JS alternatives — Green, Yellow, Red, Black, Archived."
+>
+  <nav class="pt-8 pb-4 font-mono text-xs text-fg-subtle" aria-label="Breadcrumb">
+    <a href="/" class="hover:text-fg">Packages</a>
+    <span class="mx-1">/</span>
+    <span class="text-fg">Perf review</span>
+  </nav>
+
+  <article class="mx-auto max-w-3xl pb-16">
+    {html ? (
+      <Prose>
+        <Fragment set:html={html} />
+      </Prose>
+    ) : (
+      <p class="text-fg-muted">
+        The framework document is currently unavailable. See
+        <a class="text-accent" href="https://github.com/amigo-labs/amigo-native/blob/main/docs/perf-review.md">
+          docs/perf-review.md
+        </a>
+        on GitHub.
+      </p>
+    )}
+  </article>
+</Base>

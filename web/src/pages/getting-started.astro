@@ -1,0 +1,392 @@
+---
+import Base from "~/layouts/Base.astro";
+import Prose from "~/components/Prose.astro";
+import { loadTopLevelDoc } from "~/lib/content";
+import { renderMarkdown } from "~/lib/markdown";
+
+const baseline = await loadTopLevelDoc("BASELINE");
+const baselineHtml = baseline ? renderMarkdown(baseline) : null;
+
+interface Verdict {
+  emoji: string;
+  name: string;
+  color: "ok" | "warn" | "bad" | "archived";
+  blurb: string;
+}
+
+const verdicts: Verdict[] = [
+  {
+    emoji: "🟢",
+    name: "Green",
+    color: "ok",
+    blurb:
+      "At least 2× faster than the best JS alternative on medium/large inputs, never slower than 1× on the realistic minimum. Clear reason to exist.",
+  },
+  {
+    emoji: "🟡",
+    name: "Yellow",
+    color: "warn",
+    blurb:
+      "Mixed results or only marginally faster. An optimization sprint decides upgrade to Green or downgrade to Red.",
+  },
+  {
+    emoji: "🔴",
+    name: "Red",
+    color: "bad",
+    blurb:
+      "Loses on the realistic median against the JS alternative most of the time. Candidate for deprecation unless a rewrite produces a measurable turnaround.",
+  },
+  {
+    emoji: "⚫",
+    name: "Black",
+    color: "archived",
+    blurb:
+      "Structurally the wrong call. NAPI cannot win the use-case — usually because the JS path is already too cheap.",
+  },
+];
+
+const platforms = [
+  { triple: "x86_64-unknown-linux-gnu", label: "Linux x64 (glibc)" },
+  { triple: "x86_64-unknown-linux-musl", label: "Linux x64 (musl)" },
+  { triple: "aarch64-unknown-linux-gnu", label: "Linux ARM64" },
+  { triple: "x86_64-apple-darwin", label: "macOS x64" },
+  { triple: "aarch64-apple-darwin", label: "macOS ARM64" },
+  { triple: "x86_64-pc-windows-msvc", label: "Windows x64" },
+];
+
+const colorClass: Record<Verdict["color"], string> = {
+  ok: "border-ok/40 bg-ok/10 text-ok",
+  warn: "border-warn/40 bg-warn/10 text-warn",
+  bad: "border-bad/40 bg-bad/10 text-bad",
+  archived: "border-archived/40 bg-archived/10 text-archived",
+};
+---
+
+<Base
+  title="Getting started"
+  description="When NAPI is worth it, how to read the perf-review verdicts, platform support, and installation troubleshooting."
+>
+  <nav class="pt-8 pb-4 font-mono text-xs text-fg-subtle" aria-label="Breadcrumb">
+    <a href="/" class="hover:text-fg">Packages</a>
+    <span class="mx-1">/</span>
+    <span class="text-fg">Getting started</span>
+  </nav>
+
+  <article class="mx-auto max-w-3xl pb-16">
+    <header class="mb-10">
+      <h1 class="text-3xl font-semibold tracking-(--tracking-tight) sm:text-4xl">
+        Getting started
+      </h1>
+      <p class="mt-3 text-lg text-fg-muted">
+        How to decide whether an
+        <code class="font-mono text-base">@amigo-labs/*</code> package is right
+        for your use case, what every verdict means, and how to read the
+        benchmark numbers.
+      </p>
+    </header>
+
+    <section id="install" class="mb-12 scroll-mt-(--header-h)">
+      <h2 class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+        Install
+      </h2>
+      <p class="mt-2 text-fg-muted">
+        Every package ships as a regular npm package with prebuilt binaries
+        for the
+        <a href="#platforms" class="text-accent hover:text-accent-hot">
+          six supported platforms
+        </a>. No build step on install, no compiler required.
+      </p>
+      <pre class="mt-3 overflow-x-auto rounded-xl border border-line bg-bg-elevated px-4 py-3 font-mono text-sm"><code>pnpm add @amigo-labs/&lt;name&gt;
+# or: npm install @amigo-labs/&lt;name&gt;</code></pre>
+      <p class="mt-3 text-sm text-fg-muted">
+        Browse the catalog on the
+        <a href="/" class="text-accent hover:text-accent-hot">homepage</a>.
+        Each package page has a manager-aware install snippet.
+      </p>
+    </section>
+
+    <section id="when" class="mb-12 scroll-mt-(--header-h)">
+      <h2 class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+        When NAPI is worth it
+      </h2>
+      <p class="mt-2 text-fg-muted">
+        Every call from Node.js into a NAPI module pays a fixed cost just for
+        crossing the boundary — even before any actual work happens. That
+        floor is roughly <strong class="text-fg">109 ns per call</strong> on
+        modern Linux x64. If a JS function returns in less than that, native
+        cannot beat it. The packages in this repo are picked specifically
+        because their workload dwarfs the boundary.
+      </p>
+
+      <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <li class="rounded-xl border border-line bg-bg-elevated p-4">
+          <div class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+            Hard floor
+          </div>
+          <div class="mt-1 font-mono text-xl text-fg">109 ns</div>
+          <p class="mt-2 text-xs text-fg-muted">
+            Every NAPI call. <code>noop()</code> measured at 9.15M ops/s.
+          </p>
+        </li>
+        <li class="rounded-xl border border-line bg-bg-elevated p-4">
+          <div class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+            Strings cost ~0.35 ns/byte
+          </div>
+          <div class="mt-1 font-mono text-xl text-fg">~35 µs / 100 KB</div>
+          <p class="mt-2 text-xs text-fg-muted">
+            UTF-16 → UTF-8 conversion scales linearly.
+          </p>
+        </li>
+        <li class="rounded-xl border border-line bg-bg-elevated p-4">
+          <div class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+            Buffers are free
+          </div>
+          <div class="mt-1 font-mono text-xl text-fg">~180 ns</div>
+          <p class="mt-2 text-xs text-fg-muted">
+            Flat at 1 KB or 10 MB — Buffers travel as V8 handles, not copies.
+          </p>
+        </li>
+      </ul>
+
+      <p class="mt-4 text-sm text-fg-muted">
+        The full table — every measured primitive, exactly what the boundary
+        costs, what flat-fee vs. per-byte means — is below.
+      </p>
+    </section>
+
+    <section id="verdicts" class="mb-12 scroll-mt-(--header-h)">
+      <h2 class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+        Verdict rubric
+      </h2>
+      <p class="mt-2 text-fg-muted">
+        Every shipped package gets one of these classifications based on
+        measured speedup against its JS alternative. The pill on each package
+        page shows where that crate currently sits.
+      </p>
+      <ul class="mt-4 flex flex-col gap-3">
+        {verdicts.map((v) => (
+          <li class="flex items-start gap-3 rounded-xl border border-line bg-bg-elevated p-4">
+            <span
+              class:list={[
+                "inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full border px-2.5 font-mono text-2xs uppercase tracking-(--tracking-wide)",
+                colorClass[v.color],
+              ]}
+            >
+              {v.emoji} {v.name}
+            </span>
+            <span class="text-sm text-fg-muted">{v.blurb}</span>
+          </li>
+        ))}
+      </ul>
+      <p class="mt-4 text-sm text-fg-muted">
+        Read the full framework on the
+        <a href="/perf-review" class="text-accent hover:text-accent-hot">
+          perf-review page
+        </a>.
+      </p>
+    </section>
+
+    <section id="node-vs-browser" class="mb-12 scroll-mt-(--header-h)">
+      <h2 class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+        Node vs Browser
+      </h2>
+      <p class="mt-2 text-fg-muted">
+        Most packages ship two builds in the same npm tarball: a
+        <strong class="text-fg">napi binary</strong> for Node.js and a
+        <strong class="text-fg">WASM build</strong> for browsers and bundlers.
+        Your bundler picks the right one automatically through the
+        <code class="font-mono text-sm">package.json</code> conditional
+        <code class="font-mono text-sm">exports</code> field — the import
+        specifier never changes. Node consumers get the prebuilt native
+        addon; browser consumers (Vite, esbuild, webpack&nbsp;≥&nbsp;5,
+        Rollup) get the in-tarball <code class="font-mono text-sm">wasm/pkg/</code>
+        artifact.
+      </p>
+
+      <h3 class="mt-6 text-md font-semibold tracking-(--tracking-snug) text-fg">
+        Three packages are server-only
+      </h3>
+      <ul class="mt-2 flex flex-col gap-2 text-sm text-fg-muted">
+        <li>
+          <a href="/packages/argon2" class="text-accent hover:text-accent-hot">
+            argon2
+          </a>
+          — memory-hard hash; the inner blake2b loop runs ~2× slower in
+          WASM, and browser password hashing is a security anti-pattern.
+          Server-side only.
+        </li>
+        <li>
+          <a href="/packages/jose" class="text-accent hover:text-accent-hot">
+            jose
+          </a>
+          — JWK keygen + signing. Private signing keys must not ship to the
+          browser, so the WASM build is intentionally not produced.
+        </li>
+        <li>
+          <a href="/packages/jwt" class="text-accent hover:text-accent-hot">
+            jwt
+          </a>
+          — sign-and-verify in the same module; same exfiltration concern as
+          <code class="font-mono text-xs">jose</code>.
+        </li>
+      </ul>
+
+      <h3 class="mt-6 text-md font-semibold tracking-(--tracking-snug) text-fg">
+        Performance: napi vs WASM vs JS
+      </h3>
+      <p class="mt-2 text-sm text-fg-muted">
+        Measured during the WASM pilot on
+        <code class="font-mono text-xs">@amigo-labs/slugify</code> v0.1.0 —
+        slugify is representative of the catalog's "small inputs, hot loop"
+        shape. The table reads
+        <strong class="text-fg">ops/sec</strong> per build and the two
+        speedup ratios.
+      </p>
+      <div class="mt-4 overflow-x-auto rounded-xl border border-line bg-bg-elevated">
+        <table class="w-full text-sm">
+          <thead class="border-b border-line">
+            <tr class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+              <th scope="col" class="px-4 py-3 text-left">Input</th>
+              <th scope="col" class="px-4 py-3 text-right">napi</th>
+              <th scope="col" class="px-4 py-3 text-right">WASM</th>
+              <th scope="col" class="px-4 py-3 text-right">JS</th>
+              <th scope="col" class="px-4 py-3 text-right">napi/WASM</th>
+              <th scope="col" class="px-4 py-3 text-right">WASM/JS</th>
+            </tr>
+          </thead>
+          <tbody class="font-mono tabular-nums">
+            <tr class="border-b border-line">
+              <td class="px-4 py-3 text-fg">20-char ASCII</td>
+              <td class="px-4 py-3 text-right text-fg">1.02 M</td>
+              <td class="px-4 py-3 text-right text-fg-muted">0.63 M</td>
+              <td class="px-4 py-3 text-right text-fg-muted">0.32 M</td>
+              <td class="px-4 py-3 text-right text-accent">1.61×</td>
+              <td class="px-4 py-3 text-right text-ok">1.95×</td>
+            </tr>
+            <tr class="border-b border-line">
+              <td class="px-4 py-3 text-fg">500-char ASCII</td>
+              <td class="px-4 py-3 text-right text-fg">87 K</td>
+              <td class="px-4 py-3 text-right text-fg-muted">50 K</td>
+              <td class="px-4 py-3 text-right text-fg-muted">14 K</td>
+              <td class="px-4 py-3 text-right text-accent">1.75×</td>
+              <td class="px-4 py-3 text-right text-ok">3.46×</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 text-fg">Unicode-heavy 100c</td>
+              <td class="px-4 py-3 text-right text-fg">0.22 M</td>
+              <td class="px-4 py-3 text-right text-fg-muted">0.15 M</td>
+              <td class="px-4 py-3 text-right text-fg-muted">0.06 M</td>
+              <td class="px-4 py-3 text-right text-accent">1.46×</td>
+              <td class="px-4 py-3 text-right text-ok">2.41×</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-sm text-fg-muted">
+        WASM is <strong class="text-fg">1.5–1.8× slower than napi</strong>
+        across these inputs, but still <strong class="text-fg">2–3× faster
+        than the JS competitor</strong>. Reach for napi when you control the
+        runtime (server, scripts, build tooling); reach for WASM when you
+        don't (browser, edge, sandboxed runtimes).
+      </p>
+
+      <h3 class="mt-6 text-md font-semibold tracking-(--tracking-snug) text-fg">
+        When you'd still pick WASM on a server
+      </h3>
+      <ul class="mt-2 flex flex-col gap-2 text-sm text-fg-muted">
+        <li>
+          <strong class="text-fg">Edge runtimes</strong> — Cloudflare
+          Workers, Deno Deploy, and similar sandboxes don't load native
+          addons. The WASM build is the only option.
+        </li>
+        <li>
+          <strong class="text-fg">Missing prebuilt binary</strong> — if your
+          platform triple isn't in the
+          <a href="#platforms" class="text-accent">supported six</a>, the
+          install will still pull the WASM tarball entry; bundlers can
+          fall back to it.
+        </li>
+        <li>
+          <strong class="text-fg">Hermetic CI</strong> — some build pipelines
+          forbid binary downloads. WASM is just bytes in the tarball, no
+          optional-dependency dance.
+        </li>
+      </ul>
+    </section>
+
+    <section id="platforms" class="mb-12 scroll-mt-(--header-h)">
+      <h2 class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+        Platform support
+      </h2>
+      <p class="mt-2 text-fg-muted">
+        Prebuilt binaries for the six major NAPI targets — pulled
+        automatically as optional dependencies during install.
+      </p>
+      <ul role="list" class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {platforms.map((p) => (
+          <li class="flex items-center justify-between rounded-md border border-line bg-bg-elevated px-3 py-2 text-sm">
+            <span class="text-fg">{p.label}</span>
+            <code class="font-mono text-2xs text-fg-subtle">{p.triple}</code>
+          </li>
+        ))}
+      </ul>
+      <p class="mt-3 text-sm text-fg-muted">
+        Node.js ≥ 22 required. No native compilation toolchain needed on the
+        consumer machine.
+      </p>
+    </section>
+
+    <section id="troubleshooting" class="mb-12 scroll-mt-(--header-h)">
+      <h2 class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+        Troubleshooting
+      </h2>
+      <dl class="mt-3 flex flex-col gap-4 text-sm">
+        <div>
+          <dt class="font-medium text-fg">
+            "Cannot find module '@amigo-labs/&lt;name&gt;-linux-x64-gnu'"
+          </dt>
+          <dd class="mt-1 text-fg-muted">
+            Optional dependencies were skipped during install (frequent on
+            CI). Re-run install without the
+            <code class="font-mono text-xs">--no-optional</code> flag, or set
+            <code class="font-mono text-xs">npm_config_optional=true</code> in
+            the environment.
+          </dd>
+        </div>
+        <div>
+          <dt class="font-medium text-fg">Unsupported platform / triple</dt>
+          <dd class="mt-1 text-fg-muted">
+            If your platform is not in the
+            <a class="text-accent" href="#platforms">supported list</a>, the
+            install will fail loudly. Open an issue with the missing triple —
+            we add platforms based on real demand.
+          </dd>
+        </div>
+        <div>
+          <dt class="font-medium text-fg">
+            "GLIBC_X.YY not found" on older Linux
+          </dt>
+          <dd class="mt-1 text-fg-muted">
+            The glibc prebuild targets a recent baseline. Use the
+            <code class="font-mono text-xs">musl</code> variant on
+            Alpine/musl distros or self-host a custom build (see
+            <a class="text-accent" href="https://github.com/amigo-labs/amigo-native/blob/main/docs/RELEASING.md">
+              docs/RELEASING.md
+            </a>).
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    {baselineHtml && (
+      <section id="baseline" class="scroll-mt-(--header-h)">
+        <h2 class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+          FFI overhead — full baseline
+        </h2>
+        <Prose>
+          <Fragment set:html={baselineHtml} />
+        </Prose>
+      </section>
+    )}
+  </article>
+</Base>

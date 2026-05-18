@@ -1,0 +1,120 @@
+---
+import Base from "~/layouts/Base.astro";
+import Hero from "~/components/Hero.astro";
+import StatStrip from "~/components/StatStrip.astro";
+import BenchmarkBars from "~/components/BenchmarkBars.astro";
+import PackageCard from "~/components/PackageCard.astro";
+import CategoryFilter from "~/components/CategoryFilter";
+import { packages, categories, categoryLabel } from "~/lib/packages";
+import { findSuite } from "~/lib/benchmarks";
+
+// Featured benchmark — argon2 password hash is a relatable example with
+// three competitors (native C bindings, WASM, ours) so the visual story is
+// immediate. Fall back to the first suite if not present.
+const featured = findSuite("argon2 - hash") ?? findSuite("argon2") ?? null;
+
+// Group the catalog by category in a deterministic order so the SSR markup
+// is stable across builds.
+const grouped = categories
+  .map((cat) => ({
+    cat,
+    label: categoryLabel[cat],
+    items: packages.filter((p) => p.category === cat),
+  }))
+  .filter((g) => g.items.length > 0);
+---
+
+<Base>
+  <Hero />
+
+  <section class="mt-2 sm:mt-4">
+    <StatStrip />
+  </section>
+
+  {featured && (
+    <section class="mt-12" aria-labelledby="featured-bench-h">
+      <header class="mb-4 flex items-end justify-between">
+        <div>
+          <span
+            class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+          >
+            Featured benchmark
+          </span>
+          <h2
+            id="featured-bench-h"
+            class="mt-1 text-xl font-semibold tracking-(--tracking-snug)"
+          >
+            See the speedup, not just the claim
+          </h2>
+        </div>
+        <a
+          href={`/packages/${featured.file.split("/")[1]}`}
+          class="hidden text-xs text-fg-muted hover:text-fg sm:inline"
+        >
+          View package →
+        </a>
+      </header>
+      <BenchmarkBars suite={featured} />
+    </section>
+  )}
+
+  <section id="catalog" class="mt-16 scroll-mt-(--header-h)">
+    <header class="mb-6 flex items-end justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-(--tracking-tight)">
+          Packages
+        </h2>
+        <p class="mt-1 text-sm text-fg-muted">
+          {packages.length} packages across {grouped.length} categories.
+        </p>
+      </div>
+    </header>
+
+    <div class="mb-6">
+      <CategoryFilter client:load total={packages.length} />
+    </div>
+
+    <div class="flex flex-col gap-10">
+      {grouped.map((group) => (
+        <div data-category-group={group.cat}>
+          <h3
+            class="mb-3 font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+          >
+            {group.label}
+            <span class="ms-2 text-fg-subtle">· {group.items.length}</span>
+          </h3>
+          <ul
+            role="list"
+            class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {group.items.map((pkg) => (
+              <li>
+                <PackageCard pkg={pkg} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <p
+      class="mt-8 hidden text-xs text-fg-subtle sm:block"
+      aria-hidden="true"
+    >
+      Press <kbd class="rounded border border-line bg-bg-elevated px-1.5 py-0.5 font-mono text-2xs">?</kbd>
+      for keyboard shortcuts ·
+      <kbd class="rounded border border-line bg-bg-elevated px-1.5 py-0.5 font-mono text-2xs">/</kbd>
+      to filter ·
+      <kbd class="rounded border border-line bg-bg-elevated px-1.5 py-0.5 font-mono text-2xs">↑</kbd>
+      <kbd class="rounded border border-line bg-bg-elevated px-1.5 py-0.5 font-mono text-2xs">↓</kbd>
+      to navigate ·
+      <kbd class="rounded border border-line bg-bg-elevated px-1.5 py-0.5 font-mono text-2xs">c</kbd>
+      to copy
+    </p>
+  </section>
+</Base>
+
+<script>
+  import { installKeyboardShortcuts } from "~/lib/keyboard";
+  installKeyboardShortcuts();
+</script>

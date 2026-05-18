@@ -87,7 +87,8 @@ amigo-native/
 ├── .github/workflows/
 │   ├── ci.yml            # lint + test + benchmark (on main)
 │   └── release.yml       # cross-compile + npm publish
-├── wrangler.toml         # docs/ dashboard → Cloudflare Worker (Git integration)
+├── web/                  # Astro source for the marketing + docs site
+├── wrangler.toml         # web/dist → Cloudflare Worker (Git integration)
 ├── Cargo.toml            # workspace root
 └── vitest.config.ts
 ```

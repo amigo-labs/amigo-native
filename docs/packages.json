@@ -194,7 +194,7 @@
       "title": "fuse",
       "category": "search",
       "description": "Fuzzy text search index over JSON records, with weighted fields. SIMD-accelerated via nucleo-matcher.",
-      "speedup": "TBD",
+      "speedup": "5–20× expected vs fuse.js",
       "targets": [
         "node",
         "browser"
@@ -238,7 +238,7 @@
       "title": "jimp",
       "category": "document",
       "description": "Scoped jimp port: PNG/JPEG decode/encode + resize + crop + flip + rotate (90° multiples) + greyscale + brightness + contrast + composite, via image-rs.",
-      "speedup": "TBD",
+      "speedup": "Native image-rs port",
       "targets": [
         "node",
         "browser"
@@ -267,7 +267,7 @@
       "title": "jpeg-js",
       "category": "document",
       "description": "JPEG decode/encode to RGBA pixel buffers. Pure-Rust via jpeg-decoder + jpeg-encoder.",
-      "speedup": "TBD",
+      "speedup": "Pure-Rust decode/encode",
       "targets": [
         "node",
         "browser"
@@ -310,7 +310,7 @@
       "title": "linkify-it",
       "category": "text",
       "description": "Find URLs and emails in text. Offset-packed Uint32Array fast path for batch / render-loop workloads.",
-      "speedup": "TBD",
+      "speedup": "2–5× expected vs JS FSM",
       "targets": [
         "node",
         "browser"
@@ -340,7 +340,7 @@
       "title": "PDF",
       "category": "document",
       "description": "PDF generation — one FFI call per document. Labels / tickets / simple reports.",
-      "speedup": "TBD",
+      "speedup": "Native-only API",
       "targets": [
         "node",
         "browser"
@@ -369,7 +369,7 @@
       "title": "pixelmatch",
       "category": "util",
       "description": "Pixel-level RGBA image diff with YIQ delta + anti-aliasing detection, bit-identical to mapbox/pixelmatch.",
-      "speedup": "TBD",
+      "speedup": "Bit-identical to upstream",
       "targets": [
         "node",
         "browser"
@@ -384,7 +384,7 @@
       "title": "pngjs",
       "category": "document",
       "description": "PNG decode/encode to RGBA pixel buffers. Pure-Rust DEFLATE via flate2 + zlib-rs.",
-      "speedup": "TBD",
+      "speedup": "Pure-Rust DEFLATE",
       "targets": [
         "node",
         "browser"
@@ -414,7 +414,7 @@
       "title": "Sentences",
       "category": "text",
       "description": "Multi-language sentence boundary detection. String or offset-packed output for hot paths.",
-      "speedup": "TBD",
+      "speedup": "Offset-packed hot-path",
       "targets": [
         "node",
         "browser"
@@ -486,7 +486,7 @@
       "title": "tldts",
       "category": "util",
       "description": "Parse domain / public suffix / subdomain from a hostname or URL. Bundled IANA PSL + idna; batch parseMany API.",
-      "speedup": "TBD",
+      "speedup": "Bundled IANA PSL",
       "targets": [
         "node",
         "browser"
@@ -516,7 +516,7 @@
       "title": "Typst",
       "category": "document",
       "description": "Typst document compiler — source in, PDF out. Bundled Libertinus fonts; offline-only packages.",
-      "speedup": "TBD",
+      "speedup": "Native-only API",
       "targets": [
         "node",
         "browser"
@@ -576,7 +576,7 @@
       "title": "zstd",
       "category": "archive",
       "description": "Zstandard compress/decompress via libzstd, with reusable Compressor / Decompressor contexts and trained-dictionary support.",
-      "speedup": "TBD",
+      "speedup": "libzstd via reused context",
       "targets": [
         "node",
         "browser"

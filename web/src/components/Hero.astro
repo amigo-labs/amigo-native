@@ -1,0 +1,88 @@
+---
+import { brand, heroTaglines, packages } from "~/lib/packages";
+
+const total = packages.length;
+const categoryCount = new Set(packages.map((p) => p.category)).size;
+---
+
+<section class="pt-12 pb-12 sm:pt-20 sm:pb-16">
+  <div class="flex flex-col gap-6">
+    <span
+      class="inline-flex w-fit items-center gap-2 rounded-full border border-line bg-bg-elevated px-3 py-1 font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-muted"
+    >
+      <span class="size-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+      {total} packages · {categoryCount} categories
+    </span>
+
+    <h1
+      class="font-sans font-semibold leading-(--leading-tight) tracking-(--tracking-tight) text-fg text-4xl sm:text-5xl"
+    >
+      <span class="sr-only">{brand.name}.</span>
+      <span aria-hidden="true">
+        {brand.name.split("-")[0]}<span class="text-accent">-{brand.name.split("-")[1]}</span>
+      </span>
+    </h1>
+
+    <p
+      class="max-w-2xl text-lg sm:text-xl leading-(--leading-snug) text-fg"
+    >
+      {brand.tagline}
+    </p>
+
+    <div class="flex flex-wrap items-center gap-2 font-mono text-sm text-fg-muted">
+      <span aria-hidden="true">$</span>
+      <span class="text-fg">pnpm add @amigo-labs/</span>
+      <span
+        class="hero-tagline inline-block min-w-[10ch] text-accent"
+        aria-live="polite"
+        role="status"
+        data-tags={JSON.stringify(
+          heroTaglines.map((t) => t.replace(/^drop-in for\s+/, ""))
+        )}
+      >
+        {heroTaglines[0]?.replace(/^drop-in for\s+/, "") ?? "slugify"}
+      </span>
+    </div>
+
+    <p class="max-w-2xl text-base text-fg-muted">{brand.subline}</p>
+
+    <div class="mt-2 flex flex-wrap gap-3">
+      <a
+        href="#catalog"
+        class="inline-flex h-11 items-center gap-2 rounded-md bg-accent px-5 text-sm font-semibold text-accent-on transition-colors hover:bg-accent-hot"
+      >
+        Browse packages
+      </a>
+      <a
+        href="/getting-started"
+        class="inline-flex h-11 items-center gap-2 rounded-md border border-line bg-bg-elevated px-5 text-sm font-medium text-fg transition-colors hover:border-line-strong"
+      >
+        Getting started →
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Lightweight tagline rotator. Replaces the inner text on a fixed cadence
+  // and respects prefers-reduced-motion.
+  const el = document.querySelector<HTMLElement>(".hero-tagline");
+  if (el) {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduce) {
+      let tags: string[] = [];
+      try {
+        tags = JSON.parse(el.dataset.tags ?? "[]");
+      } catch {
+        tags = [];
+      }
+      if (tags.length > 1) {
+        let i = 0;
+        setInterval(() => {
+          i = (i + 1) % tags.length;
+          el.textContent = tags[i] ?? "";
+        }, 2200);
+      }
+    }
+  }
+</script>

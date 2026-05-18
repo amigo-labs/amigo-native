@@ -1,0 +1,63 @@
+---
+import "~/styles/globals.css";
+import { themeBootstrap } from "~/lib/theme";
+import Header from "~/components/Layout/Header.astro";
+import Footer from "~/components/Layout/Footer.astro";
+import { brand } from "~/lib/packages";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Set to true to make <main> a wide layout container (full-bleed sections). */
+  wide?: boolean;
+}
+
+const {
+  title,
+  description = brand.tagline,
+  wide = false,
+} = Astro.props;
+
+const pageTitle = title
+  ? `${title} — ${brand.name}`
+  : `${brand.name} — ${brand.tagline}`;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <title>{pageTitle}</title>
+
+    {/* No-flash theme bootstrap. Must run before first paint. */}
+    <script is:inline set:html={themeBootstrap} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main
+      id="main"
+      class:list={[
+        "mx-auto w-full",
+        wide ? "max-w-none" : "max-w-(--container) px-4 sm:px-6 lg:px-8",
+      ]}
+    >
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

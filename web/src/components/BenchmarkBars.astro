@@ -1,0 +1,85 @@
+---
+import type { BenchSuite } from "~/lib/benchmarks";
+import { formatHz, isAmigo, speedupRatio } from "~/lib/benchmarks";
+
+interface Props {
+  suite: BenchSuite;
+  /** Show a smaller, denser variant suitable for embedded cards. */
+  compact?: boolean;
+  /** Optional override for the section heading; defaults to suite.name. */
+  heading?: string;
+}
+
+const { suite, compact = false, heading } = Astro.props;
+
+const sorted = [...suite.entries].sort((a, b) => b.hz - a.hz);
+const maxHz = sorted[0]?.hz ?? 1;
+const slowest = sorted[sorted.length - 1];
+const winner = sorted[0];
+const winnerRatio = slowest ? winner.hz / slowest.hz : 1;
+---
+
+<figure
+  class:list={[
+    "rounded-xl border border-line bg-bg-elevated p-5",
+    compact && "p-4",
+  ]}
+>
+  <figcaption class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+    <div>
+      <h3 class="font-mono text-xs uppercase tracking-(--tracking-wide) text-fg-subtle">
+        Benchmark
+      </h3>
+      <p class="mt-1 text-md font-medium text-fg">{heading ?? suite.name}</p>
+    </div>
+    {sorted.length > 1 && winnerRatio > 1.05 && (
+      <span class="rounded-full bg-accent-dim px-2 py-0.5 font-mono text-2xs text-accent">
+        {winnerRatio.toFixed(2)}× vs slowest
+      </span>
+    )}
+  </figcaption>
+
+  <ul role="list" class="flex flex-col gap-3">
+    {sorted.map((entry) => {
+      const pct = Math.max(2, (entry.hz / maxHz) * 100);
+      const amigo = isAmigo(entry);
+      const ratio = speedupRatio(entry, sorted);
+      return (
+        <li class="flex flex-col gap-1">
+          <div class="flex items-baseline justify-between gap-3 text-sm">
+            <span
+              class:list={[
+                "truncate",
+                amigo ? "text-fg font-medium" : "text-fg-muted",
+              ]}
+            >
+              {entry.name}
+            </span>
+            <span class="font-mono text-xs text-fg-muted tabular-nums">
+              {formatHz(entry.hz)} hz
+              {ratio > 1.05 && (
+                <span class="ms-1 text-fg-subtle">·</span>
+                <span class={amigo ? "text-accent ms-1" : "ms-1"}>
+                  {ratio.toFixed(2)}×
+                </span>
+              )}
+            </span>
+          </div>
+          <div
+            class="relative h-2 overflow-hidden rounded-full bg-bg-sunken"
+            role="img"
+            aria-label={`${entry.name}: ${formatHz(entry.hz)} hz`}
+          >
+            <div
+              class:list={[
+                "h-full rounded-full transition-[width]",
+                amigo ? "bg-accent" : "bg-line-strong",
+              ]}
+              style={`width: ${pct}%`}
+            />
+          </div>
+        </li>
+      );
+    })}
+  </ul>
+</figure>

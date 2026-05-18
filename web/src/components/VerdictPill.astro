@@ -1,0 +1,47 @@
+---
+import type { Verdict } from "~/lib/content";
+
+interface Props {
+  verdict: Verdict | null;
+  label?: string | null;
+  /** Optional reviewedOn (YYYY-MM-DD) printed inline. */
+  reviewedOn?: string | null;
+}
+
+const { verdict, label, reviewedOn } = Astro.props;
+
+const styles: Record<Verdict, string> = {
+  green: "border-ok/40 bg-ok/10 text-ok",
+  yellow: "border-warn/40 bg-warn/10 text-warn",
+  red: "border-bad/40 bg-bad/10 text-bad",
+  black: "border-archived/40 bg-archived/10 text-archived",
+  archived: "border-archived/40 bg-archived/10 text-archived",
+};
+
+const display = verdict
+  ? `${label ?? verdict[0]!.toUpperCase() + verdict.slice(1)}`
+  : "Unreviewed";
+---
+
+<span
+  class:list={[
+    "inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 font-mono text-2xs uppercase tracking-(--tracking-wide)",
+    verdict ? styles[verdict] : "border-line bg-bg-elevated text-fg-subtle",
+  ]}
+>
+  <span
+    class:list={[
+      "size-1.5 rounded-full",
+      verdict === "green" && "bg-ok",
+      verdict === "yellow" && "bg-warn",
+      verdict === "red" && "bg-bad",
+      (verdict === "black" || verdict === "archived") && "bg-archived",
+      !verdict && "bg-fg-subtle",
+    ]}
+    aria-hidden="true"
+  ></span>
+  {display}
+  {reviewedOn && (
+    <span class="hidden text-fg-muted normal-case sm:inline">· {reviewedOn}</span>
+  )}
+</span>

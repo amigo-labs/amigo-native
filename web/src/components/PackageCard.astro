@@ -1,0 +1,52 @@
+---
+import type { Pkg } from "~/lib/packages";
+import { categoryChipClasses } from "~/lib/packages";
+import TargetsPill from "./TargetsPill.astro";
+
+interface Props {
+  pkg: Pkg;
+  /** When true, render with extra emphasis (featured tier). */
+  featured?: boolean;
+}
+
+const { pkg, featured = false } = Astro.props;
+const catBadge = categoryChipClasses[pkg.category];
+---
+
+<a
+  href={`/packages/${pkg.name}`}
+  data-pkg-card
+  data-name={pkg.name}
+  data-title={pkg.title.toLowerCase()}
+  data-description={pkg.description.toLowerCase()}
+  data-category={pkg.category}
+  data-targets={pkg.targets.join(" ")}
+  class:list={[
+    "group flex h-full flex-col gap-3 rounded-xl border border-line bg-bg-elevated p-4 shadow-card transition-colors hover:border-line-strong hover:bg-bg-elevated",
+    featured && "ring-1 ring-accent/40",
+  ]}
+>
+  <div class="flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2 min-w-0">
+      <span
+        class:list={[
+          "inline-flex h-5 items-center rounded-full border px-2 font-mono text-[10px] uppercase tracking-(--tracking-wide) whitespace-nowrap",
+          catBadge,
+        ]}
+      >
+        {pkg.category}
+      </span>
+      <TargetsPill targets={pkg.targets} />
+    </div>
+    <span class="shrink-0 font-mono text-2xs text-accent">{pkg.speedup}</span>
+  </div>
+  <h3
+    class="text-lg font-semibold tracking-(--tracking-snug) text-fg transition-colors group-hover:text-accent"
+  >
+    {pkg.title}
+  </h3>
+  <p class="text-sm text-fg-muted line-clamp-3">{pkg.description}</p>
+  <div class="mt-auto pt-2">
+    <code class="font-mono text-2xs text-fg-subtle">@amigo-labs/{pkg.name}</code>
+  </div>
+</a>

@@ -1,0 +1,138 @@
+---
+/* Wrapper that styles arbitrary prose/HTML content (rendered READMEs,
+ * perf-review HTML, MDX). Uses utility-style :where rules so it has zero
+ * specificity and can be overridden by parent classes when needed. */
+---
+
+<div class="prose-body">
+  <slot />
+</div>
+
+<style is:global>
+  .prose-body {
+    color: var(--fg);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+  }
+  .prose-body :where(h1, h2, h3, h4, h5, h6) {
+    color: var(--fg);
+    font-weight: 600;
+    letter-spacing: var(--tracking-snug);
+    margin-block: 1.5em 0.6em;
+  }
+  .prose-body :where(h1) {
+    font-size: var(--text-2xl);
+    letter-spacing: var(--tracking-tight);
+  }
+  .prose-body :where(h2) {
+    font-size: var(--text-xl);
+    padding-block-start: 0.4em;
+    border-block-start: 1px solid var(--line);
+  }
+  .prose-body :where(h3) {
+    font-size: var(--text-lg);
+  }
+  .prose-body :where(p) {
+    margin-block: 0 1em;
+    color: var(--fg);
+  }
+  .prose-body :where(p, li) :where(strong) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .prose-body :where(p, li) :where(em) {
+    color: var(--fg-muted);
+    font-style: italic;
+  }
+  .prose-body :where(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    text-underline-offset: 2px;
+  }
+  .prose-body :where(a):hover {
+    text-decoration-color: var(--accent);
+  }
+  .prose-body :where(ul, ol) {
+    margin-block: 0 1em;
+    padding-inline-start: 1.4em;
+  }
+  .prose-body :where(li) {
+    margin-block: 0.25em 0;
+  }
+  .prose-body :where(blockquote) {
+    margin-block: 1em;
+    padding: 0.6em 1em;
+    border-inline-start: 3px solid var(--accent);
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    color: var(--fg-muted);
+  }
+  .prose-body :where(blockquote p:first-child) {
+    margin-block-start: 0;
+  }
+  .prose-body :where(blockquote p:last-child) {
+    margin-block-end: 0;
+  }
+  .prose-body :where(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+  .prose-body :where(pre) {
+    margin-block: 1em;
+    padding: 0.9em 1em;
+    overflow-x: auto;
+    background: var(--bg-sunken);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
+  }
+  .prose-body :where(pre) :where(code) {
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-size: inherit;
+  }
+  .prose-body :where(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-block: 1em;
+    font-size: var(--text-sm);
+  }
+  .prose-body :where(th, td) {
+    padding: 0.55em 0.8em;
+    border-block-end: 1px solid var(--line);
+    text-align: start;
+  }
+  .prose-body :where(th) {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--fg-subtle);
+    border-block-end: 1px solid var(--line-strong);
+  }
+  .prose-body :where(td:has(+ td:last-child)) {
+    color: var(--fg-muted);
+  }
+  .prose-body :where(hr) {
+    margin-block: 2em;
+    border: none;
+    border-top: 1px solid var(--line);
+  }
+  .prose-body :where(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+  }
+  /* Hide README badges row (shields.io). Pure dev decoration, noisy on
+   * the package page. */
+  .prose-body :where(p:first-child) :where(img[src*="shields.io"]) {
+    display: none;
+  }
+</style>

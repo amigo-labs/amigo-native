@@ -1,0 +1,42 @@
+---
+import { brand } from "~/lib/packages";
+
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="mt-24 border-t border-line">
+  <div
+    class="mx-auto flex max-w-(--container) flex-col gap-4 px-4 py-8 text-sm text-fg-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
+  >
+    <div class="font-mono text-xs uppercase tracking-(--tracking-wide)">
+      {brand.name} · {brand.license} · {year}
+    </div>
+    <nav class="flex flex-wrap items-center gap-4" aria-label="Footer">
+      <a href="/getting-started" class="hover:text-fg transition-colors">
+        Getting started
+      </a>
+      <a href="/perf-review" class="hover:text-fg transition-colors">
+        Perf review
+      </a>
+      <a href="/changelog" class="hover:text-fg transition-colors">
+        Changelog
+      </a>
+      <a
+        href={`${brand.repoUrl}/blob/main/CONTRIBUTING.md`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="hover:text-fg transition-colors"
+      >
+        Contributing
+      </a>
+      <a
+        href={brand.repoUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="hover:text-fg transition-colors"
+      >
+        GitHub
+      </a>
+    </nav>
+  </div>
+</footer>

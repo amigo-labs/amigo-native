@@ -1,5 +1,7 @@
 packages:
   - "crates/*"
+  - "web"
 onlyBuiltDependencies:
   - argon2
   - esbuild
+  - sharp
