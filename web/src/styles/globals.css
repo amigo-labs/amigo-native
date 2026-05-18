@@ -26,6 +26,14 @@
   --color-bad: var(--bad);
   --color-archived: var(--archived);
 
+  --color-cat-crypto: var(--cat-crypto);
+  --color-cat-text: var(--cat-text);
+  --color-cat-search: var(--cat-search);
+  --color-cat-document: var(--cat-document);
+  --color-cat-archive: var(--cat-archive);
+  --color-cat-util: var(--cat-util);
+  --color-cat-graph: var(--cat-graph);
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 

@@ -1,5 +1,6 @@
 ---
 import type { Pkg } from "~/lib/packages";
+import { categoryChipClasses } from "~/lib/packages";
 import TargetsPill from "./TargetsPill.astro";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const { pkg, featured = false } = Astro.props;
+const catBadge = categoryChipClasses[pkg.category];
 ---
 
 <a
@@ -27,7 +29,10 @@ const { pkg, featured = false } = Astro.props;
   <div class="flex items-center justify-between gap-2">
     <div class="flex items-center gap-2 min-w-0">
       <span
-        class="font-mono text-2xs uppercase tracking-(--tracking-wide) text-fg-subtle"
+        class:list={[
+          "inline-flex h-5 items-center rounded-full border px-2 font-mono text-[10px] uppercase tracking-(--tracking-wide) whitespace-nowrap",
+          catBadge,
+        ]}
       >
         {pkg.category}
       </span>

@@ -83,6 +83,37 @@ export const categoryLabel: Record<Category, string> = {
   graph: "Graph",
 };
 
+/**
+ * Tailwind class fragments per category. `chip` is the bordered/tinted state
+ * for inactive filter chips and catalog category labels; `solid` is the
+ * filled state for the active filter chip. Each pair targets the matching
+ * --cat-<name> token from web/src/styles/tokens.css.
+ */
+export const categoryChipClasses: Record<Category, string> = {
+  crypto:
+    "border-cat-crypto/40 bg-cat-crypto/10 text-cat-crypto hover:bg-cat-crypto/20",
+  text: "border-cat-text/40 bg-cat-text/10 text-cat-text hover:bg-cat-text/20",
+  search:
+    "border-cat-search/40 bg-cat-search/10 text-cat-search hover:bg-cat-search/20",
+  document:
+    "border-cat-document/40 bg-cat-document/10 text-cat-document hover:bg-cat-document/20",
+  archive:
+    "border-cat-archive/40 bg-cat-archive/10 text-cat-archive hover:bg-cat-archive/20",
+  util: "border-cat-util/40 bg-cat-util/10 text-cat-util hover:bg-cat-util/20",
+  graph:
+    "border-cat-graph/40 bg-cat-graph/10 text-cat-graph hover:bg-cat-graph/20",
+};
+
+export const categorySolidClasses: Record<Category, string> = {
+  crypto: "border-cat-crypto bg-cat-crypto text-bg",
+  text: "border-cat-text bg-cat-text text-bg",
+  search: "border-cat-search bg-cat-search text-bg",
+  document: "border-cat-document bg-cat-document text-bg",
+  archive: "border-cat-archive bg-cat-archive text-bg",
+  util: "border-cat-util bg-cat-util text-bg",
+  graph: "border-cat-graph bg-cat-graph text-bg",
+};
+
 export function packageBySlug(slug: string): Pkg | undefined {
   return packages.find((p) => p.name === slug);
 }

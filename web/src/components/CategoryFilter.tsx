@@ -1,6 +1,12 @@
 /** @jsxImportSource preact */
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { categories, categoryLabel, type Category } from "~/lib/packages";
+import {
+  categories,
+  categoryChipClasses,
+  categoryLabel,
+  categorySolidClasses,
+  type Category,
+} from "~/lib/packages";
 
 interface Props {
   /** Selector that matches the package-card anchors to filter. */
@@ -101,12 +107,49 @@ export default function CategoryFilter({
     inputRef.current?.focus();
   }
 
-  function chipClasses(active: boolean): string {
-    return `inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition-colors ${
+  const chipBase =
+    "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition-colors";
+
+  // Category chips: each category carries its own hue. Inactive = tinted
+  // outline; active = solid fill so the current selection pops.
+  function categoryChip(active: boolean, cat: Category | typeof ALL): string {
+    if (cat === ALL) {
+      return `${chipBase} ${
+        active
+          ? "border-accent bg-accent text-accent-on font-semibold shadow-sm"
+          : "border-line-strong bg-bg-elevated text-fg font-medium hover:border-accent/60 hover:text-accent"
+      }`;
+    }
+    return `${chipBase} font-medium ${
       active
-        ? "border-accent bg-accent text-accent-on font-semibold shadow-sm"
-        : "border-line-strong bg-bg-elevated text-fg font-medium hover:border-accent/60 hover:text-accent"
+        ? `${categorySolidClasses[cat]} font-semibold shadow-sm`
+        : categoryChipClasses[cat]
     }`;
+  }
+
+  // Targets chips: reuse the same green / gray semantics as the per-card
+  // TargetsPill so the colours teach a consistent visual vocabulary.
+  function targetsChip(active: boolean, value: TargetsFilter): string {
+    if (value === ALL) {
+      return `${chipBase} ${
+        active
+          ? "border-accent bg-accent text-accent-on font-semibold shadow-sm"
+          : "border-line-strong bg-bg-elevated text-fg font-medium hover:border-accent/60 hover:text-accent"
+      }`;
+    }
+    const tone =
+      value === "dual"
+        ? {
+            inactive: "border-ok/40 bg-ok/10 text-ok hover:bg-ok/20",
+            active: "border-ok bg-ok text-bg font-semibold shadow-sm",
+          }
+        : {
+            inactive:
+              "border-archived/50 bg-archived/15 text-fg-muted hover:bg-archived/25",
+            active:
+              "border-archived bg-archived text-bg font-semibold shadow-sm",
+          };
+    return `${chipBase} ${active ? tone.active : tone.inactive}`;
   }
 
   const dirty = query !== "" || filter !== ALL || targets !== ALL;
@@ -178,7 +221,7 @@ export default function CategoryFilter({
                   .querySelector(catalogSelector)
                   ?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              class={chipClasses(active)}
+              class={categoryChip(active, f.value)}
             >
               {f.label}
             </button>
@@ -202,7 +245,7 @@ export default function CategoryFilter({
               type="button"
               aria-pressed={active}
               onClick={() => setTargets(t.value)}
-              class={chipClasses(active)}
+              class={targetsChip(active, t.value)}
             >
               {t.label}
             </button>
