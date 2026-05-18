@@ -15,7 +15,7 @@
   "crates/language-detect": "0.1.1",
   "crates/minisearch": "0.1.1",
   "crates/pdf": "0.1.1",
-  "crates/pdf-parse": "0.1.1",
+  "crates/pdf-parse": "0.2.0",
   "crates/sanitize-html": "0.2.1",
   "crates/sentences": "0.1.1",
   "crates/slugify": "0.1.1",
