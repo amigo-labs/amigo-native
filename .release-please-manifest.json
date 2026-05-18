@@ -6,7 +6,7 @@
   "crates/deepmerge": "0.1.1",
   "crates/diff": "0.1.1",
   "crates/encoding": "0.1.1",
-  "crates/file-type": "0.1.1",
+  "crates/file-type": "0.2.0",
   "crates/force-layout": "0.1.1",
   "crates/graph-layout": "0.1.1",
   "crates/inflate": "0.1.1",
