@@ -43,7 +43,7 @@
     "jsonwebtoken": "^9.0.2",
     "leven": "^4.0.0",
     "nanoid": "^5.1.11",
-    "oxlint": "^1.65.0",
+    "oxlint": "^1.66.0",
     "pako": "^2.1.0",
     "papaparse": "^5.4.1",
     "prettier": "^3.8.3",
