@@ -54,7 +54,7 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.6.2",
     "fast-check": "^4.8.0",
-    "vitest": "^4.1.6",
+    "vitest": "^4.1.7",
     "xxhash-wasm": "^1.1.0",
     "xxhashjs": "^0.2.2"
   },
