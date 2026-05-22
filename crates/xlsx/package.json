@@ -55,7 +55,7 @@
     "@napi-rs/cli": "^3.6.2",
     "exceljs": "^4.4.0",
     "fast-check": "^4.8.0",
-    "vitest": "^4.1.6",
+    "vitest": "^4.1.7",
     "xlsx": "^0.18.5"
   },
   "license": "MIT",
