@@ -46,7 +46,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "fast-check": "^4.8.0",
     "jsonwebtoken": "^9.0.2",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.7"
   },
   "license": "MIT",
   "repository": {

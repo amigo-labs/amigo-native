@@ -65,7 +65,7 @@
     "@napi-rs/cli": "^3.6.2",
     "deepmerge": "^4.3.1",
     "fast-check": "^4.8.0",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.7"
   },
   "license": "MIT",
   "repository": {

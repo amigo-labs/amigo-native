@@ -55,7 +55,7 @@
     "@napi-rs/cli": "^3.6.2",
     "fast-check": "^4.8.0",
     "slugify": "^1.6.6",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.7"
   },
   "license": "MIT",
   "repository": {
@@ -82,6 +82,10 @@
     "vsJs": "2.4-5.3x",
     "parity": "—",
     "status": "Alternative",
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "slugify@1.6.6"
     ]

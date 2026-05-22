@@ -38,12 +38,12 @@
     "gpt-tokenizer": "^3.0.0",
     "hash-wasm": "^4.11.0",
     "iconv-lite": "^0.7.2",
-    "isomorphic-dompurify": "^3.13.0",
+    "isomorphic-dompurify": "^3.14.0",
     "js-tiktoken": "^1.0.21",
     "jsonwebtoken": "^9.0.2",
     "leven": "^4.0.0",
     "nanoid": "^5.1.11",
-    "oxlint": "^1.65.0",
+    "oxlint": "^1.66.0",
     "pako": "^2.1.0",
     "papaparse": "^5.4.1",
     "prettier": "^3.8.3",
@@ -52,8 +52,8 @@
     "slugify": "^1.6.6",
     "tiktoken": "^1.0.21",
     "vite-plugin-wasm": "^3.6.0",
-    "vitest": "^4.1.6",
-    "wrangler": "^4.92.0",
+    "vitest": "^4.1.7",
+    "wrangler": "^4.93.1",
     "xxhash-wasm": "^1.1.0",
     "xxhashjs": "^0.2.2",
     "yauzl": "^3.2.0"
@@ -61,5 +61,16 @@
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">= 22"
+  },
+  "pnpm": {
+    "overrides": {
+      "file-type@>=13.0.0 <21.3.1": ">=21.3.1",
+      "langsmith@<0.6.0": ">=0.6.0",
+      "langsmith@<=0.5.17": ">=0.5.18",
+      "langsmith@<=0.5.18": ">=0.5.19",
+      "langsmith@>=0.3.41 <0.4.6": ">=0.4.6",
+      "ws@>=8.0.0 <8.20.1": ">=8.20.1",
+      "yaml@>=2.0.0 <2.8.3": ">=2.8.3"
+    }
   }
 }
