@@ -1,7 +1,7 @@
 {
   "crate": "typst",
-  "generatedAt": "2026-05-17T20:16:52.892Z",
-  "commit": "792802f",
+  "generatedAt": "2026-05-22T13:00:24.045Z",
+  "commit": "b67b03d",
   "runner": "linux-x64",
   "nodeVersion": "v24.15.0",
   "suites": [
@@ -11,9 +11,9 @@
       "entries": [
         {
           "name": "@amigo-labs/typst compile",
-          "hz": 1470.84,
-          "rme": 0.91,
-          "samples": 736
+          "hz": 1324.66,
+          "rme": 0.21,
+          "samples": 663
         }
       ]
     },
@@ -23,9 +23,9 @@
       "entries": [
         {
           "name": "@amigo-labs/typst compile",
-          "hz": 966.2,
-          "rme": 0.27,
-          "samples": 484
+          "hz": 929.94,
+          "rme": 0.5,
+          "samples": 465
         }
       ]
     }

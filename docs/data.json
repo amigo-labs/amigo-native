@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-17",
+  "generatedAt": "2026-05-22",
   "nodeVersion": "v24.15.0",
   "platform": "linux x64",
   "benchmarks": {
@@ -10,21 +10,21 @@
         "entries": [
           {
             "name": "@amigo-labs/argon2",
-            "hz": 322.37,
-            "rme": 0.02,
-            "samples": 3224
+            "hz": 325.22,
+            "rme": 0.03,
+            "samples": 3253
           },
           {
             "name": "argon2 (npm, C-bindings)",
-            "hz": 233.96,
-            "rme": 0.1,
-            "samples": 2340
+            "hz": 241.73,
+            "rme": 0.11,
+            "samples": 2418
           },
           {
             "name": "hash-wasm (WASM)",
-            "hz": 138.33,
-            "rme": 0.67,
-            "samples": 1384
+            "hz": 140.15,
+            "rme": 0.73,
+            "samples": 1402
           }
         ]
       },
@@ -34,9 +34,9 @@
         "entries": [
           {
             "name": "@amigo-labs/argon2",
-            "hz": 323.29,
-            "rme": 0.03,
-            "samples": 3233
+            "hz": 324.94,
+            "rme": 0.05,
+            "samples": 3250
           }
         ]
       },
@@ -118,9 +118,9 @@
         "entries": [
           {
             "name": "@amigo-labs/bm25 addAll",
-            "hz": 266,
-            "rme": 0.77,
-            "samples": 133
+            "hz": 287.87,
+            "rme": 0.53,
+            "samples": 144
           }
         ]
       },
@@ -130,15 +130,15 @@
         "entries": [
           {
             "name": "@amigo-labs/bm25 search",
-            "hz": 17352.45,
-            "rme": 0.16,
-            "samples": 8677
+            "hz": 17999.78,
+            "rme": 0.59,
+            "samples": 9000
           },
           {
             "name": "okapibm25 (rebuild every query)",
-            "hz": 1448.39,
-            "rme": 0.37,
-            "samples": 725
+            "hz": 1371.93,
+            "rme": 0.41,
+            "samples": 686
           }
         ]
       },
@@ -148,45 +148,45 @@
         "entries": [
           {
             "name": "@amigo-labs/commonmark render",
-            "hz": 306825.44,
-            "rme": 0.12,
-            "samples": 153413
+            "hz": 317154.61,
+            "rme": 0.15,
+            "samples": 158578
           },
           {
             "name": "@amigo-labs/commonmark renderBytes",
-            "hz": 310443.37,
-            "rme": 0.26,
-            "samples": 155222
+            "hz": 318589.98,
+            "rme": 0.12,
+            "samples": 159295
           },
           {
             "name": "@amigo-labs/commonmark render (fast opts)",
-            "hz": 266542.25,
-            "rme": 0.1,
-            "samples": 133272
+            "hz": 266882.55,
+            "rme": 0.15,
+            "samples": 133442
           },
           {
             "name": "@amigo-labs/commonmark renderFast",
-            "hz": 389371.46,
-            "rme": 1.09,
-            "samples": 194686
+            "hz": 384966.75,
+            "rme": 1.11,
+            "samples": 192485
           },
           {
             "name": "@amigo-labs/commonmark renderBytesFast",
-            "hz": 399478.49,
-            "rme": 0.25,
-            "samples": 199740
+            "hz": 406124.72,
+            "rme": 0.73,
+            "samples": 203063
           },
           {
             "name": "marked",
-            "hz": 41455.44,
+            "hz": 44240.55,
             "rme": 0.34,
-            "samples": 20728
+            "samples": 22121
           },
           {
             "name": "markdown-it",
-            "hz": 66921.97,
-            "rme": 0.51,
-            "samples": 33461
+            "hz": 60679.41,
+            "rme": 0.49,
+            "samples": 30340
           }
         ]
       },
@@ -196,33 +196,33 @@
         "entries": [
           {
             "name": "@amigo-labs/commonmark render",
-            "hz": 31196.7,
-            "rme": 0.22,
-            "samples": 15599
+            "hz": 30407.34,
+            "rme": 0.21,
+            "samples": 15204
           },
           {
             "name": "@amigo-labs/commonmark renderBytes",
-            "hz": 33316.43,
-            "rme": 0.22,
-            "samples": 16659
+            "hz": 32231.84,
+            "rme": 0.24,
+            "samples": 16116
           },
           {
             "name": "@amigo-labs/commonmark render (fast opts)",
-            "hz": 38839.46,
-            "rme": 0.35,
-            "samples": 19420
+            "hz": 38879.82,
+            "rme": 0.2,
+            "samples": 19440
           },
           {
             "name": "marked",
-            "hz": 3781.72,
-            "rme": 0.75,
-            "samples": 1891
+            "hz": 3546.37,
+            "rme": 0.53,
+            "samples": 1774
           },
           {
             "name": "markdown-it",
-            "hz": 6142.21,
-            "rme": 0.72,
-            "samples": 3072
+            "hz": 5494.19,
+            "rme": 0.85,
+            "samples": 2748
           }
         ]
       },
@@ -232,33 +232,33 @@
         "entries": [
           {
             "name": "@amigo-labs/commonmark render",
-            "hz": 698.59,
-            "rme": 2.35,
-            "samples": 350
+            "hz": 377.09,
+            "rme": 0.24,
+            "samples": 189
           },
           {
             "name": "@amigo-labs/commonmark renderBytes",
-            "hz": 729.98,
-            "rme": 2.48,
-            "samples": 365
+            "hz": 759.71,
+            "rme": 2.22,
+            "samples": 380
           },
           {
             "name": "@amigo-labs/commonmark render (fast opts)",
-            "hz": 845.95,
-            "rme": 2.43,
-            "samples": 424
+            "hz": 875.9,
+            "rme": 2.13,
+            "samples": 438
           },
           {
             "name": "marked",
-            "hz": 74.7077,
-            "rme": 1.88,
-            "samples": 38
+            "hz": 82.4715,
+            "rme": 2.09,
+            "samples": 42
           },
           {
             "name": "markdown-it",
-            "hz": 134.52,
-            "rme": 4.01,
-            "samples": 68
+            "hz": 137,
+            "rme": 4.48,
+            "samples": 69
           }
         ]
       },
@@ -268,26 +268,26 @@
         "entries": [
           {
             "name": "@amigo-labs/commonmark renderMany (parallel)",
-            "hz": 131.04,
-            "rme": 0.35,
-            "samples": 66
+            "hz": 124.37,
+            "rme": 0.4,
+            "samples": 63
           },
           {
             "name": "@amigo-labs/commonmark per-call loop",
-            "hz": 63.1648,
-            "rme": 0.24,
-            "samples": 32
+            "hz": 59.4238,
+            "rme": 0.37,
+            "samples": 30
           },
           {
             "name": "marked per-call loop",
-            "hz": 7.1985,
-            "rme": 2.26,
+            "hz": 6.8079,
+            "rme": 0.25,
             "samples": 10
           },
           {
             "name": "markdown-it per-call loop",
-            "hz": 9.6197,
-            "rme": 5.25,
+            "hz": 9.2961,
+            "rme": 3.43,
             "samples": 10
           }
         ]
@@ -298,27 +298,27 @@
         "entries": [
           {
             "name": "@amigo-labs/csv",
-            "hz": 12441.77,
-            "rme": 0.96,
-            "samples": 6221
+            "hz": 12217.78,
+            "rme": 1.04,
+            "samples": 6109
           },
           {
             "name": "@amigo-labs/csv (parseToJson)",
-            "hz": 12655.87,
-            "rme": 0.27,
-            "samples": 6328
+            "hz": 12313.25,
+            "rme": 0.39,
+            "samples": 6157
           },
           {
             "name": "csv-parse (sync)",
-            "hz": 4927.22,
-            "rme": 0.47,
-            "samples": 2464
+            "hz": 4631.8,
+            "rme": 0.4,
+            "samples": 2316
           },
           {
             "name": "papaparse",
-            "hz": 7627.03,
-            "rme": 10.56,
-            "samples": 3814
+            "hz": 8111.02,
+            "rme": 11.07,
+            "samples": 4056
           }
         ]
       },
@@ -328,27 +328,27 @@
         "entries": [
           {
             "name": "@amigo-labs/csv",
-            "hz": 185.45,
-            "rme": 3.18,
-            "samples": 93
+            "hz": 182.59,
+            "rme": 1.58,
+            "samples": 92
           },
           {
             "name": "@amigo-labs/csv (parseToJson)",
-            "hz": 188.17,
-            "rme": 1.84,
-            "samples": 95
+            "hz": 182.53,
+            "rme": 1.57,
+            "samples": 92
           },
           {
             "name": "csv-parse (sync)",
-            "hz": 44.8792,
-            "rme": 0.87,
-            "samples": 23
+            "hz": 42.0723,
+            "rme": 0.66,
+            "samples": 22
           },
           {
             "name": "papaparse",
-            "hz": 96.6471,
-            "rme": 14.06,
-            "samples": 49
+            "hz": 96.7363,
+            "rme": 13.51,
+            "samples": 51
           }
         ]
       },
@@ -358,26 +358,26 @@
         "entries": [
           {
             "name": "@amigo-labs/csv",
-            "hz": 10.8285,
-            "rme": 1.6,
-            "samples": 109
+            "hz": 10.5453,
+            "rme": 1.54,
+            "samples": 106
           },
           {
             "name": "@amigo-labs/csv (parseToJson)",
-            "hz": 10.8204,
-            "rme": 1.61,
-            "samples": 109
+            "hz": 10.5656,
+            "rme": 1.57,
+            "samples": 106
           },
           {
             "name": "csv-parse (sync)",
-            "hz": 1.9909,
-            "rme": 0.9,
-            "samples": 20
+            "hz": 1.8684,
+            "rme": 1,
+            "samples": 19
           },
           {
             "name": "papaparse",
-            "hz": 5.4265,
-            "rme": 1.29,
+            "hz": 5.4144,
+            "rme": 1.26,
             "samples": 55
           }
         ]
@@ -388,15 +388,15 @@
         "entries": [
           {
             "name": "@amigo-labs/deepmerge",
-            "hz": 3367147.58,
-            "rme": 0.98,
-            "samples": 1683574
+            "hz": 2945963.14,
+            "rme": 0.78,
+            "samples": 1472982
           },
           {
             "name": "deepmerge",
-            "hz": 1000434.29,
-            "rme": 0.12,
-            "samples": 500218
+            "hz": 1007795.66,
+            "rme": 0.18,
+            "samples": 503898
           }
         ]
       },
@@ -406,15 +406,15 @@
         "entries": [
           {
             "name": "@amigo-labs/deepmerge",
-            "hz": 213163.43,
-            "rme": 0.33,
-            "samples": 106584
+            "hz": 224450.55,
+            "rme": 0.26,
+            "samples": 112226
           },
           {
             "name": "deepmerge",
-            "hz": 39150.35,
-            "rme": 0.39,
-            "samples": 19576
+            "hz": 35635.71,
+            "rme": 0.27,
+            "samples": 17818
           }
         ]
       },
@@ -424,15 +424,15 @@
         "entries": [
           {
             "name": "@amigo-labs/deepmerge",
-            "hz": 3656.18,
-            "rme": 0.58,
-            "samples": 1829
+            "hz": 3417.81,
+            "rme": 0.74,
+            "samples": 1709
           },
           {
             "name": "deepmerge",
-            "hz": 716.5,
-            "rme": 0.46,
-            "samples": 359
+            "hz": 673.04,
+            "rme": 0.33,
+            "samples": 337
           }
         ]
       },
@@ -442,15 +442,15 @@
         "entries": [
           {
             "name": "@amigo-labs/diff",
-            "hz": 26219.53,
-            "rme": 0.69,
-            "samples": 13110
+            "hz": 25357.92,
+            "rme": 0.56,
+            "samples": 12679
           },
           {
             "name": "diff",
-            "hz": 2546.54,
-            "rme": 0.41,
-            "samples": 1274
+            "hz": 2454.41,
+            "rme": 0.36,
+            "samples": 1228
           }
         ]
       },
@@ -460,14 +460,14 @@
         "entries": [
           {
             "name": "@amigo-labs/diff",
-            "hz": 142.9,
-            "rme": 0.2,
-            "samples": 72
+            "hz": 154.29,
+            "rme": 0.09,
+            "samples": 78
           },
           {
             "name": "diff",
-            "hz": 6.4431,
-            "rme": 2.3,
+            "hz": 6.265,
+            "rme": 2.32,
             "samples": 10
           }
         ]
@@ -478,8 +478,8 @@
         "entries": [
           {
             "name": "@amigo-labs/diff",
-            "hz": 1.5134,
-            "rme": 0.11,
+            "hz": 1.6227,
+            "rme": 0.2,
             "samples": 10
           }
         ]
@@ -490,15 +490,15 @@
         "entries": [
           {
             "name": "@amigo-labs/diff (offsets)",
-            "hz": 145.57,
-            "rme": 0.68,
-            "samples": 73
+            "hz": 156.01,
+            "rme": 0.12,
+            "samples": 79
           },
           {
             "name": "@amigo-labs/diff (hunks)",
-            "hz": 143.01,
-            "rme": 0.3,
-            "samples": 72
+            "hz": 153.99,
+            "rme": 0.19,
+            "samples": 77
           }
         ]
       },
@@ -508,14 +508,14 @@
         "entries": [
           {
             "name": "@amigo-labs/diff",
-            "hz": 144.56,
-            "rme": 0.33,
-            "samples": 73
+            "hz": 155.17,
+            "rme": 0.15,
+            "samples": 78
           },
           {
             "name": "diff.createPatch",
-            "hz": 6.3766,
-            "rme": 0.39,
+            "hz": 6.1923,
+            "rme": 0.59,
             "samples": 10
           }
         ]
@@ -526,15 +526,15 @@
         "entries": [
           {
             "name": "@amigo-labs/diff",
-            "hz": 1866.89,
-            "rme": 0.62,
-            "samples": 934
+            "hz": 1953.75,
+            "rme": 0.13,
+            "samples": 977
           },
           {
             "name": "diff",
-            "hz": 5717.73,
-            "rme": 0.42,
-            "samples": 2859
+            "hz": 5818.38,
+            "rme": 0.37,
+            "samples": 2910
           }
         ]
       },
@@ -544,57 +544,57 @@
         "entries": [
           {
             "name": "@amigo-labs/encoding small",
-            "hz": 3376511.44,
-            "rme": 1.59,
-            "samples": 1688256
+            "hz": 3191013.46,
+            "rme": 1.39,
+            "samples": 1595507
           },
           {
             "name": "iconv-lite small",
-            "hz": 1364353.26,
-            "rme": 0.27,
-            "samples": 682177
+            "hz": 1411828.88,
+            "rme": 0.35,
+            "samples": 705915
           },
           {
             "name": "Buffer.from small",
-            "hz": 3817576.46,
-            "rme": 0.18,
-            "samples": 1908789
+            "hz": 3651724.45,
+            "rme": 0.29,
+            "samples": 1825863
           },
           {
             "name": "@amigo-labs/encoding 100KB",
-            "hz": 20547.42,
-            "rme": 2.15,
-            "samples": 10274
+            "hz": 21039.23,
+            "rme": 2.3,
+            "samples": 10520
           },
           {
             "name": "iconv-lite 100KB",
-            "hz": 20447.66,
-            "rme": 1.98,
-            "samples": 10224
+            "hz": 20864.6,
+            "rme": 2.04,
+            "samples": 10434
           },
           {
             "name": "Buffer.from 100KB",
-            "hz": 19854.35,
-            "rme": 2.37,
-            "samples": 9928
+            "hz": 20950.07,
+            "rme": 2.01,
+            "samples": 10496
           },
           {
             "name": "@amigo-labs/encoding 10MB",
-            "hz": 231.69,
-            "rme": 2.92,
-            "samples": 116
+            "hz": 236.51,
+            "rme": 2.74,
+            "samples": 119
           },
           {
             "name": "iconv-lite 10MB",
-            "hz": 227.61,
-            "rme": 3.29,
-            "samples": 114
+            "hz": 233.91,
+            "rme": 3.03,
+            "samples": 117
           },
           {
             "name": "Buffer.from 10MB",
-            "hz": 230.74,
-            "rme": 2.99,
-            "samples": 116
+            "hz": 229.46,
+            "rme": 3.34,
+            "samples": 115
           }
         ]
       },
@@ -604,15 +604,15 @@
         "entries": [
           {
             "name": "@amigo-labs/encoding",
-            "hz": 34829.13,
-            "rme": 0.79,
-            "samples": 17415
+            "hz": 38498.62,
+            "rme": 0.87,
+            "samples": 19250
           },
           {
             "name": "iconv-lite",
-            "hz": 35783.54,
-            "rme": 0.71,
-            "samples": 17892
+            "hz": 39606.08,
+            "rme": 0.78,
+            "samples": 19804
           }
         ]
       },
@@ -622,15 +622,15 @@
         "entries": [
           {
             "name": "@amigo-labs/encoding",
-            "hz": 1110.43,
-            "rme": 0.42,
-            "samples": 556
+            "hz": 1252.19,
+            "rme": 0.26,
+            "samples": 627
           },
           {
             "name": "iconv-lite",
-            "hz": 1908.01,
-            "rme": 0.33,
-            "samples": 955
+            "hz": 2097.33,
+            "rme": 0.36,
+            "samples": 1049
           }
         ]
       },
@@ -640,15 +640,33 @@
         "entries": [
           {
             "name": "@amigo-labs/encoding",
-            "hz": 1157.2,
-            "rme": 5.92,
-            "samples": 579
+            "hz": 925.91,
+            "rme": 5.38,
+            "samples": 463
           },
           {
             "name": "iconv-lite",
-            "hz": 28.8494,
-            "rme": 3.37,
+            "hz": 28.5886,
+            "rme": 3.47,
             "samples": 15
+          }
+        ]
+      },
+      {
+        "file": "crates/file-type/__bench__/index.bench.ts",
+        "name": "file-type — small header (12 bytes PNG)",
+        "entries": [
+          {
+            "name": "@amigo-labs/file-type (sync)",
+            "hz": 1370124.81,
+            "rme": 0.19,
+            "samples": 685063
+          },
+          {
+            "name": "file-type (upstream async)",
+            "hz": 54829.92,
+            "rme": 0.55,
+            "samples": 27415
           }
         ]
       },
@@ -658,15 +676,15 @@
         "entries": [
           {
             "name": "@amigo-labs/file-type (sync)",
-            "hz": 1470755.37,
-            "rme": 0.25,
-            "samples": 735378
+            "hz": 1353178.21,
+            "rme": 0.15,
+            "samples": 676590
           },
           {
             "name": "file-type (upstream async)",
-            "hz": 63788.26,
-            "rme": 3.01,
-            "samples": 31896
+            "hz": 62277.89,
+            "rme": 2.96,
+            "samples": 31139
           }
         ]
       },
@@ -676,21 +694,21 @@
         "entries": [
           {
             "name": "@amigo-labs/file-type (sync)",
-            "hz": 1371214.67,
-            "rme": 0.16,
-            "samples": 685608
+            "hz": 1256786.21,
+            "rme": 0.27,
+            "samples": 628394
           },
           {
             "name": "@amigo-labs/file-type (async)",
-            "hz": 36339.32,
-            "rme": 0.21,
-            "samples": 18170
+            "hz": 28025.94,
+            "rme": 0.26,
+            "samples": 14014
           },
           {
             "name": "file-type (upstream async)",
-            "hz": 1188.73,
-            "rme": 6.32,
-            "samples": 597
+            "hz": 1000.19,
+            "rme": 5.58,
+            "samples": 503
           }
         ]
       },
@@ -700,15 +718,15 @@
         "entries": [
           {
             "name": "@amigo-labs/force-layout",
-            "hz": 1042.65,
-            "rme": 0.09,
-            "samples": 522
+            "hz": 1176.86,
+            "rme": 0.1,
+            "samples": 589
           },
           {
             "name": "d3-force",
-            "hz": 173.07,
-            "rme": 2.8,
-            "samples": 87
+            "hz": 162.32,
+            "rme": 2.07,
+            "samples": 82
           }
         ]
       },
@@ -718,14 +736,14 @@
         "entries": [
           {
             "name": "@amigo-labs/force-layout",
-            "hz": 49.3174,
-            "rme": 0.62,
-            "samples": 25
+            "hz": 56.9834,
+            "rme": 0.53,
+            "samples": 29
           },
           {
             "name": "d3-force",
-            "hz": 19.242,
-            "rme": 0.56,
+            "hz": 16.018,
+            "rme": 0.36,
             "samples": 10
           }
         ]
@@ -736,15 +754,15 @@
         "entries": [
           {
             "name": "@amigo-labs/graph-layout",
-            "hz": 10106.22,
-            "rme": 1.28,
-            "samples": 5054
+            "hz": 9292.94,
+            "rme": 1.21,
+            "samples": 4647
           },
           {
             "name": "@dagrejs/dagre",
-            "hz": 148.46,
-            "rme": 3.99,
-            "samples": 75
+            "hz": 163.87,
+            "rme": 3.62,
+            "samples": 82
           }
         ]
       },
@@ -754,14 +772,14 @@
         "entries": [
           {
             "name": "@amigo-labs/graph-layout",
-            "hz": 1973.06,
-            "rme": 1.7,
-            "samples": 987
+            "hz": 1664.99,
+            "rme": 2.63,
+            "samples": 833
           },
           {
             "name": "@dagrejs/dagre",
-            "hz": 23.2906,
-            "rme": 3.38,
+            "hz": 22.9132,
+            "rme": 3.55,
             "samples": 12
           }
         ]
@@ -772,21 +790,21 @@
         "entries": [
           {
             "name": "@amigo-labs/inflate",
-            "hz": 85561.04,
-            "rme": 0.43,
-            "samples": 42781
+            "hz": 79919.07,
+            "rme": 0.38,
+            "samples": 39960
           },
           {
             "name": "pako",
-            "hz": 12677.17,
-            "rme": 3,
-            "samples": 6339
+            "hz": 11073.47,
+            "rme": 2.62,
+            "samples": 5537
           },
           {
             "name": "node:zlib",
-            "hz": 89436.52,
-            "rme": 4.46,
-            "samples": 44719
+            "hz": 77726.31,
+            "rme": 4.47,
+            "samples": 38864
           }
         ]
       },
@@ -796,21 +814,21 @@
         "entries": [
           {
             "name": "@amigo-labs/inflate",
-            "hz": 27149.88,
-            "rme": 0.29,
-            "samples": 13575
+            "hz": 27119.01,
+            "rme": 0.75,
+            "samples": 13560
           },
           {
             "name": "pako",
-            "hz": 942.07,
-            "rme": 1.12,
-            "samples": 472
+            "hz": 924.84,
+            "rme": 1.03,
+            "samples": 463
           },
           {
             "name": "node:zlib",
-            "hz": 4174.99,
-            "rme": 0.76,
-            "samples": 2088
+            "hz": 3242.94,
+            "rme": 0.71,
+            "samples": 1622
           }
         ]
       },
@@ -820,21 +838,21 @@
         "entries": [
           {
             "name": "@amigo-labs/inflate",
-            "hz": 18068.48,
+            "hz": 17881.01,
             "rme": 0.12,
-            "samples": 9035
+            "samples": 8941
           },
           {
             "name": "pako",
-            "hz": 921.26,
-            "rme": 1.17,
-            "samples": 461
+            "hz": 880.3,
+            "rme": 1.63,
+            "samples": 441
           },
           {
             "name": "node:zlib",
-            "hz": 3805.62,
-            "rme": 0.76,
-            "samples": 1903
+            "hz": 3040.8,
+            "rme": 0.29,
+            "samples": 1521
           }
         ]
       },
@@ -844,21 +862,21 @@
         "entries": [
           {
             "name": "@amigo-labs/inflate",
-            "hz": 353.31,
-            "rme": 0.08,
-            "samples": 177
+            "hz": 365.07,
+            "rme": 0.21,
+            "samples": 183
           },
           {
             "name": "pako",
-            "hz": 8.843,
-            "rme": 1.19,
+            "hz": 8.8593,
+            "rme": 0.17,
             "samples": 10
           },
           {
             "name": "node:zlib",
-            "hz": 41.8929,
-            "rme": 0.28,
-            "samples": 21
+            "hz": 32.436,
+            "rme": 0.07,
+            "samples": 17
           }
         ]
       },
@@ -868,21 +886,21 @@
         "entries": [
           {
             "name": "@amigo-labs/inflate",
-            "hz": 287785.74,
-            "rme": 1.1,
-            "samples": 143896
+            "hz": 279751.98,
+            "rme": 5.92,
+            "samples": 139876
           },
           {
             "name": "pako",
-            "hz": 67437.28,
-            "rme": 2.44,
-            "samples": 33719
+            "hz": 59126.97,
+            "rme": 2.35,
+            "samples": 29564
           },
           {
             "name": "node:zlib",
-            "hz": 225077.72,
-            "rme": 8.31,
-            "samples": 112539
+            "hz": 219817.28,
+            "rme": 7.55,
+            "samples": 109909
           }
         ]
       },
@@ -892,21 +910,21 @@
         "entries": [
           {
             "name": "@amigo-labs/inflate",
-            "hz": 18473.9,
-            "rme": 1.79,
-            "samples": 9237
+            "hz": 18785.06,
+            "rme": 1.84,
+            "samples": 9395
           },
           {
             "name": "pako",
-            "hz": 3594.41,
-            "rme": 18.59,
-            "samples": 1798
+            "hz": 3582.61,
+            "rme": 17.61,
+            "samples": 1792
           },
           {
             "name": "node:zlib",
-            "hz": 21803.5,
-            "rme": 3.99,
-            "samples": 10902
+            "hz": 22133.03,
+            "rme": 3.93,
+            "samples": 11067
           }
         ]
       },
@@ -916,21 +934,21 @@
         "entries": [
           {
             "name": "@amigo-labs/inflate",
-            "hz": 420.81,
-            "rme": 3.58,
-            "samples": 211
+            "hz": 394.39,
+            "rme": 3.38,
+            "samples": 198
           },
           {
             "name": "pako",
-            "hz": 41.6993,
-            "rme": 2.53,
+            "hz": 41.0523,
+            "rme": 12.37,
             "samples": 21
           },
           {
             "name": "node:zlib",
-            "hz": 259.82,
-            "rme": 8.51,
-            "samples": 131
+            "hz": 255.58,
+            "rme": 9.58,
+            "samples": 128
           }
         ]
       },
@@ -940,15 +958,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jose",
-            "hz": 448530.5,
-            "rme": 0.27,
-            "samples": 1345592
+            "hz": 460479.12,
+            "rme": 0.16,
+            "samples": 1381438
           },
           {
             "name": "jose (panva, pure JS)",
-            "hz": 289049.74,
-            "rme": 5.67,
-            "samples": 867150
+            "hz": 300211.51,
+            "rme": 5.11,
+            "samples": 900635
           }
         ]
       },
@@ -958,15 +976,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jose",
-            "hz": 365989.99,
-            "rme": 0.26,
-            "samples": 1097970
+            "hz": 390356.18,
+            "rme": 0.28,
+            "samples": 1171069
           },
           {
             "name": "jose (panva, pure JS)",
-            "hz": 236789.5,
-            "rme": 4.59,
-            "samples": 710369
+            "hz": 244145.19,
+            "rme": 4.35,
+            "samples": 732436
           }
         ]
       },
@@ -976,15 +994,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jose",
-            "hz": 40740.92,
-            "rme": 0.07,
-            "samples": 122223
+            "hz": 45382.02,
+            "rme": 0.05,
+            "samples": 136147
           },
           {
             "name": "jose (panva, pure JS) — generateKeyPair Ed25519 + exportJWK",
-            "hz": 12690.84,
-            "rme": 1.2,
-            "samples": 38073
+            "hz": 10752.32,
+            "rme": 0.81,
+            "samples": 32257
           }
         ]
       },
@@ -994,15 +1012,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jwt",
-            "hz": 189898.6,
-            "rme": 0.69,
-            "samples": 94950
+            "hz": 185305.06,
+            "rme": 0.47,
+            "samples": 92653
           },
           {
             "name": "jsonwebtoken",
-            "hz": 34992.49,
-            "rme": 1.93,
-            "samples": 17497
+            "hz": 22456.73,
+            "rme": 1.51,
+            "samples": 11229
           }
         ]
       },
@@ -1012,15 +1030,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jwt",
-            "hz": 122615.5,
-            "rme": 0.2,
-            "samples": 61308
+            "hz": 113172.68,
+            "rme": 0.24,
+            "samples": 56587
           },
           {
             "name": "jsonwebtoken",
-            "hz": 29551.93,
-            "rme": 1.75,
-            "samples": 14776
+            "hz": 19988.35,
+            "rme": 1.12,
+            "samples": 9995
           }
         ]
       },
@@ -1030,15 +1048,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jwt",
-            "hz": 411.78,
-            "rme": 0.11,
-            "samples": 206
+            "hz": 464.68,
+            "rme": 0.13,
+            "samples": 233
           },
           {
             "name": "jsonwebtoken",
-            "hz": 819.37,
-            "rme": 0.22,
-            "samples": 410
+            "hz": 882.94,
+            "rme": 0.43,
+            "samples": 442
           }
         ]
       },
@@ -1048,15 +1066,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jwt",
-            "hz": 3959.68,
-            "rme": 0.14,
-            "samples": 1980
+            "hz": 4374.49,
+            "rme": 0.18,
+            "samples": 2188
           },
           {
             "name": "jsonwebtoken",
-            "hz": 15950.56,
-            "rme": 2.09,
-            "samples": 7976
+            "hz": 12626.88,
+            "rme": 1.42,
+            "samples": 6314
           }
         ]
       },
@@ -1066,15 +1084,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jwt",
-            "hz": 2008.77,
-            "rme": 1.25,
-            "samples": 1005
+            "hz": 2196.56,
+            "rme": 0.09,
+            "samples": 1099
           },
           {
             "name": "jsonwebtoken",
-            "hz": 8899.82,
-            "rme": 6.22,
-            "samples": 4450
+            "hz": 7339.82,
+            "rme": 4.67,
+            "samples": 3671
           }
         ]
       },
@@ -1084,15 +1102,15 @@
         "entries": [
           {
             "name": "@amigo-labs/jwt",
-            "hz": 3207.07,
-            "rme": 0.09,
-            "samples": 1604
+            "hz": 3448.17,
+            "rme": 0.13,
+            "samples": 1725
           },
           {
             "name": "jsonwebtoken",
-            "hz": 7070.31,
-            "rme": 5.08,
-            "samples": 3536
+            "hz": 6530.91,
+            "rme": 2.8,
+            "samples": 3266
           }
         ]
       },
@@ -1102,15 +1120,15 @@
         "entries": [
           {
             "name": "@amigo-labs/language-detect",
-            "hz": 10264.33,
-            "rme": 0.75,
-            "samples": 5133
+            "hz": 12137.51,
+            "rme": 0.74,
+            "samples": 6069
           },
           {
             "name": "franc",
-            "hz": 10155.46,
-            "rme": 0.83,
-            "samples": 5078
+            "hz": 7019.62,
+            "rme": 0.26,
+            "samples": 3510
           }
         ]
       },
@@ -1120,15 +1138,15 @@
         "entries": [
           {
             "name": "@amigo-labs/language-detect",
-            "hz": 7910.19,
-            "rme": 0.49,
-            "samples": 3956
+            "hz": 8835.18,
+            "rme": 0.52,
+            "samples": 4418
           },
           {
             "name": "franc",
-            "hz": 1002.47,
-            "rme": 0.27,
-            "samples": 502
+            "hz": 1096.13,
+            "rme": 0.22,
+            "samples": 549
           }
         ]
       },
@@ -1138,15 +1156,15 @@
         "entries": [
           {
             "name": "@amigo-labs/language-detect",
-            "hz": 4793.15,
-            "rme": 0.39,
-            "samples": 2397
+            "hz": 4946.72,
+            "rme": 0.4,
+            "samples": 2474
           },
           {
             "name": "franc",
-            "hz": 769.94,
-            "rme": 0.66,
-            "samples": 385
+            "hz": 835.62,
+            "rme": 0.33,
+            "samples": 418
           }
         ]
       },
@@ -1156,15 +1174,15 @@
         "entries": [
           {
             "name": "@amigo-labs/minisearch",
-            "hz": 319.29,
-            "rme": 1.7,
-            "samples": 160
+            "hz": 337.74,
+            "rme": 0.63,
+            "samples": 169
           },
           {
             "name": "minisearch",
-            "hz": 273.26,
-            "rme": 2.68,
-            "samples": 137
+            "hz": 280.42,
+            "rme": 2.13,
+            "samples": 141
           }
         ]
       },
@@ -1174,15 +1192,15 @@
         "entries": [
           {
             "name": "@amigo-labs/minisearch search",
-            "hz": 17759.91,
-            "rme": 0.12,
-            "samples": 8880
+            "hz": 18091.15,
+            "rme": 0.13,
+            "samples": 9046
           },
           {
             "name": "minisearch search",
-            "hz": 5026.38,
-            "rme": 0.8,
-            "samples": 2515
+            "hz": 4650.61,
+            "rme": 1.41,
+            "samples": 2327
           }
         ]
       },
@@ -1192,15 +1210,15 @@
         "entries": [
           {
             "name": "@amigo-labs/minisearch autoSuggest",
-            "hz": 146669.97,
-            "rme": 0.09,
-            "samples": 73335
+            "hz": 125131.88,
+            "rme": 0.17,
+            "samples": 62566
           },
           {
             "name": "minisearch autoSuggest",
-            "hz": 2665.02,
-            "rme": 0.53,
-            "samples": 1333
+            "hz": 2556.58,
+            "rme": 0.63,
+            "samples": 1279
           }
         ]
       },
@@ -1294,9 +1312,9 @@
         "entries": [
           {
             "name": "@amigo-labs/pdf generate",
-            "hz": 42651.84,
-            "rme": 0.75,
-            "samples": 21326
+            "hz": 42192.89,
+            "rme": 0.39,
+            "samples": 21097
           }
         ]
       },
@@ -1306,9 +1324,9 @@
         "entries": [
           {
             "name": "@amigo-labs/pdf generate",
-            "hz": 2162.09,
-            "rme": 0.61,
-            "samples": 1082
+            "hz": 2092.18,
+            "rme": 0.23,
+            "samples": 1047
           }
         ]
       },
@@ -1318,9 +1336,9 @@
         "entries": [
           {
             "name": "@amigo-labs/pdf generateMany",
-            "hz": 455.95,
-            "rme": 2.73,
-            "samples": 229
+            "hz": 464.86,
+            "rme": 0.52,
+            "samples": 233
           }
         ]
       },
@@ -1330,15 +1348,15 @@
         "entries": [
           {
             "name": "@amigo-labs/pdf-parse parseSync",
-            "hz": 6768.95,
+            "hz": 5949.07,
             "rme": 0.67,
-            "samples": 3385
+            "samples": 2975
           },
           {
             "name": "pdf-parse",
-            "hz": 130648.6,
-            "rme": 0.28,
-            "samples": 65325
+            "hz": 120386.19,
+            "rme": 0.24,
+            "samples": 60194
           }
         ]
       },
@@ -1348,15 +1366,15 @@
         "entries": [
           {
             "name": "@amigo-labs/pdf-parse parseSync",
-            "hz": 2530.23,
-            "rme": 0.18,
-            "samples": 1266
+            "hz": 2435.55,
+            "rme": 0.16,
+            "samples": 1218
           },
           {
             "name": "pdf-parse",
-            "hz": 131611.67,
-            "rme": 0.19,
-            "samples": 65806
+            "hz": 122020.25,
+            "rme": 0.22,
+            "samples": 61011
           }
         ]
       },
@@ -1366,27 +1384,27 @@
         "entries": [
           {
             "name": "sanitize-html (npm)",
-            "hz": 37189.07,
-            "rme": 9.41,
-            "samples": 18595
+            "hz": 34702.76,
+            "rme": 9.37,
+            "samples": 17352
           },
           {
             "name": "regex-wrapper + amigo",
-            "hz": 25719.68,
-            "rme": 2.27,
-            "samples": 12861
+            "hz": 26630.98,
+            "rme": 0.15,
+            "samples": 13316
           },
           {
             "name": "tokenizer-wrapper + amigo",
-            "hz": 25150.38,
-            "rme": 1.59,
-            "samples": 12576
+            "hz": 25669.1,
+            "rme": 1.08,
+            "samples": 12835
           },
           {
             "name": "amigo (baseline, no transform)",
-            "hz": 27083.59,
-            "rme": 0.1,
-            "samples": 13542
+            "hz": 28206.35,
+            "rme": 0.12,
+            "samples": 14104
           }
         ]
       },
@@ -1396,27 +1414,27 @@
         "entries": [
           {
             "name": "sanitize-html (npm)",
-            "hz": 1848.34,
-            "rme": 10.27,
-            "samples": 925
+            "hz": 1818.3,
+            "rme": 10.41,
+            "samples": 910
           },
           {
             "name": "regex-wrapper + amigo",
-            "hz": 4622.97,
-            "rme": 0.8,
-            "samples": 2312
+            "hz": 4456.44,
+            "rme": 0.85,
+            "samples": 2229
           },
           {
             "name": "tokenizer-wrapper + amigo",
-            "hz": 2912.11,
-            "rme": 0.7,
-            "samples": 1457
+            "hz": 2829.1,
+            "rme": 0.26,
+            "samples": 1415
           },
           {
             "name": "amigo (baseline, no transform)",
-            "hz": 5711.56,
-            "rme": 0.2,
-            "samples": 2856
+            "hz": 5646.53,
+            "rme": 0.24,
+            "samples": 2824
           }
         ]
       },
@@ -1426,27 +1444,27 @@
         "entries": [
           {
             "name": "sanitize-html (npm)",
-            "hz": 281.47,
-            "rme": 11.7,
-            "samples": 141
+            "hz": 294.45,
+            "rme": 10.79,
+            "samples": 148
           },
           {
             "name": "regex-wrapper + amigo",
-            "hz": 578.09,
-            "rme": 1.51,
-            "samples": 290
+            "hz": 559.08,
+            "rme": 2.04,
+            "samples": 280
           },
           {
             "name": "tokenizer-wrapper + amigo",
-            "hz": 179.14,
-            "rme": 0.49,
+            "hz": 179.41,
+            "rme": 0.51,
             "samples": 90
           },
           {
             "name": "amigo (baseline, no transform)",
-            "hz": 752.4,
-            "rme": 0.77,
-            "samples": 377
+            "hz": 741.1,
+            "rme": 0.12,
+            "samples": 371
           }
         ]
       },
@@ -1456,14 +1474,14 @@
         "entries": [
           {
             "name": "sanitize-html (npm)",
-            "hz": 187.4,
-            "rme": 15.21,
-            "samples": 94
+            "hz": 196.75,
+            "rme": 14.39,
+            "samples": 99
           },
           {
             "name": "tokenizer-wrapper + amigo",
-            "hz": 180.1,
-            "rme": 0.96,
+            "hz": 181.98,
+            "rme": 2.19,
             "samples": 91
           }
         ]
@@ -1474,21 +1492,21 @@
         "entries": [
           {
             "name": "@amigo-labs/sanitize-html",
-            "hz": 45008.31,
-            "rme": 1.32,
-            "samples": 22505
+            "hz": 47192.45,
+            "rme": 0.14,
+            "samples": 23597
           },
           {
             "name": "sanitize-html (npm)",
-            "hz": 29109.78,
-            "rme": 13.2,
-            "samples": 14924
+            "hz": 27767.77,
+            "rme": 10.76,
+            "samples": 13885
           },
           {
             "name": "isomorphic-dompurify",
-            "hz": 2717.61,
-            "rme": 13.65,
-            "samples": 1359
+            "hz": 2582.86,
+            "rme": 9.57,
+            "samples": 1292
           }
         ]
       },
@@ -1498,21 +1516,21 @@
         "entries": [
           {
             "name": "@amigo-labs/sanitize-html",
-            "hz": 9742.68,
-            "rme": 1.29,
-            "samples": 4872
+            "hz": 9578.81,
+            "rme": 0.11,
+            "samples": 4790
           },
           {
             "name": "sanitize-html (npm)",
-            "hz": 3932.93,
-            "rme": 8.71,
-            "samples": 1967
+            "hz": 3571.85,
+            "rme": 7.7,
+            "samples": 1815
           },
           {
             "name": "isomorphic-dompurify",
-            "hz": 299.75,
-            "rme": 8.87,
-            "samples": 150
+            "hz": 261.41,
+            "rme": 8.12,
+            "samples": 131
           }
         ]
       },
@@ -1522,20 +1540,20 @@
         "entries": [
           {
             "name": "@amigo-labs/sanitize-html",
-            "hz": 368.51,
-            "rme": 0.26,
-            "samples": 185
+            "hz": 349.72,
+            "rme": 0.14,
+            "samples": 175
           },
           {
             "name": "sanitize-html (npm)",
-            "hz": 94.7324,
-            "rme": 19.23,
-            "samples": 49
+            "hz": 95.6767,
+            "rme": 15.93,
+            "samples": 48
           },
           {
             "name": "isomorphic-dompurify",
-            "hz": 9.5806,
-            "rme": 3.34,
+            "hz": 9.7012,
+            "rme": 3.71,
             "samples": 10
           }
         ]
@@ -1546,21 +1564,21 @@
         "entries": [
           {
             "name": "@amigo-labs/sentences split()",
-            "hz": 118602.15,
-            "rme": 0.18,
-            "samples": 59302
+            "hz": 116538.88,
+            "rme": 0.17,
+            "samples": 58270
           },
           {
             "name": "@amigo-labs/sentences splitToOffsets()",
-            "hz": 95080.32,
-            "rme": 0.36,
-            "samples": 47541
+            "hz": 102808.26,
+            "rme": 0.33,
+            "samples": 51405
           },
           {
             "name": "sbd",
-            "hz": 349176.14,
-            "rme": 0.34,
-            "samples": 174589
+            "hz": 364155.37,
+            "rme": 0.77,
+            "samples": 182078
           }
         ]
       },
@@ -1570,21 +1588,21 @@
         "entries": [
           {
             "name": "@amigo-labs/sentences split()",
-            "hz": 29604.54,
-            "rme": 0.25,
-            "samples": 14803
+            "hz": 29299.16,
+            "rme": 1.51,
+            "samples": 14650
           },
           {
             "name": "@amigo-labs/sentences splitToOffsets()",
-            "hz": 37126.11,
-            "rme": 0.11,
-            "samples": 18564
+            "hz": 40197.95,
+            "rme": 0.12,
+            "samples": 20099
           },
           {
             "name": "sbd",
-            "hz": 9549.42,
-            "rme": 1.13,
-            "samples": 4775
+            "hz": 9392.42,
+            "rme": 0.32,
+            "samples": 4697
           }
         ]
       },
@@ -1593,16 +1611,16 @@
         "name": "slugify - short ASCII (20 chars)",
         "entries": [
           {
-            "name": "@amigo-labs/slugify",
-            "hz": 1827047.96,
-            "rme": 0.41,
-            "samples": 913524
+            "name": "@amigo-labs/slugify (napi)",
+            "hz": 1444827.82,
+            "rme": 0.39,
+            "samples": 722414
           },
           {
             "name": "slugify (npm)",
-            "hz": 660086.69,
-            "rme": 0.3,
-            "samples": 330044
+            "hz": 493902.71,
+            "rme": 0.25,
+            "samples": 246952
           }
         ]
       },
@@ -1611,16 +1629,16 @@
         "name": "slugify - long ASCII (500 chars)",
         "entries": [
           {
-            "name": "@amigo-labs/slugify",
-            "hz": 150586.99,
-            "rme": 0.08,
-            "samples": 75294
+            "name": "@amigo-labs/slugify (napi)",
+            "hz": 130435.09,
+            "rme": 0.14,
+            "samples": 65218
           },
           {
             "name": "slugify (npm)",
-            "hz": 34524.11,
-            "rme": 0.43,
-            "samples": 17263
+            "hz": 21568.98,
+            "rme": 0.32,
+            "samples": 10785
           }
         ]
       },
@@ -1629,16 +1647,16 @@
         "name": "slugify - unicode heavy",
         "entries": [
           {
-            "name": "@amigo-labs/slugify",
-            "hz": 364841.58,
-            "rme": 0.15,
-            "samples": 182421
+            "name": "@amigo-labs/slugify (napi)",
+            "hz": 293083.19,
+            "rme": 0.1,
+            "samples": 146542
           },
           {
             "name": "slugify (npm)",
-            "hz": 158520.66,
-            "rme": 0.33,
-            "samples": 79261
+            "hz": 113971.39,
+            "rme": 0.32,
+            "samples": 56986
           }
         ]
       },
@@ -1648,15 +1666,15 @@
         "entries": [
           {
             "name": "@amigo-labs/stemmer",
-            "hz": 2003.4,
-            "rme": 3.58,
-            "samples": 1002
+            "hz": 1911.1,
+            "rme": 3.53,
+            "samples": 956
           },
           {
             "name": "natural.PorterStemmer (loop)",
-            "hz": 261.52,
-            "rme": 2.79,
-            "samples": 131
+            "hz": 257.56,
+            "rme": 2.82,
+            "samples": 129
           }
         ]
       },
@@ -1666,14 +1684,14 @@
         "entries": [
           {
             "name": "@amigo-labs/stemmer",
-            "hz": 208.42,
-            "rme": 0.14,
-            "samples": 105
+            "hz": 198.32,
+            "rme": 0.16,
+            "samples": 100
           },
           {
             "name": "natural.PorterStemmer (loop)",
-            "hz": 26.5431,
-            "rme": 0.28,
+            "hz": 26.5161,
+            "rme": 0.84,
             "samples": 14
           }
         ]
@@ -1684,15 +1702,15 @@
         "entries": [
           {
             "name": "@amigo-labs/stemmer",
-            "hz": 1471.55,
-            "rme": 0.19,
-            "samples": 736
+            "hz": 1359.73,
+            "rme": 0.2,
+            "samples": 680
           },
           {
             "name": "natural.PorterStemmer.tokenizeAndStem",
-            "hz": 172.06,
-            "rme": 2.03,
-            "samples": 87
+            "hz": 169.86,
+            "rme": 0.35,
+            "samples": 85
           }
         ]
       },
@@ -1702,14 +1720,14 @@
         "entries": [
           {
             "name": "@amigo-labs/stemmer",
-            "hz": 150.64,
-            "rme": 0.33,
-            "samples": 76
+            "hz": 139.33,
+            "rme": 0.13,
+            "samples": 70
           },
           {
             "name": "natural.PorterStemmer.tokenizeAndStem",
-            "hz": 17.3221,
-            "rme": 0.29,
+            "hz": 16.7165,
+            "rme": 0.86,
             "samples": 10
           }
         ]
@@ -1720,15 +1738,15 @@
         "entries": [
           {
             "name": "@amigo-labs/svgo",
-            "hz": 152463.54,
-            "rme": 0.43,
-            "samples": 76232
+            "hz": 151598.33,
+            "rme": 0.24,
+            "samples": 75800
           },
           {
             "name": "svgo",
-            "hz": 7413.94,
-            "rme": 2.52,
-            "samples": 3707
+            "hz": 5868.56,
+            "rme": 2.18,
+            "samples": 2935
           }
         ]
       },
@@ -1738,15 +1756,15 @@
         "entries": [
           {
             "name": "@amigo-labs/svgo",
-            "hz": 6699.66,
-            "rme": 0.66,
-            "samples": 3350
+            "hz": 6338.35,
+            "rme": 0.11,
+            "samples": 3170
           },
           {
             "name": "svgo",
-            "hz": 453.81,
-            "rme": 3.9,
-            "samples": 227
+            "hz": 447.64,
+            "rme": 3.66,
+            "samples": 224
           }
         ]
       },
@@ -1756,15 +1774,15 @@
         "entries": [
           {
             "name": "@amigo-labs/text-splitters splitText",
-            "hz": 227361.85,
-            "rme": 0.22,
-            "samples": 113681
+            "hz": 232833.74,
+            "rme": 0.21,
+            "samples": 116417
           },
           {
             "name": "@langchain/textsplitters",
-            "hz": 85465.44,
-            "rme": 0.48,
-            "samples": 42733
+            "hz": 89831.76,
+            "rme": 0.42,
+            "samples": 44916
           }
         ]
       },
@@ -1774,15 +1792,15 @@
         "entries": [
           {
             "name": "@amigo-labs/text-splitters splitText",
-            "hz": 1330.24,
-            "rme": 0.67,
-            "samples": 666
+            "hz": 1349.8,
+            "rme": 0.32,
+            "samples": 675
           },
           {
             "name": "@langchain/textsplitters",
-            "hz": 1054.68,
-            "rme": 2.04,
-            "samples": 528
+            "hz": 1095.67,
+            "rme": 1.7,
+            "samples": 548
           }
         ]
       },
@@ -1792,15 +1810,15 @@
         "entries": [
           {
             "name": "@amigo-labs/text-splitters splitText",
-            "hz": 17.9381,
-            "rme": 1.25,
+            "hz": 17.9052,
+            "rme": 0.25,
             "samples": 10
           },
           {
             "name": "@langchain/textsplitters",
-            "hz": 79.8567,
-            "rme": 7.51,
-            "samples": 40
+            "hz": 84.5757,
+            "rme": 6.08,
+            "samples": 43
           }
         ]
       },
@@ -1954,15 +1972,15 @@
         "entries": [
           {
             "name": "@amigo-labs/turndown",
-            "hz": 184691.45,
-            "rme": 0.16,
-            "samples": 92346
+            "hz": 169788.54,
+            "rme": 0.19,
+            "samples": 84895
           },
           {
             "name": "turndown",
-            "hz": 13379.69,
-            "rme": 13.8,
-            "samples": 6759
+            "hz": 10344.96,
+            "rme": 12.59,
+            "samples": 5173
           }
         ]
       },
@@ -1972,15 +1990,15 @@
         "entries": [
           {
             "name": "@amigo-labs/turndown",
-            "hz": 7857.86,
-            "rme": 0.11,
-            "samples": 3929
+            "hz": 7079.21,
+            "rme": 0.15,
+            "samples": 3540
           },
           {
             "name": "turndown",
-            "hz": 787.48,
-            "rme": 7.34,
-            "samples": 394
+            "hz": 750.73,
+            "rme": 6.36,
+            "samples": 379
           }
         ]
       },
@@ -1990,9 +2008,9 @@
         "entries": [
           {
             "name": "@amigo-labs/typst compile",
-            "hz": 1470.84,
-            "rme": 0.91,
-            "samples": 736
+            "hz": 1324.66,
+            "rme": 0.21,
+            "samples": 663
           }
         ]
       },
@@ -2002,9 +2020,9 @@
         "entries": [
           {
             "name": "@amigo-labs/typst compile",
-            "hz": 966.2,
-            "rme": 0.27,
-            "samples": 484
+            "hz": 929.94,
+            "rme": 0.5,
+            "samples": 465
           }
         ]
       },
@@ -2014,15 +2032,15 @@
         "entries": [
           {
             "name": "@amigo-labs/xlsx readWorkbook",
-            "hz": 2071.45,
-            "rme": 0.58,
-            "samples": 1036
+            "hz": 1961.13,
+            "rme": 0.66,
+            "samples": 981
           },
           {
             "name": "xlsx (SheetJS)",
-            "hz": 586.96,
-            "rme": 1.05,
-            "samples": 294
+            "hz": 603.91,
+            "rme": 0.81,
+            "samples": 302
           }
         ]
       },
@@ -2032,14 +2050,14 @@
         "entries": [
           {
             "name": "@amigo-labs/xlsx readWorkbook",
-            "hz": 45.7881,
-            "rme": 0.81,
-            "samples": 23
+            "hz": 43.1655,
+            "rme": 1.03,
+            "samples": 22
           },
           {
             "name": "xlsx (SheetJS)",
-            "hz": 17.2209,
-            "rme": 7.57,
+            "hz": 17.8285,
+            "rme": 8.26,
             "samples": 10
           }
         ]
@@ -2050,9 +2068,9 @@
         "entries": [
           {
             "name": "@amigo-labs/xlsx writeWorkbook",
-            "hz": 1067.88,
-            "rme": 1.87,
-            "samples": 534
+            "hz": 1021.83,
+            "rme": 1.9,
+            "samples": 511
           }
         ]
       },
@@ -2062,8 +2080,8 @@
         "entries": [
           {
             "name": "@amigo-labs/xlsx writeWorkbook",
-            "hz": 30.5703,
-            "rme": 0.32,
+            "hz": 30.1726,
+            "rme": 0.22,
             "samples": 16
           }
         ]
@@ -2074,21 +2092,21 @@
         "entries": [
           {
             "name": "@amigo-labs/xxhash",
-            "hz": 4710963.36,
-            "rme": 0.13,
-            "samples": 2355482
+            "hz": 4293032.26,
+            "rme": 0.12,
+            "samples": 2146517
           },
           {
             "name": "xxhash-wasm",
-            "hz": 8338143.88,
+            "hz": 8727510.25,
             "rme": 0.11,
-            "samples": 4169073
+            "samples": 4363756
           },
           {
             "name": "xxhashjs",
-            "hz": 1235752.58,
-            "rme": 0.32,
-            "samples": 617877
+            "hz": 1255312.26,
+            "rme": 0.2,
+            "samples": 627657
           }
         ]
       },
@@ -2098,21 +2116,21 @@
         "entries": [
           {
             "name": "@amigo-labs/xxhash",
-            "hz": 5370.92,
-            "rme": 0.13,
-            "samples": 2686
+            "hz": 6070.23,
+            "rme": 0.12,
+            "samples": 3036
           },
           {
             "name": "xxhash-wasm",
-            "hz": 4668.96,
-            "rme": 0.12,
-            "samples": 2335
+            "hz": 4980.46,
+            "rme": 0.11,
+            "samples": 2491
           },
           {
             "name": "xxhashjs",
-            "hz": 346.84,
-            "rme": 0.17,
-            "samples": 174
+            "hz": 345.89,
+            "rme": 0.06,
+            "samples": 173
           }
         ]
       },
@@ -2122,20 +2140,20 @@
         "entries": [
           {
             "name": "@amigo-labs/xxhash",
-            "hz": 10687.43,
-            "rme": 0.11,
-            "samples": 5344
+            "hz": 12077.17,
+            "rme": 0.1,
+            "samples": 6039
           },
           {
             "name": "xxhash-wasm",
-            "hz": 8223.56,
-            "rme": 0.16,
-            "samples": 4112
+            "hz": 8434.92,
+            "rme": 0.12,
+            "samples": 4218
           },
           {
             "name": "xxhashjs",
-            "hz": 21.7755,
-            "rme": 0.14,
+            "hz": 20.7866,
+            "rme": 0.07,
             "samples": 11
           }
         ]
@@ -2146,15 +2164,15 @@
         "entries": [
           {
             "name": "@amigo-labs/xxhash (xxh3)",
-            "hz": 22519.58,
-            "rme": 0.12,
-            "samples": 11260
+            "hz": 23633.82,
+            "rme": 0.15,
+            "samples": 11817
           },
           {
             "name": "xxhash-wasm (h64)",
-            "hz": 8232.69,
-            "rme": 0.12,
-            "samples": 4117
+            "hz": 8431,
+            "rme": 0.11,
+            "samples": 4216
           }
         ]
       },
@@ -2164,33 +2182,33 @@
         "entries": [
           {
             "name": "@amigo-labs/xxhash (many, Buffer in/out)",
-            "hz": 52927.02,
-            "rme": 0.76,
-            "samples": 26464
+            "hz": 59378.48,
+            "rme": 1.04,
+            "samples": 29690
           },
           {
             "name": "@amigo-labs/xxhash (loop)",
-            "hz": 6879.8,
-            "rme": 0.79,
-            "samples": 3440
+            "hz": 6335.63,
+            "rme": 0.57,
+            "samples": 3168
           },
           {
             "name": "@amigo-labs/xxhash (streaming)",
-            "hz": 4989.99,
-            "rme": 0.14,
-            "samples": 2495
+            "hz": 4909.7,
+            "rme": 0.15,
+            "samples": 2455
           },
           {
             "name": "xxhash-wasm (loop)",
-            "hz": 18248.78,
+            "hz": 16721.34,
             "rme": 0.13,
-            "samples": 9125
+            "samples": 8361
           },
           {
             "name": "xxhashjs (loop)",
-            "hz": 1381.75,
-            "rme": 0.3,
-            "samples": 691
+            "hz": 1332.9,
+            "rme": 0.41,
+            "samples": 667
           }
         ]
       },
@@ -2200,21 +2218,21 @@
         "entries": [
           {
             "name": "@amigo-labs/xxhash (many, Buffer in/out)",
-            "hz": 97782.32,
-            "rme": 1.25,
-            "samples": 48892
+            "hz": 109264.85,
+            "rme": 1.3,
+            "samples": 54633
           },
           {
             "name": "@amigo-labs/xxhash (streaming)",
-            "hz": 5304.86,
-            "rme": 0.21,
-            "samples": 2653
+            "hz": 5225.6,
+            "rme": 0.18,
+            "samples": 2613
           },
           {
             "name": "xxhash-wasm (loop)",
-            "hz": 17760.93,
-            "rme": 0.09,
-            "samples": 8881
+            "hz": 16228.22,
+            "rme": 0.12,
+            "samples": 8115
           }
         ]
       },
@@ -2224,15 +2242,15 @@
         "entries": [
           {
             "name": "@amigo-labs/zip",
-            "hz": 882.8,
-            "rme": 0.34,
-            "samples": 442
+            "hz": 803.71,
+            "rme": 0.33,
+            "samples": 402
           },
           {
             "name": "adm-zip",
-            "hz": 243.23,
-            "rme": 25.59,
-            "samples": 122
+            "hz": 248.82,
+            "rme": 12.59,
+            "samples": 125
           }
         ]
       },
@@ -2242,14 +2260,14 @@
         "entries": [
           {
             "name": "@amigo-labs/zip",
-            "hz": 223.99,
-            "rme": 4.34,
-            "samples": 112
+            "hz": 227.84,
+            "rme": 3.97,
+            "samples": 114
           },
           {
             "name": "adm-zip",
-            "hz": 18.5907,
-            "rme": 1.6,
+            "hz": 17.234,
+            "rme": 2.16,
             "samples": 10
           }
         ]
@@ -2260,14 +2278,14 @@
         "entries": [
           {
             "name": "@amigo-labs/zip",
-            "hz": 5452.59,
-            "rme": 0.38,
-            "samples": 2727
+            "hz": 5121.43,
+            "rme": 0.53,
+            "samples": 2561
           },
           {
             "name": "adm-zip",
-            "hz": 888.48,
-            "rme": 21.76,
+            "hz": 893.21,
+            "rme": 21.44,
             "samples": 453
           }
         ]
@@ -2278,21 +2296,21 @@
         "entries": [
           {
             "name": "@amigo-labs/zip (extractAll)",
-            "hz": 2911.65,
-            "rme": 3.21,
-            "samples": 1456
+            "hz": 3021.08,
+            "rme": 3.26,
+            "samples": 1511
           },
           {
             "name": "@amigo-labs/zip (entries + read loop)",
-            "hz": 256.46,
-            "rme": 0.21,
-            "samples": 129
+            "hz": 246.61,
+            "rme": 4.74,
+            "samples": 124
           },
           {
             "name": "adm-zip",
-            "hz": 549.82,
-            "rme": 10.51,
-            "samples": 275
+            "hz": 568.55,
+            "rme": 10.08,
+            "samples": 285
           }
         ]
       },
@@ -2302,15 +2320,15 @@
         "entries": [
           {
             "name": "@amigo-labs/zip",
-            "hz": 321.54,
-            "rme": 3.16,
-            "samples": 161
+            "hz": 405.2,
+            "rme": 2.8,
+            "samples": 203
           },
           {
             "name": "adm-zip",
-            "hz": 28.79,
-            "rme": 4.46,
-            "samples": 15
+            "hz": 31.4951,
+            "rme": 4.35,
+            "samples": 16
           }
         ]
       }
@@ -2347,7 +2365,7 @@
     },
     "commonmark": {
       "@amigo-labs/commonmark": {
-        "installSize": 923822,
+        "installSize": 923878,
         "type": "binary+shim"
       },
       "marked": {
@@ -2463,7 +2481,7 @@
     },
     "jimp": {
       "@amigo-labs/jimp": {
-        "installSize": 905340,
+        "installSize": 905324,
         "type": "binary+shim"
       },
       "jimp": {
@@ -2493,11 +2511,11 @@
     },
     "jwt": {
       "@amigo-labs/jwt": {
-        "installSize": 1390860,
+        "installSize": 1390572,
         "type": "binary+shim"
       },
       "jsonwebtoken": {
-        "installSize": 308054,
+        "installSize": 308238,
         "type": "node_modules"
       }
     },
@@ -2513,7 +2531,7 @@
     },
     "linkify-it": {
       "@amigo-labs/linkify-it": {
-        "installSize": 402631,
+        "installSize": 402647,
         "type": "binary+shim"
       },
       "linkify-it": {
@@ -2543,7 +2561,7 @@
     },
     "pdf-parse": {
       "@amigo-labs/pdf-parse": {
-        "installSize": 2234446,
+        "installSize": 2234334,
         "type": "binary+shim"
       },
       "pdf-parse": {
@@ -2563,7 +2581,7 @@
     },
     "pngjs": {
       "@amigo-labs/pngjs": {
-        "installSize": 559942,
+        "installSize": 559958,
         "type": "binary+shim"
       },
       "pngjs": {
@@ -2581,11 +2599,11 @@
         "type": "binary+shim"
       },
       "sanitize-html": {
-        "installSize": 1590240,
+        "installSize": 1590562,
         "type": "node_modules"
       },
       "isomorphic-dompurify": {
-        "installSize": 14558581,
+        "installSize": 14542176,
         "type": "node_modules"
       }
     },
@@ -2595,13 +2613,13 @@
         "type": "binary+shim"
       },
       "sbd": {
-        "installSize": 2841412,
+        "installSize": 2841734,
         "type": "node_modules"
       }
     },
     "slugify": {
       "@amigo-labs/slugify": {
-        "installSize": 24553,
+        "installSize": 988641,
         "type": "binary+shim"
       },
       "slugify": {
@@ -2615,7 +2633,7 @@
         "type": "binary+shim"
       },
       "natural": {
-        "installSize": 65092329,
+        "installSize": 65094015,
         "type": "node_modules"
       }
     },
@@ -2635,7 +2653,7 @@
         "type": "binary+shim"
       },
       "@langchain/textsplitters": {
-        "installSize": 37254338,
+        "installSize": 37297463,
         "type": "node_modules"
       }
     },
@@ -2665,7 +2683,7 @@
     },
     "typst": {
       "@amigo-labs/typst": {
-        "installSize": 37645975,
+        "installSize": 37646679,
         "type": "binary+shim"
       },
       "typst (CLI)": {
@@ -2673,7 +2691,7 @@
         "type": "node_modules"
       },
       "puppeteer": {
-        "installSize": 28904491,
+        "installSize": 28906361,
         "type": "node_modules"
       },
       "pdfmake": {
@@ -2729,7 +2747,7 @@
         "type": "binary+shim"
       },
       "@mongodb-js/zstd": {
-        "installSize": 1236030,
+        "installSize": 1236214,
         "type": "node_modules"
       },
       "fzstd": {

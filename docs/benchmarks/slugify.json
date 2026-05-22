@@ -1,25 +1,25 @@
 {
   "crate": "slugify",
-  "generatedAt": "2026-05-07T12:02:40.790Z",
-  "commit": "14cf4ea",
+  "generatedAt": "2026-05-22T13:00:24.045Z",
+  "commit": "b67b03d",
   "runner": "linux-x64",
-  "nodeVersion": "v24.14.1",
+  "nodeVersion": "v24.15.0",
   "suites": [
     {
       "file": "crates/slugify/__bench__/index.bench.ts",
       "name": "slugify - short ASCII (20 chars)",
       "entries": [
         {
-          "name": "@amigo-labs/slugify",
-          "hz": 1827047.96,
-          "rme": 0.41,
-          "samples": 913524
+          "name": "@amigo-labs/slugify (napi)",
+          "hz": 1444827.82,
+          "rme": 0.39,
+          "samples": 722414
         },
         {
           "name": "slugify (npm)",
-          "hz": 660086.69,
-          "rme": 0.3,
-          "samples": 330044
+          "hz": 493902.71,
+          "rme": 0.25,
+          "samples": 246952
         }
       ]
     },
@@ -28,16 +28,16 @@
       "name": "slugify - long ASCII (500 chars)",
       "entries": [
         {
-          "name": "@amigo-labs/slugify",
-          "hz": 150586.99,
-          "rme": 0.08,
-          "samples": 75294
+          "name": "@amigo-labs/slugify (napi)",
+          "hz": 130435.09,
+          "rme": 0.14,
+          "samples": 65218
         },
         {
           "name": "slugify (npm)",
-          "hz": 34524.11,
-          "rme": 0.43,
-          "samples": 17263
+          "hz": 21568.98,
+          "rme": 0.32,
+          "samples": 10785
         }
       ]
     },
@@ -46,16 +46,16 @@
       "name": "slugify - unicode heavy",
       "entries": [
         {
-          "name": "@amigo-labs/slugify",
-          "hz": 364841.58,
-          "rme": 0.15,
-          "samples": 182421
+          "name": "@amigo-labs/slugify (napi)",
+          "hz": 293083.19,
+          "rme": 0.1,
+          "samples": 146542
         },
         {
           "name": "slugify (npm)",
-          "hz": 158520.66,
-          "rme": 0.33,
-          "samples": 79261
+          "hz": 113971.39,
+          "rme": 0.32,
+          "samples": 56986
         }
       ]
     }
