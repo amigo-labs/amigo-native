@@ -62,7 +62,7 @@
       "title": "Argon2",
       "category": "crypto",
       "description": "Argon2id password hashing with sync + async API.",
-      "speedup": "1.38× faster",
+      "speedup": "1.35× faster",
       "targets": [
         "node"
       ],
@@ -76,7 +76,7 @@
       "title": "BM25",
       "category": "search",
       "description": "BM25 full-text search. Stateful NAPI class — build index once, query many times.",
-      "speedup": "12× faster",
+      "speedup": "13× faster",
       "targets": [
         "node",
         "browser"
@@ -90,7 +90,7 @@
       "title": "CommonMark",
       "category": "text",
       "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
-      "speedup": "6.6× faster",
+      "speedup": "6.4× faster",
       "targets": [
         "node",
         "browser"
@@ -105,7 +105,7 @@
       "title": "CSV",
       "category": "document",
       "description": "CSV parsing and serialization via BurntSushi's csv crate.",
-      "speedup": "1.63–2× faster",
+      "speedup": "1.51–1.95× faster",
       "targets": [
         "node",
         "browser"
@@ -120,7 +120,7 @@
       "title": "Deepmerge",
       "category": "util",
       "description": "Recursive object merge for JSON-safe values.",
-      "speedup": "3.4–5.4× faster",
+      "speedup": "2.9–6.3× faster",
       "targets": [
         "node",
         "browser"
@@ -135,7 +135,7 @@
       "title": "Diff",
       "category": "util",
       "description": "Myers/Patience diff via `similar`. Drop-in-shape with an offset-packed hot-path for char-level and large-input cases.",
-      "speedup": "up to 23× faster / 3.1× slower",
+      "speedup": "up to 25× faster / 3× slower",
       "targets": [
         "node",
         "browser"
@@ -150,7 +150,7 @@
       "title": "Encoding",
       "category": "text",
       "description": "Character encoding conversion powered by Mozilla's encoding_rs.",
-      "speedup": "up to 40× faster / 1.72× slower",
+      "speedup": "up to 32× faster / 1.67× slower",
       "targets": [
         "node",
         "browser"
@@ -165,7 +165,7 @@
       "title": "File Type",
       "category": "util",
       "description": "Magic-byte file-type detection via the Rust infer crate.",
-      "speedup": "23× faster",
+      "speedup": "22–25× faster",
       "targets": [
         "node",
         "browser"
@@ -180,7 +180,7 @@
       "title": "Force Layout",
       "category": "graph",
       "description": "Force-directed graph simulation. Batch-mode d3-force replacement for SSR / precompute workloads.",
-      "speedup": "2.6–6× faster",
+      "speedup": "3.6–7.3× faster",
       "targets": [
         "node",
         "browser"
@@ -209,7 +209,7 @@
       "title": "Graph Layout",
       "category": "graph",
       "description": "Hierarchical (Sugiyama-style) DAG layout. Single-call spec → positions + edge routing.",
-      "speedup": "68–85× faster",
+      "speedup": "57–73× faster",
       "targets": [
         "node",
         "browser"
@@ -223,7 +223,7 @@
       "title": "Inflate",
       "category": "archive",
       "description": "zlib deflate/inflate/gzip powered by flate2 + zlib-rs.",
-      "speedup": "up to 8.4× faster / 1.18× slower",
+      "speedup": "up to 11× faster / 1.18× slower",
       "targets": [
         "node",
         "browser"
@@ -253,7 +253,7 @@
       "title": "JOSE",
       "category": "crypto",
       "description": "Ed25519 JWK generation and RFC 7638 thumbprints. JWE roadmap.",
-      "speedup": "1.55–3.2× faster",
+      "speedup": "1.53–4.2× faster",
       "targets": [
         "node"
       ],
@@ -282,7 +282,7 @@
       "title": "JWT",
       "category": "crypto",
       "description": "JWT sign, verify, and decode via the jsonwebtoken Rust crate.",
-      "speedup": "up to 5.4× faster / 4.4× slower",
+      "speedup": "up to 8.3× faster / 3.3× slower",
       "targets": [
         "node"
       ],
@@ -296,7 +296,7 @@
       "title": "Language Detect",
       "category": "text",
       "description": "Language detection powered by whatlang. Paragraph-size Green, short-string Red by design.",
-      "speedup": "up to 7.9× faster",
+      "speedup": "1.73–8.1× faster",
       "targets": [
         "node",
         "browser"
@@ -325,7 +325,7 @@
       "title": "Minisearch",
       "category": "search",
       "description": "Tiny in-memory full-text search with prefix autocomplete. Shares Rust search-core with @amigo-labs/bm25.",
-      "speedup": "1.17–55× faster",
+      "speedup": "1.2–49× faster",
       "targets": [
         "node",
         "browser"
@@ -340,7 +340,7 @@
       "title": "PDF",
       "category": "document",
       "description": "PDF generation — one FFI call per document. Labels / tickets / simple reports.",
-      "speedup": "Native-only API",
+      "speedup": "TBD",
       "targets": [
         "node",
         "browser"
@@ -354,7 +354,7 @@
       "title": "PDF Parse",
       "category": "document",
       "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
-      "speedup": "19–52× slower",
+      "speedup": "20–50× slower",
       "targets": [
         "node",
         "browser"
@@ -399,7 +399,7 @@
       "title": "Sanitize HTML",
       "category": "text",
       "description": "HTML sanitization via Mozilla's ammonia engine.",
-      "speedup": "1.55–3.9× faster",
+      "speedup": "1.7–3.7× faster",
       "targets": [
         "node",
         "browser"
@@ -414,7 +414,7 @@
       "title": "Sentences",
       "category": "text",
       "description": "Multi-language sentence boundary detection. String or offset-packed output for hot paths.",
-      "speedup": "Offset-packed hot-path",
+      "speedup": "TBD",
       "targets": [
         "node",
         "browser"
@@ -428,7 +428,7 @@
       "title": "Slugify",
       "category": "text",
       "description": "Unicode-aware slugification. Wraps deunicode + unicode-normalization.",
-      "speedup": "2.3–4.4× faster",
+      "speedup": "2.6–6× faster",
       "targets": [
         "node",
         "browser"
@@ -443,7 +443,7 @@
       "title": "Stemmer",
       "category": "text",
       "description": "Porter/Snowball stemming via rust-stemmers. Batch-only API — single-word calls are intentionally not exposed.",
-      "speedup": "7.7–8.7× faster",
+      "speedup": "7.4–8.3× faster",
       "targets": [
         "node",
         "browser"
@@ -457,7 +457,7 @@
       "title": "Svgo",
       "category": "document",
       "description": "SVG optimizer via quick-xml. Ships the 8 highest-impact `preset-default` plugins.",
-      "speedup": "15–21× faster",
+      "speedup": "14–26× faster",
       "targets": [
         "node",
         "browser"
@@ -472,7 +472,7 @@
       "title": "Text Splitters",
       "category": "text",
       "description": "RAG text splitters (recursive-character + markdown-aware), with native tiktoken length.",
-      "speedup": "up to 2.7× faster / 4.5× slower",
+      "speedup": "up to 2.6× faster / 4.7× slower",
       "targets": [
         "node",
         "browser"
@@ -501,7 +501,7 @@
       "title": "Turndown",
       "category": "text",
       "description": "HTML → Markdown via html5ever. Ships CommonMark + GFM tables/strikethrough.",
-      "speedup": "10–14× faster",
+      "speedup": "9.4–16× faster",
       "targets": [
         "node",
         "browser"
@@ -516,7 +516,7 @@
       "title": "Typst",
       "category": "document",
       "description": "Typst document compiler — source in, PDF out. Bundled Libertinus fonts; offline-only packages.",
-      "speedup": "Native-only API",
+      "speedup": "TBD",
       "targets": [
         "node",
         "browser"
@@ -531,7 +531,7 @@
       "title": "XLSX",
       "category": "document",
       "description": "XLSX read + write. Buffer in → rows out, rows in → Buffer out. Single-FFI-crossing.",
-      "speedup": "2.7–3.5× faster",
+      "speedup": "2.4–3.2× faster",
       "targets": [
         "node",
         "browser"
@@ -546,7 +546,7 @@
       "title": "XXHash",
       "category": "crypto",
       "description": "XXH32, XXH64, and XXH3 with batch + streaming support.",
-      "speedup": "up to 2.7× faster / 2.7× slower",
+      "speedup": "up to 2.8× faster / 2.6× slower",
       "targets": [
         "node",
         "browser"
@@ -561,7 +561,7 @@
       "title": "ZIP",
       "category": "archive",
       "description": "ZIP archive read/write via the zip Rust crate.",
-      "speedup": "3.6–12× faster",
+      "speedup": "3.2–13× faster",
       "targets": [
         "node",
         "browser"

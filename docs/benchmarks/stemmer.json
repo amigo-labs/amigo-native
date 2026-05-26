@@ -1,7 +1,7 @@
 {
   "crate": "stemmer",
-  "generatedAt": "2026-05-17T20:16:52.892Z",
-  "commit": "792802f",
+  "generatedAt": "2026-05-22T13:00:24.045Z",
+  "commit": "b67b03d",
   "runner": "linux-x64",
   "nodeVersion": "v24.15.0",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 2003.4,
-          "rme": 3.58,
-          "samples": 1002
+          "hz": 1911.1,
+          "rme": 3.53,
+          "samples": 956
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 261.52,
-          "rme": 2.79,
-          "samples": 131
+          "hz": 257.56,
+          "rme": 2.82,
+          "samples": 129
         }
       ]
     },
@@ -29,14 +29,14 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 208.42,
-          "rme": 0.14,
-          "samples": 105
+          "hz": 198.32,
+          "rme": 0.16,
+          "samples": 100
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 26.5431,
-          "rme": 0.28,
+          "hz": 26.5161,
+          "rme": 0.84,
           "samples": 14
         }
       ]
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 1471.55,
-          "rme": 0.19,
-          "samples": 736
+          "hz": 1359.73,
+          "rme": 0.2,
+          "samples": 680
         },
         {
           "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 172.06,
-          "rme": 2.03,
-          "samples": 87
+          "hz": 169.86,
+          "rme": 0.35,
+          "samples": 85
         }
       ]
     },
@@ -65,14 +65,14 @@
       "entries": [
         {
           "name": "@amigo-labs/stemmer",
-          "hz": 150.64,
-          "rme": 0.33,
-          "samples": 76
+          "hz": 139.33,
+          "rme": 0.13,
+          "samples": 70
         },
         {
           "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 17.3221,
-          "rme": 0.29,
+          "hz": 16.7165,
+          "rme": 0.86,
           "samples": 10
         }
       ]

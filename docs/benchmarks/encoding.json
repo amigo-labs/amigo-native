@@ -1,7 +1,7 @@
 {
   "crate": "encoding",
-  "generatedAt": "2026-05-17T20:16:52.892Z",
-  "commit": "792802f",
+  "generatedAt": "2026-05-22T13:00:24.045Z",
+  "commit": "b67b03d",
   "runner": "linux-x64",
   "nodeVersion": "v24.15.0",
   "suites": [
@@ -11,57 +11,57 @@
       "entries": [
         {
           "name": "@amigo-labs/encoding small",
-          "hz": 3376511.44,
-          "rme": 1.59,
-          "samples": 1688256
+          "hz": 3191013.46,
+          "rme": 1.39,
+          "samples": 1595507
         },
         {
           "name": "iconv-lite small",
-          "hz": 1364353.26,
-          "rme": 0.27,
-          "samples": 682177
+          "hz": 1411828.88,
+          "rme": 0.35,
+          "samples": 705915
         },
         {
           "name": "Buffer.from small",
-          "hz": 3817576.46,
-          "rme": 0.18,
-          "samples": 1908789
+          "hz": 3651724.45,
+          "rme": 0.29,
+          "samples": 1825863
         },
         {
           "name": "@amigo-labs/encoding 100KB",
-          "hz": 20547.42,
-          "rme": 2.15,
-          "samples": 10274
+          "hz": 21039.23,
+          "rme": 2.3,
+          "samples": 10520
         },
         {
           "name": "iconv-lite 100KB",
-          "hz": 20447.66,
-          "rme": 1.98,
-          "samples": 10224
+          "hz": 20864.6,
+          "rme": 2.04,
+          "samples": 10434
         },
         {
           "name": "Buffer.from 100KB",
-          "hz": 19854.35,
-          "rme": 2.37,
-          "samples": 9928
+          "hz": 20950.07,
+          "rme": 2.01,
+          "samples": 10496
         },
         {
           "name": "@amigo-labs/encoding 10MB",
-          "hz": 231.69,
-          "rme": 2.92,
-          "samples": 116
+          "hz": 236.51,
+          "rme": 2.74,
+          "samples": 119
         },
         {
           "name": "iconv-lite 10MB",
-          "hz": 227.61,
-          "rme": 3.29,
-          "samples": 114
+          "hz": 233.91,
+          "rme": 3.03,
+          "samples": 117
         },
         {
           "name": "Buffer.from 10MB",
-          "hz": 230.74,
-          "rme": 2.99,
-          "samples": 116
+          "hz": 229.46,
+          "rme": 3.34,
+          "samples": 115
         }
       ]
     },
@@ -71,15 +71,15 @@
       "entries": [
         {
           "name": "@amigo-labs/encoding",
-          "hz": 34829.13,
-          "rme": 0.79,
-          "samples": 17415
+          "hz": 38498.62,
+          "rme": 0.87,
+          "samples": 19250
         },
         {
           "name": "iconv-lite",
-          "hz": 35783.54,
-          "rme": 0.71,
-          "samples": 17892
+          "hz": 39606.08,
+          "rme": 0.78,
+          "samples": 19804
         }
       ]
     },
@@ -89,15 +89,15 @@
       "entries": [
         {
           "name": "@amigo-labs/encoding",
-          "hz": 1110.43,
-          "rme": 0.42,
-          "samples": 556
+          "hz": 1252.19,
+          "rme": 0.26,
+          "samples": 627
         },
         {
           "name": "iconv-lite",
-          "hz": 1908.01,
-          "rme": 0.33,
-          "samples": 955
+          "hz": 2097.33,
+          "rme": 0.36,
+          "samples": 1049
         }
       ]
     },
@@ -107,14 +107,14 @@
       "entries": [
         {
           "name": "@amigo-labs/encoding",
-          "hz": 1157.2,
-          "rme": 5.92,
-          "samples": 579
+          "hz": 925.91,
+          "rme": 5.38,
+          "samples": 463
         },
         {
           "name": "iconv-lite",
-          "hz": 28.8494,
-          "rme": 3.37,
+          "hz": 28.5886,
+          "rme": 3.47,
           "samples": 15
         }
       ]

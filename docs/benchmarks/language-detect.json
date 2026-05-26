@@ -1,7 +1,7 @@
 {
   "crate": "language-detect",
-  "generatedAt": "2026-05-17T20:16:52.892Z",
-  "commit": "792802f",
+  "generatedAt": "2026-05-22T13:00:24.045Z",
+  "commit": "b67b03d",
   "runner": "linux-x64",
   "nodeVersion": "v24.15.0",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/language-detect",
-          "hz": 10264.33,
-          "rme": 0.75,
-          "samples": 5133
+          "hz": 12137.51,
+          "rme": 0.74,
+          "samples": 6069
         },
         {
           "name": "franc",
-          "hz": 10155.46,
-          "rme": 0.83,
-          "samples": 5078
+          "hz": 7019.62,
+          "rme": 0.26,
+          "samples": 3510
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/language-detect",
-          "hz": 7910.19,
-          "rme": 0.49,
-          "samples": 3956
+          "hz": 8835.18,
+          "rme": 0.52,
+          "samples": 4418
         },
         {
           "name": "franc",
-          "hz": 1002.47,
-          "rme": 0.27,
-          "samples": 502
+          "hz": 1096.13,
+          "rme": 0.22,
+          "samples": 549
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/language-detect",
-          "hz": 4793.15,
-          "rme": 0.39,
-          "samples": 2397
+          "hz": 4946.72,
+          "rme": 0.4,
+          "samples": 2474
         },
         {
           "name": "franc",
-          "hz": 769.94,
-          "rme": 0.66,
-          "samples": 385
+          "hz": 835.62,
+          "rme": 0.33,
+          "samples": 418
         }
       ]
     }

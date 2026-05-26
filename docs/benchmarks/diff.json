@@ -1,7 +1,7 @@
 {
   "crate": "diff",
-  "generatedAt": "2026-05-17T20:16:52.892Z",
-  "commit": "792802f",
+  "generatedAt": "2026-05-22T13:00:24.045Z",
+  "commit": "b67b03d",
   "runner": "linux-x64",
   "nodeVersion": "v24.15.0",
   "suites": [
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 26219.53,
-          "rme": 0.69,
-          "samples": 13110
+          "hz": 25357.92,
+          "rme": 0.56,
+          "samples": 12679
         },
         {
           "name": "diff",
-          "hz": 2546.54,
-          "rme": 0.41,
-          "samples": 1274
+          "hz": 2454.41,
+          "rme": 0.36,
+          "samples": 1228
         }
       ]
     },
@@ -29,14 +29,14 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 142.9,
-          "rme": 0.2,
-          "samples": 72
+          "hz": 154.29,
+          "rme": 0.09,
+          "samples": 78
         },
         {
           "name": "diff",
-          "hz": 6.4431,
-          "rme": 2.3,
+          "hz": 6.265,
+          "rme": 2.32,
           "samples": 10
         }
       ]
@@ -47,8 +47,8 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 1.5134,
-          "rme": 0.11,
+          "hz": 1.6227,
+          "rme": 0.2,
           "samples": 10
         }
       ]
@@ -59,15 +59,15 @@
       "entries": [
         {
           "name": "@amigo-labs/diff (offsets)",
-          "hz": 145.57,
-          "rme": 0.68,
-          "samples": 73
+          "hz": 156.01,
+          "rme": 0.12,
+          "samples": 79
         },
         {
           "name": "@amigo-labs/diff (hunks)",
-          "hz": 143.01,
-          "rme": 0.3,
-          "samples": 72
+          "hz": 153.99,
+          "rme": 0.19,
+          "samples": 77
         }
       ]
     },
@@ -77,14 +77,14 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 144.56,
-          "rme": 0.33,
-          "samples": 73
+          "hz": 155.17,
+          "rme": 0.15,
+          "samples": 78
         },
         {
           "name": "diff.createPatch",
-          "hz": 6.3766,
-          "rme": 0.39,
+          "hz": 6.1923,
+          "rme": 0.59,
           "samples": 10
         }
       ]
@@ -95,15 +95,15 @@
       "entries": [
         {
           "name": "@amigo-labs/diff",
-          "hz": 1866.89,
-          "rme": 0.62,
-          "samples": 934
+          "hz": 1953.75,
+          "rme": 0.13,
+          "samples": 977
         },
         {
           "name": "diff",
-          "hz": 5717.73,
-          "rme": 0.42,
-          "samples": 2859
+          "hz": 5818.38,
+          "rme": 0.37,
+          "samples": 2910
         }
       ]
     }
