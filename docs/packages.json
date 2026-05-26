@@ -90,7 +90,7 @@
       "title": "CommonMark",
       "category": "text",
       "description": "CommonMark + GFM renderer powered by pulldown-cmark.",
-      "speedup": "6.4× faster",
+      "speedup": "2.8–13× faster",
       "targets": [
         "node",
         "browser"
@@ -98,7 +98,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/commonmark",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/commonmark",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/commonmark/README.md",
-      "perfReviewUrl": "/perf-review/commonmark.md"
+      "perfReviewUrl": "/perf-review/commonmark.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "2.8–13× faster",
+          "hz": 12870,
+          "vsJs": 6.24
+        }
+      }
     },
     {
       "name": "csv",
@@ -436,7 +443,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/slugify",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/slugify",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/slugify/README.md",
-      "perfReviewUrl": "/perf-review/slugify.md"
+      "perfReviewUrl": "/perf-review/slugify.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "2.6–6× faster",
+          "hz": 380832,
+          "vsJs": 2.93
+        }
+      }
     },
     {
       "name": "stemmer",
@@ -561,7 +575,7 @@
       "title": "ZIP",
       "category": "archive",
       "description": "ZIP archive read/write via the zip Rust crate.",
-      "speedup": "3.2–13× faster",
+      "speedup": "up to 13× faster / 2.2× slower",
       "targets": [
         "node",
         "browser"
@@ -569,7 +583,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/zip",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/zip",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/zip/README.md",
-      "perfReviewUrl": "/perf-review/zip.md"
+      "perfReviewUrl": "/perf-review/zip.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "up to 13× faster / 2.2× slower",
+          "hz": 787,
+          "vsJs": 5.74
+        }
+      }
     },
     {
       "name": "zstd",
