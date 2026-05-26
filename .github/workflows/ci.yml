@@ -22,6 +22,13 @@ env:
   # Mirrored by .claude/skills/audit-crates/scripts/audit.mjs (NODE_ONLY_CRATES)
   # and by .github/workflows/release.yml (the publish-job WASM build gate).
   NODE_ONLY_CRATES: 'argon2 jose jwt'
+  # Crates temporarily skipped in CI because of an unresolved upstream
+  # build break. Mirrors `[workspace] exclude` in Cargo.toml.
+  # Remove a crate from this list once it compiles again on stable rustc
+  # and unexclude it in Cargo.toml in the same commit.
+  #   typst — typst-library 0.14.x has an E0282 in foundations/str.rs:700
+  #           on stable rustc; fixed upstream but no crates.io release yet.
+  BROKEN_CRATES: 'typst'
 
 jobs:
   # ── change detection ────────────────────────────────────────────────────
@@ -190,6 +197,10 @@ jobs:
             if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then
               continue
             fi
+            if echo " $BROKEN_CRATES " | grep -q " $crate "; then
+              echo "::notice::Skipping wasm-test for $crate (in BROKEN_CRATES)"
+              continue
+            fi
             echo "::group::wasm-pack test $dir"
             (cd "$dir" && wasm-pack test --node)
             echo "::endgroup::"
@@ -256,6 +267,10 @@ jobs:
           for dir in $wasm_dirs; do
             crate=$(basename $(dirname "$dir"))
             if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then continue; fi
+            if echo " $BROKEN_CRATES " | grep -q " $crate "; then
+              echo "::notice::Skipping bundle-size for $crate (in BROKEN_CRATES)"
+              continue
+            fi
             echo "::group::bundle-size $crate"
             if ! (cd "$dir" && wasm-pack build --target bundler --release --out-dir pkg); then
               echo "::warning::wasm-pack build failed for $crate"
@@ -334,9 +349,14 @@ jobs:
           RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
         run: |
           set -euo pipefail
+          # Build the BROKEN_CRATES exclusion as pnpm `--filter '!@scope/x'`.
+          broken_filters=""
+          for b in $BROKEN_CRATES; do
+            broken_filters="$broken_filters --filter !@amigo-labs/$b"
+          done
           if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
             echo "::notice::Building all crates (rebuildall=1)"
-            pnpm -r --workspace-concurrency=4 run build
+            pnpm -r $broken_filters --workspace-concurrency=4 run build
           else
             echo "::notice::Building only: ${{ needs.detect-changes.outputs.crates }}"
             # commonmark is always built — `test-node` runs
@@ -345,6 +365,10 @@ jobs:
             # otherwise leave the artifact missing it.
             filters="--filter @amigo-labs/commonmark"
             for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+              if echo " $BROKEN_CRATES " | grep -q " $c "; then
+                echo "::notice::Skipping build for $c (in BROKEN_CRATES)"
+                continue
+              fi
               filters="$filters --filter @amigo-labs/$c"
             done
             pnpm $filters --workspace-concurrency=4 run build
@@ -384,11 +408,19 @@ jobs:
       - name: Test crates
         run: |
           set -euo pipefail
+          broken_filters=""
+          for b in $BROKEN_CRATES; do
+            broken_filters="$broken_filters --filter !@amigo-labs/$b"
+          done
           if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
-            pnpm -r run test
+            pnpm -r $broken_filters run test
           else
             filters=""
             for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+              if echo " $BROKEN_CRATES " | grep -q " $c "; then
+                echo "::notice::Skipping test for $c (in BROKEN_CRATES)"
+                continue
+              fi
               filters="$filters --filter @amigo-labs/$c"
             done
             pnpm $filters run test
@@ -422,10 +454,12 @@ jobs:
         # status so we still post the comment, then re-fail at the end.
         run: |
           set +e
+          # BROKEN_CRATES is space-separated; the script takes comma-separated.
+          exclude_csv=$(echo "$BROKEN_CRATES" | tr ' ' ',')
           if [ "${{ needs.detect-changes.outputs.rebuildall }}" = "1" ]; then
-            node scripts/conformance-summary.mjs
+            node scripts/conformance-summary.mjs --exclude "$exclude_csv"
           else
-            node scripts/conformance-summary.mjs --crates "${{ needs.detect-changes.outputs.crates }}"
+            node scripts/conformance-summary.mjs --crates "${{ needs.detect-changes.outputs.crates }}" --exclude "$exclude_csv"
           fi
           echo "exit=$?" >> "$GITHUB_OUTPUT"
           set -e

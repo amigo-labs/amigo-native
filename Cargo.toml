@@ -1,6 +1,13 @@
 [workspace]
 members = ["crates/*", "crates/*/wasm"]
-exclude = ["crates/_template"]
+# typst-{core,,/wasm} are excluded until a fix for the
+# `typst-library` E0282 type-inference bug
+# (foundations/str.rs:700 `self.as_ref().repr()`) is released upstream.
+# All released 0.14.x versions (0.14.0–0.14.2) trip the bug on current
+# stable rustc; upstream main has the `self.as_str()` fix but no new
+# crates.io release yet. CI mirrors this skip via `BROKEN_CRATES` in
+# .github/workflows/ci.yml.
+exclude = ["crates/_template", "crates/_typst-core", "crates/typst", "crates/typst/wasm"]
 resolver = "2"
 
 [workspace.dependencies]
