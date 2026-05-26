@@ -350,7 +350,11 @@ jobs:
         run: |
           set -euo pipefail
           # Build the BROKEN_CRATES exclusion as pnpm `--filter '!@scope/x'`.
-          broken_filters=""
+          # `!.` excludes the workspace root — pnpm normally skips it under
+          # `-r`, but as soon as any `--filter` is passed it gets pulled back
+          # in, and the root's `build` script (`pnpm -r run build`) would
+          # recurse without our filter and rebuild every excluded crate.
+          broken_filters="--filter !."
           for b in $BROKEN_CRATES; do
             broken_filters="$broken_filters --filter !@amigo-labs/$b"
           done
@@ -408,7 +412,10 @@ jobs:
       - name: Test crates
         run: |
           set -euo pipefail
-          broken_filters=""
+          # See the build job for why `!.` is required alongside the
+          # BROKEN_CRATES exclusions — the root's `test` script
+          # (`pnpm -r run test`) would otherwise recurse unfiltered.
+          broken_filters="--filter !."
           for b in $BROKEN_CRATES; do
             broken_filters="$broken_filters --filter !@amigo-labs/$b"
           done
