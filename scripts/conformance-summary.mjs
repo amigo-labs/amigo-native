@@ -8,7 +8,9 @@
  *   - conformance-summary.md   (PR comment / GITHUB_STEP_SUMMARY)
  *
  * Pass `--crates a,b,c` to restrict the run to a subset (used in CI
- * when only a subset of crates was rebuilt).
+ * when only a subset of crates was rebuilt). Pass `--exclude a,b,c`
+ * to skip specific crates regardless of the filter (used in CI to
+ * skip BROKEN_CRATES that don't currently build).
  */
 
 import { spawnSync } from 'node:child_process'
@@ -24,9 +26,16 @@ const cratesFilter =
     ? new Set(process.argv[cratesArgIdx + 1].split(',').map((s) => s.trim()).filter(Boolean))
     : null
 
+const excludeArgIdx = process.argv.indexOf('--exclude')
+const excludeSet =
+  excludeArgIdx !== -1 && process.argv[excludeArgIdx + 1]
+    ? new Set(process.argv[excludeArgIdx + 1].split(',').map((s) => s.trim()).filter(Boolean))
+    : new Set()
+
 const packages = []
 for (const entry of readdirSync(cratesDir)) {
   if (entry === '_template') continue
+  if (excludeSet.has(entry)) continue
   if (cratesFilter && !cratesFilter.has(entry)) continue
   const dir = join(cratesDir, entry, '__conformance__')
   if (!existsSync(dir) || !statSync(dir).isDirectory()) continue
