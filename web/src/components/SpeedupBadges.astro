@@ -1,0 +1,50 @@
+---
+import type { Pkg } from "~/lib/packages";
+
+interface Props {
+  pkg: Pkg;
+  /** `card` is the compact pill used in PackageCard, `detail` is the larger
+   *  pair shown in the package detail header. */
+  size?: "card" | "detail";
+}
+
+const { pkg, size = "card" } = Astro.props;
+
+// Prefer the structured per-tier breakdown when present. If a crate's benches
+// haven't been re-recorded with `(napi)` / `(wasm)` suffixes yet, fall back
+// to the legacy single string so the dashboard never goes blank.
+const details = pkg.speedupDetails;
+const napi = details?.napi?.label;
+const wasm = details?.wasm?.label;
+const hasSplit = Boolean(napi || wasm);
+
+const compactClasses =
+  size === "card"
+    ? "font-mono text-2xs"
+    : "font-mono text-sm";
+const labelClasses =
+  size === "card"
+    ? "font-mono text-[9px] uppercase tracking-(--tracking-wide)"
+    : "font-mono text-2xs uppercase tracking-(--tracking-wide)";
+---
+
+{
+  hasSplit ? (
+    <div class:list={["flex flex-wrap items-center gap-1.5", compactClasses]}>
+      {napi && (
+        <span class="inline-flex items-center gap-1 rounded-full bg-accent-dim px-1.5 py-0.5 text-accent">
+          <span class={labelClasses}>napi</span>
+          <span>{napi}</span>
+        </span>
+      )}
+      {wasm && (
+        <span class="inline-flex items-center gap-1 rounded-full border border-line bg-bg-sunken px-1.5 py-0.5 text-fg-muted">
+          <span class={labelClasses}>wasm</span>
+          <span>{wasm}</span>
+        </span>
+      )}
+    </div>
+  ) : (
+    <span class:list={["text-accent", compactClasses]}>{pkg.speedup}</span>
+  )
+}

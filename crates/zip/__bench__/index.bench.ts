@@ -1,5 +1,18 @@
 import { bench, describe } from 'vitest'
 import { ZipReader, ZipWriter } from '../index.js'
+// WASM is built as build output, not committed. On a fresh checkout
+// run `pnpm build:wasm` before `pnpm bench` to include the WASM
+// comparator; otherwise the bench skips those entries with a warning.
+let wasmZipReader: typeof ZipReader | null = null
+let wasmZipWriter: typeof ZipWriter | null = null
+try {
+  // @ts-expect-error — generated artifact path; not in source tree
+  const mod = await import('../wasm/pkg/amigo_zip_wasm.js')
+  wasmZipReader = mod.ZipReader
+  wasmZipWriter = mod.ZipWriter
+} catch {
+  console.warn('[bench] WASM artifact missing — run `pnpm build:wasm` to include WASM comparator')
+}
 import AdmZip from 'adm-zip'
 
 function amigoWriteMany(n: number, size: number): Buffer {
@@ -24,7 +37,7 @@ const largeArchive = (() => {
 })()
 
 describe('zip — write 100 x 1KB files', () => {
-  bench('@amigo-labs/zip', () => {
+  bench('@amigo-labs/zip (napi)', () => {
     amigoWriteMany(100, 1024)
   })
   bench('adm-zip', () => {
@@ -33,7 +46,7 @@ describe('zip — write 100 x 1KB files', () => {
 })
 
 describe('zip — write 1 x 10MB file', () => {
-  bench('@amigo-labs/zip', () => {
+  bench('@amigo-labs/zip (napi)', () => {
     const w = new ZipWriter()
     w.add('big.bin', Buffer.alloc(10 * 1024 * 1024, 0x41))
     w.finalize()
@@ -46,7 +59,7 @@ describe('zip — write 1 x 10MB file', () => {
 })
 
 describe('zip — read entries (100 files)', () => {
-  bench('@amigo-labs/zip', () => {
+  bench('@amigo-labs/zip (napi)', () => {
     ZipReader.fromBuffer(smallArchive).entries()
   })
   bench('adm-zip', () => {
@@ -55,10 +68,10 @@ describe('zip — read entries (100 files)', () => {
 })
 
 describe('zip — extract all (100 files)', () => {
-  bench('@amigo-labs/zip (extractAll)', () => {
+  bench('@amigo-labs/zip (napi) (extractAll)', () => {
     ZipReader.fromBuffer(smallArchive).extractAll()
   })
-  bench('@amigo-labs/zip (entries + read loop)', () => {
+  bench('@amigo-labs/zip (napi) (entries + read loop)', () => {
     const r = ZipReader.fromBuffer(smallArchive)
     for (const e of r.entries()) r.read(e.name)
   })
@@ -69,7 +82,7 @@ describe('zip — extract all (100 files)', () => {
 })
 
 describe('zip — extract large (10MB)', () => {
-  bench('@amigo-labs/zip', () => {
+  bench('@amigo-labs/zip (napi)', () => {
     const r = ZipReader.fromBuffer(largeArchive)
     r.read('big.bin')
   })

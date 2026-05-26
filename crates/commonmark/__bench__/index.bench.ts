@@ -1,5 +1,24 @@
 import { bench, describe } from 'vitest'
 import { render, renderBytes, renderFast, renderBytesFast, renderMany } from '../index.js'
+// WASM is built as build output, not committed. On a fresh checkout
+// run `pnpm build:wasm` before `pnpm bench` to include the WASM
+// comparator; otherwise the bench skips those entries with a warning.
+let wasmRender: typeof render | null = null
+let wasmRenderBytes: typeof renderBytes | null = null
+let wasmRenderFast: typeof renderFast | null = null
+let wasmRenderBytesFast: typeof renderBytesFast | null = null
+let wasmRenderMany: typeof renderMany | null = null
+try {
+  // @ts-expect-error — generated artifact path; not in source tree
+  const mod = await import('../wasm/pkg/amigo_commonmark_wasm.js')
+  wasmRender = mod.render
+  wasmRenderBytes = mod.renderBytes
+  wasmRenderFast = mod.renderFast
+  wasmRenderBytesFast = mod.renderBytesFast
+  wasmRenderMany = mod.renderMany
+} catch {
+  console.warn('[bench] WASM artifact missing — run `pnpm build:wasm` to include WASM comparator')
+}
 import { marked } from 'marked'
 import MarkdownIt from 'markdown-it'
 
@@ -101,21 +120,26 @@ const mediumBuf = Buffer.from(medium, 'utf8')
 const largeBuf = Buffer.from(large, 'utf8')
 
 describe(`small (~${Math.round(Buffer.byteLength(small) / 100) / 10} KB)`, () => {
-  bench('@amigo-labs/commonmark render', () => {
+  bench('@amigo-labs/commonmark (napi) render', () => {
     render(small)
   })
-  bench('@amigo-labs/commonmark renderBytes', () => {
+  if (wasmRender) bench('@amigo-labs/commonmark (wasm) render', () => { wasmRender!(small) })
+  bench('@amigo-labs/commonmark (napi) renderBytes', () => {
     renderBytes(smallBuf)
   })
-  bench('@amigo-labs/commonmark render (fast opts)', () => {
+  if (wasmRenderBytes) bench('@amigo-labs/commonmark (wasm) renderBytes', () => { wasmRenderBytes!(smallBuf) })
+  bench('@amigo-labs/commonmark (napi) render (fast opts)', () => {
     render(small, fastOpts)
   })
-  bench('@amigo-labs/commonmark renderFast', () => {
+  if (wasmRender) bench('@amigo-labs/commonmark (wasm) render (fast opts)', () => { wasmRender!(small, fastOpts) })
+  bench('@amigo-labs/commonmark (napi) renderFast', () => {
     renderFast(small)
   })
-  bench('@amigo-labs/commonmark renderBytesFast', () => {
+  if (wasmRenderFast) bench('@amigo-labs/commonmark (wasm) renderFast', () => { wasmRenderFast!(small) })
+  bench('@amigo-labs/commonmark (napi) renderBytesFast', () => {
     renderBytesFast(smallBuf)
   })
+  if (wasmRenderBytesFast) bench('@amigo-labs/commonmark (wasm) renderBytesFast', () => { wasmRenderBytesFast!(smallBuf) })
   bench('marked', () => {
     marked.parse(small)
   })
@@ -125,15 +149,18 @@ describe(`small (~${Math.round(Buffer.byteLength(small) / 100) / 10} KB)`, () =>
 })
 
 describe(`medium (~${Math.round(Buffer.byteLength(medium) / 100) / 10} KB)`, () => {
-  bench('@amigo-labs/commonmark render', () => {
+  bench('@amigo-labs/commonmark (napi) render', () => {
     render(medium)
   })
-  bench('@amigo-labs/commonmark renderBytes', () => {
+  if (wasmRender) bench('@amigo-labs/commonmark (wasm) render', () => { wasmRender!(medium) })
+  bench('@amigo-labs/commonmark (napi) renderBytes', () => {
     renderBytes(mediumBuf)
   })
-  bench('@amigo-labs/commonmark render (fast opts)', () => {
+  if (wasmRenderBytes) bench('@amigo-labs/commonmark (wasm) renderBytes', () => { wasmRenderBytes!(mediumBuf) })
+  bench('@amigo-labs/commonmark (napi) render (fast opts)', () => {
     render(medium, fastOpts)
   })
+  if (wasmRender) bench('@amigo-labs/commonmark (wasm) render (fast opts)', () => { wasmRender!(medium, fastOpts) })
   bench('marked', () => {
     marked.parse(medium)
   })
@@ -143,15 +170,18 @@ describe(`medium (~${Math.round(Buffer.byteLength(medium) / 100) / 10} KB)`, () 
 })
 
 describe(`large (~${Math.round(Buffer.byteLength(large) / 1024)} KB)`, () => {
-  bench('@amigo-labs/commonmark render', () => {
+  bench('@amigo-labs/commonmark (napi) render', () => {
     render(large)
   })
-  bench('@amigo-labs/commonmark renderBytes', () => {
+  if (wasmRender) bench('@amigo-labs/commonmark (wasm) render', () => { wasmRender!(large) })
+  bench('@amigo-labs/commonmark (napi) renderBytes', () => {
     renderBytes(largeBuf)
   })
-  bench('@amigo-labs/commonmark render (fast opts)', () => {
+  if (wasmRenderBytes) bench('@amigo-labs/commonmark (wasm) renderBytes', () => { wasmRenderBytes!(largeBuf) })
+  bench('@amigo-labs/commonmark (napi) render (fast opts)', () => {
     render(large, fastOpts)
   })
+  if (wasmRender) bench('@amigo-labs/commonmark (wasm) render (fast opts)', () => { wasmRender!(large, fastOpts) })
   bench('marked', () => {
     marked.parse(large)
   })
@@ -162,10 +192,11 @@ describe(`large (~${Math.round(Buffer.byteLength(large) / 1024)} KB)`, () => {
 
 describe('batch — renderMany (500 × medium docs)', () => {
   const batch = Array.from({ length: 500 }, () => medium)
-  bench('@amigo-labs/commonmark renderMany (parallel)', () => {
+  bench('@amigo-labs/commonmark (napi) renderMany (parallel)', () => {
     renderMany(batch)
   })
-  bench('@amigo-labs/commonmark per-call loop', () => {
+  if (wasmRenderMany) bench('@amigo-labs/commonmark (wasm) renderMany (parallel)', () => { wasmRenderMany!(batch) })
+  bench('@amigo-labs/commonmark (napi) per-call loop', () => {
     const out: string[] = []
     for (const d of batch) out.push(render(d))
   })

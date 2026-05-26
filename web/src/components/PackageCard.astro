@@ -2,6 +2,7 @@
 import type { Pkg } from "~/lib/packages";
 import { categoryChipClasses } from "~/lib/packages";
 import TargetsPill from "./TargetsPill.astro";
+import SpeedupBadges from "./SpeedupBadges.astro";
 
 interface Props {
   pkg: Pkg;
@@ -38,7 +39,9 @@ const catBadge = categoryChipClasses[pkg.category];
       </span>
       <TargetsPill targets={pkg.targets} />
     </div>
-    <span class="shrink-0 font-mono text-2xs text-accent">{pkg.speedup}</span>
+    <div class="shrink-0">
+      <SpeedupBadges pkg={pkg} size="card" />
+    </div>
   </div>
   <h3
     class="text-lg font-semibold tracking-(--tracking-snug) text-fg transition-colors group-hover:text-accent"

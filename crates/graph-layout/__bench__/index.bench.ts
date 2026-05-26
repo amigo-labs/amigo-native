@@ -1,5 +1,16 @@
 import { bench, describe } from 'vitest'
 import { layout as ours } from '../index.js'
+// WASM is built as build output, not committed. On a fresh checkout
+// run `pnpm build:wasm` before `pnpm bench` to include the WASM
+// comparator; otherwise the bench skips those entries with a warning.
+let wasmOurs: typeof ours | null = null
+try {
+  // @ts-expect-error — generated artifact path; not in source tree
+  const mod = await import('../wasm/pkg/amigo_graph_layout_wasm.js')
+  wasmOurs = mod.layout
+} catch {
+  console.warn('[bench] WASM artifact missing — run `pnpm build:wasm` to include WASM comparator')
+}
 import * as dagre from '@dagrejs/dagre'
 
 function buildSpec(nodeCount: number, edgeCount: number) {
@@ -30,18 +41,20 @@ const SMALL = buildSpec(20, 25)
 const MEDIUM = buildSpec(100, 140)
 
 describe('small (20 nodes, 25 edges)', () => {
-  bench('@amigo-labs/graph-layout', () => {
+  bench('@amigo-labs/graph-layout (napi)', () => {
     ours(SMALL)
   })
+  if (wasmOurs) bench('@amigo-labs/graph-layout (wasm)', () => { wasmOurs!(SMALL) })
   bench('@dagrejs/dagre', () => {
     runDagre(SMALL)
   })
 })
 
 describe('medium (100 nodes, 140 edges)', () => {
-  bench('@amigo-labs/graph-layout', () => {
+  bench('@amigo-labs/graph-layout (napi)', () => {
     ours(MEDIUM)
   })
+  if (wasmOurs) bench('@amigo-labs/graph-layout (wasm)', () => { wasmOurs!(MEDIUM) })
   bench('@dagrejs/dagre', () => {
     runDagre(MEDIUM)
   })

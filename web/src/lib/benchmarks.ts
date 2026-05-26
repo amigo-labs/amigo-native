@@ -62,3 +62,14 @@ export function speedupRatio(entry: BenchEntry, entries: BenchEntry[]): number {
 export function isAmigo(entry: BenchEntry): boolean {
   return entry.name.startsWith("@amigo-labs/");
 }
+
+export type Tier = "napi" | "wasm" | null;
+
+/** The "tier" of an amigo bench entry — which binding produced the number.
+ *  `null` for competitors and for legacy unsuffixed amigo entries. */
+export function entryTier(entry: BenchEntry): Tier {
+  if (!isAmigo(entry)) return null;
+  if (entry.name.includes("(napi)")) return "napi";
+  if (entry.name.includes("(wasm)")) return "wasm";
+  return null;
+}

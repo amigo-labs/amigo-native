@@ -14,14 +14,14 @@
  * other shards untouched.
  */
 
-import { spawnSync } from 'node:child_process'
-import { readdirSync, writeFileSync, statSync, existsSync } from 'node:fs'
+import { spawn, spawnSync } from 'node:child_process'
+import { readdirSync, readFileSync, writeFileSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
 
 function parseArgs(argv) {
-  const args = { crates: null, onlyChanged: false }
+  const args = { crates: null, onlyChanged: false, skipWasmBuild: false }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--crates') {
@@ -30,6 +30,8 @@ function parseArgs(argv) {
       args.crates = a.slice('--crates='.length).split(',').map((s) => s.trim()).filter(Boolean)
     } else if (a === '--only-changed') {
       args.onlyChanged = true
+    } else if (a === '--skip-wasm-build') {
+      args.skipWasmBuild = true
     } else {
       console.error(`Unknown argument: ${a}`)
       process.exit(2)
@@ -95,6 +97,62 @@ if (args.onlyChanged) {
 }
 
 console.log(`Running vitest bench for ${targetCrates.length} crate(s): ${targetCrates.join(', ')}\n`)
+
+// Build WASM artefacts in parallel before vitest spawns so the conditional
+// `await import('../wasm/pkg/...')` inside each bench file resolves instead
+// of falling through to the graceful skip path. Failures are non-blocking —
+// the bench will simply omit the (wasm) entry for that crate.
+function cratesWithWasmBuild(names) {
+  const have = []
+  for (const c of names) {
+    const pkgPath = join(root, 'crates', c, 'package.json')
+    if (!existsSync(pkgPath)) continue
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+      if (pkg?.scripts?.['build:wasm']) have.push(c)
+    } catch {
+      // skip unreadable package.json
+    }
+  }
+  return have
+}
+
+function runBuildWasm(crate) {
+  return new Promise((resolve) => {
+    const proc = spawn('pnpm', ['--filter', `@amigo-labs/${crate}`, 'run', 'build:wasm'], {
+      cwd: root,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' },
+    })
+    let stderr = ''
+    proc.stderr.on('data', (chunk) => { stderr += chunk })
+    proc.on('exit', (code) => {
+      if (code === 0) {
+        resolve({ crate, ok: true })
+      } else {
+        console.warn(`[build:wasm] ${crate} failed (exit ${code}); WASM comparators skipped`)
+        if (stderr) console.warn(stderr.split('\n').slice(0, 5).join('\n'))
+        resolve({ crate, ok: false })
+      }
+    })
+    proc.on('error', (err) => {
+      console.warn(`[build:wasm] ${crate} failed to spawn: ${err.message}; WASM comparators skipped`)
+      resolve({ crate, ok: false })
+    })
+  })
+}
+
+if (args.skipWasmBuild) {
+  console.log('Skipping WASM build (artefacts assumed prebuilt by scripts/build-all-wasm.mjs)\n')
+} else {
+  const wasmCrates = cratesWithWasmBuild(targetCrates)
+  if (wasmCrates.length) {
+    console.log(`Building WASM artefacts for ${wasmCrates.length} crate(s) in parallel: ${wasmCrates.join(', ')}\n`)
+    const wasmResults = await Promise.all(wasmCrates.map(runBuildWasm))
+    const ok = wasmResults.filter((r) => r.ok).length
+    console.log(`WASM build: ${ok}/${wasmResults.length} succeeded\n`)
+  }
+}
 
 const vitestArgs = ['exec', 'vitest', 'bench', '--no-color', '--run']
 // Always scope explicitly so bench-only scaffolding like _ffi-bench/_template

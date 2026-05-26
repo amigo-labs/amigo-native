@@ -1,5 +1,16 @@
 import { bench, describe } from 'vitest'
 import { sanitize as amigoSanitize } from '../index.js'
+// WASM is built as build output, not committed. On a fresh checkout
+// run `pnpm build:wasm` before `pnpm bench` to include the WASM
+// comparator; otherwise the bench skips those entries with a warning.
+let wasmAmigoSanitize: typeof amigoSanitize | null = null
+try {
+  // @ts-expect-error — generated artifact path; not in source tree
+  const mod = await import('../wasm/pkg/amigo_sanitize_html_wasm.js')
+  wasmAmigoSanitize = mod.sanitize
+} catch {
+  console.warn('[bench] WASM artifact missing — run `pnpm build:wasm` to include WASM comparator')
+}
 import sanitizeHtml from 'sanitize-html'
 
 let DOMPurify: { sanitize: (html: string) => string } | null = null
@@ -38,9 +49,10 @@ const largeParagraphs = Array.from(
 ).join('\n')
 
 describe('sanitize - small safe HTML (~200 chars)', () => {
-  bench('@amigo-labs/sanitize-html', () => {
+  bench('@amigo-labs/sanitize-html (napi)', () => {
     amigoSanitize(smallSafe)
   })
+  if (wasmAmigoSanitize) bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(smallSafe) })
   bench('sanitize-html (npm)', () => {
     sanitizeHtml(smallSafe)
   })
@@ -53,9 +65,10 @@ describe('sanitize - small safe HTML (~200 chars)', () => {
 })
 
 describe('sanitize - medium with XSS (~2 KB)', () => {
-  bench('@amigo-labs/sanitize-html', () => {
+  bench('@amigo-labs/sanitize-html (napi)', () => {
     amigoSanitize(mediumXss)
   })
+  if (wasmAmigoSanitize) bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(mediumXss) })
   bench('sanitize-html (npm)', () => {
     sanitizeHtml(mediumXss)
   })
@@ -68,9 +81,10 @@ describe('sanitize - medium with XSS (~2 KB)', () => {
 })
 
 describe('sanitize - large document (~100 KB)', () => {
-  bench('@amigo-labs/sanitize-html', () => {
+  bench('@amigo-labs/sanitize-html (napi)', () => {
     amigoSanitize(largeParagraphs)
   })
+  if (wasmAmigoSanitize) bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(largeParagraphs) })
   bench('sanitize-html (npm)', () => {
     sanitizeHtml(largeParagraphs)
   })

@@ -15,12 +15,33 @@ export type Category =
 
 export type Target = "node" | "browser";
 
+/** Per-tier speedup payload emitted by `scripts/generate-report.mjs#computeSpeedupDetails`.
+ *  `vsJs` is the median ratio of amigo hz vs. best competitor hz; `hz` is the
+ *  geometric-mean throughput across the crate's suites — useful as a single
+ *  absolute number when sizing a badge. */
+export interface TierSpeedup {
+  label: string;
+  hz: number | null;
+  vsJs: number;
+}
+
+export interface SpeedupDetails {
+  napi?: TierSpeedup;
+  wasm?: TierSpeedup;
+}
+
 export interface Pkg {
   name: string;
   title: string;
   category: Category;
   description: string;
+  /** Legacy single-string field — prefers the napi tier, falls back to wasm
+   *  or to the pre-Phase-3 algorithm for crates whose benches don't yet
+   *  carry the `(napi)` / `(wasm)` suffix. */
   speedup: string;
+  /** Per-tier breakdown when the bench file produced both `(napi)` and
+   *  `(wasm)` entries. Absent for Node-only crates and for legacy benches. */
+  speedupDetails?: SpeedupDetails;
   /** Bundler-target capability. `["node"]` means the package ships only the
    * napi binary (server-only tier); `["node", "browser"]` means it also
    * carries a WASM build picked up via package.json conditional exports. */

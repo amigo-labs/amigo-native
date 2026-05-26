@@ -16,12 +16,14 @@ import {
   existsSync,
   mkdtempSync,
   readdirSync,
+  readFileSync,
   rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { gzipSync } from 'node:zlib'
 
 import { loadCrates } from './sync-registry.mjs'
 
@@ -60,6 +62,44 @@ function measureAmigoSize(crateName) {
   }
 
   return total
+}
+
+/**
+ * Sum the wasm-pack artefacts that actually ship with the npm tarball.
+ * Mirrors the `package.json#files` whitelist (`wasm/pkg/*.{js,wasm,d.ts}`).
+ * Returns null if no pkg/ directory exists yet (e.g. `pnpm build:wasm` not run).
+ */
+function measureWasmSize(crateName) {
+  const pkgDir = join(process.cwd(), 'crates', crateName, 'wasm', 'pkg')
+  if (!existsSync(pkgDir)) return null
+  let total = 0
+  for (const file of readdirSync(pkgDir)) {
+    if (
+      file.endsWith('.wasm') ||
+      file.endsWith('_bg.js') ||
+      file.endsWith('.d.ts') ||
+      // The main JS wrapper: amigo_<name>_wasm.js — matches both with and
+      // without underscores in the crate name.
+      /^amigo_[\w-]+_wasm\.js$/.test(file)
+    ) {
+      total += statSync(join(pkgDir, file)).size
+    }
+  }
+  return total > 0 ? total : null
+}
+
+/**
+ * Gzip the WASM `*_bg.wasm` binary in isolation — this is what crosses the
+ * wire when a browser fetches the artefact. The JS wrapper is tiny and the
+ * `.d.ts` is dev-only, so the gzipped binary is the metric we surface.
+ */
+function measureWasmGzippedSize(crateName) {
+  const pkgDir = join(process.cwd(), 'crates', crateName, 'wasm', 'pkg')
+  if (!existsSync(pkgDir)) return null
+  const bg = readdirSync(pkgDir).find((f) => f.endsWith('_bg.wasm'))
+  if (!bg) return null
+  const bytes = readFileSync(join(pkgDir, bg))
+  return gzipSync(bytes, { level: 9 }).byteLength
 }
 
 function measureNpmInstallSize(packageName) {
@@ -101,8 +141,21 @@ for (const { dir: name, amigo } of crates) {
     continue
   }
   results[name] = {}
-  results[name][`@amigo-labs/${name}`] = { installSize: amigoSize, type: 'binary+shim' }
-  console.log(`  @amigo-labs/${name}: ${formatBytes(amigoSize)}`)
+  const amigoEntry = { installSize: amigoSize, type: 'binary+shim', napi: amigoSize }
+  const wasmSize = measureWasmSize(name)
+  const wasmGz = measureWasmGzippedSize(name)
+  if (wasmSize !== null) {
+    amigoEntry.wasm = wasmSize
+    if (wasmGz !== null) amigoEntry.wasmGzipped = wasmGz
+  }
+  results[name][`@amigo-labs/${name}`] = amigoEntry
+  const wasmStr =
+    wasmSize !== null
+      ? wasmGz !== null
+        ? `, wasm: ${formatBytes(wasmSize)} (gz ${formatBytes(wasmGz)})`
+        : `, wasm: ${formatBytes(wasmSize)}`
+      : ''
+  console.log(`  @amigo-labs/${name}: ${formatBytes(amigoSize)}${wasmStr}`)
 
   for (const pkg of amigo.competitors) {
     const displayName = pkg.replace(/@[\d.]+$/, '')

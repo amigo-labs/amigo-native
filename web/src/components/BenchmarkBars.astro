@@ -1,6 +1,6 @@
 ---
 import type { BenchSuite } from "~/lib/benchmarks";
-import { formatHz, isAmigo, speedupRatio } from "~/lib/benchmarks";
+import { entryTier, formatHz, isAmigo, speedupRatio } from "~/lib/benchmarks";
 
 interface Props {
   suite: BenchSuite;
@@ -43,17 +43,41 @@ const winnerRatio = slowest ? winner.hz / slowest.hz : 1;
     {sorted.map((entry) => {
       const pct = Math.max(2, (entry.hz / maxHz) * 100);
       const amigo = isAmigo(entry);
+      const tier = entryTier(entry);
       const ratio = speedupRatio(entry, sorted);
+      // Strip the `(napi)` / `(wasm)` tag from the display name — it's
+      // shown as a coloured sub-label so users see at a glance which tier
+      // produced each bar.
+      const displayName = amigo
+        ? entry.name.replace(/\s*\((?:napi|wasm)\)\s*/g, " ").replace(/\s+/g, " ").trim()
+        : entry.name;
+      const barClass = !amigo
+        ? "bg-line-strong"
+        : tier === "wasm"
+          ? "bg-accent/55"
+          : "bg-accent";
       return (
         <li class="flex flex-col gap-1">
           <div class="flex items-baseline justify-between gap-3 text-sm">
             <span
               class:list={[
-                "truncate",
+                "flex items-center gap-1.5 min-w-0",
                 amigo ? "text-fg font-medium" : "text-fg-muted",
               ]}
             >
-              {entry.name}
+              <span class="truncate">{displayName}</span>
+              {tier && (
+                <span
+                  class:list={[
+                    "shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-(--tracking-wide)",
+                    tier === "napi"
+                      ? "bg-accent-dim text-accent"
+                      : "border border-line bg-bg-sunken text-fg-muted",
+                  ]}
+                >
+                  {tier}
+                </span>
+              )}
             </span>
             <span class="font-mono text-xs text-fg-muted tabular-nums">
               {formatHz(entry.hz)} hz
@@ -71,10 +95,7 @@ const winnerRatio = slowest ? winner.hz / slowest.hz : 1;
             aria-label={`${entry.name}: ${formatHz(entry.hz)} hz`}
           >
             <div
-              class:list={[
-                "h-full rounded-full transition-[width]",
-                amigo ? "bg-accent" : "bg-line-strong",
-              ]}
+              class:list={["h-full rounded-full transition-[width]", barClass]}
               style={`width: ${pct}%`}
             />
           </div>

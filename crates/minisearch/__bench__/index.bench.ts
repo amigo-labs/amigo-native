@@ -1,5 +1,16 @@
 import { bench, describe } from 'vitest'
 import { MiniSearch } from '../index.js'
+// WASM is built as build output, not committed. On a fresh checkout
+// run `pnpm build:wasm` before `pnpm bench` to include the WASM
+// comparator; otherwise the bench skips those entries with a warning.
+let wasmMiniSearch: typeof MiniSearch | null = null
+try {
+  // @ts-expect-error — generated artifact path; not in source tree
+  const mod = await import('../wasm/pkg/amigo_minisearch_wasm.js')
+  wasmMiniSearch = mod.MiniSearch
+} catch {
+  console.warn('[bench] WASM artifact missing — run `pnpm build:wasm` to include WASM comparator')
+}
 import UpstreamMiniSearch from 'minisearch'
 
 const DOCS = Array.from({ length: 1000 }, (_, i) => ({
@@ -8,7 +19,7 @@ const DOCS = Array.from({ length: 1000 }, (_, i) => ({
 }))
 
 describe('index build (1000 docs)', () => {
-  bench('@amigo-labs/minisearch', () => {
+  bench('@amigo-labs/minisearch (napi)', () => {
     const m = new MiniSearch()
     m.addAll(DOCS)
   })
@@ -37,7 +48,7 @@ const upstream = (() => {
 })()
 
 describe('query (1000 docs indexed)', () => {
-  bench('@amigo-labs/minisearch search', () => {
+  bench('@amigo-labs/minisearch (napi) search', () => {
     ours.search('alpha')
   })
   bench('minisearch search', () => {
@@ -46,7 +57,7 @@ describe('query (1000 docs indexed)', () => {
 })
 
 describe('autosuggest', () => {
-  bench('@amigo-labs/minisearch autoSuggest', () => {
+  bench('@amigo-labs/minisearch (napi) autoSuggest', () => {
     ours.autoSuggest('alph')
   })
   bench('minisearch autoSuggest', () => {
