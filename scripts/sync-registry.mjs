@@ -94,6 +94,14 @@ function buildPackagesJson(crates, existing) {
     if (postMortemSet.has(dir)) {
       entry.postMortemUrl = `/post-mortems/${dir}.md`
     }
+    // Per-target benchmark detail (label / hz / vsJs) is produced by the
+    // benchmark report pipeline (generate-report.mjs) and is not derivable
+    // from crate metadata. Preserve it across sync — like `speedup` above —
+    // so a `bench:report` refresh (often committed with [skip ci]) isn't
+    // erased on the next registry sync.
+    if (prev?.speedupDetails) {
+      entry.speedupDetails = prev.speedupDetails
+    }
     return entry
   })
   // Refresh marquee counters in place. PACKAGES stays at total crate count;

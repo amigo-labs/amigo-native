@@ -23,6 +23,10 @@ describe('index build (1000 docs)', () => {
     const idx = new Bm25Index()
     idx.addAll(CORPUS.map((text, i) => ({ id: `${i}`, text })))
   })
+  if (wasmBm25Index) bench('@amigo-labs/bm25 (wasm) addAll', () => {
+    const idx = new wasmBm25Index!()
+    idx.addAll(CORPUS.map((text, i) => ({ id: `${i}`, text })))
+  })
 })
 
 const builtIdx = (() => {
@@ -31,9 +35,20 @@ const builtIdx = (() => {
   return idx
 })()
 
+const wasmBuiltIdx = wasmBm25Index
+  ? (() => {
+      const idx = new wasmBm25Index!()
+      idx.addAll(CORPUS.map((text, i) => ({ id: `${i}`, text })))
+      return idx
+    })()
+  : null
+
 describe('query (1000 docs indexed)', () => {
   bench('@amigo-labs/bm25 (napi) search', () => {
     builtIdx.search('alpha')
+  })
+  if (wasmBuiltIdx) bench('@amigo-labs/bm25 (wasm) search', () => {
+    wasmBuiltIdx.search('alpha')
   })
   bench('okapibm25 (rebuild every query)', () => {
     BM25(CORPUS, ['alpha'])

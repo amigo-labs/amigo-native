@@ -23,6 +23,10 @@ describe('index build (1000 docs)', () => {
     const m = new MiniSearch()
     m.addAll(DOCS)
   })
+  if (wasmMiniSearch) bench('@amigo-labs/minisearch (wasm)', () => {
+    const m = new wasmMiniSearch!()
+    m.addAll(DOCS)
+  })
   bench('minisearch', () => {
     const m = new UpstreamMiniSearch({
       fields: ['text'],
@@ -47,9 +51,20 @@ const upstream = (() => {
   return m
 })()
 
+const wasmOurs = wasmMiniSearch
+  ? (() => {
+      const m = new wasmMiniSearch!()
+      m.addAll(DOCS)
+      return m
+    })()
+  : null
+
 describe('query (1000 docs indexed)', () => {
   bench('@amigo-labs/minisearch (napi) search', () => {
     ours.search('alpha')
+  })
+  if (wasmOurs) bench('@amigo-labs/minisearch (wasm) search', () => {
+    wasmOurs.search('alpha')
   })
   bench('minisearch search', () => {
     upstream.search('alpha')
@@ -59,6 +74,9 @@ describe('query (1000 docs indexed)', () => {
 describe('autosuggest', () => {
   bench('@amigo-labs/minisearch (napi) autoSuggest', () => {
     ours.autoSuggest('alph')
+  })
+  if (wasmOurs) bench('@amigo-labs/minisearch (wasm) autoSuggest', () => {
+    wasmOurs.autoSuggest('alph')
   })
   bench('minisearch autoSuggest', () => {
     upstream.autoSuggest('alph')

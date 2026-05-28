@@ -103,6 +103,11 @@ describe('xxh32 batch - 1000 × 64 bytes', () => {
     for (const buf of batchInputs) h.update(buf)
     h.digest()
   })
+  if (wasmXxh32Hasher) bench('@amigo-labs/xxhash (wasm) (streaming)', () => {
+    const h = new wasmXxh32Hasher!()
+    for (const buf of batchInputs) h.update(buf)
+    h.digest()
+  })
   bench('xxhash-wasm (loop)', () => {
     for (const buf of batchInputs) wasmHasher.h32Raw(buf)
   })
@@ -118,6 +123,11 @@ describe('xxh3_64 batch - 1000 × 64 bytes', () => {
   if (wasmAmigoXxh3Many) bench('@amigo-labs/xxhash (wasm) (many, Buffer in/out)', () => { wasmAmigoXxh3Many!(batchPacked, 64) })
   bench('@amigo-labs/xxhash (napi) (streaming)', () => {
     const h = new Xxh3Hasher()
+    for (const buf of batchInputs) h.update(buf)
+    h.digest()
+  })
+  if (wasmXxh3Hasher) bench('@amigo-labs/xxhash (wasm) (streaming)', () => {
+    const h = new wasmXxh3Hasher!()
     for (const buf of batchInputs) h.update(buf)
     h.digest()
   })
