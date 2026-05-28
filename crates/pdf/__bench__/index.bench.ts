@@ -64,4 +64,5 @@ describe('batch 100 labels', () => {
   bench('@amigo-labs/pdf (napi) generateMany', () => {
     generateMany(Array.from({ length: 100 }, () => SIMPLE_LABEL))
   })
+  if (wasmGenerateMany) bench('@amigo-labs/pdf (wasm) generateMany', () => { wasmGenerateMany!(Array.from({ length: 100 }, () => SIMPLE_LABEL)) })
 })

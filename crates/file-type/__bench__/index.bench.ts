@@ -3,13 +3,14 @@ import { fileTypeFromBufferSync as amigoSync, fileTypeFromBuffer as amigoAsync }
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
 // comparator; otherwise the bench skips those entries with a warning.
+// Only the sync variant ships in WASM — the async `fileTypeFromBuffer`
+// has no WASM counterpart (no thread pool in the browser), so there is
+// no `(wasm) (async)` comparator to bench.
 let wasmAmigoSync: typeof amigoSync | null = null
-let wasmAmigoAsync: typeof amigoAsync | null = null
 try {
   // @ts-expect-error — generated artifact path; not in source tree
   const mod = await import('../wasm/pkg/amigo_file_type_wasm.js')
   wasmAmigoSync = mod.fileTypeFromBufferSync
-  wasmAmigoAsync = mod.fileTypeFromBuffer
 } catch {
   console.warn('[bench] WASM artifact missing — run `pnpm build:wasm` to include WASM comparator')
 }

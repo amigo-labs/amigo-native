@@ -36,9 +36,27 @@ const largeArchive = (() => {
   return w.finalize()
 })()
 
+// The WASM `ZipReader` takes its source buffer via the constructor; the
+// napi build exposes the static `fromBuffer` factory instead. Bridge the
+// two shapes so the WASM comparator can read the same fixtures.
+type WasmReaderCtor = { new (buf: Uint8Array): InstanceType<typeof ZipReader> }
+const wasmReaderFrom = wasmZipReader
+  ? (buf: Buffer) => new (wasmZipReader! as unknown as WasmReaderCtor)(buf)
+  : null
+
+function wasmWriteMany(n: number, size: number): void {
+  const w = new wasmZipWriter!()
+  const body = Buffer.alloc(size, 0x41)
+  for (let i = 0; i < n; i++) w.add(`file-${i}.bin`, body)
+  w.finalize()
+}
+
 describe('zip — write 100 x 1KB files', () => {
   bench('@amigo-labs/zip (napi)', () => {
     amigoWriteMany(100, 1024)
+  })
+  if (wasmZipWriter) bench('@amigo-labs/zip (wasm)', () => {
+    wasmWriteMany(100, 1024)
   })
   bench('adm-zip', () => {
     admWriteMany(100, 1024)
@@ -48,6 +66,11 @@ describe('zip — write 100 x 1KB files', () => {
 describe('zip — write 1 x 10MB file', () => {
   bench('@amigo-labs/zip (napi)', () => {
     const w = new ZipWriter()
+    w.add('big.bin', Buffer.alloc(10 * 1024 * 1024, 0x41))
+    w.finalize()
+  })
+  if (wasmZipWriter) bench('@amigo-labs/zip (wasm)', () => {
+    const w = new wasmZipWriter!()
     w.add('big.bin', Buffer.alloc(10 * 1024 * 1024, 0x41))
     w.finalize()
   })
@@ -62,6 +85,9 @@ describe('zip — read entries (100 files)', () => {
   bench('@amigo-labs/zip (napi)', () => {
     ZipReader.fromBuffer(smallArchive).entries()
   })
+  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm)', () => {
+    wasmReaderFrom(smallArchive).entries()
+  })
   bench('adm-zip', () => {
     new AdmZip(smallArchive).getEntries()
   })
@@ -75,6 +101,13 @@ describe('zip — extract all (100 files)', () => {
     const r = ZipReader.fromBuffer(smallArchive)
     for (const e of r.entries()) r.read(e.name)
   })
+  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm) (extractAll)', () => {
+    wasmReaderFrom(smallArchive).extractAll()
+  })
+  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm) (entries + read loop)', () => {
+    const r = wasmReaderFrom(smallArchive)
+    for (const e of r.entries()) r.read(e.name)
+  })
   bench('adm-zip', () => {
     const a = new AdmZip(smallArchive)
     for (const e of a.getEntries()) e.getData()
@@ -84,6 +117,10 @@ describe('zip — extract all (100 files)', () => {
 describe('zip — extract large (10MB)', () => {
   bench('@amigo-labs/zip (napi)', () => {
     const r = ZipReader.fromBuffer(largeArchive)
+    r.read('big.bin')
+  })
+  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm)', () => {
+    const r = wasmReaderFrom(largeArchive)
     r.read('big.bin')
   })
   bench('adm-zip', () => {
