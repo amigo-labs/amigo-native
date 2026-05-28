@@ -1,25 +1,25 @@
 {
   "crate": "stemmer",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-05-28T21:42:41.414Z",
+  "commit": "45d29b4",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.16.0",
   "suites": [
     {
       "file": "crates/stemmer/__bench__/index.bench.ts",
       "name": "stemmer — stemMany × 1000",
       "entries": [
         {
-          "name": "@amigo-labs/stemmer",
-          "hz": 1911.1,
-          "rme": 3.53,
-          "samples": 956
+          "name": "@amigo-labs/stemmer (napi)",
+          "hz": 1832.05,
+          "rme": 3.97,
+          "samples": 917
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 257.56,
-          "rme": 2.82,
-          "samples": 129
+          "hz": 260.73,
+          "rme": 1.86,
+          "samples": 131
         }
       ]
     },
@@ -28,15 +28,15 @@
       "name": "stemmer — stemMany × 10000",
       "entries": [
         {
-          "name": "@amigo-labs/stemmer",
-          "hz": 198.32,
+          "name": "@amigo-labs/stemmer (napi)",
+          "hz": 190.15,
           "rme": 0.16,
-          "samples": 100
+          "samples": 96
         },
         {
           "name": "natural.PorterStemmer (loop)",
-          "hz": 26.5161,
-          "rme": 0.84,
+          "hz": 26.669,
+          "rme": 0.28,
           "samples": 14
         }
       ]
@@ -46,16 +46,16 @@
       "name": "stemmer — tokenizeAndStem 10 KB doc",
       "entries": [
         {
-          "name": "@amigo-labs/stemmer",
-          "hz": 1359.73,
-          "rme": 0.2,
-          "samples": 680
+          "name": "@amigo-labs/stemmer (napi)",
+          "hz": 1312.69,
+          "rme": 0.18,
+          "samples": 657
         },
         {
           "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 169.86,
-          "rme": 0.35,
-          "samples": 85
+          "hz": 172.22,
+          "rme": 0.4,
+          "samples": 87
         }
       ]
     },
@@ -64,15 +64,15 @@
       "name": "stemmer — tokenizeAndStem 100 KB doc",
       "entries": [
         {
-          "name": "@amigo-labs/stemmer",
-          "hz": 139.33,
-          "rme": 0.13,
-          "samples": 70
+          "name": "@amigo-labs/stemmer (napi)",
+          "hz": 133.1,
+          "rme": 0.21,
+          "samples": 67
         },
         {
           "name": "natural.PorterStemmer.tokenizeAndStem",
-          "hz": 16.7165,
-          "rme": 0.86,
+          "hz": 16.945,
+          "rme": 0.22,
           "samples": 10
         }
       ]

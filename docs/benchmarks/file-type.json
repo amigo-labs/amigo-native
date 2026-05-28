@@ -1,25 +1,25 @@
 {
   "crate": "file-type",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-05-28T21:42:41.414Z",
+  "commit": "45d29b4",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.16.0",
   "suites": [
     {
       "file": "crates/file-type/__bench__/index.bench.ts",
       "name": "file-type — small header (12 bytes PNG)",
       "entries": [
         {
-          "name": "@amigo-labs/file-type (sync)",
-          "hz": 1370124.81,
-          "rme": 0.19,
-          "samples": 685063
+          "name": "@amigo-labs/file-type (napi) (sync)",
+          "hz": 1316065.61,
+          "rme": 0.2,
+          "samples": 658033
         },
         {
           "name": "file-type (upstream async)",
-          "hz": 54829.92,
-          "rme": 0.55,
-          "samples": 27415
+          "hz": 57065.86,
+          "rme": 0.65,
+          "samples": 28533
         }
       ]
     },
@@ -28,16 +28,16 @@
       "name": "file-type — medium JPEG buffer (100KB)",
       "entries": [
         {
-          "name": "@amigo-labs/file-type (sync)",
-          "hz": 1353178.21,
-          "rme": 0.15,
-          "samples": 676590
+          "name": "@amigo-labs/file-type (napi) (sync)",
+          "hz": 1337039.15,
+          "rme": 0.17,
+          "samples": 668520
         },
         {
           "name": "file-type (upstream async)",
-          "hz": 62277.89,
-          "rme": 2.96,
-          "samples": 31139
+          "hz": 62007.26,
+          "rme": 3.04,
+          "samples": 31004
         }
       ]
     },
@@ -46,22 +46,22 @@
       "name": "file-type — large MP4 buffer (10MB)",
       "entries": [
         {
-          "name": "@amigo-labs/file-type (sync)",
-          "hz": 1256786.21,
-          "rme": 0.27,
-          "samples": 628394
+          "name": "@amigo-labs/file-type (napi) (sync)",
+          "hz": 1215771.46,
+          "rme": 0.15,
+          "samples": 607886
         },
         {
-          "name": "@amigo-labs/file-type (async)",
-          "hz": 28025.94,
-          "rme": 0.26,
-          "samples": 14014
+          "name": "@amigo-labs/file-type (napi) (async)",
+          "hz": 25217.52,
+          "rme": 0.21,
+          "samples": 12609
         },
         {
           "name": "file-type (upstream async)",
-          "hz": 1000.19,
-          "rme": 5.58,
-          "samples": 503
+          "hz": 1031.44,
+          "rme": 5.5,
+          "samples": 517
         }
       ]
     }

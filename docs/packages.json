@@ -83,7 +83,14 @@
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bm25",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bm25",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bm25/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bm25/README.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "13× faster",
+          "hz": 2276,
+          "vsJs": 13.14
+        }
+      }
     },
     {
       "name": "commonmark",
@@ -112,7 +119,7 @@
       "title": "CSV",
       "category": "document",
       "description": "CSV parsing and serialization via BurntSushi's csv crate.",
-      "speedup": "1.51–1.95× faster",
+      "speedup": "1.49–1.88× faster",
       "targets": [
         "node",
         "browser"
@@ -120,7 +127,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/csv",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/csv",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/csv/README.md",
-      "perfReviewUrl": "/perf-review/csv.md"
+      "perfReviewUrl": "/perf-review/csv.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "1.49–1.88× faster",
+          "hz": 284,
+          "vsJs": 1.86
+        }
+      }
     },
     {
       "name": "deepmerge",
@@ -172,7 +186,7 @@
       "title": "File Type",
       "category": "util",
       "description": "Magic-byte file-type detection via the Rust infer crate.",
-      "speedup": "22–25× faster",
+      "speedup": "22–1179× faster",
       "targets": [
         "node",
         "browser"
@@ -180,7 +194,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/file-type",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/file-type",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/file-type/README.md",
-      "perfReviewUrl": "/perf-review/file-type.md"
+      "perfReviewUrl": "/perf-review/file-type.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "22–1179× faster",
+          "hz": 481941,
+          "vsJs": 24.45
+        }
+      }
     },
     {
       "name": "force-layout",
@@ -332,7 +353,7 @@
       "title": "Minisearch",
       "category": "search",
       "description": "Tiny in-memory full-text search with prefix autocomplete. Shares Rust search-core with @amigo-labs/bm25.",
-      "speedup": "1.2–49× faster",
+      "speedup": "1.2–51× faster",
       "targets": [
         "node",
         "browser"
@@ -340,7 +361,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/minisearch",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/minisearch",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/minisearch/README.md",
-      "perfReviewUrl": "/perf-review/minisearch.md"
+      "perfReviewUrl": "/perf-review/minisearch.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "1.2–51× faster",
+          "hz": 9178,
+          "vsJs": 3.72
+        }
+      }
     },
     {
       "name": "pdf",
@@ -457,14 +485,21 @@
       "title": "Stemmer",
       "category": "text",
       "description": "Porter/Snowball stemming via rust-stemmers. Batch-only API — single-word calls are intentionally not exposed.",
-      "speedup": "7.4–8.3× faster",
+      "speedup": "7–7.9× faster",
       "targets": [
         "node",
         "browser"
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/stemmer",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/stemmer",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/stemmer/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/stemmer/README.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "7–7.9× faster",
+          "hz": 497,
+          "vsJs": 7.62
+        }
+      }
     },
     {
       "name": "svgo",
@@ -560,7 +595,7 @@
       "title": "XXHash",
       "category": "crypto",
       "description": "XXH32, XXH64, and XXH3 with batch + streaming support.",
-      "speedup": "up to 2.8× faster / 2.6× slower",
+      "speedup": "up to 6.6× faster / 3.4× slower",
       "targets": [
         "node",
         "browser"
@@ -568,14 +603,21 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xxhash",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xxhash",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xxhash/README.md",
-      "perfReviewUrl": "/perf-review/xxhash.md"
+      "perfReviewUrl": "/perf-review/xxhash.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "up to 6.6× faster / 3.4× slower",
+          "hz": 26972,
+          "vsJs": 1.18
+        }
+      }
     },
     {
       "name": "zip",
       "title": "ZIP",
       "category": "archive",
       "description": "ZIP archive read/write via the zip Rust crate.",
-      "speedup": "up to 13× faster / 2.2× slower",
+      "speedup": "up to 12× faster / 2.2× slower",
       "targets": [
         "node",
         "browser"
@@ -586,9 +628,9 @@
       "perfReviewUrl": "/perf-review/zip.md",
       "speedupDetails": {
         "napi": {
-          "label": "up to 13× faster / 2.2× slower",
-          "hz": 787,
-          "vsJs": 5.74
+          "label": "up to 12× faster / 2.2× slower",
+          "hz": 759,
+          "vsJs": 5.35
         }
       }
     },

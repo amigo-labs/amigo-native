@@ -1,25 +1,25 @@
 {
   "crate": "minisearch",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-05-28T21:42:41.414Z",
+  "commit": "45d29b4",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.16.0",
   "suites": [
     {
       "file": "crates/minisearch/__bench__/index.bench.ts",
       "name": "index build (1000 docs)",
       "entries": [
         {
-          "name": "@amigo-labs/minisearch",
-          "hz": 337.74,
-          "rme": 0.63,
+          "name": "@amigo-labs/minisearch (napi)",
+          "hz": 336.78,
+          "rme": 0.75,
           "samples": 169
         },
         {
           "name": "minisearch",
-          "hz": 280.42,
-          "rme": 2.13,
-          "samples": 141
+          "hz": 279.54,
+          "rme": 2.11,
+          "samples": 140
         }
       ]
     },
@@ -28,16 +28,16 @@
       "name": "query (1000 docs indexed)",
       "entries": [
         {
-          "name": "@amigo-labs/minisearch search",
-          "hz": 18091.15,
-          "rme": 0.13,
-          "samples": 9046
+          "name": "@amigo-labs/minisearch (napi) search",
+          "hz": 18030.21,
+          "rme": 0.12,
+          "samples": 9016
         },
         {
           "name": "minisearch search",
-          "hz": 4650.61,
-          "rme": 1.41,
-          "samples": 2327
+          "hz": 4851.09,
+          "rme": 0.84,
+          "samples": 2426
         }
       ]
     },
@@ -46,16 +46,16 @@
       "name": "autosuggest",
       "entries": [
         {
-          "name": "@amigo-labs/minisearch autoSuggest",
-          "hz": 125131.88,
-          "rme": 0.17,
-          "samples": 62566
+          "name": "@amigo-labs/minisearch (napi) autoSuggest",
+          "hz": 127304.1,
+          "rme": 0.13,
+          "samples": 63653
         },
         {
           "name": "minisearch autoSuggest",
-          "hz": 2556.58,
-          "rme": 0.63,
-          "samples": 1279
+          "hz": 2520.53,
+          "rme": 0.62,
+          "samples": 1261
         }
       ]
     }
