@@ -52,10 +52,10 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.7.0",
     "fast-check": "^4.8.0",
     "okapibm25": "^1.2.2",
-    "vitest": "^4.1.7",
+    "vitest": "^4.1.8",
     "wink-bm25-text-search": "^3.1.0",
     "wink-nlp-utils": "^2.1.0"
   },

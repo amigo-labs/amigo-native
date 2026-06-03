@@ -51,11 +51,11 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.7.0",
     "fast-check": "^4.8.0",
     "psl": "^1.9.0",
-    "tldts": "^7.4.0",
-    "vitest": "^4.1.7"
+    "tldts": "^7.4.2",
+    "vitest": "^4.1.8"
   },
   "license": "MIT",
   "repository": {

@@ -52,11 +52,11 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.7.0",
     "fast-check": "^4.8.0",
-    "fuse.js": "^7.0.0",
+    "fuse.js": "^7.4.1",
     "fuzzysort": "^3.0.0",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   },
   "license": "MIT",
   "repository": {
