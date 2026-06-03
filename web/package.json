@@ -23,6 +23,6 @@
     "marked": "^18.0.4",
     "preact": "^10.27.0",
     "tailwindcss": "^4.1.13",
-    "typescript": "^5.9.2"
+    "typescript": "^6.0.3"
   }
 }
