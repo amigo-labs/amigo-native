@@ -61,13 +61,13 @@
     "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.7.0",
     "@types/adm-zip": "^0.5.7",
-    "@types/yauzl": "^2.10.3",
+    "@types/yauzl": "^3.3.0",
     "adm-zip": "^0.5.16",
     "fast-check": "^4.8.0",
-    "vitest": "^4.1.7",
-    "yauzl": "^3.3.1"
+    "vitest": "^4.1.8",
+    "yauzl": "^3.4.0"
   },
   "license": "MIT",
   "repository": {
