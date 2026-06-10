@@ -1,9 +1,9 @@
 {
   "crate": "slugify",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-06-10T15:20:03.705Z",
+  "commit": "8c743bf",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.16.0",
   "suites": [
     {
       "file": "crates/slugify/__bench__/index.bench.ts",
@@ -11,15 +11,15 @@
       "entries": [
         {
           "name": "@amigo-labs/slugify (napi)",
-          "hz": 1444827.82,
-          "rme": 0.39,
-          "samples": 722414
+          "hz": 1371186.37,
+          "rme": 0.66,
+          "samples": 685594
         },
         {
           "name": "slugify (npm)",
-          "hz": 493902.71,
-          "rme": 0.25,
-          "samples": 246952
+          "hz": 483117.73,
+          "rme": 1.06,
+          "samples": 241559
         }
       ]
     },
@@ -29,15 +29,15 @@
       "entries": [
         {
           "name": "@amigo-labs/slugify (napi)",
-          "hz": 130435.09,
-          "rme": 0.14,
-          "samples": 65218
+          "hz": 120542.11,
+          "rme": 0.18,
+          "samples": 60272
         },
         {
           "name": "slugify (npm)",
-          "hz": 21568.98,
-          "rme": 0.32,
-          "samples": 10785
+          "hz": 21907.81,
+          "rme": 0.34,
+          "samples": 10954
         }
       ]
     },
@@ -47,15 +47,15 @@
       "entries": [
         {
           "name": "@amigo-labs/slugify (napi)",
-          "hz": 293083.19,
-          "rme": 0.1,
-          "samples": 146542
+          "hz": 275090.22,
+          "rme": 0.19,
+          "samples": 137546
         },
         {
           "name": "slugify (npm)",
-          "hz": 113971.39,
-          "rme": 0.32,
-          "samples": 56986
+          "hz": 105420.15,
+          "rme": 0.33,
+          "samples": 52711
         }
       ]
     }

@@ -1,25 +1,25 @@
 {
   "crate": "pdf-parse",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-06-10T15:20:03.705Z",
+  "commit": "8c743bf",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.16.0",
   "suites": [
     {
       "file": "crates/pdf-parse/__bench__/index.bench.ts",
       "name": "example.pdf (~580 bytes)",
       "entries": [
         {
-          "name": "@amigo-labs/pdf-parse parseSync",
-          "hz": 5949.07,
-          "rme": 0.67,
-          "samples": 2975
+          "name": "@amigo-labs/pdf-parse (napi) parseSync",
+          "hz": 6742.46,
+          "rme": 0.28,
+          "samples": 3372
         },
         {
           "name": "pdf-parse",
-          "hz": 120386.19,
-          "rme": 0.24,
-          "samples": 60194
+          "hz": 121292.79,
+          "rme": 0.26,
+          "samples": 60647
         }
       ]
     },
@@ -28,16 +28,16 @@
       "name": "unicode.pdf (~3.9 KB)",
       "entries": [
         {
-          "name": "@amigo-labs/pdf-parse parseSync",
-          "hz": 2435.55,
-          "rme": 0.16,
-          "samples": 1218
+          "name": "@amigo-labs/pdf-parse (napi) parseSync",
+          "hz": 2418.63,
+          "rme": 0.4,
+          "samples": 1210
         },
         {
           "name": "pdf-parse",
-          "hz": 122020.25,
-          "rme": 0.22,
-          "samples": 61011
+          "hz": 120263.63,
+          "rme": 0.27,
+          "samples": 60132
         }
       ]
     }

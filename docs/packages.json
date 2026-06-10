@@ -156,7 +156,7 @@
       "title": "Diff",
       "category": "util",
       "description": "Myers/Patience diff via `similar`. Drop-in-shape with an offset-packed hot-path for char-level and large-input cases.",
-      "speedup": "up to 25× faster / 3× slower",
+      "speedup": "up to 26× faster / 3× slower",
       "targets": [
         "node",
         "browser"
@@ -164,7 +164,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/diff",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/diff",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/diff/README.md",
-      "perfReviewUrl": "/perf-review/diff.md"
+      "perfReviewUrl": "/perf-review/diff.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "up to 26× faster / 3× slower",
+          "hz": 545,
+          "vsJs": 25.73
+        }
+      }
     },
     {
       "name": "encoding",
@@ -208,14 +215,21 @@
       "title": "Force Layout",
       "category": "graph",
       "description": "Force-directed graph simulation. Batch-mode d3-force replacement for SSR / precompute workloads.",
-      "speedup": "3.6–7.3× faster",
+      "speedup": "3.6–7.2× faster",
       "targets": [
         "node",
         "browser"
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/force-layout",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/force-layout",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/force-layout/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/force-layout/README.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "3.6–7.2× faster",
+          "hz": 263,
+          "vsJs": 7.18
+        }
+      }
     },
     {
       "name": "fuse",
@@ -237,14 +251,21 @@
       "title": "Graph Layout",
       "category": "graph",
       "description": "Hierarchical (Sugiyama-style) DAG layout. Single-call spec → positions + edge routing.",
-      "speedup": "57–73× faster",
+      "speedup": "62–75× faster",
       "targets": [
         "node",
         "browser"
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/graph-layout",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/graph-layout",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/graph-layout/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/graph-layout/README.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "62–75× faster",
+          "hz": 3908,
+          "vsJs": 74.97
+        }
+      }
     },
     {
       "name": "inflate",
@@ -389,7 +410,7 @@
       "title": "PDF Parse",
       "category": "document",
       "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
-      "speedup": "20–50× slower",
+      "speedup": "18–50× slower",
       "targets": [
         "node",
         "browser"
@@ -397,7 +418,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/pdf-parse",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/pdf-parse",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf-parse/README.md",
-      "perfReviewUrl": "/perf-review/pdf-parse.md"
+      "perfReviewUrl": "/perf-review/pdf-parse.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "18–50× slower",
+          "hz": 4038,
+          "vsJs": 0.06
+        }
+      }
     },
     {
       "name": "pixelmatch",
@@ -463,7 +491,7 @@
       "title": "Slugify",
       "category": "text",
       "description": "Unicode-aware slugification. Wraps deunicode + unicode-normalization.",
-      "speedup": "2.6–6× faster",
+      "speedup": "2.6–5.5× faster",
       "targets": [
         "node",
         "browser"
@@ -474,9 +502,9 @@
       "perfReviewUrl": "/perf-review/slugify.md",
       "speedupDetails": {
         "napi": {
-          "label": "2.6–6× faster",
-          "hz": 380832,
-          "vsJs": 2.93
+          "label": "2.6–5.5× faster",
+          "hz": 356919,
+          "vsJs": 2.84
         }
       }
     },
@@ -528,7 +556,14 @@
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/text-splitters",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/text-splitters",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/text-splitters/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/text-splitters/README.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "up to 2.6× faster / 4.7× slower",
+          "hz": 1770,
+          "vsJs": 1.21
+        }
+      }
     },
     {
       "name": "tldts",
@@ -580,7 +615,7 @@
       "title": "XLSX",
       "category": "document",
       "description": "XLSX read + write. Buffer in → rows out, rows in → Buffer out. Single-FFI-crossing.",
-      "speedup": "2.4–3.2× faster",
+      "speedup": "2.6–3.3× faster",
       "targets": [
         "node",
         "browser"
@@ -588,7 +623,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/xlsx",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/xlsx",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/xlsx/README.md",
-      "perfReviewUrl": "/perf-review/xlsx.md"
+      "perfReviewUrl": "/perf-review/xlsx.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "2.6–3.3× faster",
+          "hz": 220,
+          "vsJs": 3.31
+        }
+      }
     },
     {
       "name": "xxhash",

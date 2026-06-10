@@ -1,7 +1,7 @@
 {
   "crate": "pdf",
-  "generatedAt": "2026-05-28T21:42:41.414Z",
-  "commit": "45d29b4",
+  "generatedAt": "2026-06-10T15:20:03.705Z",
+  "commit": "8c743bf",
   "runner": "linux-x64",
   "nodeVersion": "v24.16.0",
   "suites": [
@@ -11,9 +11,9 @@
       "entries": [
         {
           "name": "@amigo-labs/pdf (napi) generate",
-          "hz": 40516.15,
-          "rme": 0.34,
-          "samples": 20259
+          "hz": 41241.1,
+          "rme": 0.32,
+          "samples": 20621
         }
       ]
     },
@@ -23,9 +23,9 @@
       "entries": [
         {
           "name": "@amigo-labs/pdf (napi) generate",
-          "hz": 2011.41,
-          "rme": 0.48,
-          "samples": 1006
+          "hz": 2026.83,
+          "rme": 0.38,
+          "samples": 1014
         }
       ]
     },
@@ -35,9 +35,9 @@
       "entries": [
         {
           "name": "@amigo-labs/pdf (napi) generateMany",
-          "hz": 453.17,
-          "rme": 1.84,
-          "samples": 227
+          "hz": 457.47,
+          "rme": 0.7,
+          "samples": 229
         }
       ]
     }

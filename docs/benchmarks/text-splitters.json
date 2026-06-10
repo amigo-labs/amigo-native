@@ -1,25 +1,25 @@
 {
   "crate": "text-splitters",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-06-10T15:20:03.705Z",
+  "commit": "8c743bf",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.16.0",
   "suites": [
     {
       "file": "crates/text-splitters/__bench__/index.bench.ts",
       "name": "short (~240 bytes)",
       "entries": [
         {
-          "name": "@amigo-labs/text-splitters splitText",
-          "hz": 232833.74,
-          "rme": 0.21,
-          "samples": 116417
+          "name": "@amigo-labs/text-splitters (napi) splitText",
+          "hz": 230315.29,
+          "rme": 0.16,
+          "samples": 115158
         },
         {
           "name": "@langchain/textsplitters",
-          "hz": 89831.76,
-          "rme": 0.42,
-          "samples": 44916
+          "hz": 90118.61,
+          "rme": 0.46,
+          "samples": 45060
         }
       ]
     },
@@ -28,16 +28,16 @@
       "name": "medium (~14 KB)",
       "entries": [
         {
-          "name": "@amigo-labs/text-splitters splitText",
-          "hz": 1349.8,
-          "rme": 0.32,
-          "samples": 675
+          "name": "@amigo-labs/text-splitters (napi) splitText",
+          "hz": 1363.76,
+          "rme": 0.13,
+          "samples": 682
         },
         {
           "name": "@langchain/textsplitters",
-          "hz": 1095.67,
-          "rme": 1.7,
-          "samples": 548
+          "hz": 1128.59,
+          "rme": 0.51,
+          "samples": 565
         }
       ]
     },
@@ -46,16 +46,16 @@
       "name": "long (~140 KB)",
       "entries": [
         {
-          "name": "@amigo-labs/text-splitters splitText",
-          "hz": 17.9052,
-          "rme": 0.25,
+          "name": "@amigo-labs/text-splitters (napi) splitText",
+          "hz": 17.6641,
+          "rme": 0.39,
           "samples": 10
         },
         {
           "name": "@langchain/textsplitters",
-          "hz": 84.5757,
-          "rme": 6.08,
-          "samples": 43
+          "hz": 83.7181,
+          "rme": 6.32,
+          "samples": 42
         }
       ]
     }
