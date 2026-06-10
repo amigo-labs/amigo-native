@@ -24,7 +24,7 @@ get built and tested (full 36-crate release build is out of scope).
 
 ## Tasks
 
-- [ ] T1: csv — reject out-of-range delimiter/quote/escape/comment instead of silent u32→u8 truncation
+- [x] T1: csv — reject out-of-range delimiter/quote/escape/comment instead of silent u32→u8 truncation
       Files: crates/_csv-core/src/lib.rs:19-40 (+ tests), crates/csv/src/lib.rs, crates/csv/wasm/src/lib.rs (only if signatures shift)
       Change: `opts.delimiter as u8` etc. silently wraps (256 → NUL). Make the
       option translation fallible: validate each of delimiter/quote_char/
