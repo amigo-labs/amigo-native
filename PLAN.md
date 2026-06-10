@@ -93,7 +93,7 @@ get built and tested (full 36-crate release build is out of scope).
       crates/_scratch-test-pkg-core && git checkout -- Cargo.lock
       (cleanup BEFORE any sync-registry/pnpm run).
 
-- [ ] T4: add "Install for the browser" README section to the 8 remaining dual-target crates
+- [x] T4: add "Install for the browser" README section to the 8 remaining dual-target crates
       Files: crates/{diff,force-layout,graph-layout,pdf,pdf-parse,slugify,
              text-splitters,xlsx}/README.md; docs/readmes/*.html (regenerated)
       Change: closes the open status.md checkbox "README 'Install for the

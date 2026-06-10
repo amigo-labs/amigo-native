@@ -38,6 +38,16 @@ createPatch('file.txt', oldContent, newContent)
 //  gamma
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { diffLines, diffWords, diffChars } from '@amigo-labs/diff'
+```
+
+The `_diff-core` crate is the same code on both sides, so hunks are identical between Node and the browser.
+
 ## Offset-packed hot-path
 
 For large documents or char-level diffs, the hunk-array shape spends

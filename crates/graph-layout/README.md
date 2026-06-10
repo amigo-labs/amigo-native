@@ -39,6 +39,16 @@ const result = layout({
 layoutMany([spec1, spec2, spec3])
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { layout, layoutMany } from '@amigo-labs/graph-layout'
+```
+
+The `_graph-layout-core` engine is the same code on both sides, so node positions are identical between Node and the browser.
+
 ## Options
 
 ```ts

@@ -28,6 +28,16 @@ const { nodes } = simulate(
 // nodes → [{ id, x, y, vx, vy }, ...]
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { simulate } from '@amigo-labs/force-layout'
+```
+
+The `_force-layout-core` simulation is the same code on both sides, so layouts are identical between Node and the browser.
+
 ## Options
 
 ```ts

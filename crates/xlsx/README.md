@@ -53,6 +53,20 @@ const buf2 = writeSheetFromObjects('People', [
 ])
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { readWorkbook, writeWorkbook } from '@amigo-labs/xlsx'
+```
+
+The XLSX engine makes this one of the heavier WASM bundles in the family — consider lazy-importing in code-split routes:
+
+```ts
+const { readWorkbook } = await import('@amigo-labs/xlsx')
+```
+
 ## Cell shape
 
 ```ts

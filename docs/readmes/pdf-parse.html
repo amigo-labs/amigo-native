@@ -21,6 +21,13 @@ console.log(result.version)     // '1.7'
 // Sync path for small PDFs (&lt; ~500 KB):
 const sync = parseSync(buf)
 </code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { parse } from '@amigo-labs/pdf-parse'
+</code></pre>
+<p>The PDF parser makes this one of the heavier WASM bundles in the family — consider lazy-importing in code-split routes:</p>
+<pre><code class="language-ts">const { parse } = await import('@amigo-labs/pdf-parse')
+</code></pre>
 <h2 id="options">Options</h2>
 <pre><code class="language-ts">interface PdfParseOptions {
   max?: number         // process at most N pages

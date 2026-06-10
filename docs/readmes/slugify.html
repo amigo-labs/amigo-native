@@ -28,6 +28,11 @@ slugify("日本語テスト"); // "ri-ben-yu-tesuto"
 // With custom separator
 slugifyWithSeparator("Hello World!", "_"); // "hello_world"
 </code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { slugify, slugifyWithSeparator } from "@amigo-labs/slugify";
+</code></pre>
+<p>The <code>_slugify-core</code> crate is the same code on both sides, so output is identical between Node and the browser.</p>
 <h2 id="api">API</h2>
 <h3 id="slugify-input-string"><code>slugify(input): string</code></h3>
 <p>Converts a string into a URL-friendly slug using <code>-</code> as separator.</p>

@@ -27,6 +27,20 @@ console.log(result.version)     // '1.7'
 const sync = parseSync(buf)
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { parse } from '@amigo-labs/pdf-parse'
+```
+
+The PDF parser makes this one of the heavier WASM bundles in the family — consider lazy-importing in code-split routes:
+
+```ts
+const { parse } = await import('@amigo-labs/pdf-parse')
+```
+
 ## Options
 
 ```ts

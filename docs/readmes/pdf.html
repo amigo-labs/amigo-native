@@ -39,6 +39,13 @@ fs.writeFileSync('invoice.pdf', buf)
 // Batch — one FFI crossing for the whole label-printing job:
 const buffers = generateMany(labelSpecs)
 </code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { generate } from '@amigo-labs/pdf'
+</code></pre>
+<p>The PDF engine makes this one of the heavier WASM bundles in the family — consider lazy-importing in code-split routes:</p>
+<pre><code class="language-ts">const { generate } = await import('@amigo-labs/pdf')
+</code></pre>
 <h2 id="element-shapes">Element shapes</h2>
 <pre><code class="language-ts">type PdfElement =
   | { kind: 'text'; text: { x: number; y: number; text: string; fontSize?: number } }

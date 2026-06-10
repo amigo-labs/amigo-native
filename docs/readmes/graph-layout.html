@@ -33,6 +33,11 @@ const result = layout({
 // Batch N layouts in a single FFI call (CI-time graph rendering):
 layoutMany([spec1, spec2, spec3])
 </code></pre>
+<h2 id="install-for-the-browser">Install for the browser</h2>
+<p>The same <code>import</code> works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the <code>browser</code> conditional export:</p>
+<pre><code class="language-ts">import { layout, layoutMany } from '@amigo-labs/graph-layout'
+</code></pre>
+<p>The <code>_graph-layout-core</code> engine is the same code on both sides, so node positions are identical between Node and the browser.</p>
 <h2 id="options">Options</h2>
 <pre><code class="language-ts">interface LayoutOptions {
   rankdir?: 'TB' | 'BT' | 'LR' | 'RL'    // default 'TB'
