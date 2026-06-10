@@ -115,10 +115,12 @@ get built and tested (full 36-crate release build is out of scope).
       "In flight" emptied (or this fixup session), expansion moved to
       "Recently shipped" (one summary row, not per-batch), "Next up" keeps
       only the still-open items — pack-verify CI step (absent from
-      workflows) and dashboard targets *filter* facet (TargetsPill display
-      exists, filter doesn't) — drops the README-subsection item (done in
+      workflows) — drops the README-subsection item (done in
       T4). Update header (date, branch), keep Q1/Q2 open questions table.
       Verify: re-read; no claim contradicts the repo state.
+      Correction (Copilot review): the dashboard targets filter DOES exist
+      (web/src/components/CategoryFilter.tsx, mounted on index.astro) — the
+      "Next up" entry claiming otherwise was removed again.
 
 - [x] T6: correct NODE_ONLY_CRATES "four places" undercount to six
       Files: CLAUDE.md:132, docs/specs/expansion-2026.md:427, CONTRIBUTING.md:103,
@@ -147,5 +149,4 @@ get built and tested (full 36-crate release build is out of scope).
   crates", 69116f5). Regenerating consistently needs a full `pnpm build` of
   all 36 packages — out of scope here; the churn was reverted.
 - pack-verify CI step (status.md backlog item — CI-only, can't validate locally)
-- dashboard "targets" filter facet in the web UI (feature, not drift)
 - full JS-side test run across all 36 packages (requires full release builds)

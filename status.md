@@ -38,10 +38,7 @@ cleanup (this file, NODE_ONLY_CRATES place count).
    crate and grep the file list for the expected `wasm/pkg/*` entries.
    Catches the case where `prepublishOnly` doesn't run (e.g. local
    `npm pack`) and the tarball ships without the WASM artifact.
-2. **Dashboard `targets` filter facet** in the web UI: the per-package
-   `TargetsPill` badge exists; add a "browser-compatible" vs. "node-only"
-   filter so consumers see the boundary at a glance.
-3. **Regenerate stale checked-in napi loaders**: a local `napi build` of
+2. **Regenerate stale checked-in napi loaders**: a local `napi build` of
    csv/xlsx shows the committed `native.cjs` / `.d.ts` files lag the
    current source (version-check strings, removed doc comments). Needs a
    full `pnpm build` across all 36 packages and one sweeping commit
