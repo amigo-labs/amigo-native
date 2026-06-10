@@ -3,55 +3,20 @@
 Working dashboard. Source of truth for "what is in flight, what was just shipped,
 what to pick up next." Updated as work moves.
 
-> **Last updated:** 2026-05-17
-> **Active branch:** `claude/convert-packages-wasm-RZd3b`
-> **Active PR:** [#134 — feat: ship WASM bindings for all eligible crates (draft)](https://github.com/amigo-labs/amigo-native/pull/134)
+> **Last updated:** 2026-06-10
+> **Active branch:** `claude/deep-fixup-v7j8ey` (deep-fixup session)
 
 ---
 
 ## In flight
 
-### Dual-target (Node + Browser) expansion — scope widened to all eligible crates
+### Deep-fixup session (2026-06-10)
 
-Take the napi-only crate family to dual-target by shipping
-`wasm-bindgen` companions in the same npm packages via conditional
-exports. Scope: **33 of 36 public crates**; the remaining 3 form a
-formal **Node.js server-only tier** (`argon2`, `jose`, `jwt`) that
-intentionally stays napi-only. Full plan in
-[`docs/specs/expansion-2026.md`](docs/specs/expansion-2026.md)
-(updated 2026-05-17).
-
-- [x] Spec drafted and revised against the real 36-crate workspace
-- [x] Architecture decisions D1–D6 locked in (see spec § Decisions)
-- [x] **Pilot: slugify** — Phase 1 (core/napi split) and Phase 2
-      (WASM binding inside the same npm package) end-to-end. All
-      acceptance gates green. Bench: WASM 2–3× faster than JS
-      `slugify`, 246 KB gzipped unoptimized (~80–120 KB after
-      `wasm-opt -Oz`).
-- [x] **Foundation landed on PR #134**: workspace `[workspace.dependencies]`
-      for wasm-bindgen / wasm-bindgen-test / serde-wasm-bindgen / js-sys;
-      `ci.yml` gains `wasm-test` (per-crate `wasm-pack test --node`) +
-      `bundle-size` (warn-only per D2) jobs; `release.yml` builds the
-      in-tarball wasm/pkg/ artifact via `wasm-pack` + `wasm-opt -Oz`
-      before `npm publish`; `scripts/sync-registry.mjs` propagates
-      `amigo.targets` into `docs/packages.json`; audit-crates skill
-      enforces the dual-target / Node-only invariants via a single
-      `NODE_ONLY_CRATES = {argon2, jose, jwt}` constant.
-- [x] **Node.js server-only tier landed**: argon2 / jose / jwt carry
-      `targets: ["node"]` and have WASM-target exclusion sections in
-      their perf-review docs.
-- [x] **Batch 1 — pure-string crates (in progress)**: deepmerge,
-      language-detect, stemmer, sentences, linkify-it, diff shipped
-      core split + wasm sub-crate. Remaining: tldts, turndown.
-- [ ] **Batch 2 — buffer crates** (xxhash, csv, encoding, file-type,
-      inflate, pixelmatch, pngjs, jpeg-js, svgo)
-- [ ] **Batch 3 — option-heavy + classes** (commonmark, minisearch,
-      bm25, fuse, sanitize-html, force-layout, graph-layout)
-- [ ] **Edge cases** (zstd via ruzstd fallback, text-splitters minus
-      tiktoken on wasm32, zip, jimp, pdf, pdf-parse, xlsx, typst)
-- [ ] README "Install for the browser" subsection per shipping crate
-- [ ] Dashboard surface: `targets` facet in the docs/packages.json
-      consumer-facing dashboard
+Repo-wide analyze → fix pass; session record in `PLAN.md` on the branch.
+Bug fixes (csv option truncation, xlsx column wraparound), the
+`new-package.sh` template brought up to the dual-target convention,
+the last 8 "Install for the browser" README sections, and doc-drift
+cleanup (this file, NODE_ONLY_CRATES place count).
 
 ---
 
@@ -59,40 +24,28 @@ intentionally stays napi-only. Full plan in
 
 | Date       | What                                                                      |
 | :--------- | :------------------------------------------------------------------------ |
-| 2026-05-17 | Batch 1 in-progress: WASM bindings for `deepmerge`, `language-detect`, `stemmer`, `sentences`, `linkify-it`, `diff` (PR #134) |
+| 2026-05-28 | WASM benchmark coverage completed across crates; benchmarks regenerated (PR #151) |
+| 2026-05-17 | **Dual-target expansion complete**: WASM bindings shipped for all 33 eligible crates — Batches 1–3 and all edge cases (zstd decompress-only via ruzstd, text-splitters minus tiktoken, zip, jimp, pdf, pdf-parse, xlsx, typst) (PR #134) |
 | 2026-05-17 | Foundation: workspace deps, CI wasm-test + bundle-size jobs, release.yml WASM build step, audit-crates WASM checks (PR #134) |
 | 2026-05-17 | Node.js server-only tier formalized: `argon2`, `jose`, `jwt` carry `targets: ["node"]` (PR #134) |
 | 2026-05-17 | `expansion-2026.md` updated: scope widened from 9-crate shortlist to 33-crate dual-target tier + 3-crate Node-only tier |
-| 2026-05-15 | `status.md` introduced as the working dashboard                           |
-| 2026-05-15 | Fix: `index.js` version drift across 26 crates (`69116f5`)                |
-| 2026-05-15 | Pilot: slugify dual-target — core/napi split + WASM binding (`53a582c`)   |
 
 ---
 
 ## Next up — pick from the top
 
-1. **Finish Batch 1**: `tldts`, `turndown` (last two pure-string crates).
-2. **Batch 2 — buffer crates**: start with `xxhash` (smallest API, closes
-   Q1 SIMD question once benched) and `inflate` (validates the
-   `flate2`/`zlib-rs` wasm32-portable backend). Then `csv`, `encoding`,
-   `file-type`, `pixelmatch`, `pngjs`, `jpeg-js`, `svgo`.
-3. **Batch 3 — option-heavy + classes**: `commonmark`, `minisearch`,
-   `bm25`, `fuse`, `sanitize-html` (first real bundle-budget stress test
-   — `ammonia` + `html5ever` ~200–400 KB gz), `force-layout`,
-   `graph-layout`.
-4. **Edge cases** — `zstd` needs a `ruzstd` fallback for the WASM build
-   because `zstd-sys` doesn't build for `wasm32-unknown-unknown`;
-   compress / `trainDictionary` throw "not available in WASM build".
-   `text-splitters` excludes tiktoken-rs on wasm32 (BPE tables ~1.5 MB).
-   The bundle-heavy crates (`zip`, `jimp`, `pdf`, `pdf-parse`, `xlsx`,
-   `typst`) ship with a "consider lazy import" README note.
-5. **`pack-verify` CI step**: run `pnpm pack --dry-run` per dual-target
+1. **`pack-verify` CI step**: run `pnpm pack --dry-run` per dual-target
    crate and grep the file list for the expected `wasm/pkg/*` entries.
    Catches the case where `prepublishOnly` doesn't run (e.g. local
    `npm pack`) and the tarball ships without the WASM artifact.
-6. **Dashboard `targets` facet** in `docs/packages.json` UI: filter
-   for "browser-compatible" vs. "node-only" so consumers see the
-   boundary at a glance.
+2. **Dashboard `targets` filter facet** in the web UI: the per-package
+   `TargetsPill` badge exists; add a "browser-compatible" vs. "node-only"
+   filter so consumers see the boundary at a glance.
+3. **Regenerate stale checked-in napi loaders**: a local `napi build` of
+   csv/xlsx shows the committed `native.cjs` / `.d.ts` files lag the
+   current source (version-check strings, removed doc comments). Needs a
+   full `pnpm build` across all 36 packages and one sweeping commit
+   (cf. `69116f5`, the earlier index.js version-drift fix).
 
 ---
 
@@ -102,19 +55,11 @@ Non-blocking — defer until the relevant implementation PR.
 
 | ID   | Question                                                                       | Resolve in                          |
 | :--- | :----------------------------------------------------------------------------- | :---------------------------------- |
-| Q1   | `xxhash` WASM: target `+simd128` by default, ship two variants, or skip SIMD?  | `xxhash` Phase 2 PR (with benchmarks) |
-| Q2   | `commonmark` WASM README: exact XSS-warning wording, dashboard surface?        | `commonmark` Phase 2 PR             |
+| Q1   | `xxhash` WASM: target `+simd128` by default, ship two variants, or skip SIMD?  | A future `xxhash` perf PR (shipped without SIMD for now) |
 
 Resolved decisions are in [`docs/specs/expansion-2026.md`](docs/specs/expansion-2026.md) § Decisions.
-
----
-
-## Things deliberately not touched yet
-
-- `CLAUDE.md` — conventions live in the spec; CLAUDE.md stays minimal
-- `README.md` tagline — keep "Rust-powered npm packages" until WASM
-  ships in a non-pilot crate
-- `BACKLOG.md` — open items tracked here, not duplicated
+Q2 (commonmark XSS-warning wording) was resolved in the shipped
+`crates/commonmark/README.md` § Safety section.
 
 ---
 

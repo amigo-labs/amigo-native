@@ -107,7 +107,7 @@ get built and tested (full 36-crate release build is out of scope).
       Verify: node scripts/render-readmes.mjs --check; git diff shows only
       the 8 READMEs + their 8 html fragments.
 
-- [ ] T5: rewrite stale status.md to post-expansion reality
+- [x] T5: rewrite stale status.md to post-expansion reality
       Files: status.md
       Change: last updated 2026-05-17; claims Batch 1 in progress
       (tldts/turndown remaining), Batches 2/3 + edge cases unstarted, active
