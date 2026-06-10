@@ -48,7 +48,7 @@ get built and tested (full 36-crate release build is out of scope).
       for an oversized row — use a row of 65,537 minimal cells.
       Verify: cargo test -p amigo-xlsx-core
 
-- [ ] T3: template/generator — scaffold core + wasm + dual-target package.json
+- [x] T3: template/generator — scaffold core + wasm + dual-target package.json
       Files: crates/_template/{core/Cargo.toml.tmpl, core/src/lib.rs,
              wasm/Cargo.toml.tmpl, wasm/src/lib.rs, wasm/tests/web.rs,
              README.md.tmpl} (new); crates/_template/{package.json.tmpl,

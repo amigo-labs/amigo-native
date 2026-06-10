@@ -1,0 +1,28 @@
+# @amigo-labs/{{NAME}}
+
+> TODO: one-sentence pitch — what does this replace and why is it faster?
+
+## Install
+
+```bash
+pnpm add @amigo-labs/{{NAME}}
+```
+
+## Usage
+
+```js
+import { hello } from '@amigo-labs/{{NAME}}'
+
+hello()
+// 'Hello from {{NAME}}!'
+```
+
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```js
+import { hello } from '@amigo-labs/{{NAME}}'
+```
+
+The `_{{NAME}}-core` crate is the same code on both sides, so behavior is identical between Node and the browser.

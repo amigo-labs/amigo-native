@@ -1,0 +1,25 @@
+[package]
+name = "amigo-{{NAME}}-wasm"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+# rlib needed for wasm-bindgen-test to link against the crate's symbols;
+# cdylib is the actual WASM artifact emitted by wasm-pack.
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+amigo-{{NAME}}-core = { path = "../../_{{NAME}}-core" }
+wasm-bindgen = { workspace = true }
+# Uncomment for option-struct / object marshalling:
+# serde-wasm-bindgen = { workspace = true }
+# serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+wasm-bindgen-test = { workspace = true }
+
+[package.metadata.wasm-pack.profile.release]
+# wasm-pack tries to download a prebuilt binaryen at build time;
+# we disable it and run wasm-opt -Oz in CI as a separate step.
+wasm-opt = false

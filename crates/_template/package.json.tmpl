@@ -4,10 +4,28 @@
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",
+  "browser": "./wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm.js",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm.d.ts",
+        "default": "./wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm.js"
+      },
+      "default": {
+        "types": "./index.d.ts",
+        "default": "./index.js"
+      }
+    }
+  },
   "files": [
     "index.js",
     "index.d.ts",
-    "README.md"
+    "README.md",
+    "wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm.js",
+    "wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm_bg.js",
+    "wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm_bg.wasm",
+    "wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm.d.ts",
+    "wasm/pkg/amigo_{{NAME_UNDERSCORE}}_wasm_bg.wasm.d.ts"
   ],
   "napi": {
     "binaryName": "{{NAME}}",
@@ -24,16 +42,19 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "prepublishOnly": "napi pre-publish --skip-optional-publish --no-gh-release",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:all": "pnpm build && pnpm build:wasm",
+    "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",
     "test:conformance": "vitest run __conformance__",
+    "test:wasm": "cd wasm && wasm-pack test --node",
     "test:all": "vitest run",
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.5.0",
-    "fast-check": "^3.23.0",
-    "vitest": "^3.0.0"
+    "@napi-rs/cli": "^3.6.2",
+    "fast-check": "^4.8.0",
+    "vitest": "^4.1.7"
   },
   "license": "MIT",
   "repository": {
@@ -46,12 +67,14 @@
   },
   "amigo": {
     "title": "{{NAME}}",
+    "category": "util",
     "description": "TODO: one-sentence pitch for the dashboard.",
     "tableDescription": "TODO: short pitch for the README table.",
     "replaces": "{{NAME}}",
     "vsJs": "TBD",
     "parity": "TBD",
     "status": "Drop-in",
+    "targets": ["node", "browser"],
     "competitors": []
   }
 }
