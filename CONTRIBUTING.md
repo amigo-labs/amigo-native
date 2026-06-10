@@ -98,9 +98,10 @@ there is a documented exclusion reason — see [`docs/specs/expansion-2026.md`](
 § Node.js server-only tier. Joining that tier requires either a
 performance perf-review entry (memory-hard / FFI-floor-dominated) or a
 threat-model rationale (private-key crypto). Add the crate's name to the
-`NODE_ONLY_CRATES` constant in all four spots
+`NODE_ONLY_CRATES` constant in all six spots
 (`.claude/skills/audit-crates/scripts/audit.mjs`,
-`scripts/sync-registry.mjs`, `.github/workflows/ci.yml`,
+`scripts/sync-registry.mjs`, `scripts/build-all-wasm.mjs`,
+`scripts/scaffold-wasm-bench.mjs`, `.github/workflows/ci.yml`,
 `.github/workflows/release.yml`) and to the policy table in
 `expansion-2026.md`.
 

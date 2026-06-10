@@ -120,8 +120,9 @@ get built and tested (full 36-crate release build is out of scope).
       T4). Update header (date, branch), keep Q1/Q2 open questions table.
       Verify: re-read; no claim contradicts the repo state.
 
-- [ ] T6: correct NODE_ONLY_CRATES "four places" undercount to six
-      Files: CLAUDE.md:132, docs/specs/expansion-2026.md:427, CONTRIBUTING.md:103
+- [x] T6: correct NODE_ONLY_CRATES "four places" undercount to six
+      Files: CLAUDE.md:132, docs/specs/expansion-2026.md:427, CONTRIBUTING.md:103,
+             .claude/skills/audit-crates/SKILL.md:93 (4th occurrence found during execution)
       Change: the constant is duplicated in six places (audit.mjs,
       sync-registry.mjs, build-all-wasm.mjs, scaffold-wasm-bench.mjs,
       ci.yml, release.yml) — all values agree; only the prose count is
