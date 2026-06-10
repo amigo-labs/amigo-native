@@ -129,14 +129,16 @@ have a "WASM-target exclusion" section in their
 § Node.js server-only tier.
 
 The **single source of truth** for the group is the constant
-`NODE_ONLY_CRATES = {argon2, jose, jwt}`, duplicated in four places:
+`NODE_ONLY_CRATES = {argon2, jose, jwt}`, duplicated in six places:
 
 - `.claude/skills/audit-crates/scripts/audit.mjs`
 - `scripts/sync-registry.mjs`
+- `scripts/build-all-wasm.mjs`
+- `scripts/scaffold-wasm-bench.mjs`
 - `.github/workflows/ci.yml` (env var)
 - `.github/workflows/release.yml` (env var + `contains(fromJSON('…'))`)
 
-To add or remove a crate from the group, edit all four together and
+To add or remove a crate from the group, edit all six together and
 update the policy section in `expansion-2026.md`. The audit-crates
 skill verifies the invariants are upheld.
 

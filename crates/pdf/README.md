@@ -45,6 +45,20 @@ fs.writeFileSync('invoice.pdf', buf)
 const buffers = generateMany(labelSpecs)
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { generate } from '@amigo-labs/pdf'
+```
+
+The PDF engine makes this one of the heavier WASM bundles in the family — consider lazy-importing in code-split routes:
+
+```ts
+const { generate } = await import('@amigo-labs/pdf')
+```
+
 ## Element shapes
 
 ```ts

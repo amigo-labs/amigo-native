@@ -194,6 +194,10 @@ jobs:
           fi
           for dir in $wasm_dirs; do
             crate=$(basename $(dirname "$dir"))
+            case "$crate" in _*)
+              # crates/_template/wasm is a scaffold (manifests are *.tmpl), not a crate
+              continue ;;
+            esac
             if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then
               continue
             fi
@@ -266,6 +270,8 @@ jobs:
           failed=0
           for dir in $wasm_dirs; do
             crate=$(basename $(dirname "$dir"))
+            # crates/_template/wasm is a scaffold (manifests are *.tmpl), not a crate
+            case "$crate" in _*) continue ;; esac
             if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then continue; fi
             if echo " $BROKEN_CRATES " | grep -q " $crate "; then
               echo "::notice::Skipping bundle-size for $crate (in BROKEN_CRATES)"

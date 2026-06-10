@@ -89,8 +89,9 @@ A small, explicit allow-list of crates intentionally stays Node-only and
 
 The list is the single source of truth — duplicated as a constant in
 `audit.mjs` (`NODE_ONLY_CRATES`), `scripts/sync-registry.mjs`,
+`scripts/build-all-wasm.mjs`, `scripts/scaffold-wasm-bench.mjs`,
 `.github/workflows/ci.yml`, and `.github/workflows/release.yml`. To add
-or remove a crate from the group, edit all four spots together. See
+or remove a crate from the group, edit all six spots together. See
 `docs/specs/expansion-2026.md § Node.js server-only tier` for the policy.
 
 Globally:

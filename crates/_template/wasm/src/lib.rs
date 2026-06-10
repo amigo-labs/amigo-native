@@ -1,6 +1,6 @@
-use napi_derive::napi;
+use wasm_bindgen::prelude::*;
 
-#[napi]
+#[wasm_bindgen]
 pub fn hello() -> String {
     amigo_{{NAME_UNDERSCORE}}_core::hello()
 }

@@ -164,8 +164,21 @@ pub fn write_workbook(sheets: Vec<WriteSheet>) -> Result<Vec<u8>, String> {
             .map_err(|e| format!("sheet name: {e}"))?;
         for (r, row) in sheet_spec.rows.iter().enumerate() {
             for (c, cell) in row.iter().enumerate() {
-                let row_u = r as u32;
-                let col_u = c as u16;
+                // Checked conversions: `as` would silently wrap large indexes
+                // back into the valid range (e.g. cell 65,536 → column 0).
+                // rust_xlsxwriter enforces the actual XLSX limits (1,048,576
+                // rows × 16,384 columns) for everything below the wrap point.
+                let row_u = u32::try_from(r).map_err(|_| {
+                    format!("sheet {:?}: too many rows ({})", sheet_spec.name, r + 1)
+                })?;
+                let col_u = u16::try_from(c).map_err(|_| {
+                    format!(
+                        "sheet {:?} row {}: too many cells ({})",
+                        sheet_spec.name,
+                        r + 1,
+                        c + 1
+                    )
+                })?;
                 match cell.kind.as_str() {
                     "string" => {
                         ws.write_string(row_u, col_u, cell.text.clone().unwrap_or_default())
@@ -239,4 +252,43 @@ pub fn write_sheet_from_objects(
         name: sheet_name.to_string(),
         rows: sheet_rows,
     }])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cell(kind: &str, text: Option<&str>) -> WriteCell {
+        WriteCell {
+            kind: kind.to_string(),
+            text: text.map(str::to_string),
+            number: None,
+            bool_value: None,
+        }
+    }
+
+    #[test]
+    fn write_workbook_errors_instead_of_wrapping_column_index() {
+        // 65,536 skipped cells followed by a real one: with `c as u16` the
+        // string would silently land in column 0; now the row must error.
+        let mut row: Vec<WriteCell> = vec![cell("empty", None); 65_536];
+        row.push(cell("string", Some("overflow")));
+        let err = write_workbook(vec![WriteSheet {
+            name: "Sheet1".to_string(),
+            rows: vec![row],
+        }])
+        .unwrap_err();
+        assert_eq!(err, "sheet \"Sheet1\" row 1: too many cells (65537)");
+    }
+
+    #[test]
+    fn write_workbook_small_sheet_still_works() {
+        let bytes = write_workbook(vec![WriteSheet {
+            name: "Sheet1".to_string(),
+            rows: vec![vec![cell("string", Some("hi"))]],
+        }])
+        .unwrap();
+        // XLSX is a ZIP container: PK\x03\x04 magic.
+        assert_eq!(&bytes[..4], b"PK\x03\x04");
+    }
 }

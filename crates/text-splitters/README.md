@@ -43,6 +43,16 @@ splitTextBatch([doc1, doc2, doc3], { chunkSize: 1000 })
 countTokens('hello world', 'tiktoken:cl100k_base')
 ```
 
+## Install for the browser
+
+The same `import` works in Angular, React, Vite, esbuild, and webpack ≥ 5 — the bundler picks the WASM build via the `browser` conditional export:
+
+```ts
+import { splitText, splitMarkdown, countChars } from '@amigo-labs/text-splitters'
+```
+
+**Token metrics are Node-only.** `countTokens` and `lengthMetric: "tiktoken:*"` throw in the WASM build — the tiktoken-rs BPE tables (~1.5 MB) don't ship on wasm32. Use `countChars` / character-based metrics in the browser.
+
 ## Options
 
 ```ts
