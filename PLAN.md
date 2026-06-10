@@ -37,7 +37,7 @@ get built and tested (full 36-crate release build is out of scope).
       delimiter 44 still parses, quote/escape/comment 256+ error.
       Verify: cargo test -p amigo-csv-core; pnpm --filter @amigo-labs/csv build:debug && vitest suite of crates/csv
 
-- [ ] T2: xlsx — error on >65,535 columns instead of silent u16 wraparound
+- [x] T2: xlsx — error on >65,535 columns instead of silent u16 wraparound
       Files: crates/_xlsx-core/src/lib.rs:165-188 (+ tests)
       Change: `let col_u = c as u16;` wraps for c ≥ 65,536 → cells silently
       land in wrong columns (rust_xlsxwriter only rejects 16,384–65,535).
@@ -131,6 +131,13 @@ get built and tested (full 36-crate release build is out of scope).
 
 ## Not this session
 
+- Checked-in generated napi loaders are stale (discovered during T1): a local
+  `napi build` of csv regenerates `crates/csv/native.cjs` with the platform
+  package version check updated 0.1.0 → 0.1.1 and `native.d.ts` without doc
+  comments that no longer exist in `src/lib.rs`. The same drift likely affects
+  other crates (cf. earlier commit "Fix: index.js version drift across 26
+  crates", 69116f5). Regenerating consistently needs a full `pnpm build` of
+  all 36 packages — out of scope here; the churn was reverted.
 - pack-verify CI step (status.md backlog item — CI-only, can't validate locally)
 - dashboard "targets" filter facet in the web UI (feature, not drift)
 - full JS-side test run across all 36 packages (requires full release builds)
