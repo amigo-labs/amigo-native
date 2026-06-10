@@ -130,6 +130,13 @@ get built and tested (full 36-crate release build is out of scope).
       Verify: grep -rn "four places\|four spots" returns nothing relevant;
       listed paths exist.
 
+## Follow-ups during PR babysitting
+
+- [x] fix(ci): the rebuild-all glob `ls -d crates/*/wasm` in the wasm-test and
+      bundle-size jobs picked up the new `crates/_template/wasm` scaffold and
+      failed (wasm-pack fell back to the workspace root manifest). Both loops
+      now skip `_`-prefixed dirs, matching the Node scripts' existing filter.
+
 ## Not this session
 
 - Checked-in generated napi loaders are stale (discovered during T1): a local
