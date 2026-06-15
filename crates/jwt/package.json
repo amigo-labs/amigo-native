@@ -42,11 +42,11 @@
     "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.7.2",
     "@types/jsonwebtoken": "^9.0.7",
     "fast-check": "^4.8.0",
     "jsonwebtoken": "^9.0.2",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.9"
   },
   "license": "MIT",
   "repository": {

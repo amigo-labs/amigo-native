@@ -64,10 +64,10 @@
     "test:upstream": "vitest run __conformance__/upstream.spec.ts"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.7.2",
     "fast-check": "^4.8.0",
     "iconv-lite": "^0.7.2",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.9"
   },
   "license": "MIT",
   "repository": {
