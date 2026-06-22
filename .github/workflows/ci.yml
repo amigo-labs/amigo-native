@@ -48,7 +48,7 @@ jobs:
       rebuildall: ${{ steps.detect.outputs.rebuildall }}
       fullbench: ${{ steps.detect.outputs.fullbench }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # PRs need full history to diff against the base branch; pushes
           # to main only need the parent commit.
@@ -100,7 +100,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -120,7 +120,7 @@ jobs:
   audit-rust:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       # taiki-e/install-action downloads a prebuilt cargo-audit binary
       # from the upstream release page (~3s) and caches it across runs;
@@ -135,7 +135,7 @@ jobs:
   test-rust:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -152,7 +152,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -226,7 +226,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -322,7 +322,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -399,7 +399,7 @@ jobs:
     needs: [build, detect-changes]
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
@@ -449,7 +449,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
@@ -496,7 +496,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: main
       - uses: dtolnay/rust-toolchain@stable
