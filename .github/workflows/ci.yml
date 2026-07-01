@@ -316,6 +316,42 @@ jobs:
             echo "::error::All wasm crates failed to build"
             exit 1
           fi
+      - name: pack-verify — tarball must ship the WASM artifact
+        shell: bash
+        run: |
+          set -uo pipefail
+          # `prepublishOnly` runs build:wasm on publish, but a local `npm pack`
+          # (or a files-list typo — dashes vs underscores) can produce a tarball
+          # without the wasm/pkg artifacts and the browser export resolves to
+          # nothing at install time. Verify the packed file list for every
+          # dual-target crate whose wasm/pkg was built in the previous step.
+          failures=0
+          checked=0
+          for dir in crates/*/; do
+            crate=$(basename "$dir")
+            case "$crate" in _*) continue ;; esac
+            if echo " $NODE_ONLY_CRATES " | grep -q " $crate "; then continue; fi
+            if echo " $BROKEN_CRATES " | grep -q " $crate "; then continue; fi
+            # Not built in this run: changed-crates mode skips untouched crates,
+            # and build failures were already surfaced as warnings above.
+            [ -d "crates/$crate/wasm/pkg" ] || continue
+            base="amigo_$(echo "$crate" | tr '-' '_')_wasm"
+            files=$(cd "crates/$crate" && npm pack --dry-run --json 2>/dev/null \
+              | node -e "let d='';process.stdin.on('data',(c)=>d+=c).on('end',()=>{console.log(JSON.parse(d)[0].files.map((f)=>f.path).join('\n'))})")
+            missing=""
+            for f in "$base.js" "${base}_bg.js" "${base}_bg.wasm" "$base.d.ts" "${base}_bg.wasm.d.ts"; do
+              if ! printf '%s\n' "$files" | grep -qx "wasm/pkg/$f"; then
+                missing="$missing wasm/pkg/$f"
+              fi
+            done
+            if [ -n "$missing" ]; then
+              echo "::error::pack-verify: $crate tarball is missing:$missing"
+              failures=$((failures + 1))
+            fi
+            checked=$((checked + 1))
+          done
+          echo "pack-verify: checked $checked crate(s), $failures failure(s)"
+          [ "$failures" = "0" ]
 
   build:
     runs-on: ubuntu-latest
