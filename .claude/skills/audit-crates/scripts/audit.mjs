@@ -91,7 +91,23 @@ function auditCrate(name) {
   const wasmDirPresent = isDir(join(dir, 'wasm'))
   const wasmCargoPresent = existsSync(join(dir, 'wasm', 'Cargo.toml'))
   const wasmLibPresent = existsSync(join(dir, 'wasm', 'src', 'lib.rs'))
+  const wasmTestsPresent = existsSync(join(dir, 'wasm', 'tests', 'web.rs'))
   const buildWasmScript = typeof scripts['build:wasm'] === 'string'
+  // wasm-pack emits `amigo_<name>_wasm.*` (dashes → underscores); the
+  // package.json `files` list must ship all five artifacts under wasm/pkg/.
+  const wasmBase = `amigo_${name.replaceAll('-', '_')}_wasm`
+  const expectedWasmFiles = [
+    `wasm/pkg/${wasmBase}.js`,
+    `wasm/pkg/${wasmBase}_bg.js`,
+    `wasm/pkg/${wasmBase}_bg.wasm`,
+    `wasm/pkg/${wasmBase}.d.ts`,
+    `wasm/pkg/${wasmBase}_bg.wasm.d.ts`,
+  ]
+  const filesList = Array.isArray(pkg.files) ? pkg.files : []
+  const missingWasmFiles = expectedWasmFiles.filter((f) => !filesList.includes(f))
+  const readmePath = join(dir, 'README.md')
+  const readmeText = existsSync(readmePath) ? readFileSync(readmePath, 'utf-8') : ''
+  const browserReadmeSection = readmeText.includes('Install for the browser')
   const exports_ = pkg.exports
   const dotExport = exports_ && typeof exports_ === 'object' ? exports_['.'] : null
   const browserExport = Boolean(
@@ -101,8 +117,13 @@ function auditCrate(name) {
   const targetsField = Array.isArray(amigoBlock.targets) ? amigoBlock.targets : null
 
   // For internal crates, the WASM check is N/A — always OK.
-  // For Node-only crates, all WASM scaffolding must be ABSENT.
-  // For dual-target crates, the four WASM markers (dir, Cargo, lib, script) + browser export must be PRESENT.
+  // For Node-only crates, all WASM scaffolding must be ABSENT and
+  // `amigo.targets` must be exactly ["node"] (declared, not defaulted).
+  // For dual-target crates, the full scaffold must be PRESENT: wasm/
+  // (Cargo.toml, src/lib.rs, tests/web.rs), the build:wasm script, the
+  // browser export, the five wasm/pkg/* `files` entries, a declared
+  // `amigo.targets` including "browser", and the README's
+  // "Install for the browser" section.
   let wasmOk
   if (isInternal) {
     wasmOk = true
@@ -111,15 +132,21 @@ function auditCrate(name) {
       !wasmDirPresent &&
       !buildWasmScript &&
       !browserExport &&
-      (targetsField === null || (targetsField.length === 1 && targetsField[0] === 'node'))
+      targetsField !== null &&
+      targetsField.length === 1 &&
+      targetsField[0] === 'node'
   } else {
     wasmOk =
       wasmDirPresent &&
       wasmCargoPresent &&
       wasmLibPresent &&
+      wasmTestsPresent &&
       buildWasmScript &&
       browserExport &&
-      (targetsField === null || targetsField.includes('browser'))
+      missingWasmFiles.length === 0 &&
+      browserReadmeSection &&
+      targetsField !== null &&
+      targetsField.includes('browser')
   }
 
   return {
@@ -152,10 +179,38 @@ function auditCrate(name) {
     wasmDirPresent,
     wasmCargoPresent,
     wasmLibPresent,
+    wasmTestsPresent,
     buildWasmScript,
     browserExport,
+    missingWasmFiles,
+    browserReadmeSection,
     targetsField,
     wasmOk,
+  }
+}
+
+/**
+ * Verify every public crate is registered in release-please-config.json and
+ * .release-please-manifest.json. Both are hand-maintained; a missing entry
+ * means the crate silently gets no release PRs or npm publishes. Mirrors the
+ * same check in scripts/sync-registry.mjs --check.
+ */
+function auditReleasePlease(crates) {
+  const config = readJson(join(ROOT, 'release-please-config.json'))
+  const manifest = readJson(join(ROOT, '.release-please-manifest.json'))
+  const missingInConfig = []
+  const missingInManifest = []
+  for (const name of crates) {
+    const key = `crates/${name}`
+    if (!config?.packages?.[key]) missingInConfig.push(name)
+    if (!manifest || !(key in manifest)) missingInManifest.push(name)
+  }
+  return {
+    configFound: config !== null,
+    manifestFound: manifest !== null,
+    missingInConfig,
+    missingInManifest,
+    ok: config !== null && manifest !== null && missingInConfig.length === 0 && missingInManifest.length === 0,
   }
 }
 
@@ -193,6 +248,7 @@ function auditDocs(crates) {
 const crateNames = listCrates()
 const crates = crateNames.map(auditCrate)
 const docs = auditDocs(crateNames)
+const releasePlease = auditReleasePlease(crateNames)
 
 // --- Priority buckets for the checklist ---
 
@@ -218,7 +274,8 @@ const clean =
   missingWasm.length === 0 &&
   docs.missingInPackagesJson.length === 0 &&
   docs.marqueeOk &&
-  docs.fieldGaps.length === 0
+  docs.fieldGaps.length === 0 &&
+  releasePlease.ok
 
 // --- JSON mode: dump everything and exit ---
 
@@ -356,6 +413,18 @@ if (asPlan) {
     plan.push('')
   }
 
+  if (!releasePlease.ok) {
+    plan.push('## 5. release-please registration (hand-maintained)')
+    plan.push('')
+    plan.push('Add an entry per crate to `release-please-config.json` (copy the `crates/argon2` shape) and `"crates/<name>": "<version>"` to `.release-please-manifest.json`:')
+    plan.push('')
+    const rpMissing = [...new Set([...releasePlease.missingInConfig, ...releasePlease.missingInManifest])]
+    for (const name of rpMissing) {
+      plan.push(`- [ ] \`${name}\``)
+    }
+    plan.push('')
+  }
+
   plan.push('## Verify')
   plan.push('')
   plan.push('```bash')
@@ -371,6 +440,7 @@ if (asJson) {
     root: ROOT,
     crates,
     docs,
+    releasePlease,
     summary: {
       clean,
       legacy: legacyCrates.map((r) => r.name),
@@ -382,6 +452,9 @@ if (asJson) {
       missingNpm: missingNpm.map((r) => r.name),
       missingBench: missingBench.map((r) => r.name),
       missingWasm: missingWasm.map((r) => r.name),
+      missingInReleasePlease: [
+        ...new Set([...releasePlease.missingInConfig, ...releasePlease.missingInManifest]),
+      ],
       nodeOnly: [...NODE_ONLY_CRATES],
     },
   }
@@ -437,6 +510,25 @@ if (docs.marqueeOk) {
   lines.push(`- ✓ \`docs/packages.json\` marquee PACKAGES = ${docs.marqueeCount}`)
 } else {
   lines.push(`- ✗ \`docs/packages.json\` marquee PACKAGES = ${docs.marqueeCount ?? 'missing'}, expected ${docs.marqueeExpected}`)
+}
+lines.push('')
+
+lines.push('## Release Automation')
+lines.push('')
+if (!releasePlease.configFound) lines.push('- ✗ `release-please-config.json` not found or invalid JSON')
+if (!releasePlease.manifestFound) lines.push('- ✗ `.release-please-manifest.json` not found or invalid JSON')
+if (releasePlease.missingInConfig.length) {
+  lines.push(
+    `- ✗ Missing from \`release-please-config.json\`: ${releasePlease.missingInConfig.map((c) => `\`${c}\``).join(', ')}`,
+  )
+}
+if (releasePlease.missingInManifest.length) {
+  lines.push(
+    `- ✗ Missing from \`.release-please-manifest.json\`: ${releasePlease.missingInManifest.map((c) => `\`${c}\``).join(', ')}`,
+  )
+}
+if (releasePlease.ok) {
+  lines.push(`- ✓ release-please config + manifest cover all ${crateNames.length} crates`)
 }
 lines.push('')
 
@@ -525,7 +617,7 @@ if (missingNpm.length) {
 if (missingWasm.length) {
   lines.push('### 🟠 WASM dual-target scaffolding')
   lines.push(`_Source of truth: \`NODE_ONLY_CRATES = { ${[...NODE_ONLY_CRATES].join(', ')} }\` (audit.mjs)._`)
-  lines.push('_Dual-target crates need: `wasm/Cargo.toml`, `wasm/src/lib.rs`, `build:wasm` script, `browser` export, `amigo.targets` including "browser"._')
+  lines.push('_Dual-target crates need: `wasm/Cargo.toml`, `wasm/src/lib.rs`, `wasm/tests/web.rs`, `build:wasm` script, `browser` export, the five `wasm/pkg/*` `files` entries, an "Install for the browser" README section, `amigo.targets` including "browser"._')
   lines.push('_Node-only crates must NOT have a `wasm/` directory and must declare `amigo.targets: ["node"]`._')
   for (const r of missingWasm) {
     const bits = []
@@ -541,8 +633,13 @@ if (missingWasm.length) {
       if (!r.wasmDirPresent) bits.push('create `wasm/` sub-crate (mirror `crates/slugify/wasm/`)')
       if (!r.wasmCargoPresent) bits.push('add `wasm/Cargo.toml`')
       if (!r.wasmLibPresent) bits.push('add `wasm/src/lib.rs` with `#[wasm_bindgen]` wrappers')
+      if (!r.wasmTestsPresent) bits.push('add `wasm/tests/web.rs` parity tests')
       if (!r.buildWasmScript) bits.push('add `build:wasm` script to package.json')
       if (!r.browserExport) bits.push('add `browser` field + conditional `exports`')
+      if (r.missingWasmFiles.length) {
+        bits.push(`add to \`files\`: ${r.missingWasmFiles.map((f) => `\`${f}\``).join(', ')}`)
+      }
+      if (!r.browserReadmeSection) bits.push('add "Install for the browser" README section')
       if (!(r.targetsField && r.targetsField.includes('browser'))) {
         bits.push('set `amigo.targets: ["node", "browser"]`')
       }
@@ -591,7 +688,9 @@ if (clean) {
     missingWasm.length +
     docs.missingInPackagesJson.length +
     docs.fieldGaps.length +
-    (docs.marqueeOk ? 0 : 1)
+    (docs.marqueeOk ? 0 : 1) +
+    releasePlease.missingInConfig.length +
+    releasePlease.missingInManifest.length
   lines.push(`_Summary: **${gapCount} gap(s)** across ${crateNames.length} crates._`)
 }
 
