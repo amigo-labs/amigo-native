@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/jimp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scoped v0.1 of jimp — PNG/JPEG decode + encode, resize, crop, flip, rotate, greyscale, brightness, contrast, composite. Via image-rs.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -84,7 +84,10 @@
     "vsJs": "TBD",
     "parity": "scoped-v0.1",
     "status": "Subset",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "jimp@1.6.0"
     ]
