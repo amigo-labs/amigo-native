@@ -41,7 +41,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg && node -e \"require('node:fs').rmSync('pkg/.gitignore',{force:true})\"",
     "build:all": "pnpm build && pnpm build:wasm",
     "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test": "vitest run __test__",

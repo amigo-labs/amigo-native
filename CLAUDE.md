@@ -94,7 +94,7 @@ wasm-opt = false
     "wasm/pkg/amigo_<name>_wasm_bg.wasm.d.ts"
   ],
   "scripts": {
-    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg",
+    "build:wasm": "cd wasm && wasm-pack build --target bundler --release --out-dir pkg && node -e \"require('node:fs').rmSync('pkg/.gitignore',{force:true})\"",
     "build:all":  "pnpm build && pnpm build:wasm",
     "prepublishOnly": "pnpm build:wasm && napi pre-publish --skip-optional-publish --no-gh-release",
     "test:wasm":  "cd wasm && wasm-pack test --node"
@@ -110,6 +110,15 @@ wasm-opt = false
 (`pdf-parse`, `linkify-it`, `file-type`, `sanitize-html`, etc.) the
 `files` field and `exports` paths must use the underscored form, e.g.
 `wasm/pkg/amigo_pdf_parse_wasm.js`.
+
+**wasm-pack .gitignore gotcha**: `wasm-pack build` writes a
+`pkg/.gitignore` containing `*`, and npm's packlist honours nested
+`.gitignore` files — every `wasm/pkg/*` file is silently dropped from
+the published tarball even though it is listed in `files`. That is why
+`build:wasm` removes `pkg/.gitignore` right after the build (the CI
+bundle-size job and `scripts/build-all-wasm.mjs` do the same), and why
+CI runs a `pack-verify` step that fails when a tarball would ship
+without the WASM artifacts.
 
 ### Node.js server-only tier
 

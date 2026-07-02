@@ -25,6 +25,16 @@ stemmer, text-splitters), the `pack-verify` CI step, regenerated napi
 loaders, and doc-drift cleanup (README architecture note,
 CONTRIBUTING sync-registry claim, perf-review.md historical header).
 
+The new pack-verify step immediately caught a **real shipping bug**:
+`wasm-pack build` writes `pkg/.gitignore` (`*`), npm's packlist honours
+it, and every published dual-target tarball shipped **without** its
+`wasm/pkg/*` artifacts (verified against `@amigo-labs/csv@0.1.2` on the
+registry — the browser export resolves to nothing). Fixed by removing
+`pkg/.gitignore` in `build:wasm` (all 33 crates + template +
+build-all-wasm.mjs + the CI wasm build). **Follow-up: publish patched
+versions of all 33 dual-target packages** — the release-please PRs will
+do this as they merge.
+
 ---
 
 ## Recently shipped

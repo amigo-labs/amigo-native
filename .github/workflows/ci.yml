@@ -285,6 +285,13 @@ jobs:
               echo "::endgroup::"
               continue
             fi
+            # wasm-pack writes pkg/.gitignore ('*'), which npm's packlist
+            # honours — it silently drops every wasm/pkg file from the
+            # tarball despite the `files` allowlist. The build:wasm package
+            # scripts remove it the same way; keep CI's direct wasm-pack
+            # invocation consistent so pack-verify below checks the real
+            # publish state.
+            rm -f "$dir/pkg/.gitignore"
             wasm=$(ls "$dir"/pkg/*_bg.wasm 2>/dev/null | head -1)
             if [ -z "$wasm" ]; then
               echo "::warning::no .wasm produced for $crate"
