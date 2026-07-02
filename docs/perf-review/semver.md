@@ -4,87 +4,87 @@
 
 ## Verdict
 
-`semver` ist das **Lehrbuch-Beispiel** für den FFI-Floor-Trap auf Massendurchsatz-Utilities: pro-Call-Compute ist Mikrosekunden-klein, V8 JITtet den Parser auf Near-Native-Geschwindigkeit, und Users rufen es scattered-single-call in Hot-Paths (npm/pnpm/yarn-Resolver, Dependency-Walker, Version-Validation-in-Middleware). Die 109-ns-FFI-Floor plus UTF-16↔UTF-8-Konversion an beiden Enden der Grenze sind **in derselben Größenordnung wie die gesamte Rust-Arbeit**. Rust-`semver` crate ist isoliert ~2–3× schneller als V8-`semver`, aber durch FFI betrachtet wird das zu 0,8×–1,2× — exakt die `mime`/`dotenv`-Kategorie. Batch-APIs (`satisfiesMany(versions, ranges)`) wären theoretisch der einzige Hebel, aber Usage-Muster im Ökosystem sind **nie** batch (jedes npm/pnpm/yarn-Binding ist single-call-per-Version-Entscheidung). Klassischer strukturell-Black-Shape.
+`semver` is the **textbook example** of the FFI-floor trap on high-throughput utilities: per-call compute is microseconds-small, V8 JITs the parser to near-native speed, and users call it in scattered single calls on hot paths (npm/pnpm/yarn resolvers, dependency walkers, version validation in middleware). The 109 ns FFI floor plus UTF-16↔UTF-8 conversion at both ends of the boundary is **in the same order of magnitude as the entire Rust work**. The Rust `semver` crate is ~2–3× faster than V8 `semver` in isolation, but seen through FFI that becomes 0.8×–1.2× — exactly the `mime`/`dotenv` category. Batch APIs (`satisfiesMany(versions, ranges)`) would in theory be the only lever, but usage patterns in the ecosystem are **never** batch (every npm/pnpm/yarn binding is a single call per version decision). A classic structurally-Black shape.
 
 ## JS package
 
 - **npm:** [`semver`](https://www.npmjs.com/package/semver)
-- **Downloads:** ~150M/Woche (Q1 2026, effektiv jedes npm-nutzende Node-Projekt pulled es transitiv)
+- **Downloads:** ~150M/week (Q1 2026; effectively every npm-using Node project pulls it in transitively)
 - **Exports / API surface:**
   - `parse(version) → SemVer | null`, `valid(version) → string | null`, `clean(version) → string | null`
   - `inc(version, release, identifier?)`, `diff(v1, v2)`, `major/minor/patch(version)`, `prerelease(version)`, `build(version)`
   - `compare(v1, v2)`, `rcompare`, `compareLoose`, `gt`, `lt`, `eq`, `neq`, `gte`, `lte`, `cmp`
   - `satisfies(version, range, opts?)`, `maxSatisfying`, `minSatisfying`, `minVersion`, `validRange`
-  - `Range`-Klasse (compilierter Range-Ausdruck), `SemVer`-Klasse (geparsed Version)
-  - `coerce(str)`, `subset(sub, dom)` (Range-Teilmengen-Check)
+  - `Range` class (compiled range expression), `SemVer` class (parsed version)
+  - `coerce(str)`, `subset(sub, dom)` (range subset check)
 - **Typical input:**
-  - Version-String: `"1.2.3"`, `"^2.0.0-alpha.1+build.42"` — typisch 5–30 Zeichen
-  - Range-String: `"^1.0.0 || ~2.5.0"`, `">=1.2.3 <2.0.0 || =3.0.0"` — typisch 5–80 Zeichen
-- **Typical output:** `boolean`, `string`, oder kleines Objekt. Nichts groß, aber **sehr häufig** gerufen.
-- **Realistic median use-case:** **Package-Resolver-Inner-Loop.** `pnpm install` löst für ein typisches 500-Deps-Projekt Zehntausende `satisfies()`-Calls auf (jede transitive-Dep-Version gegen jede Range). Zweiter Case: **Validation-Middleware** (`if (semver.satisfies(clientVersion, '>=2.0.0'))` in API-Gateways — einzelne Calls, aber Latency-sensitiv). Dritter Case: **Version-Sortierung** in CI-Tools. In keinem Case ist Batch-Pattern natürlich — User wollen einfach `semver.satisfies(a, b)` schreiben.
+  - Version string: `"1.2.3"`, `"^2.0.0-alpha.1+build.42"` — typically 5–30 characters
+  - Range string: `"^1.0.0 || ~2.5.0"`, `">=1.2.3 <2.0.0 || =3.0.0"` — typically 5–80 characters
+- **Typical output:** `boolean`, `string`, or a small object. Nothing large, but called **very frequently**.
+- **Realistic median use-case:** **Package-resolver inner loop.** `pnpm install` resolves tens of thousands of `satisfies()` calls for a typical 500-dependency project (every transitive dep version against every range). Second case: **validation middleware** (`if (semver.satisfies(clientVersion, '>=2.0.0'))` in API gateways — single calls, but latency-sensitive). Third case: **version sorting** in CI tools. In none of these cases is a batch pattern natural — users simply want to write `semver.satisfies(a, b)`.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - [`semver`](https://crates.io/crates/semver) (Rust) — Cargo's eigene Implementation. Exzellent maintained, MIT/Apache, SIMD-freier aber extrem engführend geschriebener Parser.
-  - [`node-semver`](https://crates.io/crates/node-semver) — npm-Semver-Parity-Variante (im Gegensatz zu Cargo-Semver, das sich Details erlaubt). Maintenance-Status zu verifizieren.
-  - Drop-in-Perspektive: `semver` npm entspricht node-semver-Dialekt (z.B. Wildcards, `x`-Placeholder, Caret-Edge-Cases mit pre-releases). Cargo-`semver` folgt strikt SemVer-2.0-Spec.
-- **Maintenance / license:** `semver` Rust MIT/Apache, dhwthompson & dtolnay, impeccable. `node-semver` crate weniger aktiv, Parity-Aufwand gegen npm-`semver` nicht trivial.
+  - [`semver`](https://crates.io/crates/semver) (Rust) — Cargo's own implementation. Excellently maintained, MIT/Apache, SIMD-free but extremely tightly written parser.
+  - [`node-semver`](https://crates.io/crates/node-semver) — the npm-semver parity variant (as opposed to Cargo semver, which allows itself some liberties). Maintenance status to be verified.
+  - Drop-in perspective: npm `semver` corresponds to the node-semver dialect (e.g. wildcards, `x` placeholders, caret edge cases with pre-releases). Cargo `semver` strictly follows the SemVer 2.0 spec.
+- **Maintenance / license:** Rust `semver` MIT/Apache, dhwthompson & dtolnay, impeccable. The `node-semver` crate is less active; the parity effort against npm `semver` is non-trivial.
 - **Known gotchas / divergences:**
-  - **node-semver-Dialekt vs. Cargo-semver** — npm erlaubt `1.x`, `1.*`, `>=1.2.3-beta.0 <1.3.0`, `~1.2`, etc. Einige Edge-Cases (z.B. Pre-Release-Semantik in Caret-Ranges: `^1.0.0-beta.1` matcht `1.0.0-beta.2` aber NICHT `2.0.0-beta.0`) sind node-semver-spezifisch. Full-Parity = das `node-semver` crate nutzen oder eigenen Parser schreiben.
-  - **`opts.loose`, `opts.includePrerelease`, `opts.rtl`** — npm-`semver` hat ~5 Modifier-Optionen die Range-Semantik subtil ändern. Parität auf allen ist Detail-Arbeit.
-  - **Performance-Paradox** — Rust-`semver`-Crate ist in isoliertem Microbench ~2–3× schneller als V8-Äquivalent. Durch FFI betrachtet ist es ~1×.
+  - **node-semver dialect vs. Cargo semver** — npm allows `1.x`, `1.*`, `>=1.2.3-beta.0 <1.3.0`, `~1.2`, etc. Some edge cases (e.g. pre-release semantics in caret ranges: `^1.0.0-beta.1` matches `1.0.0-beta.2` but NOT `2.0.0-beta.0`) are node-semver-specific. Full parity = use the `node-semver` crate or write our own parser.
+  - **`opts.loose`, `opts.includePrerelease`, `opts.rtl`** — npm `semver` has ~5 modifier options that subtly change range semantics. Parity on all of them is detail work.
+  - **Performance paradox** — the Rust `semver` crate is ~2–3× faster than the V8 equivalent in an isolated microbenchmark. Seen through FFI it is ~1×.
 
 ## BACKLOG check
 
-Vorhandener Eintrag in `BACKLOG.md` (Section "FFI overhead > gain"): ergänzt 2026-04-21, begründet mit "per-call work is microseconds, 109 ns FFI floor plus UTF-conversion eats any gain." Review bestätigt diese Einordnung vollständig — kein Umdenken nötig, nur formalisiert mit Zahlen.
+Existing entry in `BACKLOG.md` (section "FFI overhead > gain"): added 2026-04-21, justified with "per-call work is microseconds, 109 ns FFI floor plus UTF-conversion eats any gain." The review fully confirms this categorization — no rethink needed, just formalized with numbers.
 
-Abgrenzung:
-- Gegen `docs/perf-review/mime.md` (⚫ Black): strukturell identisch — Hashmap-Lookup-style + FFI-Floor dominiert. Minimale Unterschied: `semver` macht echten Parse (Tokenize + numerischer Vergleich), `mime` ist pure Hashmap. Aber beide sind FFI-floor-dominiert.
-- Gegen `docs/perf-review/deep-equal.md` (🔴 Red): ähnliche Lehre — V8 ist auf kurze Ops superb optimiert, wir haben keine Headroom.
+Differentiation:
+- Versus `docs/perf-review/mime.md` (⚫ Black): structurally identical — hashmap-lookup style + FFI floor dominates. Minimal difference: `semver` does a real parse (tokenize + numeric compare), `mime` is a pure hashmap. But both are FFI-floor-dominated.
+- Versus `docs/perf-review/deep-equal.md` (🔴 Red): similar lesson — V8 is superbly optimized for short ops, we have no headroom.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Kritisch klein.** `semver.satisfies("1.2.3", "^1.0.0")` ≈ 500 ns – 1,5 µs in V8 (JITted regex + string compare). Rust isoliert: ~200–500 ns. **Rust-Gewinn pro Call: ~300 ns – 1 µs.** |
-| Input size distribution | Version-Strings 5–30 B, Range-Strings 5–80 B. UTF-Konv an beiden Enden: ~30–100 ns. Zusätzlicher Fix-Overhead. |
-| Output size distribution | `boolean` zurück: ~50 ns. Für `parse()` → SemVer-Objekt wäre Output-Marshalling 200–400 ns (Objekt mit major/minor/patch/prerelease/build). Dominiert bei Parse-Calls. |
-| Reusable setup (stateful potential) | **Existent.** `new Range("^1.0.0")` einmal kompilieren + wiederverwenden ist ein existierender Speed-Hebel in npm-`semver` selbst. Rust-NAPI-Class `CompiledRange` würde das replizieren. Aber Users nutzen das **selten** — die idiomatische Form ist `semver.satisfies(v, "^1.0.0")` mit String. Class-Variante würde User zu API-Umschreibung zwingen. |
-| Batch-usage realism | **Niedrig.** Kein npm/pnpm/yarn-internal-Code batcht Ranges. Es gibt keine sozialisierte `satisfiesMany`-Nutzung. Falls wir eine einführen, müssten User ihren Code umstellen — und das nur für 2–3× Speedup. |
-| FFI-share estimate vs. Rust work | **~50–80 % FFI-Share.** Rust-Work ~300 ns, FFI + UTF-Konv ~250–400 ns. In-Single-Call-Nutzung ist das Ende. |
+| Per-call algorithmic work | **Critically small.** `semver.satisfies("1.2.3", "^1.0.0")` ≈ 500 ns – 1.5 µs in V8 (JITted regex + string compare). Rust in isolation: ~200–500 ns. **Rust gain per call: ~300 ns – 1 µs.** |
+| Input size distribution | Version strings 5–30 B, range strings 5–80 B. UTF conversion at both ends: ~30–100 ns. Additional fixed overhead. |
+| Output size distribution | Returning a `boolean`: ~50 ns. For `parse()` → a SemVer object, output marshalling would be 200–400 ns (object with major/minor/patch/prerelease/build). Dominates on parse calls. |
+| Reusable setup (stateful potential) | **Exists.** Compiling `new Range("^1.0.0")` once + reusing it is an existing speed lever in npm `semver` itself. A Rust NAPI class `CompiledRange` would replicate that. But users **rarely** use it — the idiomatic form is `semver.satisfies(v, "^1.0.0")` with a string. A class variant would force users to rewrite their API usage. |
+| Batch-usage realism | **Low.** No npm/pnpm/yarn-internal code batches ranges. There is no socialized `satisfiesMany` usage. If we introduce one, users would have to restructure their code — and that only for a 2–3× speedup. |
+| FFI-share estimate vs. Rust work | **~50–80 % FFI share.** Rust work ~300 ns, FFI + UTF conversion ~250–400 ns. In single-call usage that's the end of the story. |
 
 ## Classification reasoning
 
-`semver` ist der **archetypische Short-Work-Hot-Call-Fall** aus `docs/BASELINE.md:37–45`:
+`semver` is the **archetypal short-work hot-call case** from `docs/BASELINE.md:37–45`:
 
-1. **V8 JITtet semver perfekt.** npm-`semver` ist kompakt, monomorphes JavaScript — exakt der Code, für den V8's TurboFan-Pass den besten Code generiert. Keine langsamen Objects, keine Polymorphie, viele heiß-gerufene Funktionen. Eigene interne Cache (`Range`-Compile wird gemerkt). JS-Baseline ist deshalb **nicht lahm** — im Mikrobench ~500 ns – 1,5 µs auf moderner Hardware.
+1. **V8 JITs semver perfectly.** npm `semver` is compact, monomorphic JavaScript — exactly the code for which V8's TurboFan pass generates the best code. No slow objects, no polymorphism, many hot functions. It even has an internal cache (`Range` compilations are memoized). The JS baseline is therefore **not slow** — in microbenchmarks ~500 ns – 1.5 µs on modern hardware.
 
-2. **Rust-Gewinn hat keine Headroom.** Rust parst schneller (bessere Zero-Copy, keine GC), aber der Abstand ist ~300 ns – 1 µs. Nach FFI-Floor (109 ns) + 2× UTF-Konv (≈ 100 ns auf 10-Byte-String) = ~210 ns Fixkosten, bleibt netto ~90 ns – 700 ns Gewinn. Auf einen 500-ns-Baseline-Call: 0,9×–2,4×. Im Median ≈ 1,2×. Darunter kippt viel auf <1× (UTF-Konv-spike bei längeren Strings).
+2. **The Rust gain has no headroom.** Rust parses faster (better zero-copy, no GC), but the gap is ~300 ns – 1 µs. After the FFI floor (109 ns) + 2× UTF conversion (≈ 100 ns on a 10-byte string) = ~210 ns of fixed costs, a net gain of ~90 ns – 700 ns remains. On a 500 ns baseline call: 0.9×–2.4×. Median ≈ 1.2×. Below that, a lot tips over to <1× (UTF-conversion spike on longer strings).
 
-3. **Batch-API als Rettung unrealistisch.** Die Call-Stelle im Resolver-Inner-Loop ist nicht batch-fähig: "welche Version von lodash erfüllt diese 12 Ranges?" ist die Frage, die pro Knoten im Dep-Graph gestellt wird — diese Ranges werden nacheinander aus Parent-Package-JSONs gelesen und lokal geprüft. Es gibt keinen Punkt im Control-Flow, an dem 1000 Ranges gleichzeitig zum Matching bereit liegen.
+3. **A batch API as a rescue is unrealistic.** The call site in the resolver inner loop is not batchable: "which version of lodash satisfies these 12 ranges?" is the question asked per node in the dependency graph — those ranges are read sequentially from parent package JSONs and checked locally. There is no point in the control flow at which 1000 ranges sit ready for matching at once.
 
-4. **Pattern-match zu bestehenden NO-GOs**:
-   - `mime` (~180M, Hashmap-Lookup) — identischer FFI-Floor-Trap
-   - `dotenv` (~91M, 50-Zeilen-JS-Parser) — identisch
-   - `deep-equal` (shipped, deprecated 0.2.0) — identisch: kurze V8-native-Ops, FFI hatte keine Headroom
+4. **Pattern match against existing NO-GOs**:
+   - `mime` (~180M, hashmap lookup) — identical FFI-floor trap
+   - `dotenv` (~91M, 50-line JS parser) — identical
+   - `deep-equal` (shipped, deprecated 0.2.0) — identical: short V8-native ops, FFI had no headroom
 
-5. **Adoption allein kompensiert nicht.** 150M downloads/Woche ist riesig, aber portfolio-Kriterium ist Perf-Gewinn × Adoption. Bei ~1× Perf ist das Produkt null. Nur das Label "by `@amigo-labs/*`" ist kein Value-Add ohne messbaren Win.
+5. **Adoption alone does not compensate.** 150M downloads/week is huge, but the portfolio criterion is perf gain × adoption. At ~1× perf, the product is zero. The label "by `@amigo-labs/*`" alone is no value-add without a measurable win.
 
 **Shape-Matching:**
-- 🔁 Wie `mime` (Lookup + String-Parse, beides FFI-floor-territory)
-- 🔁 Wie `dotenv` (V8-optimized small parser)
-- 🔁 Wie `deep-equal` (shipped Red, measured 0,96×–1,30× → deprecated)
-- ❌ Nicht wie `commonmark` / `inflate` (substantieller Compute-Per-Call)
-- ❌ Nicht wie `tiktoken` (Stateful-Class holt amortisierte FFI — aber semver hat keine vergleichbare Stateful-Nutzung im Ökosystem)
+- 🔁 Like `mime` (lookup + string parse, both FFI-floor territory)
+- 🔁 Like `dotenv` (V8-optimized small parser)
+- 🔁 Like `deep-equal` (shipped Red, measured 0.96×–1.30× → deprecated)
+- ❌ Not like `commonmark` / `inflate` (substantial compute per call)
+- ❌ Not like `tiktoken` (a stateful class earns amortized FFI — but semver has no comparable stateful usage in the ecosystem)
 
-**Benchmark-Gap-Flag:** Ohne Spike. Falls jemand ein 1-Tag-Spike läuft und 1,5× auf realistic median `satisfies()`-Call misst, wäre Yellow knapp möglich — aber unwahrscheinlich. Publizierte Rust-vs-Node-Microbenches (Cargo-Team intern, Community-Posts) deuten konsistent auf 0,9×–1,3× via NAPI.
+**Benchmark-gap flag:** Without a spike. If someone runs a 1-day spike and measures 1.5× on the realistic median `satisfies()` call, Yellow would be barely within reach — but unlikely. Published Rust-vs-Node microbenchmarks (Cargo team internal, community posts) consistently point to 0.9×–1.3× via NAPI.
 
 ## If GO — proposed port
 
-Nicht empfohlen. Section existiert nur zur Vollständigkeit.
+Not recommended. This section exists only for completeness.
 
-Falls jemand dennoch einen Spike versuchen will: `satisfiesMany(versions: string[], range: string) → Uint8Array` (flat-Buffer-Output) auf 1000-Version-Batch wäre die einzige realistische Green-Pfad — Messung müsste ≥2,5× vs. semver-Loop ergeben. Kein anderer Shape hat Gewinnchance.
+If someone nevertheless wants to attempt a spike: `satisfiesMany(versions: string[], range: string) → Uint8Array` (flat Buffer output) on a 1000-version batch would be the only realistic Green path — the measurement would have to show ≥2.5× vs. a semver loop. No other shape has a chance of winning.
 
 ## If NO-GO — BACKLOG entry
 
@@ -92,4 +92,4 @@ Falls jemand dennoch einen Spike versuchen will: `satisfiesMany(versions: string
 - **semver** (~150M). Per-call work is microseconds of V8-JIT'd parse + range-compare. Rust `semver` crate is faster per-se (~2–3× isolated) but 109 ns FFI floor plus UTF-conversion eats the gain on typical `satisfies()` calls — realistic end-to-end speedup ~1.2×. Package-manager resolvers use scattered-single-call pattern; batch API would be useful but has no ecosystem uptake. Same trap as `mime`/`dotenv`/`deep-equal`. Full review: `docs/perf-review/semver.md`.
 ```
 
-Section in `BACKLOG.md`: **FFI overhead > gain** — existierender Eintrag wird durch die obige Zeile ersetzt (der initial-pass-Entry steht bereits dort, Review formalisiert ihn mit Zahlen).
+Section in `BACKLOG.md`: **FFI overhead > gain** — the existing entry is replaced by the line above (the initial-pass entry is already there; the review formalizes it with numbers).

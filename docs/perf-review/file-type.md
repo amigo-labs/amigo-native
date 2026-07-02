@@ -1,17 +1,17 @@
 # Perf-Review: `@amigo-labs/file-type`
 
-> **Status:** 🟢 Green (extremster Portfolio-Win) · **Reviewed:** 2026-04-21 · **Version:** 0.1.0
+> **Status:** 🟢 Green (most extreme portfolio win) · **Reviewed:** 2026-04-21 · **Version:** 0.1.0
 
 ## Verdict
 
-**31,9× (100 KB JPEG) bis 2378× (10 MB MP4)** vs. upstream `file-type` npm. Das ist der größte Multiplikator im Portfolio — aber mit einem klaren Strukturgrund: **upstream ist async-only, wir sind sync**. Der User, der "ist das ein JPEG?" auf einem 10 MB Buffer beantworten will, zahlt bei upstream den async-Wrapper-Overhead + Stream-Read-Ceremony; wir erkennen magische Bytes in den ersten 4 KB und returnen direkt. Infer-Rust-Crate ist kompakt (<1 MB Binary), die Signaturen sitzen in compile-time-Tables, und der 4-KB-Head-Cap (`MAX_MAGIC_PREFIX`) vermeidet den sonst sichtbaren 1–3 ms memcpy für den Async-Pfad. Einzige Divergenz vs. upstream: Parity nur 89 % (einige exotische Formate fehlen im `infer` crate).
+**31.9× (100 KB JPEG) up to 2378× (10 MB MP4)** vs. upstream `file-type` npm. This is the largest multiplier in the portfolio — but with a clear structural reason: **upstream is async-only, we are sync**. The user who wants to answer "is this a JPEG?" on a 10 MB buffer pays upstream's async-wrapper overhead + stream-read ceremony; we detect the magic bytes in the first 4 KB and return directly. The `infer` Rust crate is compact (<1 MB binary), the signatures live in compile-time tables, and the 4 KB head cap (`MAX_MAGIC_PREFIX`) avoids the otherwise visible 1–3 ms memcpy on the async path. Only divergence vs. upstream: parity is only 89 % (some exotic formats are missing from the `infer` crate).
 
 ## Classification rationale
 
-1. **Async-vs-Sync ist der strukturelle Hebel.** upstream-`file-type@19` hat **keine** sync-API mehr — die Umstellung auf async war upstream-Design-Entscheidung (readable-stream-Support). Wir bieten beides: `fileTypeFromBufferSync` für den hot-path (1,4M Hz), `fileTypeFromBuffer` (AsyncTask) für non-blocking.
-2. **Infer-Rust-Crate ist sehr schnell.** Signaturen sind in PHF-like Tables (compile-time) gespeichert, byte-matching ist direkter `&[u8]`-Compare. JS-upstream hat RegExp-basierte Signatur-Tests in einem Chain-of-`.match`-Pattern.
-3. **4 KB Head-Cap vermeidet redundantes Memcpy.** Jeder `infer::get()` liest nur die ersten ~4 KB. Wir kappen den Async-Task-Input auf 4 KB, was bei 10 MB MP4 den impliziten `to_vec()`-Clone (1–3 ms) eliminiert.
-4. **Parity-Gap als akzeptable Kosten.** 89 % Parity (aus `docs/perf-review.md`-Tabelle im README) heißt: ~10 % der von upstream unterstützten Formate fehlen oder divergieren. Infer deckt die 80/20 ab (alle Mainstream-Bildformate, Office-Docs, Archive, Media). Exotische Formate (HEIC-Varianten, alte DOS-Formate) divergieren.
+1. **Async-vs-sync is the structural lever.** Upstream `file-type@19` no longer has **any** sync API — the switch to async was an upstream design decision (readable-stream support). We offer both: `fileTypeFromBufferSync` for the hot path (1.4M Hz), `fileTypeFromBuffer` (AsyncTask) for non-blocking.
+2. **The `infer` Rust crate is very fast.** Signatures are stored in PHF-like tables (compile-time), byte matching is a direct `&[u8]` compare. The JS upstream has RegExp-based signature tests in a chain-of-`.match` pattern.
+3. **The 4 KB head cap avoids redundant memcpy.** Every `infer::get()` reads only the first ~4 KB. We cap the async-task input at 4 KB, which for a 10 MB MP4 eliminates the implicit `to_vec()` clone (1–3 ms).
+4. **The parity gap is an acceptable cost.** 89 % parity (from the `docs/perf-review.md` table in the README) means: ~10 % of the formats upstream supports are missing or diverge. `infer` covers the 80/20 (all mainstream image formats, office docs, archives, media). Exotic formats (HEIC variants, old DOS formats) diverge.
 
 ## Evidence
 
@@ -19,19 +19,19 @@
 
 | Scenario | @amigo-labs/file-type (sync) | file-type npm (async) | Speedup |
 |---|---:|---:|---:|
-| 100 KB JPEG | 1 445 211 Hz | 45 248 Hz | **31,9×** |
-| 10 MB MP4 (sync) | 1 382 301 Hz | 581,0 Hz | **2378×** |
-| 10 MB MP4 (async) | 36 432 Hz | 581,0 Hz | **62,7×** |
+| 100 KB JPEG | 1 445 211 Hz | 45 248 Hz | **31.9×** |
+| 10 MB MP4 (sync) | 1 382 301 Hz | 581.0 Hz | **2378×** |
+| 10 MB MP4 (async) | 36 432 Hz | 581.0 Hz | **62.7×** |
 
 ### Realistic use-case
 
-**File-Upload-Validation** — User lädt Datei hoch, wir prüfen magic-bytes bevor wir Endung vertrauen. **Format-Detection in Batch-Pipelines** — File-Tree-Walk mit Category-Buckets. **HTTP-Content-Type-Derivation** aus Bytes statt aus Header. In allen Fällen: sync-API gewünscht (der Async-Overhead der upstream-Library ist ungewollte Komplexität für eine sub-µs-Operation).
+**File-upload validation** — a user uploads a file, we check the magic bytes before trusting the extension. **Format detection in batch pipelines** — file-tree walk with category buckets. **HTTP content-type derivation** from bytes instead of headers. In all cases: a sync API is what you want (the upstream library's async overhead is unwanted complexity for a sub-µs operation).
 
 ### Benchmark gaps
 
-- **Small-Buffer-Bucket (<1 KB) nicht gebenched.** Die meisten magic-bytes-Checks nutzen ~32-256 Byte Header. Dort wäre FFI-Floor relativ sichtbar. Erwartbar: immer noch dominant Green durch async-vs-sync.
-- **Diverse Formate einzeln nicht gemessen.** PNG, GIF, PDF, ZIP, etc. haben im `infer` crate unterschiedliche Signatur-Length-Checks. Durchschnitt über Format-Mix wäre sinnvoll.
-- **Stream/Path-basierte APIs nicht im Bench** (upstream unterstützt `fileTypeFromFile` etc.). Wir fokussieren auf Buffer-Pfad.
+- **Small-buffer bucket (<1 KB) not benched.** Most magic-byte checks use ~32-256 byte headers. There the FFI floor would be relatively visible. Expected: still dominantly Green thanks to async-vs-sync.
+- **Individual formats not measured separately.** PNG, GIF, PDF, ZIP, etc. have different signature-length checks in the `infer` crate. An average over a format mix would be sensible.
+- **Stream/path-based APIs not in the bench** (upstream supports `fileTypeFromFile` etc.). We focus on the buffer path.
 
 ### API surface
 
@@ -41,42 +41,42 @@
 ```
 
 - `FileTypeResult { ext: String, mime: String }` — compact result object.
-- Sync-Variante ist der Hot-Path. Async-Variante für non-blocking große-Buffer-Workloads (HTTP-Upload-Handler).
-- Kein Stateful-API, kein Config, kein Callback.
+- The sync variant is the hot path. The async variant is for non-blocking large-buffer workloads (HTTP upload handlers).
+- No stateful API, no config, no callbacks.
 
 ### Bundle / binary size
 
-`infer` crate ist unter 100 KB + napi-Bindings. Eines der **kleinsten** Binaries im Portfolio.
+The `infer` crate is under 100 KB + napi bindings. One of the **smallest** binaries in the portfolio.
 
 ### FFI-overhead baseline
 
-- Sync-Pfad: Buffer-Transport ~180 ns, Option<{ext, mime}>-Return ~300 ns (zwei kleine Strings). Rust-Work: 4 KB head-scan ~1–5 µs. Total ~5 µs per call. **3,47 % FFI-Share** auf sync — tolerabel.
-- Async-Pfad: 4 KB-memcpy ~2 µs, AsyncTask-Schedule ~10 µs, compute ~5 µs, resolve ~10 µs. Total ~27 µs. Dominiert von async-ceremony, das ist der Punkt.
+- Sync path: buffer transport ~180 ns, Option<{ext, mime}> return ~300 ns (two small strings). Rust work: 4 KB head scan ~1–5 µs. Total ~5 µs per call. **3.47 % FFI share** on sync — tolerable.
+- Async path: 4 KB memcpy ~2 µs, AsyncTask schedule ~10 µs, compute ~5 µs, resolve ~10 µs. Total ~27 µs. Dominated by async ceremony, which is the point.
 
 ## Phase-C optimization checklist
 
 | # | Lever | Applicable | Notes |
 |---|---|---|---|
-| C.1 | Input-type minimization | ✅ already done | `Buffer` zero-copy, sync-Pfad keine Kopie |
+| C.1 | Input-type minimization | ✅ already done | `Buffer` zero-copy, no copy on the sync path |
 | C.2 | Output-type minimization | ✅ already done | `Option<{ext, mime}>` compact |
-| C.3 | Batch API (`file_type_many`) | 🟡 potential | File-Tree-Walker-Use-Case könnte profitieren. Aber 1,4M Hz ist bereits so schnell dass Batch-Hebel marginal wäre |
-| C.4 | Stateful API | ❌ not applicable | Kein Config-State |
-| C.5 | Parallelization | ❌ not applicable | Single-Call macht kein Headroom |
-| C.6 | Algorithm swap | ❌ not applicable | `infer` ist bereits optimal |
-| C.7 | Allocator tuning | ✅ already done | 4KB head-cap, kein Full-Buffer-Clone im Async |
-| C.8 | Bundle-size | ✅ already done | Sehr klein |
+| C.3 | Batch API (`file_type_many`) | 🟡 potential | The file-tree-walker use case could benefit. But 1.4M Hz is already so fast that the batch lever would be marginal |
+| C.4 | Stateful API | ❌ not applicable | No config state |
+| C.5 | Parallelization | ❌ not applicable | A single call leaves no headroom |
+| C.6 | Algorithm swap | ❌ not applicable | `infer` is already optimal |
+| C.7 | Allocator tuning | ✅ already done | 4KB head cap, no full-buffer clone in async |
+| C.8 | Bundle-size | ✅ already done | Very small |
 
 ## Action plan
 
-**Keep-as-is.** Kein Raum nach oben, größter Speedup-Win im Portfolio. Paket ist fertig.
+**Keep-as-is.** No room upward, largest speedup win in the portfolio. The package is done.
 
 Maintenance:
 
-1. **Small-Buffer-Bucket benchen** (32-Byte-Header-Case) zur Dokumentation.
-2. **Format-Mix-Bench** — PNG/GIF/PDF/MP4/ZIP durcheinander für "realistic median" statt nur JPEG+MP4.
-3. **Parity-Gap-Doku** (die fehlenden 11 %) in `divergences.md` falls noch nicht vollständig.
+1. **Bench the small-buffer bucket** (32-byte-header case) for documentation.
+2. **Format-mix bench** — PNG/GIF/PDF/MP4/ZIP mixed together for a "realistic median" instead of only JPEG+MP4.
+3. **Parity-gap documentation** (the missing 11 %) in `divergences.md` if not yet complete.
 
-Keine offenen Phase-C-Levers, keine Phase-D-Risiken.
+No open Phase-C levers, no Phase-D risks.
 
 ## References
 
@@ -84,4 +84,4 @@ Keine offenen Phase-C-Levers, keine Phase-D-Risiken.
 - Bench: `crates/file-type/__bench__/index.bench.ts`
 - Lib: `crates/file-type/src/lib.rs`
 - Cargo: `crates/file-type/Cargo.toml`
-- `docs/packages.json` speedup: `"32× faster"` (konservativ angegeben vs. den gemessenen 2378×)
+- `docs/packages.json` speedup: `"32× faster"` (stated conservatively vs. the measured 2378×)

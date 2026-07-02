@@ -1,99 +1,99 @@
 # Candidate review: `diff`
 
-> **Status:** GO (als Drop-in, mit Offset-API als Green-Hot-Path) · **Predicted:** 🟡 Yellow leaning 🟢 (mit Offset-API), 🟡 Yellow (mit Hunk-Object-Array) · **Reviewed:** 2026-04-21
+> **Status:** GO (as a drop-in, with the offset API as the green hot path) · **Predicted:** 🟡 Yellow leaning 🟢 (with offset API), 🟡 Yellow (with hunk object array) · **Reviewed:** 2026-04-21
 
 ## Verdict
 
-Text-Diff ist ein **Algorithmus-heavy, Output-shape-sensitive** Paket. Myers (default) und Patience sind O(N×M) in der Zellenanzahl — auf 10 KB × 10 KB Input ist das millisekunden echter Arbeit in JS. Rust `similar` crate hat SIMD-beschleunigte Common-Prefix/Suffix-Erkennung plus optimierte Snake-Search, typisch 5–15× faster als jsdiff auf Document-Level-Inputs. Die Output-Form ist das bekannte `Vec<Object>`-Problem: jsdiff gibt ein Array von `{value, added, removed, count}`-Hunks zurück, jeweils mit Content-String. Marshalling von 200 Hunks × Strings frisst den Gewinn auf kleinen Inputs. Lösung — dieselbe wie bei `sbd`: ein **Offset-basierter Hot-Path** (`diffToOffsets(a, b) → Uint32Array`) gibt nur die Hunk-Grenzen zurück, Content-Slicing macht der Caller lazy. Die Drop-in-Form (`Vec<Hunk>`) bleibt verfügbar aber ist Yellow. Line-Diff (~90 % der npm-`diff`-Nutzung) ist Green unabhängig vom Output-Shape, weil Lines weniger und fetter sind als Chars.
+Text diffing is an **algorithm-heavy, output-shape-sensitive** package. Myers (default) and Patience are O(N×M) in the number of cells — on 10 KB × 10 KB input that is milliseconds of real work in JS. The Rust `similar` crate has SIMD-accelerated common-prefix/suffix detection plus an optimized snake search, typically 5–15× faster than jsdiff on document-level inputs. The output shape is the familiar `Vec<Object>` problem: jsdiff returns an array of `{value, added, removed, count}` hunks, each carrying a content string. Marshalling 200 hunks × strings eats the gain on small inputs. The solution — the same as for `sbd`: an **offset-based hot path** (`diffToOffsets(a, b) → Uint32Array`) returns only the hunk boundaries and the caller slices content lazily. The drop-in form (`Vec<Hunk>`) remains available but is Yellow. Line diffing (~90 % of npm `diff` usage) is Green regardless of output shape because lines are fewer and fatter than chars.
 
 ## JS package
 
 - **npm:** [`diff`](https://www.npmjs.com/package/diff)
-- **Downloads:** ~200M/Woche (Q1 2026, BACKLOG-Zahl bestätigt). Top-10 der am meist-gedownloadeten utility-Packages.
+- **Downloads:** ~200M/week (Q1 2026, BACKLOG figure confirmed). Top 10 of the most-downloaded utility packages.
 - **Exports / API surface:**
-  - `diffChars(oldStr, newStr, opts?)` — Char-by-char
-  - `diffWords(oldStr, newStr, opts?)` / `diffWordsWithSpace(...)` — Word-tokenized
-  - `diffLines(oldStr, newStr, opts?)` / `diffTrimmedLines(...)` — Line-based (**der häufigste Fall**)
-  - `diffSentences(oldStr, newStr, opts?)` — Sentence-based
+  - `diffChars(oldStr, newStr, opts?)` — char-by-char
+  - `diffWords(oldStr, newStr, opts?)` / `diffWordsWithSpace(...)` — word-tokenized
+  - `diffLines(oldStr, newStr, opts?)` / `diffTrimmedLines(...)` — line-based (**the most common case**)
+  - `diffSentences(oldStr, newStr, opts?)` — sentence-based
   - `diffCss(...)`, `diffJson(obj1, obj2)` — typed
-  - `createPatch(fileName, oldStr, newStr, oldHeader, newHeader, opts?)` → Unified-Diff-Format-String
-  - `applyPatch(source, patch, opts?)` — Reverse-Op
+  - `createPatch(fileName, oldStr, newStr, oldHeader, newHeader, opts?)` → unified-diff-format string
+  - `applyPatch(source, patch, opts?)` — reverse op
   - `parsePatch(diffStr)`
 - **Typical input:**
-  - 2 Strings (old, new). Größen hoch variable:
-    - Git-like line-diff: 100 B – 100 KB
-    - Text-edit-diff: 1 KB – 50 KB
-    - Log-file-compare: 10 KB – 10 MB
-    - Code-review-diff: typisch 500 B – 20 KB per File
-- **Typical output:** `Array<{value: string, added?: bool, removed?: bool, count?: number}>`. Größe: bei gleichen Strings 1 Hunk, bei völlig verschiedenen ~2 × LineCount Hunks.
-- **Realistic median use-case:** **Code-Review-Tooling** (diff zwischen File-Versionen, line-based). **Test-Snapshot-Diff** (Vitest/Jest erwartet-vs-actual, char/line). **Merge-Conflict-Anzeige** in Web-UIs. **Text-Edit-History** in Collaborative-Editing-Backends. **Config-Change-Preview**. Alle Cases: **ein Call pro Vergleich**, Inputs variabel aber meist 1–50 KB. Keine Chain-API, kein Stateful.
+  - 2 strings (old, new). Sizes highly variable:
+    - Git-like line diff: 100 B – 100 KB
+    - Text-edit diff: 1 KB – 50 KB
+    - Log-file compare: 10 KB – 10 MB
+    - Code-review diff: typically 500 B – 20 KB per file
+- **Typical output:** `Array<{value: string, added?: bool, removed?: bool, count?: number}>`. Size: 1 hunk for identical strings, ~2 × line count hunks for completely different ones.
+- **Realistic median use-case:** **Code-review tooling** (diff between file versions, line-based). **Test snapshot diffing** (Vitest/Jest expected-vs-actual, char/line). **Merge-conflict display** in web UIs. **Text-edit history** in collaborative-editing backends. **Config-change preview**. All cases: **one call per comparison**, inputs variable but mostly 1–50 KB. No chain API, nothing stateful.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - [`similar`](https://crates.io/crates/similar) — **primär.** Von Armin Ronacher. Myers + Patience + LCS-Algorithmen. Unified-Diff-Format-Output. Char/Word/Line-Tokenization built-in. Aktiv, MIT.
-  - [`imara-diff`](https://crates.io/crates/imara-diff) — alternative, schneller auf großen Inputs, aber kleiner API-Surface.
-  - [`difference`](https://crates.io/crates/difference) — älter, weniger features, nicht empfohlen.
-- **Maintenance / license:** `similar` MIT/Apache, Ronacher, exzellent maintained. Supply-Chain sauber.
+  - [`similar`](https://crates.io/crates/similar) — **primary.** By Armin Ronacher. Myers + Patience + LCS algorithms. Unified-diff-format output. Char/word/line tokenization built-in. Active, MIT.
+  - [`imara-diff`](https://crates.io/crates/imara-diff) — alternative, faster on large inputs, but smaller API surface.
+  - [`difference`](https://crates.io/crates/difference) — older, fewer features, not recommended.
+- **Maintenance / license:** `similar` MIT/Apache, Ronacher, excellently maintained. Supply chain clean.
 - **Known gotchas / divergences:**
-  - **Hunk-Output-Format** — jsdiff kombiniert unchanged/added/removed in einem flachen Array. `similar` hat `TextDiff::iter_all_changes()` der ein Iterator liefert, kann mapped werden.
-  - **`ignoreCase`, `ignoreWhitespace`, `newlineIsToken`** — jsdiff hat diverse Options. similar unterstützt die meisten, aber `ignoreCase` vielleicht manuell.
-  - **diffJson**-Semantik — jsdiff's `diffJson` stringifiziert beide Objekte mit `JSON.stringify(sorted)` und diff-t die Lines. Replizierbar, aber Parity auf Key-Order-Sorting-Details checken.
-  - **Patch-Format-Parity** — `createPatch`/`applyPatch` folgen dem Unified-Diff-Standard, aber `@@ -a,b +c,d @@`-Header-Format und Trailing-Newline-Handling haben Divergenz-Risiko gegen GNU-`diff`/`patch`.
-  - **Callbacks** — `diffArrays(oldArr, newArr, opts)` mit `opts.comparator` ist Callback-Variante. Für String-Arrays ist das vermeidbar (pre-serialize), für Object-Arrays nicht — wir schneiden Object-Array-Diff aus dem Scope raus (oder bieten nur String-Key-Based).
+  - **Hunk output format** — jsdiff combines unchanged/added/removed in one flat array. `similar` has `TextDiff::iter_all_changes()` which yields an iterator that can be mapped.
+  - **`ignoreCase`, `ignoreWhitespace`, `newlineIsToken`** — jsdiff has various options. similar supports most of them, but `ignoreCase` may need to be done manually.
+  - **`diffJson` semantics** — jsdiff's `diffJson` stringifies both objects with `JSON.stringify(sorted)` and diffs the lines. Replicable, but check parity on key-order-sorting details.
+  - **Patch format parity** — `createPatch`/`applyPatch` follow the unified-diff standard, but the `@@ -a,b +c,d @@` header format and trailing-newline handling carry divergence risk against GNU `diff`/`patch`.
+  - **Callbacks** — `diffArrays(oldArr, newArr, opts)` with `opts.comparator` is a callback variant. For string arrays this is avoidable (pre-serialize), for object arrays it is not — we cut object-array diffing out of scope (or offer only string-key-based).
 
 ## BACKLOG check
 
-Vorhandener Eintrag in `BACKLOG.md` (Section "Under investigation — General utilities → Predicted Yellow"): ergänzt 2026-04-21. Review bestätigt Yellow-Prediction mit Green-Upgrade-Pfad über Offset-API.
+Existing entry in `BACKLOG.md` (section "Under investigation — General utilities → Predicted Yellow"): added 2026-04-21. Review confirms the Yellow prediction with a Green upgrade path via the offset API.
 
-Abgrenzung:
-- Gegen `docs/perf-review/sbd.md` (GO Yellow→Green mit Offset-API): **identisches Output-Shape-Problem**, identische Lösung. Review-Pattern wiederverwendet. Das ist der "Industrialisierungs"-Moment — wir haben das Pattern gesehen (xxhash, sbd), wir wissen den Fix.
-- Gegen `docs/perf-review/deep-equal.md` (archived 🔴): ähnliche API-Shape (zwei Inputs, einer-Boolean-oder-klein-Output), aber Compute-Größenordnung fundamental anders. `diff` auf 20 KB ist Millisekunden; `deep-equal` auf flat-7-key ist 500 ns. Deshalb umgekehrtes Verdict.
-- Gegen `docs/perf-review/levenshtein.md` (archived 🔴): Warnung — Char-Level-Diff auf kurzen Strings könnte in denselben FFI-Floor-Trap fallen. Deshalb realistischer Median = Line-Level und mittlere Inputs.
+Differentiation:
+- Against `docs/perf-review/sbd.md` (GO Yellow→Green with offset API): **identical output-shape problem**, identical solution. Review pattern reused. This is the "industrialization" moment — we have seen the pattern (xxhash, sbd), we know the fix.
+- Against `docs/perf-review/deep-equal.md` (archived 🔴): similar API shape (two inputs, one boolean-or-small output), but the compute magnitude is fundamentally different. `diff` on 20 KB is milliseconds; `deep-equal` on a flat 7-key object is 500 ns. Hence the opposite verdict.
+- Against `docs/perf-review/levenshtein.md` (archived 🔴): warning — char-level diff on short strings could fall into the same FFI-floor trap. Hence the realistic median = line level and medium-sized inputs.
 
-Kein Eintrag in `docs/packages.json`.
+No entry in `docs/packages.json`.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Input-grösen-abhängig.** 1 KB × 1 KB `diffLines`: ~100 µs jsdiff, ~20–50 µs Rust → 2–5×. 20 KB × 20 KB `diffLines`: ~2–5 ms jsdiff, ~200–500 µs Rust → **5–10×**. 100 KB × 100 KB `diffChars`: ~200 ms – 2 s jsdiff (O(N²) dominant), ~20–100 ms Rust → **10–20×**. `diffChars` auf sehr langen Strings ist traditionelles diff-Nightmare — dort holen wir am meisten. |
-| Input size distribution | Zwei Strings, kombinierte Größe 200 B – 20 MB. UTF-Konv 0,35 ns/byte × 2 (beide Strings) = ~70 µs bei 100 KB combined. Auf ~500 µs Rust = 14 %. Grenzwertig aber Green. |
-| Output size distribution | **Hauptproblem.** Line-Diff 20 KB vs. 20 KB, 30 % geändert: ~100 Hunks × je Value-String ~50 Chars = 100 × (200 ns FFI-Wrap + 50 × 0,35 ns UTF-Konv) = **30 µs Marshalling** + zusätzliche V8-Object-Alloc-Pressure. Auf 500 µs Rust = 6 %, OK. Char-Diff 20 KB vs. 20 KB, 30 % geändert: ~6000 Hunks × je Value-String ~2 Chars = **1,2 ms Marshalling** auf 500 µs Rust-Compute = **>100 % Overhead, Red-Territorium**. |
-| Reusable setup (stateful potential) | Niedrig. Kein Key/Schema/Regex-Setup. Jeder Diff ist Fresh-Input. |
-| Batch-usage realism | Mittel. Code-Review-Tools haben batch-Diff-Workloads (diff 100 files). `diffManyLines(pairs: [string, string][]) → ...` sinnvoll. Rayon-parallelisierbar. |
-| FFI-share estimate vs. Rust work | Mit Hunk-Array: Line 5–15 %, Word ~20 %, Char 100 %+ (Red). Mit Offset-Array: <2 % über Distribution (durchgehend Green). |
+| Per-call algorithmic work | **Input-size-dependent.** 1 KB × 1 KB `diffLines`: ~100 µs jsdiff, ~20–50 µs Rust → 2–5×. 20 KB × 20 KB `diffLines`: ~2–5 ms jsdiff, ~200–500 µs Rust → **5–10×**. 100 KB × 100 KB `diffChars`: ~200 ms – 2 s jsdiff (O(N²) dominant), ~20–100 ms Rust → **10–20×**. `diffChars` on very long strings is the traditional diff nightmare — that is where we gain the most. |
+| Input size distribution | Two strings, combined size 200 B – 20 MB. UTF conversion 0.35 ns/byte × 2 (both strings) = ~70 µs at 100 KB combined. On ~500 µs Rust = 14 %. Borderline but Green. |
+| Output size distribution | **Main problem.** Line diff 20 KB vs. 20 KB, 30 % changed: ~100 hunks × value string ~50 chars each = 100 × (200 ns FFI wrap + 50 × 0.35 ns UTF conversion) = **30 µs marshalling** + additional V8 object-alloc pressure. On 500 µs Rust = 6 %, OK. Char diff 20 KB vs. 20 KB, 30 % changed: ~6000 hunks × value string ~2 chars each = **1.2 ms marshalling** on 500 µs Rust compute = **>100 % overhead, Red territory**. |
+| Reusable setup (stateful potential) | Low. No key/schema/regex setup. Every diff is fresh input. |
+| Batch-usage realism | Medium. Code-review tools have batch-diff workloads (diff 100 files). `diffManyLines(pairs: [string, string][]) → ...` makes sense. Rayon-parallelizable. |
+| FFI-share estimate vs. Rust work | With hunk array: line 5–15 %, word ~20 %, char 100 %+ (Red). With offset array: <2 % across the distribution (consistently Green). |
 
 ## Classification reasoning
 
-`diff` zeigt **exakt** dasselbe Muster wie `sbd` — die Output-Dimension entscheidet die Klassifikation:
+`diff` shows **exactly** the same pattern as `sbd` — the output dimension decides the classification:
 
-1. **Line-Diff ist der Median-Case und Green in beiden Output-Varianten.** 90 % der `diff`-npm-Calls sind `diffLines` oder `createPatch` (line-basiert). Die Hunk-Anzahl ist moderat (10–200), Value-Strings sind fett (50–200 Chars), Output-Marshalling-Overhead amortisiert. Speedup 5–10×.
+1. **Line diff is the median case and Green in both output variants.** 90 % of `diff` npm calls are `diffLines` or `createPatch` (line-based). The hunk count is moderate (10–200), value strings are fat (50–200 chars), output-marshalling overhead amortizes. Speedup 5–10×.
 
-2. **Char-Diff ist der Red-Trap.** Auf tausenden 2-Char-Hunks ist Output-Marshalling-Overhead > Rust-Compute. Zwei Wege raus:
-   - **Offset-API** — `diffCharsToOffsets(a, b) → Uint32Array`: Jeder Eintrag ist `[type, oldStart, oldEnd, newStart, newEnd]` oder kompakter als packed-Format. Konstante Size, flat Buffer-Transport.
-   - **Dokumentieren als "for char-level diffs on large strings, use the offset API"** im README.
-   Beide Optionen erhalten Drop-in für Line-Level, bieten Green-Path für Char-Level.
+2. **Char diff is the Red trap.** With thousands of 2-char hunks, output-marshalling overhead > Rust compute. Two ways out:
+   - **Offset API** — `diffCharsToOffsets(a, b) → Uint32Array`: each entry is `[type, oldStart, oldEnd, newStart, newEnd]` or more compact as a packed format. Constant size, flat buffer transport.
+   - **Document it as "for char-level diffs on large strings, use the offset API"** in the README.
+   Both options preserve drop-in for line level and provide a Green path for char level.
 
-3. **`createPatch`/`applyPatch` sind eigener Green-Case.** Die produzieren Unified-Diff als **einen String** (keine Hunk-Array!). Output-Marshalling = einmalige UTF-Konv. Klassisches Buffer-in/String-out-Green-Shape. Speedup 5–15× erwartbar.
+3. **`createPatch`/`applyPatch` are their own Green case.** They produce a unified diff as **one string** (no hunk array!). Output marshalling = a single UTF conversion. Classic buffer-in/string-out Green shape. Speedup 5–15× expected.
 
-4. **200M/Woche Adoption ist enorm.** Top-Tier. Jedes `jest`/`vitest`-Install pulled `diff` transitiv. Jeder CI-Diff-View nutzt es. Selbst bei Yellow-Classification ist der Portfolio-Value gegeben — aber Green ist mit Offset-API realistisch.
+4. **200M/week adoption is enormous.** Top tier. Every `jest`/`vitest` install pulls `diff` transitively. Every CI diff view uses it. Even with a Yellow classification the portfolio value is there — but Green is realistic with the offset API.
 
-5. **Keine API-Shape-Fallen sonst.** Kein Chain, keine Callbacks (außer `diffArrays`-Comparator, den wir ausschließen). Kein Plugin-System. Kein Stateful. Purer Algo-Wrapper. Exakt das was NAPI-RS gut macht.
+5. **No other API-shape traps.** No chain, no callbacks (except the `diffArrays` comparator, which we exclude). No plugin system. Nothing stateful. Pure algorithm wrapper. Exactly what NAPI-RS does well.
 
-**Shape-Matching:**
-- 🔁 Wie `sbd` (Output-Array-Shape-Sensitivität, Offset-API als Lösung)
-- 🔁 Wie `xxhash` pre-fix (Vec<BigInt> war Yellow, Buffer-Output wurde Green)
-- ✅ Wie `inflate` (pure algo, bytes-heavy compute, Buffer-in/Buffer-out viable)
-- ✅ Wie `@amigo-labs/commonmark` (String-in, substantial compute, String-out for patch-mode)
-- ❌ Nicht wie `levenshtein` archived (UTF-16/UTF-8-Marshalling war hier auf Input dominant; `diff` hat größere Inputs die das amortisieren, plus Lines-als-Tokens)
-- ❌ Nicht wie `deep-equal` archived (Work-pro-Call ist >> FFI-Floor)
+**Shape matching:**
+- 🔁 Like `sbd` (output-array shape sensitivity, offset API as the solution)
+- 🔁 Like `xxhash` pre-fix (Vec<BigInt> was Yellow, Buffer output became Green)
+- ✅ Like `inflate` (pure algo, bytes-heavy compute, buffer-in/buffer-out viable)
+- ✅ Like `@amigo-labs/commonmark` (string-in, substantial compute, string-out for patch mode)
+- ❌ Not like `levenshtein` archived (UTF-16/UTF-8 marshalling was dominant on input there; `diff` has larger inputs that amortize it, plus lines-as-tokens)
+- ❌ Not like `deep-equal` archived (work per call is >> FFI floor)
 
-**Benchmark-Gap-Flag:** Kritisch — drei Tokenization-Level × drei Input-Größen × zwei Output-Varianten = 18 Szenarien. Realisierbar, aber umfangreichstes Bench-Set im Portfolio. Priorisierung: `diffLines` × {1 KB, 20 KB, 100 KB} × {Hunks, Offsets} zuerst (das deckt 80 % realer Nutzung).
+**Benchmark gap flag:** Critical — three tokenization levels × three input sizes × two output variants = 18 scenarios. Feasible, but the most extensive bench set in the portfolio. Prioritization: `diffLines` × {1 KB, 20 KB, 100 KB} × {hunks, offsets} first (that covers 80 % of real usage).
 
 ## If GO — proposed port
 
-- **Recommended crate-name:** `@amigo-labs/diff` (Drop-in-Konvention)
+- **Recommended crate-name:** `@amigo-labs/diff` (drop-in convention)
 - **Primary API sketch:**
   ```ts
   export interface Hunk {
@@ -109,7 +109,7 @@ Kein Eintrag in `docs/packages.json`.
     newlineIsToken?: boolean;
   }
 
-  // Drop-in-Form (Yellow-path, dokumentiert)
+  // Drop-in form (Yellow path, documented)
   export function diffChars(oldStr: string, newStr: string, opts?: DiffOptions): Hunk[];
   export function diffWords(oldStr: string, newStr: string, opts?: DiffOptions): Hunk[];
   export function diffWordsWithSpace(oldStr: string, newStr: string, opts?: DiffOptions): Hunk[];
@@ -119,13 +119,13 @@ Kein Eintrag in `docs/packages.json`.
   export function diffCss(oldStr: string, newStr: string, opts?: DiffOptions): Hunk[];
   export function diffJson(oldObj: any, newObj: any, opts?: DiffOptions): Hunk[];
 
-  // Zero-copy Hot-Path (Green-path) — eigener Namensraum da API anders
+  // Zero-copy hot path (Green path) — separate namespace since the API differs
   export type DiffOpType = 0 | 1 | 2;  // 0=equal, 1=added, 2=removed
   export function diffCharsToOffsets(oldStr: string, newStr: string, opts?: DiffOptions): Uint32Array;
   // Layout: [type, oldStart, oldEnd, newStart, newEnd, ...] repeating
   export function diffLinesToOffsets(oldStr: string, newStr: string, opts?: DiffOptions): Uint32Array;
 
-  // Patch-API (eigenes Green-Shape, String-out)
+  // Patch API (its own Green shape, string-out)
   export function createPatch(
     fileName: string,
     oldStr: string,
@@ -137,27 +137,27 @@ Kein Eintrag in `docs/packages.json`.
   export function applyPatch(source: string, patch: string, opts?: DiffOptions): string | false;
   export function parsePatch(diffStr: string): ParsedPatch[];
 
-  // Batch-Hebel (v0.2)
+  // Batch lever (v0.2)
   export function diffLinesBatch(pairs: Array<[string, string]>, opts?: DiffOptions): Hunk[][];
   ```
 - **Must-have benchmark scenarios (Gate):**
-  - **diffLines 1 KB × 1 KB (30 % changed):** Ziel ≥2× (Yellow-Grenze)
-  - **diffLines 20 KB × 20 KB:** Ziel ≥5× (Green-Gate-Hauptfall)
-  - **diffLines 100 KB × 100 KB:** Ziel ≥8×
-  - **diffLinesToOffsets 20 KB × 20 KB:** Ziel ≥8× (Offset-API-Value-Proposition)
-  - **diffChars 5 KB × 5 KB (10 % changed):** Ziel ≥3× (Hunks) / ≥10× (Offsets)
-  - **diffChars 50 KB × 50 KB:** Ziel ≥5× (Hunks) / ≥15× (Offsets) — **killer-bench für Offset-API**
-  - **createPatch 20 KB × 20 KB:** Ziel ≥5× (reine String-Out, kein Marshalling)
-  - **applyPatch 20 KB + Patch:** Ziel ≥3×
-  - **Parity-Conformance:** 500-Pair-Corpus gegen jsdiff, byte-identical Hunks auf ≥98 %
-- **Acceptance thresholds (Green gate):** `diffLines` ≥5× auf 20 KB, `diffLinesToOffsets` ≥8× auf 20 KB, `createPatch` ≥5×, `diffChars` über Offset-API ≥10× auf 50 KB. Char-Diff mit Hunks darf Yellow bleiben (dokumentiert).
+  - **diffLines 1 KB × 1 KB (30 % changed):** target ≥2× (Yellow threshold)
+  - **diffLines 20 KB × 20 KB:** target ≥5× (main Green-gate case)
+  - **diffLines 100 KB × 100 KB:** target ≥8×
+  - **diffLinesToOffsets 20 KB × 20 KB:** target ≥8× (offset-API value proposition)
+  - **diffChars 5 KB × 5 KB (10 % changed):** target ≥3× (hunks) / ≥10× (offsets)
+  - **diffChars 50 KB × 50 KB:** target ≥5× (hunks) / ≥15× (offsets) — **killer bench for the offset API**
+  - **createPatch 20 KB × 20 KB:** target ≥5× (pure string-out, no marshalling)
+  - **applyPatch 20 KB + patch:** target ≥3×
+  - **Parity conformance:** 500-pair corpus against jsdiff, byte-identical hunks at ≥98 %
+- **Acceptance thresholds (Green gate):** `diffLines` ≥5× on 20 KB, `diffLinesToOffsets` ≥8× on 20 KB, `createPatch` ≥5×, `diffChars` via offset API ≥10× on 50 KB. Char diff with hunks may stay Yellow (documented).
 - **Risks:**
-  - **Output-API-Dualität** — User müssen zwischen Hunk-Array (Drop-in) und Offsets (Performance) wählen. README muss deutlich die Performance-Trade-offs zeigen
-  - **Parity auf malformed-Input** — NUL-Bytes, invalid-UTF-8-Sequences, sehr lange Lines (>1 MB) — Edge-Cases testen
-  - **Patch-Format-Subtleties** — `@@`-Header-Counts, Context-Line-Handling, Trailing-Newline-Preservation
-  - **Binary-Size** — `similar` + Deps ~1–2 MB, unproblematisch
-  - **diffArrays-API** — Comparator-Callback ausgeschlossen (Callback-Antipattern). User müssen pre-normalize. Scope-Doc im README
+  - **Output-API duality** — users must choose between the hunk array (drop-in) and offsets (performance). The README must clearly show the performance trade-offs
+  - **Parity on malformed input** — NUL bytes, invalid UTF-8 sequences, very long lines (>1 MB) — test edge cases
+  - **Patch-format subtleties** — `@@` header counts, context-line handling, trailing-newline preservation
+  - **Binary size** — `similar` + deps ~1–2 MB, unproblematic
+  - **diffArrays API** — comparator callback excluded (callback antipattern). Users must pre-normalize. Scope doc in the README
 
 ## If NO-GO — BACKLOG entry
 
-Nicht zutreffend (GO-Empfehlung, Yellow-Prediction mit Green-Upgrade über Offset-API).
+Not applicable (GO recommendation, Yellow prediction with a Green upgrade via the offset API).

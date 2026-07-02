@@ -84,6 +84,7 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/bm25",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/bm25",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/bm25/README.md",
+      "perfReviewUrl": "/perf-review/bm25.md",
       "speedupDetails": {
         "napi": {
           "label": "13× faster",
@@ -223,6 +224,7 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/force-layout",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/force-layout",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/force-layout/README.md",
+      "perfReviewUrl": "/perf-review/force-layout.md",
       "speedupDetails": {
         "napi": {
           "label": "3.6–7.2× faster",
@@ -259,6 +261,7 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/graph-layout",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/graph-layout",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/graph-layout/README.md",
+      "perfReviewUrl": "/perf-review/graph-layout.md",
       "speedupDetails": {
         "napi": {
           "label": "62–75× faster",
@@ -352,7 +355,8 @@
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/language-detect",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/language-detect",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/language-detect/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/language-detect/README.md",
+      "perfReviewUrl": "/perf-review/language-detect.md"
     },
     {
       "name": "linkify-it",
@@ -403,7 +407,8 @@
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/pdf",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/pdf",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/pdf/README.md",
+      "perfReviewUrl": "/perf-review/pdf.md"
     },
     {
       "name": "pdf-parse",
@@ -484,7 +489,8 @@
       ],
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sentences",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sentences",
-      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sentences/README.md"
+      "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sentences/README.md",
+      "perfReviewUrl": "/perf-review/sentences.md"
     },
     {
       "name": "slugify",
@@ -521,6 +527,7 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/stemmer",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/stemmer",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/stemmer/README.md",
+      "perfReviewUrl": "/perf-review/stemmer.md",
       "speedupDetails": {
         "napi": {
           "label": "7–7.9× faster",
@@ -557,6 +564,7 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/text-splitters",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/text-splitters",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/text-splitters/README.md",
+      "perfReviewUrl": "/perf-review/text-splitters.md",
       "speedupDetails": {
         "napi": {
           "label": "up to 2.6× faster / 4.7× slower",

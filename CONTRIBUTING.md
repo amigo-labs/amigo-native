@@ -8,7 +8,8 @@ alternative on realistic inputs"*.
 ## Ground rules
 
 - **Performance is non-negotiable.** Every shipped crate carries a benchmark
-  suite and a verdict in [`docs/perf-review.md`](./docs/perf-review.md). A
+  suite and a verdict in `docs/perf-review/<name>.md` (verdict legend in
+  [`docs/perf-review.md`](./docs/perf-review.md)). A
   crate that can't stay Green on realistic medians gets deprecated — see the
   "Ported then deprecated" section of [`BACKLOG.md`](./BACKLOG.md).
 - **Parity is tracked.** Drop-in / Compatible / Alternative statuses in
@@ -86,8 +87,12 @@ WASM sub-crate at `crates/<name>/wasm/` — with the dual-target
    - In the README: flesh out the scaffolded "Install for the browser"
      section (same `import`; the bundler picks the WASM artifact).
 6. Populate the `amigo` block in `crates/<name>/package.json` — then run
-   `node scripts/sync-registry.mjs` to regenerate the root README table and
-   `docs/packages.json` in one step. Don't edit those two files by hand.
+   `node scripts/sync-registry.mjs` to regenerate `docs/packages.json` and
+   the `release.yml` dispatch options in one step. Don't edit those by hand.
+   Register the crate in `release-please-config.json` and
+   `.release-please-manifest.json` too (hand-maintained; copy the
+   `crates/argon2` entry shape) — `sync-registry --check` fails in CI when
+   an entry is missing.
 7. Add `MIGRATION.md` if the package isn't a 100 % drop-in.
 8. Add a platform-stub `npm/` directory per target (6 total — see existing
    crates). The `audit-crates` skill checks all conventions (napi stubs,
@@ -110,9 +115,10 @@ threat-model rationale (private-key crypto). Add the crate's name to the
 - Keep the exported surface stable. If you need to rename or remove a symbol,
   document it in `MIGRATION.md` and update the crate README in the same
   commit.
-- If a change moves a crate between Green/Yellow/Red, update the row in
-  [`docs/perf-review.md`](./docs/perf-review.md) and the speedup cell in the
-  root README.
+- If a change moves a crate between Green/Yellow/Red, update the verdict in
+  the crate's `docs/perf-review/<name>.md`; the speedup in
+  `docs/packages.json` is refreshed by the bench pipeline
+  (`generate-report.mjs`), not by hand.
 - If you bump a dependency that changes numeric output (e.g. a hashing crate's
   seeding behaviour), bump the major version — `@amigo-labs/*` semver treats
   output drift as breaking.

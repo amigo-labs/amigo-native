@@ -1,124 +1,124 @@
 # Candidate review: `pdf-parse`
 
-> **Status:** GO (als neues Paket, scoped auf Text-Extraction) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-21
+> **Status:** GO (as a new package, scoped to text extraction) · **Predicted:** 🟢 Green · **Reviewed:** 2026-04-21
 > **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
 
 
 ## Verdict
 
-`pdf-parse` ist ein dünner Wrapper um **Mozilla's pdf.js** — einen ~500k-LOC pure-JS-PDF-Renderer. Für den reinen Text-Extraction-Pfad ist das massiver Overhead: kompletter Page-Layout-Graph, Font-Decode, CIDMap-Auflösung, alles in JS-Land. Rust-`lopdf` + `pdf-extract` laufen auf SIMD-beschleunigten Byte-Parsern, nutzen native zlib/LZW-Dekompressoren und überspringen die Render-Pipeline komplett. Shape ist Lehrbuch-Green: **Buffer-in / String-out, ein FFI-Crossing pro Dokument**, substantielle CPU-Arbeit pro Call. Der eigentliche Vorbehalt ist **Parität auf pathologischen PDFs** — verschlüsselt, JBIG2, CJK-CID-Mappings, malformed cross-reference tables — nicht Perf.
+`pdf-parse` is a thin wrapper around **Mozilla's pdf.js** — a ~500k-LOC pure-JS PDF renderer. For the pure text-extraction path that is massive overhead: full page-layout graph, font decoding, CIDMap resolution, all in JS land. Rust `lopdf` + `pdf-extract` run on SIMD-accelerated byte parsers, use native zlib/LZW decompressors, and skip the render pipeline entirely. The shape is textbook Green: **Buffer in / String out, one FFI crossing per document**, substantial CPU work per call. The real reservation is **parity on pathological PDFs** — encrypted, JBIG2, CJK CID mappings, malformed cross-reference tables — not perf.
 
 ## JS package
 
 - **npm:** [`pdf-parse`](https://www.npmjs.com/package/pdf-parse)
-- **Downloads:** ~1M/Woche (Q1 2026 estimate, BACKLOG-Zahl bestätigt)
-- **Exports / API surface:** `pdf(dataBuffer, opts?) → Promise<{ text, numpages, numrender, info, metadata, version }>`. Minimalistisch; der zweite Argument erlaubt `pagerender`-Callback (wir ignorieren den in einem Port — Callback über FFI-Grenze = Antipattern).
-- **Typical input:** PDF-Buffer 50 KB – 10 MB. Median ~500 KB – 2 MB (Whitepaper, Rechnung, Report)
-- **Typical output:** Plaintext-String der Länge 5 KB – 500 KB. Plus Metadata-Objekt (klein, <1 KB)
-- **Realistic median use-case:** **RAG-Ingestion-Batch** — 100–10 000 PDFs durch die Pipeline schieben, pro PDF einmal `text` extrahieren und chunken. Zweiter Use-Case: **Ad-hoc-Server-Extract** (Upload-Form, ein PDF pro Request). Beide haben dasselbe Shape: ein PDF rein, ein Text raus, keine Per-Page-Callbacks nötig.
+- **Downloads:** ~1M/week (Q1 2026 estimate, BACKLOG figure confirmed)
+- **Exports / API surface:** `pdf(dataBuffer, opts?) → Promise<{ text, numpages, numrender, info, metadata, version }>`. Minimalist; the second argument allows a `pagerender` callback (we ignore it in a port — a callback across the FFI boundary is an antipattern).
+- **Typical input:** PDF buffers 50 KB – 10 MB. Median ~500 KB – 2 MB (whitepaper, invoice, report)
+- **Typical output:** plaintext string of length 5 KB – 500 KB. Plus a metadata object (small, <1 KB)
+- **Realistic median use-case:** **RAG ingestion batch** — pushing 100–10 000 PDFs through the pipeline, extracting `text` once per PDF and chunking it. Second use case: **ad-hoc server extraction** (upload form, one PDF per request). Both have the same shape: one PDF in, one text out, no per-page callbacks needed.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - [`pdf-extract`](https://crates.io/crates/pdf-extract) — **primär**. High-Level-API `extract_text(bytes) → Result<String>`, maintained (jrmuizel), MIT. Deckt die 80/20-Häufigen-PDF-Features ab: Text-Streams, Ligaturen, CID-Decoding, Layout-Reordering.
-  - [`lopdf`](https://crates.io/crates/lopdf) — Low-Level-PDF-Parser als Backend. `pdf-extract` baut darauf. Eigene Nutzung falls wir mehr als nur Text wollen (Metadata-Felder, Forms, Attachments — Fast-Follow).
-  - [`pdf`](https://crates.io/crates/pdf) — alternative Parser (pdf-rs/pdf), aktiver, aber API instabil zwischen 0.x-Releases.
-  - **Nicht geeignet:** `mupdf`-bindings — das wäre wieder ein C-Lib-Wrapper (MuPDF in C), derselbe `hnswlib-node`-Fehler.
-- **Maintenance / license:** `pdf-extract` MIT, `lopdf` MIT, beide aktiv (Q1 2026 Releases). Kein Supply-Chain-Risiko.
+  - [`pdf-extract`](https://crates.io/crates/pdf-extract) — **primary**. High-level API `extract_text(bytes) → Result<String>`, maintained (jrmuizel), MIT. Covers the 80/20 common PDF features: text streams, ligatures, CID decoding, layout reordering.
+  - [`lopdf`](https://crates.io/crates/lopdf) — low-level PDF parser used as the backend. `pdf-extract` builds on it. Use it directly if we want more than just text (metadata fields, forms, attachments — fast follow).
+  - [`pdf`](https://crates.io/crates/pdf) — alternative parser (pdf-rs/pdf), more active, but the API is unstable between 0.x releases.
+  - **Not suitable:** `mupdf` bindings — that would again be a C-library wrapper (MuPDF in C), the same `hnswlib-node` mistake.
+- **Maintenance / license:** `pdf-extract` MIT, `lopdf` MIT, both active (Q1 2026 releases). No supply-chain risk.
 - **Known gotchas / divergences:**
-  - **Encrypted PDFs**: `pdf-extract` v0.7 unterstützt RC4 und AES-128 Standard-Encryption, aber **kein** Public-Key-Security. Für typische Corporate-PDFs (AES-128) reicht das.
-  - **JBIG2-komprimierte Images**: irrelevant für Text-Extraction, aber Parser muss den Stream gracefully skippen.
-  - **CJK-Fonts mit proprietären CMaps**: die nicht-Unicode Adobe-CMaps (GB-EUC-H etc.) sind in `pdf-extract` partiell implementiert. Korpus von chinesischen/japanischen Geschäfts-PDFs muss gegen `pdf-parse` parallel geprüft werden.
-  - **Text-Reordering**: `pdf-parse` gibt Text in Page-Stream-Reihenfolge, `pdf-extract` versucht geometrisches Reorder. Kein Bug, aber Output-Divergenz — Konsumenten die regex-basiert auf Positions-Kontext matchen werden brechen.
-  - **Formular-Felder (AcroForms)**: `pdf-parse` ignoriert sie, `pdf-extract` teilweise. Divergenz dokumentieren.
-  - **Malformed Cross-Reference**: pdf.js hat jahrzehntelange Recovery-Heuristiken für kaputte PDFs. `lopdf`/`pdf-extract` weniger. Für edge-case-PDFs (Scanner-Output, alte Adobe-Versionen) kann Parity fehlen.
+  - **Encrypted PDFs**: `pdf-extract` v0.7 supports RC4 and AES-128 standard encryption, but **no** public-key security. For typical corporate PDFs (AES-128) that is sufficient.
+  - **JBIG2-compressed images**: irrelevant for text extraction, but the parser must skip the stream gracefully.
+  - **CJK fonts with proprietary CMaps**: the non-Unicode Adobe CMaps (GB-EUC-H etc.) are only partially implemented in `pdf-extract`. A corpus of Chinese/Japanese business PDFs must be checked side by side against `pdf-parse`.
+  - **Text reordering**: `pdf-parse` emits text in page-stream order, `pdf-extract` attempts geometric reordering. Not a bug, but an output divergence — consumers doing regex-based matching on positional context will break.
+  - **Form fields (AcroForms)**: `pdf-parse` ignores them, `pdf-extract` partially. Document the divergence.
+  - **Malformed cross-references**: pdf.js has decades of recovery heuristics for broken PDFs. `lopdf`/`pdf-extract` have fewer. For edge-case PDFs (scanner output, old Adobe versions) parity may be missing.
 
 ## BACKLOG check
 
-Existierender Eintrag: `BACKLOG.md:12`:
+Existing entry: `BACKLOG.md:12`:
 > **pdf-parse** (~1M, text-extraction path). Per-document parsing via `pdf-extract` / `lopdf`. Parity on edge-case PDFs is the main risk.
 
-Kategorisierung als "Predicted Green". Dieses Review bestätigt die Vorhersage mit dem expliziten Scope-Caveat: **Text-Extraction only, nicht pdf.js-Parity**.
+Categorized as "Predicted Green". This review confirms the prediction with the explicit scope caveat: **text extraction only, not pdf.js parity**.
 
-Abgrenzung zu bestehenden Reviews:
-- `docs/perf-review/pdfkit.md` und der `typst`-Review adressieren die **Write-Seite** (PDF erzeugen). `pdf-parse` ist die **Read-Seite**. Kein Overlap, perfekt komplementär.
-- Binary-Size-Frage ist hier deutlich geringer als bei `typst` — `pdf-extract` + `lopdf` + Deps landen bei ~3–5 MB pro Target, in etwa `zip`-/`commonmark`-Kategorie, nicht `typst`-Kategorie (15–25 MB).
+Distinction from existing reviews:
+- `docs/perf-review/pdfkit.md` and the `typst` review address the **write side** (producing PDFs). `pdf-parse` is the **read side**. No overlap, perfectly complementary.
+- The binary-size question is far smaller here than for `typst` — `pdf-extract` + `lopdf` + deps land at ~3–5 MB per target, roughly the `zip`/`commonmark` category, not the `typst` category (15–25 MB).
 
-Kein Eintrag in `docs/packages.json`.
+No entry in `docs/packages.json`.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Hoch.** Text-Extract eines 1 MB-PDFs mit 50 Seiten: pdf-parse/pdf.js ~200–500 ms in V8, `pdf-extract` erwartbar 20–80 ms. Substantielle Compute, FFI-Share <0,5 %. |
-| Input size distribution | Buffer 50 KB – 10 MB. Zero-copy durch V8-Buffer-Handle (`docs/BASELINE.md:30` — flat <200 ns bis 10 MB). Kein Marshalling-Problem auf der Input-Seite. |
-| Output size distribution | String 5 KB – 500 KB. UTF-16-Konversion kostet ~0,35 ns/byte (`docs/BASELINE.md:27`). 500 KB Output = ~175 µs Konversions-Overhead — bei >20 ms Rust-Compute irrelevant (<1 %). |
-| Reusable setup (stateful potential) | Niedrig. Kein Modell/Key/Schema pro Call. Document-Parser-State existiert pro Dokument, nicht pro API-Consumer. Keine NAPI-Class nötig. |
-| Batch-usage realism | Hoch. RAG-Ingestion-Workload = "verarbeite 1000 PDFs". `extractTextMany(buffers: Buffer[]) → string[]` oder `extractTextManyAsync` mit rayon-Pool wäre der zweite Hebel über Single-Call hinaus — rechtfertigt Phase-C1-Sprint nach v1. |
-| FFI-share estimate vs. Rust work | <1 % bei Median (1 MB → 30 ms Rust). Skaliert noch besser bei großen Dokumenten. |
+| Per-call algorithmic work | **High.** Text extraction of a 1 MB PDF with 50 pages: pdf-parse/pdf.js ~200–500 ms in V8, `pdf-extract` expected at 20–80 ms. Substantial compute, FFI share <0.5%. |
+| Input size distribution | Buffer 50 KB – 10 MB. Zero-copy via V8 buffer handle (`docs/BASELINE.md:30` — flat <200 ns up to 10 MB). No marshalling problem on the input side. |
+| Output size distribution | String 5 KB – 500 KB. UTF-16 conversion costs ~0.35 ns/byte (`docs/BASELINE.md:27`). 500 KB output = ~175 µs conversion overhead — irrelevant against >20 ms of Rust compute (<1%). |
+| Reusable setup (stateful potential) | Low. No model/key/schema per call. Document-parser state exists per document, not per API consumer. No NAPI class needed. |
+| Batch-usage realism | High. RAG ingestion workload = "process 1000 PDFs". `extractTextMany(buffers: Buffer[]) → string[]` or `extractTextManyAsync` with a rayon pool would be the second lever beyond single calls — justifies a Phase-C1 sprint after v1. |
+| FFI-share estimate vs. Rust work | <1% at the median (1 MB → 30 ms Rust). Scales even better on large documents. |
 
 ## Classification reasoning
 
-PDF-Text-Extraction ist **der kanonische Green-Shape aus dem `inflate`/`commonmark`-Spielbuch**:
+PDF text extraction is **the canonical Green shape from the `inflate`/`commonmark` playbook**:
 
-1. **Pure-JS-Baseline ist langsam.** pdf.js ist ein kompletter PDF-Renderer — Interpretation der PostScript-ähnlichen Content-Streams, Font-Subset-Decoding, CIDMap-Auflösung, Layout-Compositing. Für Text-Extract wird alles außer den Text-Showing-Operatoren (`Tj`, `TJ`, `'`, `"`) verworfen — das ist massiver Waste. Rust kann den Hot-Path direkt fahren: Content-Stream tokenize → nur Text-Operatoren behalten → Font-Mapping applizieren → concat. V8-Optimierung ändert daran nichts, weil der Ballast im Parser-Graph sitzt.
+1. **The pure-JS baseline is slow.** pdf.js is a complete PDF renderer — interpreting the PostScript-like content streams, font-subset decoding, CIDMap resolution, layout compositing. For text extraction everything except the text-showing operators (`Tj`, `TJ`, `'`, `"`) gets thrown away — that is massive waste. Rust can drive the hot path directly: tokenize the content stream → keep only text operators → apply font mapping → concat. V8 optimization changes none of this, because the ballast sits in the parser graph.
 
-2. **Compute ist substantiell.** 1 MB-PDF mit 50 Seiten entspricht oft 5–15 MB an dekomprimierten Content-Streams, durch die ein Tokenizer durchmuss. Das ist echtes Work, nicht Hashmap-Lookup. FFI-Floor von 109 ns ist buchstäblich im 0,0005 %-Bereich.
+2. **The compute is substantial.** A 1 MB PDF with 50 pages often corresponds to 5–15 MB of decompressed content streams that a tokenizer has to chew through. That is real work, not a hashmap lookup. The FFI floor of 109 ns is literally in the 0.0005% range.
 
-3. **Input ist Buffer, Output ist String.** Die beiden FFI-sichersten Typen. Kein `Vec<Object>`, kein `Vec<String>`, kein Callback. Lehrbuch.
+3. **Input is a Buffer, output is a String.** The two most FFI-safe types. No `Vec<Object>`, no `Vec<String>`, no callback. Textbook.
 
-4. **Parität ist der einzige Kostenpunkt, und die Industry-Praxis kennt das.** Tika, PDFBox, `pdftotext` (poppler), `pdf-parse` selbst — alle divergieren auf edge-case-PDFs. Wir dokumentieren unsere Divergenzen (`__conformance__/divergences.md` wie bei `commonmark`), und der Use-Case "RAG-Ingestion" verträgt 1–2 % Dokument-Failure-Rate problemlos, weil Upstream-Pipelines sowieso Fallback-Loops haben.
+4. **Parity is the only cost item, and industry practice knows it.** Tika, PDFBox, `pdftotext` (poppler), `pdf-parse` itself — they all diverge on edge-case PDFs. We document our divergences (`__conformance__/divergences.md` as with `commonmark`), and the "RAG ingestion" use case easily tolerates a 1–2% document failure rate, because upstream pipelines have fallback loops anyway.
 
-**Shape-Matching:**
-- ✅ Wie `inflate` (Buffer-in / Buffer-out, substantieller Compute, zlib-rs als Engine)
-- ✅ Wie `commonmark` (spec-Parser, neues Paket, keine Drop-in-Parität-Pflicht, "we're the CommonMark renderer, nicht der marked-Clone")
-- ❌ Nicht wie `hnswlib-node` (keine native Konkurrenz — pdf.js ist pure JS, nicht C++ durchgeschliffen)
-- ❌ Nicht wie `deep-equal` (keine Short-Input-Hot-Loop-Falle — wir verarbeiten Dokumente, nicht Bytes)
+**Shape matching:**
+- ✅ Like `inflate` (Buffer in / Buffer out, substantial compute, zlib-rs as the engine)
+- ✅ Like `commonmark` (spec parser, new package, no drop-in parity obligation, "we're the CommonMark renderer, not the marked clone")
+- ❌ Not like `hnswlib-node` (no native competition — pdf.js is pure JS, not C++ passed through)
+- ❌ Not like `deep-equal` (no short-input hot-loop trap — we process documents, not bytes)
 
-**Benchmark-Gap-Flag:** Prediction ist ohne Spike. Vor Shipping müssen vier Szenarien gemessen werden (siehe unten). Realistischer Median (1 MB PDF) muss ≥3× treffen. 50 KB-Bucket muss ≥2× treffen oder als Yellow-Kante dokumentiert werden.
+**Benchmark-gap flag:** This prediction is made without a spike. Before shipping, four scenarios must be measured (see below). The realistic median (1 MB PDF) must hit ≥3×. The 50 KB bucket must hit ≥2× or be documented as a Yellow edge.
 
 ## If GO — proposed port
 
-- **Recommended crate-name:** `@amigo-labs/pdf-parse` (Drop-in-orientierter Name; API-Shape matcht; Divergenzen dokumentiert wie bei `commonmark` gegen Spec)
+- **Recommended crate-name:** `@amigo-labs/pdf-parse` (drop-in-oriented name; the API shape matches; divergences documented as with `commonmark` against the spec)
 - **Primary API sketch:**
   ```ts
   export interface PdfParseResult {
     text: string;
     numpages: number;
     info: Record<string, string>;   // Title, Author, Producer, Creator, CreationDate, ModDate
-    metadata: Record<string, string> | null;  // XMP, falls vorhanden
+    metadata: Record<string, string> | null;  // XMP, if present
     version: string;   // "1.7" etc.
   }
 
   export function parse(buf: Buffer | Uint8Array, opts?: {
     max?: number;      // max pages to process (default: all)
-    password?: string; // für AES-128 encrypted PDFs
+    password?: string; // for AES-128 encrypted PDFs
   }): Promise<PdfParseResult>;
 
-  // Synchroner Pfad für kleine PDFs (<500 KB)
+  // Synchronous path for small PDFs (<500 KB)
   export function parseSync(buf: Buffer | Uint8Array, opts?: ...): PdfParseResult;
 
-  // Batch-Hebel (Fast-Follow in v0.2)
+  // Batch lever (fast follow in v0.2)
   export function parseMany(
     bufs: Buffer[],
     opts?: { concurrency?: number }
   ): Promise<PdfParseResult[]>;
   ```
 - **Must-have benchmark scenarios (Gate):**
-  - Small: 50 KB PDF (5 Seiten, englisch, einfacher Text) — Ziel ≥2× vs. `pdf-parse`
-  - Medium: 1 MB PDF (50 Seiten, gemischter Text + Tabellen) — Ziel ≥3× (Green-Gate-Hauptfall)
-  - Large: 10 MB PDF (500 Seiten, Report mit Grafiken) — Ziel ≥3×
-  - Batch: 100 × 200 KB PDFs via `parseMany` — Ziel ≥4× (rayon-Hebel)
-- **Acceptance thresholds (Green gate):** ≥2× auf kleinem PDF UND ≥3× auf Median UND ≥3× auf Large. Alles andere wird Yellow-Sprint oder Scope-Cut.
+  - Small: 50 KB PDF (5 pages, English, simple text) — target ≥2× vs. `pdf-parse`
+  - Medium: 1 MB PDF (50 pages, mixed text + tables) — target ≥3× (the main Green-gate case)
+  - Large: 10 MB PDF (500 pages, report with graphics) — target ≥3×
+  - Batch: 100 × 200 KB PDFs via `parseMany` — target ≥4× (rayon lever)
+- **Acceptance thresholds (Green gate):** ≥2× on the small PDF AND ≥3× on the median AND ≥3× on large. Anything else becomes a Yellow sprint or a scope cut.
 - **Risks:**
-  - **Parität auf CJK-Fonts** — muss mit Korpus aus chinesischen/japanischen PDFs validiert werden, Divergenzen dokumentiert
-  - **Encrypted-PDF-Coverage** — nur AES-128 + RC4, kein Public-Key
-  - **Edge-case-Recovery** — pdf.js hat mehr Recovery-Heuristiken. Corpus-Fuzz-Test nötig (`fast-check` mit malformed byte flips)
-  - **Binary-Size** — ~3–5 MB pro Plattform-Target × 6 Targets. Unterhalb `typst`, aber nicht trivial. `lto=true, strip=symbols, panic=abort` Pflicht.
-  - **Sync-Interface** — `pdf-parse` ist async (wegen pdf.js), wir können sync anbieten und das ist ein Feature, aber User die auf `await pdf(buf)` stehen müssen ihre Code-Form nicht ändern
+  - **Parity on CJK fonts** — must be validated with a corpus of Chinese/Japanese PDFs, divergences documented
+  - **Encrypted-PDF coverage** — only AES-128 + RC4, no public key
+  - **Edge-case recovery** — pdf.js has more recovery heuristics. Corpus fuzz testing needed (`fast-check` with malformed byte flips)
+  - **Binary size** — ~3–5 MB per platform target × 6 targets. Below `typst`, but not trivial. `lto=true, strip=symbols, panic=abort` mandatory.
+  - **Sync interface** — `pdf-parse` is async (because of pdf.js); we can offer sync and that is a feature, but users who rely on `await pdf(buf)` don't have to change the shape of their code
 
 ## If NO-GO — BACKLOG entry
 
-Nicht zutreffend (GO-Empfehlung).
+Not applicable (GO recommendation).
 
-Section in `BACKLOG.md`: **Under investigation — AI / RAG preprocessing** → Eintrag kann bleiben wo er ist, Status-Update auf "Reviewed GO 2026-04-21, ready for v0.1 spike."
+Section in `BACKLOG.md`: **Under investigation — AI / RAG preprocessing** → the entry can stay where it is; update its status to "Reviewed GO 2026-04-21, ready for v0.1 spike."

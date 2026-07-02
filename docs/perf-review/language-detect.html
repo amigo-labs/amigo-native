@@ -1,0 +1,36 @@
+<h1 id="perf-review-amigo-labs-language-detect">Perf-Review: <code>@amigo-labs/language-detect</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green, bimodal (tweet bucket 🟡 Yellow) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>1.73× (50 B tweet), 8.06× (~300 B paragraph), 5.92× (~11 KB article)</strong> vs. <code>franc</code> (bench 2026-05-22). The candidate review predicted overall Yellow — Green on paragraphs, Red on short strings. The measurement came in better on both ends: the paragraph bucket doubles the predicted 3–4×, and the tweet bucket lands at 1.73× (Yellow by the candidate’s own ≥1.5× threshold, not Red — the FFI floor did not eat the win). Trigram scoring over <code>whatlang</code>’s compile-time language profiles is exactly the compute-heavy, single-string-in / small-result-out shape NAPI likes.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-benchmarks-language-detect-json-2026-05-22-commit-b67b03d">Measured speedup (docs/benchmarks/language-detect.json, 2026-05-22, commit <code>b67b03d</code>)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/language-detect</th><th style="text-align: right">franc</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>tweet (50 B)</td><td style="text-align: right">12 137.51 Hz</td><td style="text-align: right">7 019.62 Hz</td><td style="text-align: right"><strong>1.73×</strong></td></tr>
+<tr><td>paragraph (~300 B)</td><td style="text-align: right">8 835.18 Hz</td><td style="text-align: right">1 096.13 Hz</td><td style="text-align: right"><strong>8.06×</strong></td></tr>
+<tr><td>article (~11 KB)</td><td style="text-align: right">4 946.72 Hz</td><td style="text-align: right">835.62 Hz</td><td style="text-align: right"><strong>5.92×</strong></td></tr>
+</tbody></table>
+<ul>
+<li><code>docs/packages.json</code> speedup: <code>"1.73–8.1× faster"</code>.</li>
+<li>Install size: 27 KB vs <code>franc</code>’s 304 KB.</li>
+</ul>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li>The candidate gate’s <strong>tiny (10 B)</strong> and <strong>200 B</strong> buckets were not benched; the 50 B and ~300 B measurements bracket them.</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<ul>
+<li><strong>87 languages</strong> (whatlang’s set) vs. <code>franc-all</code>’s 414 — the mainstream-language 80/20 the candidate review scoped.</li>
+<li>franc-compatible ISO-639-3 return codes (<code>'eng'</code>, <code>'deu'</code>, <code>'und'</code>, …).</li>
+<li><code>detectIfLong</code> guard: inputs below the minimum length return <code>'und'</code> instead of a noise guess.</li>
+</ul>
+<h2 id="divergences">Divergences</h2>
+<p>Confidence scores are <strong>not comparable</strong> to franc’s (different normalization); the detected-language code matches franc on the conformance corpus for supported languages. Languages outside whatlang’s 87 fall back to <code>'und'</code>. See <code>crates/language-detect/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./franc.md"><code>franc.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/language-detect</code></li>
+<li>Bench shard: <code>docs/benchmarks/language-detect.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"1.73–8.1× faster"</code></li>
+</ul>

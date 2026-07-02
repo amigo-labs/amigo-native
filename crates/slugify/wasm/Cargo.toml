@@ -11,10 +11,10 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 amigo-slugify-core = { path = "../../_slugify-core" }
-wasm-bindgen = "0.2"
+wasm-bindgen = { workspace = true }
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3"
+wasm-bindgen-test = { workspace = true }
 
 [package.metadata.wasm-pack.profile.release]
 # wasm-opt is invoked from a pre-built binaryen binary downloaded by

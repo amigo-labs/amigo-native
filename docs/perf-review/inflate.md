@@ -4,15 +4,15 @@
 
 ## Verdict
 
-Phase-C `decompress_bulk` + uninit-output-buffer-Fix (Commit `32d7dfa`) hat die Inflate-Regression aus der ursprünglichen Klassifikation (0,46×–0,49× vs. node:zlib) behoben. **Aktuelle Messung:** inflate 100KB ist **1,12× vs. node:zlib** und **5,6× vs. pako**, inflate 10MB ist **1,34× vs. node:zlib** und **6,5× vs. pako**. Deflate-Seite ist sauber Green über alle Größen (5,5×–7,1× vs. node:zlib, 19×–35× vs. pako). Die `perf-review.md`-Klassifikation "Yellow" stammt aus pre-Phase-C-Messung und ist nicht mehr aktuell — **Re-Klassifikation auf Green vorschlagen**. pako ist überall klar geschlagen; node:zlib bleibt die schwerere Baseline für Inflate (beide nutzen zlib-backend-Familie; gegen node:zlib ist >1× aber kein 2×-Gap möglich).
+Phase-C `decompress_bulk` + the uninit-output-buffer fix (commit `32d7dfa`) resolved the inflate regression from the original classification (0.46×–0.49× vs. node:zlib). **Current measurements:** inflate 100KB is **1.12× vs. node:zlib** and **5.6× vs. pako**; inflate 10MB is **1.34× vs. node:zlib** and **6.5× vs. pako**. The deflate side is cleanly Green across all sizes (5.5×–7.1× vs. node:zlib, 19×–35× vs. pako). The "Yellow" classification in `perf-review.md` stems from a pre-Phase-C measurement and is no longer current — **propose reclassification to Green**. pako is clearly beaten everywhere; node:zlib remains the tougher baseline for inflate (both use the zlib backend family; against node:zlib >1× is achievable but a 2× gap is not).
 
 ## Classification rationale
 
-Inflate ist ein **asymmetrischer Shape**:
+Inflate has an **asymmetric shape**:
 
-1. **Deflate-Seite: unambiguously Green.** 7,1× vs. node:zlib @ 10 MB ist der größte Win im Portfolio nach file-type. zlib-rs ist eine Rewriter-Library mit aggressiveren Optimierungen als upstream-zlib; deflate profitiert am meisten weil LZ77-Match-Search SIMD-geeignet ist.
-2. **Inflate-Seite: Green gegen pako, marginal Green gegen node:zlib.** Dekompression ist sequentieller, weniger SIMD-Raum. node:zlib ist selbst auch zlib-C; wir kämpfen zlib-rs-Rust vs. zlib-C. Phase-C `decompress_bulk` + `set_len`-uninit-Trick holt die letzten 30 % auf 10 MB.
-3. **Klassifikation ist messungs-bedingt veraltet.** `docs/perf-review.md:42` sagt "inflate 0,46×–0,49×" — das stammt aus pre-Phase-C. Aktuelle `docs/data.json` zeigt 1,12×–1,67× über alle Size-Buckets. Die Label-Aktualisierung steht offen.
+1. **Deflate side: unambiguously Green.** 7.1× vs. node:zlib @ 10 MB is the biggest win in the portfolio after file-type. zlib-rs is a rewrite library with more aggressive optimizations than upstream zlib; deflate benefits the most because LZ77 match search is well suited to SIMD.
+2. **Inflate side: Green against pako, marginally Green against node:zlib.** Decompression is more sequential, with less SIMD headroom. node:zlib is itself zlib-C; we are pitting zlib-rs Rust against zlib C. Phase-C `decompress_bulk` + the `set_len` uninit trick recovers the last 30% on 10 MB.
+3. **The classification is outdated due to stale measurements.** `docs/perf-review.md:42` says "inflate 0.46×–0.49×" — that stems from pre-Phase-C. Current `docs/data.json` shows 1.12×–1.67× across all size buckets. The label update is still open.
 
 ## Evidence
 
@@ -20,25 +20,25 @@ Inflate ist ein **asymmetrischer Shape**:
 
 | Scenario | @amigo-labs/inflate | pako | node:zlib | vs. pako | vs. node:zlib |
 |---|---:|---:|---:|---:|---:|
-| deflate 1KB text | 76 581 Hz | 9 659 Hz | 74 856 Hz | **7,93×** | **1,02×** |
-| deflate 100KB text | 26 057 Hz | 994 Hz | 4 703 Hz | **26,2×** | **5,54×** |
-| deflate 100KB random | 18 402 Hz | 956 Hz | 4 293 Hz | **19,3×** | **4,29×** |
-| deflate 10MB text | 320,9 Hz | 9,27 Hz | 45,28 Hz | **34,6×** | **7,09×** |
-| inflate 1KB | 301 966 Hz | 47 776 Hz | 180 771 Hz | **6,32×** | **1,67×** |
-| inflate 100KB | 19 867 Hz | 3 525 Hz | 17 765 Hz | **5,64×** | **1,12×** |
-| inflate 10MB | 252,0 Hz | 38,96 Hz | 187,7 Hz | **6,47×** | **1,34×** |
+| deflate 1KB text | 76 581 Hz | 9 659 Hz | 74 856 Hz | **7.93×** | **1.02×** |
+| deflate 100KB text | 26 057 Hz | 994 Hz | 4 703 Hz | **26.2×** | **5.54×** |
+| deflate 100KB random | 18 402 Hz | 956 Hz | 4 293 Hz | **19.3×** | **4.29×** |
+| deflate 10MB text | 320.9 Hz | 9.27 Hz | 45.28 Hz | **34.6×** | **7.09×** |
+| inflate 1KB | 301 966 Hz | 47 776 Hz | 180 771 Hz | **6.32×** | **1.67×** |
+| inflate 100KB | 19 867 Hz | 3 525 Hz | 17 765 Hz | **5.64×** | **1.12×** |
+| inflate 10MB | 252.0 Hz | 38.96 Hz | 187.7 Hz | **6.47×** | **1.34×** |
 
 ### Realistic use-case
 
-**Compression:** HTTP-Response-Gzip (Server-Output), Asset-Pipeline-Build (CI), Log-File-Archivierung. 100 KB – 10 MB ist Median. **Decompression:** HTTP-Body-Decompression (Client), Zip-Entry-Read (intern via `@amigo-labs/zip`), Asset-Loading. 1 KB – 100 KB Median; 10 MB ist Batch-Workload.
+**Compression:** HTTP response gzip (server output), asset-pipeline builds (CI), log-file archiving. 100 KB – 10 MB is the median. **Decompression:** HTTP body decompression (client), zip-entry reads (internally via `@amigo-labs/zip`), asset loading. 1 KB – 100 KB median; 10 MB is a batch workload.
 
-Beide Pfade sind **Buffer-in/Buffer-out**, ein Call pro Operation, keine Streaming-API im NAPI-Surface (Streaming wäre Event-per-Chunk → FFI-Antipattern, siehe `docs/post-mortems/xml.md`).
+Both paths are **Buffer in/Buffer out**, one call per operation, no streaming API in the NAPI surface (streaming would be event-per-chunk → FFI antipattern, see `docs/post-mortems/xml.md`).
 
 ### Benchmark gaps
 
-- **Deflate-Compression-Level-Matrix fehlt.** Nur `level=6` (default) getestet. `level=1` (fast) und `level=9` (max) würden zeigen, wie sich die Margin mit Trade-offs verschiebt.
-- **Gzip-Pfad (gzip/ungzip) nicht separat gebenched.** Nur deflate/inflate. Format-Overhead ist minimal (gzip = zlib + ~20 B Header/Trailer), aber formale Messung für v0.2 sinnvoll.
-- **`level=0` (no-compression) fehlt.** Edge-Case — zlib mit Store-only. Nicht prioritär.
+- **Deflate compression-level matrix is missing.** Only `level=6` (default) tested. `level=1` (fast) and `level=9` (max) would show how the margin shifts with the trade-offs.
+- **Gzip path (gzip/ungzip) not benchmarked separately.** Only deflate/inflate. Format overhead is minimal (gzip = zlib + ~20 B header/trailer), but a formal measurement makes sense for v0.2.
+- **`level=0` (no compression) is missing.** Edge case — zlib in store-only mode. Not a priority.
 
 ### API surface
 
@@ -51,40 +51,40 @@ Beide Pfade sind **Buffer-in/Buffer-out**, ein Call pro Operation, keine Streami
 #[napi] fn ungzip(data: Buffer) -> Result<Buffer>
 ```
 
-- Buffer-in/Buffer-out durchgehend. Zero-copy-Transport über V8-Buffer-Handle (BASELINE.md:30 = ~180 ns flat bis 10 MB).
-- `InflateOptions { level: Option<u32> }` — kompakt, alles per-call parametrisierbar.
-- Kein Streaming, kein Callback, kein Stateful-Object. Drei Pfade (zlib/raw/gzip) × 2 Richtungen = 6 Functions, flache Surface.
+- Buffer in/Buffer out throughout. Zero-copy transport via V8 buffer handle (BASELINE.md:30 = ~180 ns flat up to 10 MB).
+- `InflateOptions { level: Option<u32> }` — compact, everything parameterizable per call.
+- No streaming, no callbacks, no stateful objects. Three paths (zlib/raw/gzip) × 2 directions = 6 functions, a flat surface.
 
 ### Bundle / binary size
 
-`flate2 = { default-features = false, features = ["zlib-rs"] }` — explizit nur zlib-rs-Backend, kein libz/miniz/cloudflare-zlib gelinkt. Das ist ein Phase-C-Commitment (Commit `32d7dfa`). Binary vermutlich 400–700 KB pro Target (zlib-rs ist kompakt).
+`flate2 = { default-features = false, features = ["zlib-rs"] }` — explicitly only the zlib-rs backend, no libz/miniz/cloudflare-zlib linked. This is a Phase-C commitment (commit `32d7dfa`). Binary presumably 400–700 KB per target (zlib-rs is compact).
 
 ### FFI-overhead baseline
 
-- Input-Buffer 10 MB: ~180 ns Transport (flat, V8-Handle, `docs/BASELINE.md:30`).
-- Output-Buffer 60 MB (10 MB × 6× expected-inflate-ratio): ~180 ns return.
-- Total FFI: ~360 ns auf typisch 4 ms Rust-Work bei 10 MB inflate = **0,01 % Share**. Irrelevant.
+- Input buffer 10 MB: ~180 ns transport (flat, V8 handle, `docs/BASELINE.md:30`).
+- Output buffer 60 MB (10 MB × 6× expected inflate ratio): ~180 ns return.
+- Total FFI: ~360 ns against a typical 4 ms of Rust work for a 10 MB inflate = **0.01% share**. Irrelevant.
 
 ## Phase-C optimization checklist
 
 | # | Lever | Applicable | Notes |
 |---|---|---|---|
-| C.1 | Input-type minimization (`String` → `&str`, `Buffer`) | ✅ already done | `Buffer` durchgehend, zero-copy-in |
-| C.2 | Output-type minimization (`Buffer` statt `Vec<u8>`) | ✅ already done | `Buffer` durchgehend, plus pre-alloc-Heuristik `estimated_inflate_size` |
-| C.3 | Batch API (`inflateMany(buffers: Buffer[])`) | 🟡 potential | Use-Case unklar — HTTP-Decompress ist pro-Response. Zip-Extract-many läuft über `@amigo-labs/zip.extractAll`. Kein klares Batch-Idiom im Ökosystem |
-| C.4 | Stateful API (reusable Decompressor-Class) | 🟡 potential | Für Stream-Resumption relevant, aber NAPI-Event-Grenze ist der xml-Antipattern. Skip |
-| C.5 | Parallelization (rayon über Chunks für 10 MB+) | ❌ not applicable | zlib ist sequentiell, keine parallele Decompress möglich |
-| C.6 | Algorithm swap (`cloudflare-zlib`, `isa-l`) | 🟡 **open** | Siehe `docs/perf-review/inflate-backend-spike.md` — Phase-C-Spike dokumentiert, aber abgeschlossen ohne Backend-Wechsel. zlib-rs vs. cloudflare-zlib-Benchmark wäre der nächste Schritt wenn Green-Upgrade auf 2×+ gefragt |
-| C.7 | Allocator tuning (caller-provided output buffer) | 🟡 **not done** | `inflateInto(data, out: Buffer) → number` wäre ein neuer Hot-Path für Reuse-Heavy-Callers. Nicht trivial wegen Resize-Fall. Potential-Follow-up |
+| C.1 | Input-type minimization (`String` → `&str`, `Buffer`) | ✅ already done | `Buffer` throughout, zero-copy in |
+| C.2 | Output-type minimization (`Buffer` instead of `Vec<u8>`) | ✅ already done | `Buffer` throughout, plus the `estimated_inflate_size` pre-allocation heuristic |
+| C.3 | Batch API (`inflateMany(buffers: Buffer[])`) | 🟡 potential | Use case unclear — HTTP decompression is per-response. Zip-extract-many runs through `@amigo-labs/zip.extractAll`. No clear batch idiom in the ecosystem |
+| C.4 | Stateful API (reusable Decompressor class) | 🟡 potential | Relevant for stream resumption, but the NAPI event boundary is the xml antipattern. Skip |
+| C.5 | Parallelization (rayon over chunks for 10 MB+) | ❌ not applicable | zlib is sequential; no parallel decompression possible |
+| C.6 | Algorithm swap (`cloudflare-zlib`, `isa-l`) | 🟡 **open** | See `docs/perf-review/inflate-backend-spike.md` — Phase-C spike documented, but concluded without a backend switch. A zlib-rs vs. cloudflare-zlib benchmark would be the next step if a Green upgrade to 2×+ is wanted |
+| C.7 | Allocator tuning (caller-provided output buffer) | 🟡 **not done** | `inflateInto(data, out: Buffer) → number` would be a new hot path for reuse-heavy callers. Not trivial because of the resize case. Potential follow-up |
 | C.8 | Bundle-size (LTO, features off) | ✅ already done | `default-features = false, features = ["zlib-rs"]` |
 
 ## Action plan
 
-1. **Re-Klassifikation auf Green vorschlagen.** `docs/perf-review.md`-Zeile 42 aktualisieren — aktuelle Messung zeigt 1,12×–1,67× vs. node:zlib, 5,6×–26× vs. pako. Kein Scenario unter 1×.
-2. **`gzip`/`ungzip`-Bench hinzufügen** vor v0.2 — aktuelle Lücke.
-3. **Compression-Level-Matrix als Bench-Enhancement** — 1/6/9 Szenarien dokumentieren die Trade-off-Kurve.
-4. **`inflateInto(data, out)`-Spike als Fast-Follow** (Phase-C.7). Erwartbar +5–15 % auf Reuse-Heavy-Workloads.
-5. **cloudflare-zlib-Backend-Spike als Phase-C.6-Follow-up** nur falls Green-auf-Green-Upgrade (1,12× → 2× vs. node:zlib) portfoliopolitisch gewünscht. Aktuell kein Sprint-Druck weil Green-likely-tier bereits erreicht.
+1. **Propose reclassification to Green.** Update `docs/perf-review.md` line 42 — current measurements show 1.12×–1.67× vs. node:zlib, 5.6×–26× vs. pako. No scenario below 1×.
+2. **Add a `gzip`/`ungzip` bench** before v0.2 — a current gap.
+3. **Compression-level matrix as a bench enhancement** — 1/6/9 scenarios document the trade-off curve.
+4. **`inflateInto(data, out)` spike as a fast follow** (Phase-C.7). Expected +5–15% on reuse-heavy workloads.
+5. **cloudflare-zlib backend spike as a Phase-C.6 follow-up** only if a Green-on-Green upgrade (1.12× → 2× vs. node:zlib) is wanted for portfolio reasons. No sprint pressure at the moment because the Green-likely tier has already been reached.
 
 ## References
 
@@ -92,7 +92,7 @@ Beide Pfade sind **Buffer-in/Buffer-out**, ein Call pro Operation, keine Streami
 - Bench: `crates/inflate/__bench__/index.bench.ts`
 - Lib: `crates/inflate/src/lib.rs`
 - Cargo: `crates/inflate/Cargo.toml`
-- Phase-C Spike: `docs/perf-review/inflate-backend-spike.md`
-- Commit für Phase-C-Fix: `32d7dfa` (`decompress_bulk` + uninit-output-buffer)
+- Phase-C spike: `docs/perf-review/inflate-backend-spike.md`
+- Commit for the Phase-C fix: `32d7dfa` (`decompress_bulk` + uninit output buffer)
 - `docs/packages.json` speedup field: `"up to 7.1× faster"`
 - Summary row: `docs/perf-review.md` (Yellow label — outdated post-Phase-C)

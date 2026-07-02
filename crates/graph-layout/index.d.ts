@@ -9,28 +9,19 @@ export interface EdgeRouting {
 export interface EdgeSpec {
   source: string
   target: string
-  /** Minimum rank distance between source and target. Default 1. */
   minlen?: number
-  /** Edge weight (used by crossing-reduction heuristic). Default 1. */
   weight?: number
 }
 
-/** Compute a hierarchical layout. Single call per graph. */
 export declare function layout(spec: LayoutSpec): LayoutResult
 
-/** Batch: one FFI crossing for N independent layouts. */
 export declare function layoutMany(specs: Array<LayoutSpec>): Array<LayoutResult>
 
 export interface LayoutOptions {
-  /** `"TB"` (top-bottom, default), `"BT"`, `"LR"`, or `"RL"`. */
   rankdir?: string
-  /** Horizontal separation between nodes within the same rank. */
   nodesep?: number
-  /** Vertical separation between ranks. Default 50. */
   ranksep?: number
-  /** Outer left/right margin. Default 0. */
   marginx?: number
-  /** Outer top/bottom margin. Default 0. */
   marginy?: number
 }
 
@@ -59,10 +50,6 @@ export interface NodeSpec {
   id: string
   width: number
   height: number
-  /**
-   * Optional: pin this node to a specific rank (0-indexed from the
-   * top for `TB` / `BT`, from the left for `LR` / `RL`).
-   */
   rank?: number
 }
 

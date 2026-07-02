@@ -24,7 +24,6 @@ export interface SplitOptions {
 
 /**
  * Zero-copy hot-path. Returns a `Buffer` laid out as u32 little-endian
- * pairs: `[start0, end0, start1, end1, …]`. Caller slices the source
- * string lazily — no per-sentence string marshalling.
+ * pairs: `[start0, end0, start1, end1, …]`.
  */
 export declare function splitToOffsets(text: string, options?: SplitOptions | undefined | null): Buffer

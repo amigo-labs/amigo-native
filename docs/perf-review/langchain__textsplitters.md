@@ -1,90 +1,90 @@
 # Candidate review: `@langchain/textsplitters`
 
-> **Status:** GO (als neues Paket, API-inspiriert von langchain) · **Predicted:** 🟡 Yellow (Green auf RAG-Scale, Yellow auf tweets) · **Reviewed:** 2026-04-21
+> **Status:** GO (as a new package, API inspired by langchain) · **Predicted:** 🟡 Yellow (Green at RAG scale, Yellow on tweets) · **Reviewed:** 2026-04-21
 > **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
 
 
 ## Verdict
 
-Text-Splitting für RAG ist ein **Input-size-sensitiver Shape**: auf einem 100 KB-Whitepaper ist es sauber Green (Unicode-Segmentation + Regex-Scan + Chunk-Reassembly), auf einem 280-Zeichen-Tweet ist die Call selbst kürzer als der FFI-Floor und wir landen in der `nanoid`/`deep-equal`-Falle. Die BACKLOG-Warnung trifft den Kern: **must bench small bucket before committing**. Eine `TokenTextSplitter`-Variante hat zusätzlich die starke Kopplung an `@amigo-labs/tiktoken` — dort haben wir schon eine Singleton-NAPI-Class, die wir via Shared-State einbinden können (billigster Token-Count-Pfad im Portfolio). Der `RecursiveCharacterTextSplitter` ist der Haupt-Use-Case (>80 % der langchain-Calls im Produktions-RAG) und profitiert am meisten.
+Text splitting for RAG is an **input-size-sensitive shape**: on a 100 KB whitepaper it is cleanly Green (Unicode segmentation + regex scan + chunk reassembly); on a 280-character tweet the call itself is shorter than the FFI floor and we land in the `nanoid`/`deep-equal` trap. The BACKLOG warning hits the core of it: **must bench small bucket before committing**. A `TokenTextSplitter` variant additionally has strong coupling to `@amigo-labs/tiktoken` — there we already have a singleton NAPI class that we can wire in via shared state (the cheapest token-count path in the portfolio). The `RecursiveCharacterTextSplitter` is the main use-case (>80 % of langchain calls in production RAG) and benefits the most.
 
 ## JS package
 
 - **npm:** [`@langchain/textsplitters`](https://www.npmjs.com/package/@langchain/textsplitters)
-- **Downloads:** ~2M/Woche (BACKLOG-Zahl bestätigt, Q1 2026). Einer der größeren Kandidaten im Portfolio-Scan.
+- **Downloads:** ~2M/week (BACKLOG figure confirmed, Q1 2026). One of the larger candidates in the portfolio scan.
 - **Exports / API surface:**
-  - `RecursiveCharacterTextSplitter` (primär, 80 %+ der Nutzung): `{chunkSize, chunkOverlap, separators, keepSeparator, lengthFunction}` — probiert Separator-Liste rekursiv (default `["\n\n", "\n", " ", ""]`)
-  - `CharacterTextSplitter`: simple split-an-einem-Separator + merge-bis-chunkSize
-  - `TokenTextSplitter`: verwendet `tiktoken` (js-tiktoken) für Längenmessung
-  - `MarkdownTextSplitter`, `LatexTextSplitter`, `HTMLTextSplitter` — pre-konfigurierte `RecursiveCharacterTextSplitter` mit Format-Separatoren
+  - `RecursiveCharacterTextSplitter` (primary, 80 %+ of usage): `{chunkSize, chunkOverlap, separators, keepSeparator, lengthFunction}` — tries the separator list recursively (default `["\n\n", "\n", " ", ""]`)
+  - `CharacterTextSplitter`: simple split-on-a-single-separator + merge-up-to-chunkSize
+  - `TokenTextSplitter`: uses `tiktoken` (js-tiktoken) for length measurement
+  - `MarkdownTextSplitter`, `LatexTextSplitter`, `HTMLTextSplitter` — pre-configured `RecursiveCharacterTextSplitter` with format-specific separators
   - `.splitText(text) → string[]`, `.createDocuments(texts, metadatas) → Document[]`, `.splitDocuments(docs) → Document[]`
-- **Typical input:** **ein** String pro Call. Länge stark bimodal: entweder "RAG-Doc" (5 KB – 500 KB, Median ~50 KB) oder "Chat-Message" (50 B – 5 KB, Median ~500 B).
-- **Typical output:** Array von Strings, typisch 20–500 Chunks für RAG-Docs, 1–5 Chunks für kleine Texte. Chunks ~500–2000 Zeichen.
-- **Realistic median use-case:** **RAG-Ingestion-Pipeline.** Ein PDF/HTML/MD wurde bereits zu Text extrahiert (→ `pdf-parse`, `marked`, `turndown`), jetzt wird der Text für Embedding-Generation in Chunks gesplittet. Ein `splitText()`-Call pro Dokument, Dokument-Anzahl 100–100 000 pro Ingestion-Job. Zweiter Case: **Online-Chunking** im Chat-Flow (User-Message splitten bevor sie ins LLM-Context-Window geht). Dort sind Texte deutlich kleiner, aber Call-Frequency höher.
+- **Typical input:** **one** string per call. Length strongly bimodal: either "RAG doc" (5 KB – 500 KB, median ~50 KB) or "chat message" (50 B – 5 KB, median ~500 B).
+- **Typical output:** array of strings, typically 20–500 chunks for RAG docs, 1–5 chunks for small texts. Chunks ~500–2000 characters.
+- **Realistic median use-case:** **RAG ingestion pipeline.** A PDF/HTML/MD has already been extracted to text (→ `pdf-parse`, `marked`, `turndown`); the text is now split into chunks for embedding generation. One `splitText()` call per document, document count 100–100 000 per ingestion job. Second case: **online chunking** in the chat flow (splitting the user message before it goes into the LLM context window). Texts there are considerably smaller, but call frequency is higher.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - [`text-splitter`](https://crates.io/crates/text-splitter) — **primär**. Von Ben Brandt, direkt inspiriert von langchain's TextSplitter. Hat `TextSplitter`, `MarkdownSplitter`, `CodeSplitter`. Unterstützt Character- und Token-basierte Längen. Aktiv, MIT.
-  - [`unicode-segmentation`](https://crates.io/crates/unicode-segmentation) — Baustein für Grapheme/Word-Boundaries. Regex-Engine für Separator-Splitting: `regex` crate (BurntSushi, schnell, safe).
-  - Custom-Port: `RecursiveCharacterTextSplitter` ist ~200 Zeilen algorithmus-wert — recursive-descent durch Separator-Liste, greedy-merge zu `chunkSize`, Overlap-Handling beim Chunk-Zusammenbau. Direkt portierbar.
-- **Maintenance / license:** `text-splitter` MIT, aktiv. `unicode-segmentation` MIT, BurntSushi, Standard-Crate. Supply-Chain sauber.
+  - [`text-splitter`](https://crates.io/crates/text-splitter) — **primary**. By Ben Brandt, directly inspired by langchain's TextSplitter. Has `TextSplitter`, `MarkdownSplitter`, `CodeSplitter`. Supports character- and token-based lengths. Active, MIT.
+  - [`unicode-segmentation`](https://crates.io/crates/unicode-segmentation) — building block for grapheme/word boundaries. Regex engine for separator splitting: `regex` crate (BurntSushi, fast, safe).
+  - Custom port: `RecursiveCharacterTextSplitter` is worth ~200 lines of algorithm — recursive descent through the separator list, greedy merge up to `chunkSize`, overlap handling during chunk assembly. Directly portable.
+- **Maintenance / license:** `text-splitter` MIT, active. `unicode-segmentation` MIT, BurntSushi, standard crate. Supply chain clean.
 - **Known gotchas / divergences:**
-  - **`lengthFunction`-Callback** — langchain erlaubt eine beliebige JS-Funktion für Längenmessung. Das **kann nicht** über FFI reichen (Callback-Boundary = `xml`/Object-Traversal-Antipattern). Lösung: wir bieten drei Enums an: `'chars'` (default), `'tiktoken:cl100k'`, `'tiktoken:o200k'` — alle drei Rust-seitig. Custom-JS-length-Function ist Nicht-Support (dokumentieren).
-  - **`keepSeparator`-Semantik** — langchain v0.3+ hat keepSeparator='start'|'end'|false Spelling. Muss exakt gematcht werden, sonst ranken Chunks anders im Retrieval.
-  - **Markdown/HTML-Separator-Profile** — langchain hat sehr lange Separator-Arrays für MD/HTML/Latex. Parity auf den Strings ist trivial, aber die REIHENFOLGE matters (Recursive probiert in Reihenfolge).
-  - **`createDocuments`-Metadata-Shape** — Metadata-Objekte über FFI reichen ist mühsam. Wir bieten nur `splitText(text) → string[]` als Hot-Path; Documents-Konstruktion macht der User in JS nach dem Split-Return.
+  - **`lengthFunction` callback** — langchain allows an arbitrary JS function for length measurement. That **cannot** cross the FFI boundary (callback boundary = the `xml`/object-traversal antipattern). Solution: we offer three enums: `'chars'` (default), `'tiktoken:cl100k'`, `'tiktoken:o200k'` — all three on the Rust side. A custom JS length function is unsupported (document this).
+  - **`keepSeparator` semantics** — langchain v0.3+ has the keepSeparator='start'|'end'|false spelling. Must be matched exactly, otherwise chunks rank differently in retrieval.
+  - **Markdown/HTML separator profiles** — langchain has very long separator arrays for MD/HTML/LaTeX. Parity on the strings is trivial, but the ORDER matters (the recursive splitter tries them in order).
+  - **`createDocuments` metadata shape** — passing metadata objects across the FFI boundary is tedious. We offer only `splitText(text) → string[]` as the hot path; the user constructs Documents in JS after the split returns.
 
 ## BACKLOG check
 
-Existierender Eintrag: `BACKLOG.md:26`:
+Existing entry: `BACKLOG.md:26`:
 > **@langchain/textsplitters** (~2M). Recursive character + token-aware splitters via `unicode-segmentation` plus custom logic. Green on RAG-scale documents, Red on tweet-sized chunks — must bench small bucket before committing.
 
-Kategorisierung "Predicted Yellow". Review bestätigt: Yellow ist die richtige Vorhersage, mit Green-Upgrade-Pfad wenn RAG-Median-Case durchgehend ≥2× trifft.
+Categorized as "Predicted Yellow". Review confirms: Yellow is the right prediction, with a Green upgrade path if the RAG median case consistently hits ≥2×.
 
-Abgrenzung:
-- Gegen `docs/perf-review/pdf-parse.md`: Text-Extraction liefert den Input, wir splitten ihn. Sequenziell in der gleichen Pipeline. Gemeinsames Paket-Set ergibt Shapes.
-- Gegen `docs/perf-review/tiktoken.md`: `TokenTextSplitter`-Variante ist die Integration. Unser `@amigo-labs/tiktoken` hat bereits die Singleton-NAPI-Class — wir rufen sie direkt Rust-intern, **kein** zweites FFI-Crossing pro Chunk-Längen-Check.
+Scope boundaries:
+- Versus `docs/perf-review/pdf-parse.md`: text extraction delivers the input; we split it. Sequential in the same pipeline, so the packages form a natural set.
+- Versus `docs/perf-review/tiktoken.md`: the `TokenTextSplitter` variant is the integration point. Our `@amigo-labs/tiktoken` already has the singleton NAPI class — we call it directly Rust-internally, with **no** second FFI crossing per chunk-length check.
 
-Kein Eintrag in `docs/packages.json`.
+No entry in `docs/packages.json`.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Bimodal.** Tweet (500 B → 1–2 Chunks): ~5–20 µs in JS, FFI-Floor 109 ns = ~1 % (tolerabel) aber Rust-Work-Delta ist dünn. 50 KB-Doc → 100 Chunks: ~500 µs – 2 ms in JS, Rust ~50–200 µs → **>5×-Speedup realistisch**. 500 KB-Doc → 1000 Chunks: ~5–20 ms JS, Rust ~500 µs – 2 ms → **≥10×-Speedup**. |
-| Input size distribution | **String-Input.** 500 B – 500 KB. UTF-16→UTF-8-Konversion kostet ~0,35 ns/byte (BASELINE.md:27). 500 KB = 175 µs Transport. Für einen 500 KB-Doc ist das ≤10 % vom Rust-Compute — OK. Für 50 KB-Doc (Median): 17 µs Transport auf ~100 µs Compute = **17 %**, grenzwertig aber noch Green. |
-| Output size distribution | **`Vec<String>`-Output** — eine bekannte FFI-Kostenfalle. 100 Chunks × ~1 KB = 100 Strings zu marshallen. Pro-String-Overhead ~180 ns + UTF-8→UTF-16-Konversion. Grober Overhead: 100 × 180 ns + 100 KB × 0,35 ns/byte = **53 µs**. Für 500 KB-Doc ist das OK. Für 5 KB-Doc (wenige Chunks) noch besser. **Alternative**: `splitTextToBuffer(text) → Buffer` mit internem NDJSON-Format, eine Konversion. Fast-Follow-Hebel für extreme Cases. |
-| Reusable setup (stateful potential) | **Mittel.** Config (chunkSize, separators, stemmer) könnte in einer `Splitter`-Class gecached werden. Regex-Kompilation für Separator-Patterns ist nicht-trivial (~µs) und sollte definitiv NICHT pro-Call passieren. Empfehlung: Class-API mit Config-in-Constructor. |
-| Batch-usage realism | **Hoch.** RAG-Ingestion splitet 10k-100k Docs. `splitTextsBatch(texts: string[]) → string[][]` ist der offensichtliche Hebel. Rayon-parallelisierbar (embarrassingly — jeder Doc unabhängig). |
-| FFI-share estimate vs. Rust work | 500 KB-Doc: <5 % (Green). 50 KB-Doc: ~20 % (Green-grenzig). 500 B-Doc: ~50 % (Yellow/Red). |
+| Per-call algorithmic work | **Bimodal.** Tweet (500 B → 1–2 chunks): ~5–20 µs in JS, FFI floor 109 ns = ~1 % (tolerable) but the Rust-work delta is thin. 50 KB doc → 100 chunks: ~500 µs – 2 ms in JS, Rust ~50–200 µs → **>5× speedup realistic**. 500 KB doc → 1000 chunks: ~5–20 ms JS, Rust ~500 µs – 2 ms → **≥10× speedup**. |
+| Input size distribution | **String input.** 500 B – 500 KB. UTF-16→UTF-8 conversion costs ~0.35 ns/byte (BASELINE.md:27). 500 KB = 175 µs transport. For a 500 KB doc that is ≤10 % of the Rust compute — OK. For a 50 KB doc (median): 17 µs transport on ~100 µs compute = **17 %**, borderline but still Green. |
+| Output size distribution | **`Vec<String>` output** — a known FFI cost trap. 100 chunks × ~1 KB = 100 strings to marshal. Per-string overhead ~180 ns + UTF-8→UTF-16 conversion. Rough overhead: 100 × 180 ns + 100 KB × 0.35 ns/byte = **53 µs**. For a 500 KB doc that is OK. For a 5 KB doc (few chunks) even better. **Alternative**: `splitTextToBuffer(text) → Buffer` with an internal NDJSON format, one conversion. A fast-follow lever for extreme cases. |
+| Reusable setup (stateful potential) | **Medium.** Config (chunkSize, separators, stemmer) could be cached in a `Splitter` class. Regex compilation for separator patterns is non-trivial (~µs) and should definitely NOT happen per call. Recommendation: class API with the config in the constructor. |
+| Batch-usage realism | **High.** RAG ingestion splits 10k-100k docs. `splitTextsBatch(texts: string[]) → string[][]` is the obvious lever. Rayon-parallelizable (embarrassingly so — each doc is independent). |
+| FFI-share estimate vs. Rust work | 500 KB doc: <5 % (Green). 50 KB doc: ~20 % (borderline Green). 500 B doc: ~50 % (Yellow/Red). |
 
 ## Classification reasoning
 
-`@langchain/textsplitters` ist ein **Input-size-abhängiger Shape** und die Klassifikation hängt davon ab, welchen Median-Case wir priorisieren:
+`@langchain/textsplitters` is an **input-size-dependent shape**, and the classification depends on which median case we prioritize:
 
-1. **RAG-Ingestion-Use-Case ist Green.** Dokumente von 10 KB aufwärts liefern genug Rust-Compute, um FFI zu amortisieren. `text-splitter` crate + `regex` crate sollten 5–15× gegen pure-JS-Splitter liefern. Das ist unser Haupt-Sell — die 2M-Downloads kommen zu großem Teil aus RAG-Pipelines.
+1. **The RAG-ingestion use-case is Green.** Documents from 10 KB upward provide enough Rust compute to amortize the FFI. The `text-splitter` crate + `regex` crate should deliver 5–15× against pure-JS splitters. That is our main sell — the 2M downloads come largely from RAG pipelines.
 
-2. **Online-Chat-Chunking ist Yellow.** Kurze User-Messages (200–2000 Zeichen) sind im Grenzbereich. Rust-Work auf 1 KB ist ~20–50 µs, FFI-Overhead (Input UTF-Konv + Output Vec<String>) ~5–10 µs = **20–30 % Overhead-Share**. Speedup wahrscheinlich 1,5–2×, Yellow-klassifiziert. Nicht Red, weil `lengthFunction` in JS (der Chat-Use-Case nutzt oft token-basierte Length via `tiktoken`) selbst ~50 µs kostet und wir das Rust-intern billiger machen.
+2. **Online chat chunking is Yellow.** Short user messages (200–2000 characters) sit in the borderline zone. Rust work on 1 KB is ~20–50 µs, FFI overhead (input UTF conversion + output Vec<String>) ~5–10 µs = **20–30 % overhead share**. Speedup probably 1.5–2×, classified Yellow. Not Red, because `lengthFunction` in JS (the chat use-case often uses token-based length via `tiktoken`) itself costs ~50 µs and we make that cheaper Rust-internally.
 
-3. **Keine Falle-Kategorie (Tweets, 50-char-Strings) muss explizit out-of-scope sein.** Wenn jemand `splitText("Hello world")` ruft, kostet es mehr FFI als Compute. Wir dokumentieren: "für Inputs <500 Zeichen nutze den direkten String" und verweisen auf die Benchmark-Tabelle.
+3. **The trap category (tweets, 50-char strings) must be explicitly out of scope.** If someone calls `splitText("Hello world")`, it costs more FFI than compute. We document: "for inputs <500 characters, use the string directly" and point to the benchmark table.
 
-4. **`TokenTextSplitter` ist der Killer-Sub-Case.** Der hat langchain-seitig einen JS→WASM-Crossing (`js-tiktoken` oder `tiktoken`-WASM) PLUS den TextSplit. Wir können beide Rust-seitig machen — potentiell 5–20× Speedup weil wir das Zwei-Boundary-Problem kollabieren.
+4. **`TokenTextSplitter` is the killer sub-case.** On the langchain side it has a JS→WASM crossing (`js-tiktoken` or `tiktoken` WASM) PLUS the text split. We can do both on the Rust side — potentially a 5–20× speedup because we collapse the two-boundary problem.
 
-5. **Callbacks rausdesignen.** Der `lengthFunction`-Parameter muss verschwinden. Ersatz: Enum. Der Callback-Boundary-Killer ist nicht-verhandelbar — siehe `xml`-Lehre (`docs/post-mortems/xml.md`).
+5. **Design the callbacks out.** The `lengthFunction` parameter has to go. Replacement: an enum. The callback-boundary killer is non-negotiable — see the `xml` lesson (`docs/post-mortems/xml.md`).
 
-**Shape-Matching:**
-- ✅ Wie `sanitize-html` (Regex-Scan + Reassembly, String-heavy, Green auf Median)
-- ✅ Wie `commonmark` (Paket-Kategorie mit Format-Variants — MD/HTML/Latex-Splitter wie `commonmark` vs `gfm`)
-- ⚠️ Wie `csv` (Input-size-bimodal — `csv`'s kleiner-Bucket war auch grenzwertig, wurde durch `parseToJson` über Buffer gerettet; ähnlicher Hebel hier mit Buffer-Output)
-- ❌ Nicht wie `mime` (nicht Lookup-Style — echter Parser)
-- ❌ Nicht wie `deep-equal` (langer genug Input, dass Rust-Compute FFI dominiert — für den Median-Case)
+**Shape matching:**
+- ✅ Like `sanitize-html` (regex scan + reassembly, string-heavy, Green on the median)
+- ✅ Like `commonmark` (package category with format variants — MD/HTML/LaTeX splitters, like `commonmark` vs `gfm`)
+- ⚠️ Like `csv` (input-size-bimodal — `csv`'s small bucket was borderline too and was rescued by `parseToJson` over Buffer; a similar lever exists here with Buffer output)
+- ❌ Not like `mime` (not lookup-style — a real parser)
+- ❌ Not like `deep-equal` (input long enough that Rust compute dominates the FFI — for the median case)
 
-**Benchmark-Gap-Flag:** Drei Buckets müssen gemessen werden (tweet / chat-message / rag-doc). Ein Gate-Failure auf tweet-Bucket ist dokumentarisch (Black-Flag für Caller), nicht Package-Kill — wenn chat + rag beide ≥2×, ist der Port Green.
+**Benchmark-gap flag:** Three buckets must be measured (tweet / chat message / RAG doc). A gate failure on the tweet bucket is a documentation matter (a Black flag for callers), not a package kill — if chat + RAG both hit ≥2×, the port is Green.
 
 ## If GO — proposed port
 
-- **Recommended crate-name:** `@amigo-labs/text-splitters` (Plural wie langchain, plus `-splitters` statt `-textsplitters` für Klarheit in `@amigo-labs/*`-Namespace)
+- **Recommended crate-name:** `@amigo-labs/text-splitters` (plural like langchain, and `-splitters` instead of `-textsplitters` for clarity in the `@amigo-labs/*` namespace)
 - **Primary API sketch:**
   ```ts
   export type LengthMode = 'chars' | { tiktoken: 'cl100k_base' | 'o200k_base' | 'p50k_base' };
@@ -94,14 +94,14 @@ Kein Eintrag in `docs/packages.json`.
     chunkOverlap: number;
     separators?: string[];
     keepSeparator?: 'start' | 'end' | false;
-    lengthMode?: LengthMode;  // ersetzt lengthFunction
+    lengthMode?: LengthMode;  // replaces lengthFunction
   }
 
   export class RecursiveCharacterTextSplitter {
     constructor(config: SplitterConfig);
     splitText(text: string): string[];
     splitTextsBatch(texts: string[]): string[][];
-    splitTextToBuffer(text: string): Buffer;  // NDJSON, für hot paths
+    splitTextToBuffer(text: string): Buffer;  // NDJSON, for hot paths
   }
 
   export class MarkdownTextSplitter extends RecursiveCharacterTextSplitter { /* preset */ }
@@ -112,22 +112,22 @@ Kein Eintrag in `docs/packages.json`.
   }
   ```
 - **Must-have benchmark scenarios (Gate):**
-  - **Tweet (500 B → ~1 Chunk):** bench run, 10k iterations. Ziel ≥1,0× vs. langchain (Parität OK, nicht primärer Win-Case)
-  - **Chat-Message (5 KB → ~3 Chunks):** Ziel ≥1,5× (Yellow-Grenze)
-  - **RAG-Doc small (50 KB → ~50 Chunks):** Ziel ≥3× (Green-Grenze Haupt-Case)
-  - **RAG-Doc large (500 KB → ~500 Chunks):** Ziel ≥5×
-  - **Batch 100 × RAG-Docs 50 KB:** Ziel ≥6× (rayon-Hebel)
-  - **TokenTextSplitter cl100k auf 50 KB:** Ziel ≥5× vs. langchain + `js-tiktoken`
-- **Acceptance thresholds (Green gate):** ≥3× auf RAG-small UND ≥5× auf RAG-large UND ≥1× auf Tweet. Chat-Message muss nicht Green sein — wenn Yellow, dokumentieren wir Chat-Use-Case als "Yellow-path, füge Overhead hinzu bei <5 KB".
+  - **Tweet (500 B → ~1 chunk):** bench run, 10k iterations. Target ≥1.0× vs. langchain (parity is OK, not the primary win case)
+  - **Chat message (5 KB → ~3 chunks):** target ≥1.5× (Yellow threshold)
+  - **RAG doc small (50 KB → ~50 chunks):** target ≥3× (Green threshold, main case)
+  - **RAG doc large (500 KB → ~500 chunks):** target ≥5×
+  - **Batch 100 × RAG docs 50 KB:** target ≥6× (rayon lever)
+  - **TokenTextSplitter cl100k on 50 KB:** target ≥5× vs. langchain + `js-tiktoken`
+- **Acceptance thresholds (Green gate):** ≥3× on RAG-small AND ≥5× on RAG-large AND ≥1× on tweet. Chat message does not have to be Green — if Yellow, we document the chat use-case as "Yellow path, adds overhead below 5 KB".
 - **Risks:**
-  - **Parity der Separator-Rekursions-Ordnung** — langchain hat historisch die Separator-Liste zwischen Major-Versionen gedreht. Wir pinnen an v0.3 und dokumentieren Divergenzen
-  - **`lengthFunction`-Breaking-Change** — User mit Custom-JS-lengthFunction können nicht migrieren. Dokumentieren als akzeptable Scope-Einschränkung
-  - **Kopplung an `@amigo-labs/tiktoken`** — `TokenTextSplitter` verlangt, dass tiktoken-Backend im selben NAPI-Prozess sitzt. Architektur: Cargo-Workspace-Dep auf `tiktoken`-Crate (nicht npm-Dep auf `@amigo-labs/tiktoken`)
-  - **Binary-Size** — primär `regex` + `unicode-segmentation` + `text-splitter`, alles kompakt. Erwartung: ~1–2 MB pro Target, unproblematisch
-  - **Semver-Instabilität von langchain** — langchain v0.3.x ist aktuell, v0.4 steht an. Wir pinnen an die v0.3-API und müssen Divergenzen ab v0.4 dokumentieren
+  - **Parity of the separator recursion order** — langchain has historically reshuffled the separator list between major versions. We pin to v0.3 and document divergences
+  - **`lengthFunction` breaking change** — users with a custom JS lengthFunction cannot migrate. Document as an acceptable scope restriction
+  - **Coupling to `@amigo-labs/tiktoken`** — `TokenTextSplitter` requires the tiktoken backend to live in the same NAPI process. Architecture: a Cargo workspace dependency on the `tiktoken` crate (not an npm dependency on `@amigo-labs/tiktoken`)
+  - **Binary size** — primarily `regex` + `unicode-segmentation` + `text-splitter`, all compact. Expectation: ~1–2 MB per target, unproblematic
+  - **langchain semver instability** — langchain v0.3.x is current, v0.4 is coming. We pin to the v0.3 API and must document divergences from v0.4 onward
 
 ## If NO-GO — BACKLOG entry
 
-Nicht zutreffend (GO-Empfehlung).
+Not applicable (GO recommendation).
 
-Section in `BACKLOG.md`: **Under investigation — AI / RAG preprocessing** → Eintrag bleibt, Status-Update auf "Reviewed GO 2026-04-21 (Yellow-predicted, Green auf RAG-scale). Must bench tweet/chat/rag buckets before commit. Callback-rausdesignen: `lengthFunction` → Enum."
+Section in `BACKLOG.md`: **Under investigation — AI / RAG preprocessing** → entry stays, status update to "Reviewed GO 2026-04-21 (Yellow-predicted, Green at RAG scale). Must bench tweet/chat/rag buckets before commit. Design the callback out: `lengthFunction` → enum."

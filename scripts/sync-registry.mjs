@@ -12,7 +12,10 @@
  * refreshed by scripts/generate-report.mjs from actual bench measurements. New
  * entries fall back to the crate's amigo.speedup value, or "TBD".
  *
- * Pass --check to exit non-zero when outputs are stale (used by CI).
+ * Pass --check to exit non-zero when outputs are stale (used by CI). The
+ * check also fails on npm platform-stub version drift and on public crates
+ * missing from release-please-config.json / .release-please-manifest.json
+ * (both hand-maintained — a missing entry means no release automation).
  */
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
@@ -195,6 +198,27 @@ function checkNpmStubVersions(crates) {
   return mismatches
 }
 
+/**
+ * Verify every public crate is registered in release-please-config.json
+ * and .release-please-manifest.json. Both files are hand-maintained (this
+ * script does not write them), so a newly added crate silently ships
+ * without release automation unless something fails loudly. Returns an
+ * array of { crate, file } gap descriptors.
+ */
+function checkReleasePleaseCoverage(crates) {
+  const gaps = []
+  const configPath = join(root, 'release-please-config.json')
+  const manifestPath = join(root, '.release-please-manifest.json')
+  const config = loadJson(configPath)
+  const manifest = loadJson(manifestPath)
+  for (const { dir } of crates) {
+    const key = `crates/${dir}`
+    if (!config.packages?.[key]) gaps.push({ crate: dir, file: 'release-please-config.json' })
+    if (!(key in manifest)) gaps.push({ crate: dir, file: '.release-please-manifest.json' })
+  }
+  return gaps
+}
+
 function main() {
   const check = process.argv.includes('--check')
   const crates = loadCrates()
@@ -212,6 +236,7 @@ function main() {
   const releaseChanged = nextReleaseYaml !== releaseYaml
 
   const stubMismatches = checkNpmStubVersions(crates)
+  const releasePleaseGaps = checkReleasePleaseCoverage(crates)
 
   if (check) {
     let stale = pkgChanged || releaseChanged
@@ -230,14 +255,29 @@ function main() {
         console.error(`  - crates/${m.crate}/npm/${m.target}/package.json: ${m.stub} (parent ${m.parent})`)
       }
     }
+    if (releasePleaseGaps.length) {
+      stale = true
+      console.error(
+        `sync-registry: ${releasePleaseGaps.length} release-please ${releasePleaseGaps.length === 1 ? 'entry' : 'entries'} missing — those crates get no release PRs or npm publishes.`,
+      )
+      for (const g of releasePleaseGaps) {
+        console.error(`  - crates/${g.crate} missing from ${g.file}`)
+      }
+      console.error('  Add the entries by hand (both files are hand-maintained; see the crates/argon2 entry for the shape).')
+    }
     if (stale) process.exit(1)
-    console.log(`sync-registry: up to date (${crates.length} crates, all stubs aligned).`)
+    console.log(`sync-registry: up to date (${crates.length} crates, all stubs aligned, release-please covers all).`)
     return
   }
 
   if (stubMismatches.length) {
     console.warn(
       `sync-registry: ${stubMismatches.length} npm platform stub version(s) do not match their parent crate; run --check in CI to fail on drift.`,
+    )
+  }
+  if (releasePleaseGaps.length) {
+    console.warn(
+      `sync-registry: ${releasePleaseGaps.length} crate(s) missing from release-please config/manifest; run --check in CI to fail on drift.`,
     )
   }
 

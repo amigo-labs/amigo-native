@@ -1,89 +1,89 @@
 # Candidate review: `wink-bm25-text-search` / `bm25`
 
-> **Status:** GO (als neues Paket `@amigo-labs/bm25`, kein 1:1-Drop-in) · **Predicted:** 🟢 Green (Index-Build) / 🟡 Yellow leaning 🟢 (Query) · **Reviewed:** 2026-04-21
+> **Status:** GO (as a new package `@amigo-labs/bm25`, not a 1:1 drop-in) · **Predicted:** 🟢 Green (index build) / 🟡 Yellow leaning 🟢 (query) · **Reviewed:** 2026-04-21
 > **Shipped:** v0.1 on branch `claude/crate-performance-audit-6KLOJ` (2026-04-23). Benchmarks pending full bench suite.
 
 
 ## Verdict
 
-BM25-Retrieval ist einer der **besten Green-Shapes der RAG-Kategorie**: ein Index wird einmal gebaut (substantielle Compute — Tokenize + IDF + Posting-Listen), lebt dann langfristig als NAPI-Class, und beantwortet pro Query in 10–500 µs echte Arbeit (Posting-Listen-Traversal + BM25-Score). JS-Konkurrenten sind durchgehend pure-JS (`wink-bm25-text-search`, `bm25`, `minisearch` — letzteres der Marktführer mit ~100k/Woche). Rust-`tantivy` bringt Lucene-Niveau, ist aber Overkill; ein schlanker BM25-Core via `rust-stemmers` + eigenem Posting-List-Store hat den besten Fit. Bedenken: **Adoption ist niedrig** (`wink-bm25-text-search` ~10k/Woche, `bm25`-npm ~5k/Woche — die BACKLOG-Zahl "30k combined" ist generös). Das Portfolio-Argument hängt deshalb weniger am individuellen Package, mehr an der RAG-Kategorie als Ganzes (gemeinsam mit `pdf-parse`, `@langchain/textsplitters`).
+BM25 retrieval is one of the **best Green shapes in the RAG category**: an index is built once (substantial compute — tokenize + IDF + posting lists), then lives long-term as a NAPI class and answers each query with 10–500 µs of real work (posting-list traversal + BM25 scoring). The JS competitors are pure JS across the board (`wink-bm25-text-search`, `bm25`, `minisearch` — the latter the market leader at ~100k/week). Rust's `tantivy` delivers Lucene-level capability but is overkill; a lean BM25 core via `rust-stemmers` + our own posting-list store is the best fit. Concern: **adoption is low** (`wink-bm25-text-search` ~10k/week, `bm25` npm ~5k/week — the BACKLOG figure of "30k combined" is generous). The portfolio argument therefore rests less on the individual package and more on the RAG category as a whole (together with `pdf-parse`, `@langchain/textsplitters`).
 
 ## JS package
 
 - **npm:**
-  - [`wink-bm25-text-search`](https://www.npmjs.com/package/wink-bm25-text-search) (primärer Review-Target)
-  - [`bm25`](https://www.npmjs.com/package/bm25) (kleiner, minimalistischer)
-  - Relevanter Marktführer als Vergleichs-Baseline: [`minisearch`](https://www.npmjs.com/package/minisearch) (~100k/Woche) — tut mehr als BM25 (Fuzzy, Autosuggest), aber BM25-Core ist vergleichbar
-- **Downloads:** `wink-bm25-text-search` ~10k, `bm25` ~5k. `minisearch` ~100k (Kategorie-Baseline). Q1 2026.
-- **Exports / API surface:** `bm25()` → Index-Instanz mit `definePrepTasks(tasks)`, `defineConfig({fldWeights, bm25Params})`, `addDoc(doc, id)`, `consolidate()`, `search(query, limit, filter)`, `exportJSON()` / `importJSON()`
+  - [`wink-bm25-text-search`](https://www.npmjs.com/package/wink-bm25-text-search) (primary review target)
+  - [`bm25`](https://www.npmjs.com/package/bm25) (smaller, minimalist)
+  - Relevant market leader as a comparison baseline: [`minisearch`](https://www.npmjs.com/package/minisearch) (~100k/week) — does more than BM25 (fuzzy, autosuggest), but the BM25 core is comparable
+- **Downloads:** `wink-bm25-text-search` ~10k, `bm25` ~5k. `minisearch` ~100k (category baseline). Q1 2026.
+- **Exports / API surface:** `bm25()` → index instance with `definePrepTasks(tasks)`, `defineConfig({fldWeights, bm25Params})`, `addDoc(doc, id)`, `consolidate()`, `search(query, limit, filter)`, `exportJSON()` / `importJSON()`
 - **Typical input:**
-  - **Index-Build:** 1k – 100k Dokumente, je 100 Bytes – 50 KB Text. Prep-Tasks: lowercase, stopwords-remove, stemmen
-  - **Query:** 1–10 Wörter, ~20–100 Bytes
+  - **Index build:** 1k – 100k documents of 100 bytes – 50 KB text each. Prep tasks: lowercase, stopword removal, stemming
+  - **Query:** 1–10 words, ~20–100 bytes
 - **Typical output:**
-  - Search: Array von `{id, score}` der Länge `limit` (typisch 10)
-- **Realistic median use-case:** **In-process RAG-Retrieval** als BM25+Embedding-Hybrid. Ein Corpus von 5k–50k Chunks wird beim App-Start geladen, jede Query läuft gegen BM25 (lexikalisch) plus Embedding-ANN (semantisch) parallel. Zweiter Use-Case: **Doc-Site-Suche** (Algolia-Alternative für statische Sites): Index einmal beim Build, Query pro User-Keystroke auf Client/SSR.
+  - Search: array of `{id, score}` of length `limit` (typically 10)
+- **Realistic median use-case:** **in-process RAG retrieval** as a BM25+embedding hybrid. A corpus of 5k–50k chunks is loaded at app start; every query runs against BM25 (lexical) plus embedding ANN (semantic) in parallel. Second use case: **doc-site search** (an Algolia alternative for static sites): index once at build time, query per user keystroke on client/SSR.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - **Custom BM25-Core auf `rust-stemmers` + `fst`** — primär. ~500 Zeilen Rust: Tokenize mit `unicode-segmentation`, Stem mit `rust-stemmers`, Posting-Listen als `FxHashMap<TermId, Vec<(DocId, Freq)>>` plus doc-len-Array. Export/Import via bincode. Deterministisch, klein, null native Deps.
-  - [`tantivy`](https://crates.io/crates/tantivy) — **Fast-Follow / separates Paket.** Vollständige Lucene-Style-Search-Engine. Overkill für BM25-Drop-in, aber wenn wir in den `@amigo-labs/search`-Markt wollen (Meilisearch-Konkurrenz), dann tantivy. Nicht v1-Scope für `@amigo-labs/bm25`.
-  - [`bm25`](https://crates.io/crates/bm25) (crates.io) — minimaler BM25-Scorer ohne Index. Zu klein für unsere Zwecke.
-- **Maintenance / license:** `rust-stemmers` MIT/Apache, aktiv. `fst` Apache-2.0, BurntSushi-Qualität. `tantivy` MIT. Supply-Chain sauber.
+  - **Custom BM25 core on `rust-stemmers` + `fst`** — primary. ~500 lines of Rust: tokenize with `unicode-segmentation`, stem with `rust-stemmers`, posting lists as `FxHashMap<TermId, Vec<(DocId, Freq)>>` plus a doc-length array. Export/import via bincode. Deterministic, small, zero native deps.
+  - [`tantivy`](https://crates.io/crates/tantivy) — **fast-follow / separate package.** A complete Lucene-style search engine. Overkill for a BM25 drop-in, but if we want to enter the `@amigo-labs/search` market (Meilisearch competition), then tantivy. Not v1 scope for `@amigo-labs/bm25`.
+  - [`bm25`](https://crates.io/crates/bm25) (crates.io) — a minimal BM25 scorer without an index. Too small for our purposes.
+- **Maintenance / license:** `rust-stemmers` MIT/Apache, active. `fst` Apache-2.0, BurntSushi quality. `tantivy` MIT. Supply chain clean.
 - **Known gotchas / divergences:**
-  - **Stemmer-Sprach-Matrix**: `wink-bm25-text-search` erlaubt Custom-Prep-Tasks (inkl. Custom-JS-Stemmer). Wir liefern den Standard-Porter/Snowball-Katalog (15+ Sprachen) und dokumentieren, dass Custom-JS-Stemmers nicht über FFI reichen — als Workaround: der User preprocesst seine Docs selbst und indexiert pre-tokenized Arrays.
-  - **Ranking-Divergenz**: BM25 ist eine Formel, aber `k1`, `b`, und insbesondere Field-Weights können divergieren. Parity auf Score-Werten ist illusorisch; Parity auf **Ranking-Reihenfolge** (Top-10 stimmt) ist das realistische Ziel.
-  - **Serialization-Format**: nicht binärkompatibel mit `wink-bm25-text-search.exportJSON()`. Wir bieten eigenes kompaktes Binärformat (bincode) plus einen JSON-Importer-Loop für Migration.
-  - **Query-Parser**: `wink-bm25-text-search` hat keinen Query-Parser (nur whitespace-split). Wir matchen das. Wenn jemand "fuzzy OR" will, ist das ein tantivy-Use-Case.
+  - **Stemmer language matrix**: `wink-bm25-text-search` allows custom prep tasks (including a custom JS stemmer). We ship the standard Porter/Snowball catalog (15+ languages) and document that custom JS stemmers cannot cross the FFI — the workaround is for the user to preprocess their docs and index pre-tokenized arrays.
+  - **Ranking divergence**: BM25 is a formula, but `k1`, `b`, and especially field weights can diverge. Parity on score values is illusory; parity on **ranking order** (the top 10 matches) is the realistic target.
+  - **Serialization format**: not binary-compatible with `wink-bm25-text-search.exportJSON()`. We offer our own compact binary format (bincode) plus a JSON-importer loop for migration.
+  - **Query parser**: `wink-bm25-text-search` has no query parser (just whitespace split). We match that. If someone wants "fuzzy OR", that is a tantivy use case.
 
 ## BACKLOG check
 
-Existierender Eintrag: `BACKLOG.md:13`:
+Existing entry: `BACKLOG.md:13`:
 > **wink-bm25-text-search** / **bm25** (~30k combined). Index build + scoring over a corpus; amortized FFI. Index as NAPI class.
 
-Kategorisierung als "Predicted Green". Review bestätigt die Vorhersage mit der Korrektur, dass `30k combined` optimistisch ist (`wink-bm25-text-search` ~10k, `bm25` ~5k). Die eigentliche Kategorie-Baseline ist `minisearch` (~100k) — gegen die muss der Port stellenweise auch bestehen, auch wenn unser API-Shape enger an `wink-bm25-text-search` angelehnt ist.
+Categorized as "Predicted Green". The review confirms the prediction with the correction that `30k combined` is optimistic (`wink-bm25-text-search` ~10k, `bm25` ~5k). The real category baseline is `minisearch` (~100k) — the port has to hold up against it in places too, even though our API shape leans closer to `wink-bm25-text-search`.
 
-Abgrenzung zu bestehenden Reviews:
-- Keine bestehende Search/Retrieval-Review. Dieses Review legt die Vorlage für `minisearch`, `flexsearch`, `lunr` als Fast-Follow-Kandidaten.
-- Gegen `docs/perf-review/hnswlib-node.md` (NO-GO Vector-Search): BM25 ist der **lexikalische** Pfad, ANN ist der **semantische** Pfad. Nicht-Konflikt, sondern komplementär (Hybrid-RAG-Setup).
+Scope boundaries against existing reviews:
+- No existing search/retrieval review. This review sets the template for `minisearch`, `flexsearch`, `lunr` as fast-follow candidates.
+- Against `docs/perf-review/hnswlib-node.md` (NO-GO vector search): BM25 is the **lexical** path, ANN is the **semantic** path. Not a conflict but complementary (hybrid-RAG setup).
 
-Kein Eintrag in `docs/packages.json`.
+No entry in `docs/packages.json`.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Build: hoch** (Tokenize + Stem für 50 KB Doc ≈ 1–3 ms). **Query: mittel-niedrig** (Top-10 auf 50k-Doc-Index ≈ 50–500 µs je nach Query-Selektivität). Query-FFI-Share: 109 ns / 200 µs = **0,05 %** — vernachlässigbar. |
-| Input size distribution | **Build:** Doc-Strings 100 B – 50 KB pro `addDoc`-Call. Wenn pro-Doc-Call, ist das 1 FFI-Crossing pro Doc × 50k Docs = problematisch. **Muss** als `addDocsBatch(docs: Buffer[], ids: number[])` gebaut werden oder als `addDocsNdjson(buf: Buffer)` — ein Crossing für den ganzen Batch. Query: 20–100 B String. |
-| Output size distribution | Query: `Vec<(u32, f32)>` × 10 = 80 B. Wenn als `Buffer` zurück: flat. Wenn `Vec<{id, score}>`: Marshalling-Kosten ~80 ns × 10 = 800 ns — noch im Rauschen. |
-| Reusable setup (stateful potential) | **Zentral.** Der Index IS der State. NAPI-Class Pflicht. Lifetime-Muster: `build → serialize → later load → many query`. Load-From-Disk ist selbst-mal ein Perf-Szenario. |
-| Batch-usage realism | **Index-Build:** Pflicht-Batch. Ein Call pro Doc ist API-Suizid. **Query:** seltener batch-relevant (ein User fragt eine Query), aber `searchMany(queries: string[])` ist ein kostengünstiger Add. |
-| FFI-share estimate vs. Rust work | Build-Batch: <0,01 %. Single-Query: 0,05 %. Nicht das Problem. |
+| Per-call algorithmic work | **Build: high** (tokenize + stem for a 50 KB doc ≈ 1–3 ms). **Query: medium-low** (top-10 on a 50k-doc index ≈ 50–500 µs depending on query selectivity). Query FFI share: 109 ns / 200 µs = **0.05 %** — negligible. |
+| Input size distribution | **Build:** doc strings 100 B – 50 KB per `addDoc` call. If it is a per-doc call, that is 1 FFI crossing per doc × 50k docs = problematic. **Must** be built as `addDocsBatch(docs: Buffer[], ids: number[])` or as `addDocsNdjson(buf: Buffer)` — one crossing for the whole batch. Query: 20–100 B string. |
+| Output size distribution | Query: `Vec<(u32, f32)>` × 10 = 80 B. Returned as a `Buffer`: flat. As `Vec<{id, score}>`: marshalling cost ~80 ns × 10 = 800 ns — still in the noise. |
+| Reusable setup (stateful potential) | **Central.** The index IS the state. A NAPI class is mandatory. Lifetime pattern: `build → serialize → later load → many query`. Load-from-disk is itself a perf scenario. |
+| Batch-usage realism | **Index build:** batch is mandatory. One call per doc is API suicide. **Query:** batch-relevant less often (one user asks one query), but `searchMany(queries: string[])` is a cheap add. |
+| FFI-share estimate vs. Rust work | Build batch: <0.01 %. Single query: 0.05 %. Not the problem. |
 
 ## Classification reasoning
 
-BM25-Retrieval ist der **saubere Stateful-Green-Shape**:
+BM25 retrieval is the **clean stateful Green shape**:
 
-1. **Build ist echte CPU-Arbeit.** Tokenizing 50 MB Gesamt-Corpus + stemmen + Posting-Listen aufbauen ist pure-JS dominant. Rust-`unicode-segmentation` ist ~5–10× schneller als JS-Regex-basierte Tokenizer. Stemmer-Inner-Loop ist in `rust-stemmers` hand-optimiert. Hashmap-Inserts in `FxHashMap` sind 2–3× schneller als V8-Object/Map. Erwartbarer Build-Speedup auf 50k Docs: **5–15×** vs. `wink-bm25-text-search`.
+1. **Build is real CPU work.** Tokenizing a 50 MB total corpus + stemming + building posting lists is pure-JS dominated. Rust `unicode-segmentation` is ~5–10× faster than JS regex-based tokenizers. The stemmer inner loop is hand-optimized in `rust-stemmers`. Hashmap inserts into `FxHashMap` are 2–3× faster than V8 Object/Map. Expected build speedup on 50k docs: **5–15×** vs. `wink-bm25-text-search`.
 
-2. **Query ist genug Arbeit, um FFI zu amortisieren.** Top-10-Retrieval auf 50k-Doc-Index: 10–50 Posting-Listen traversieren, Score berechnen, Heap-Top-K. ~200 µs in Rust. JS-Query dito ~500 µs – 2 ms. Speedup 2–5× bei vernachlässigbarem FFI-Share.
+2. **A query is enough work to amortize the FFI.** Top-10 retrieval on a 50k-doc index: traverse 10–50 posting lists, compute scores, heap top-k. ~200 µs in Rust. The JS query likewise ~500 µs – 2 ms. Speedup 2–5× with negligible FFI share.
 
-3. **Kein Callback-Boundary.** `wink-bm25-text-search` hat als einziges Callback-Surface die Prep-Tasks-Funktionen. Die können wir als vorgebackene Enums (`{lowercase: true, stopwords: 'en', stem: 'porter'}`) modellieren — User-Funktionen über FFI zu reichen ist genau der `xml`-Fehler.
+3. **No callback boundary.** The only callback surface in `wink-bm25-text-search` is the prep-task functions. We can model those as pre-baked enums (`{lowercase: true, stopwords: 'en', stem: 'porter'}`) — passing user functions across the FFI is exactly the `xml` mistake.
 
-4. **Persistenz als zweiter Win.** `exportJSON()` in JS ist `JSON.stringify(index)` — langsam und ineffizient (Index-Struktur passt schlecht zu JSON). Rust-Bincode-Binary-Format ist 3–10× kleiner und 10–50× schneller zu serialisieren/deserialisieren. Das ist kein gebenchter Hebel, aber ein praktischer User-Benefit.
+4. **Persistence as a second win.** `exportJSON()` in JS is `JSON.stringify(index)` — slow and inefficient (the index structure maps poorly to JSON). A Rust bincode binary format is 3–10× smaller and 10–50× faster to serialize/deserialize. Not a benched lever, but a practical user benefit.
 
-**Was gegen Green sprechen würde (und warum es nicht reicht):**
+**What would argue against Green (and why it is not enough):**
 
-- **Adoption.** `wink-bm25-text-search` + `bm25` kombiniert ≈ 15k/Woche. Isoliert niedrige Portfolio-Rentabilität. Aber: der Port öffnet die RAG-Kategorie und kann zu `minisearch`-Drop-in (~100k/Woche) erweitert werden — das ist der echte TAM.
-- **Query-single-Call ist klein.** 200 µs ist kein `inflate`-Niveau. FFI-Floor 109 ns = 0,05 %, tolerabel. Aber wenn Caller queries in Hot-Loops feuern (Auto-Suggest pro Keystroke), dann landen wir bei 100+ Calls/s = noch tolerabel.
+- **Adoption.** `wink-bm25-text-search` + `bm25` combined ≈ 15k/week. In isolation, low portfolio ROI. But: the port opens the RAG category and can be extended to a `minisearch` drop-in (~100k/week) — that is the real TAM.
+- **A single query call is small.** 200 µs is not `inflate` level. FFI floor 109 ns = 0.05 %, tolerable. And if callers fire queries in hot loops (autosuggest per keystroke), we land at 100+ calls/s = still tolerable.
 
-**Shape-Matching:**
-- ✅ Wie `tiktoken` (Stateful NAPI-Class, einmal laden + viele Queries)
-- ✅ Wie `inflate` (Bytes-heavy Work, Buffer-API viable)
-- ❌ Nicht wie `hnswlib-node` (keine native Konkurrenz — alle BM25-Libs sind pure JS)
-- ❌ Nicht wie `mime` (trotz "Lookup-Style"-Vermutung — Query macht substantielle Arbeit mit Posting-Listen-Traversal)
+**Shape matching:**
+- ✅ Like `tiktoken` (stateful NAPI class, load once + many queries)
+- ✅ Like `inflate` (bytes-heavy work, Buffer API viable)
+- ❌ Not like `hnswlib-node` (no native competition — all BM25 libs are pure JS)
+- ❌ Not like `mime` (despite the "lookup-style" hunch — a query does substantial work with posting-list traversal)
 
-**Benchmark-Gap-Flag:** Prediction ist ohne Spike. Muss gegen `wink-bm25-text-search` + `minisearch` parallel gemessen werden — die primäre Kategorie-Baseline ist `minisearch`, nicht `wink-bm25-text-search`.
+**Benchmark gap flag:** the prediction is made without a spike. Must be measured against `wink-bm25-text-search` + `minisearch` in parallel — the primary category baseline is `minisearch`, not `wink-bm25-text-search`.
 
 ## If GO — proposed port
 
@@ -103,7 +103,7 @@ BM25-Retrieval ist der **saubere Stateful-Green-Shape**:
   export class BM25Index {
     constructor(config: BM25Config);
 
-    // Build — Pflicht-Batch
+    // Build — batch is mandatory
     addDocsBatch(docs: Array<{ id: string | number; text: string } | { id, fields: Record<string,string> }>): void;
     consolidate(): void;   // finalize IDF, freeze structure
 
@@ -111,29 +111,29 @@ BM25-Retrieval ist der **saubere Stateful-Green-Shape**:
     search(query: string, limit?: number, filter?: Uint32Array): Array<{ id: string | number; score: number }>;
     searchMany(queries: string[], limit?: number): Array<Array<{ id; score }>>;
 
-    // Persistence — Binär-Format
+    // Persistence — binary format
     toBuffer(): Buffer;
     static fromBuffer(buf: Buffer): BM25Index;
   }
   ```
-- **Must-have benchmark scenarios (Gate):**
-  - **Build-small:** 1k Docs × 2 KB avg — Ziel ≥3× vs. `wink-bm25-text-search.addDoc`-Loop (wir erlauben NUR Batch)
-  - **Build-medium:** 10k Docs × 5 KB avg — Ziel ≥5×
-  - **Build-large:** 50k Docs × 10 KB avg — Ziel ≥5× (Green-Gate-Hauptfall)
-  - **Query-short:** 2-Wort-Queries auf 10k-Index, 10k Runs — Ziel ≥2× (Yellow-Grenze) bis ≥3× (Green)
-  - **Query-long:** 10-Wort-Queries auf 50k-Index, 1k Runs — Ziel ≥3×
-  - **Serialize/Deserialize:** 50k-Index `toBuffer` + `fromBuffer` — Ziel ≥5× vs. `exportJSON` + `importJSON`
-  - **Cross-Baseline:** Build- und Query-Szenarien zusätzlich gegen `minisearch` laufen lassen. Falls `minisearch` schneller ist als `wink-bm25-text-search` (wahrscheinlich), ist das die harte Baseline.
-- **Acceptance thresholds (Green gate):** ≥3× auf Build-large UND ≥2× auf Query-short UND ≥3× auf Query-long. Serialize-Win ist Nice-to-have, nicht blocking.
+- **Must-have benchmark scenarios (gate):**
+  - **Build-small:** 1k docs × 2 KB avg — target ≥3× vs. the `wink-bm25-text-search.addDoc` loop (we allow batch ONLY)
+  - **Build-medium:** 10k docs × 5 KB avg — target ≥5×
+  - **Build-large:** 50k docs × 10 KB avg — target ≥5× (the main Green-gate case)
+  - **Query-short:** 2-word queries on a 10k index, 10k runs — target ≥2× (Yellow boundary) to ≥3× (Green)
+  - **Query-long:** 10-word queries on a 50k index, 1k runs — target ≥3×
+  - **Serialize/deserialize:** 50k index `toBuffer` + `fromBuffer` — target ≥5× vs. `exportJSON` + `importJSON`
+  - **Cross-baseline:** run the build and query scenarios against `minisearch` as well. If `minisearch` is faster than `wink-bm25-text-search` (likely), that is the hard baseline.
+- **Acceptance thresholds (Green gate):** ≥3× on build-large AND ≥2× on query-short AND ≥3× on query-long. The serialize win is nice-to-have, not blocking.
 - **Risks:**
-  - **Adoption alleine zu klein** — Paket nur tragbar als Teil der RAG-Kategorie (pdf-parse + textsplitters + tiktoken + bm25)
-  - **Parity-Drift** — Stemmer-Version zwischen JS (snowball-js) und Rust (rust-stemmers) kann auf edge-case-Worten divergieren; auf Ranking-Reihenfolge meist irrelevant, aber dokumentieren
-  - **Binary-Size** — Porter-/Snowball-Stemmers für 15+ Sprachen sind ~1–2 MB als eingebettete Tables. Feature-gated per Sprach-Auswahl: User sollten optional nur die benötigten Stemmer linken (Fast-Follow v0.2)
-  - **Scope-Creep-Risiko** — Fuzzy-Search, Autosuggest, Field-Boosting auf Query-Zeit. v1 sagt NEIN zu allem außer BM25-Core. Wenn User mehr wollen: `@amigo-labs/tantivy` als eigenes Paket (Fast-Follow)
-  - **Query-single-Call-Grenze** — wenn Caller pro User-Keystroke queriet (>1000 calls/s), wird FFI-Overhead sichtbar. Empfehlung in Docs: `searchMany` für Autosuggest nutzen
+  - **Adoption too small on its own** — the package is only viable as part of the RAG category (pdf-parse + textsplitters + tiktoken + bm25)
+  - **Parity drift** — the stemmer versions between JS (snowball-js) and Rust (rust-stemmers) can diverge on edge-case words; mostly irrelevant to ranking order, but document it
+  - **Binary size** — Porter/Snowball stemmers for 15+ languages are ~1–2 MB as embedded tables. Feature-gated per language selection: users should optionally link only the stemmers they need (fast-follow v0.2)
+  - **Scope-creep risk** — fuzzy search, autosuggest, query-time field boosting. v1 says NO to everything except the BM25 core. If users want more: `@amigo-labs/tantivy` as its own package (fast-follow)
+  - **Single-query-call limit** — if a caller queries per user keystroke (>1000 calls/s), FFI overhead becomes visible. Recommendation in the docs: use `searchMany` for autosuggest
 
 ## If NO-GO — BACKLOG entry
 
-Nicht zutreffend (GO-Empfehlung).
+Not applicable (GO recommendation).
 
-Section in `BACKLOG.md`: **Under investigation — AI / RAG preprocessing** → Eintrag bleibt, Status-Update auf "Reviewed GO 2026-04-21. Downloads-Korrektur: ~15k combined statt ~30k. Empfohlen nur als Teil der RAG-Kategorie, nicht standalone."
+Section in `BACKLOG.md`: **Under investigation — AI / RAG preprocessing** → entry stays, status update to "Reviewed GO 2026-04-21. Downloads correction: ~15k combined instead of ~30k. Recommended only as part of the RAG category, not standalone."

@@ -1,109 +1,109 @@
 <h1 id="candidate-review-minisearch">Candidate review: <code>minisearch</code></h1>
 <blockquote>
-<p><strong>Status:</strong> GO (als neues Paket, zusammen mit <code>@amigo-labs/bm25</code> aus geteiltem Rust-Core) · <strong>Predicted:</strong> 🟢 Green (Build + Fuzzy-Search) / 🟡→🟢 (Exact-Query) · <strong>Reviewed:</strong> 2026-04-21
+<p><strong>Status:</strong> GO (as a new package, together with <code>@amigo-labs/bm25</code> built from a shared Rust core) · <strong>Predicted:</strong> 🟢 Green (build + fuzzy search) / 🟡→🟢 (exact query) · <strong>Reviewed:</strong> 2026-04-21
 <strong>Shipped:</strong> v0.1 on branch <code>claude/crate-performance-audit-6KLOJ</code> (2026-04-23). Benchmarks pending full bench suite.</p>
 </blockquote>
 <h2 id="verdict">Verdict</h2>
-<p><code>minisearch</code> ist die Portfolio-<strong>Kategorie-Spitze</strong> im lexikalischen Search-Markt (~100k/Woche gegen <code>wink-bm25-text-search</code>’s ~10k) — es hat BM25 plus Fuzzy-Match plus Autosuggest in einem Paket. Die Green-Shape ist identisch zu <code>wink-bm25-text-search</code> (stateful Index als NAPI-Class, Build→Serialize→viele-Queries), aber der Fuzzy-Match-Path (Levenshtein-distance-tolerant term matching) hat <strong>zusätzlichen Rust-Compute-Hebel</strong> weil Fuzzy-Search in JS über Strings brutforce-ig ist. Die Strategie: <strong>ein Rust-Core</strong> (<code>@amigo-labs/search-core</code>-Crate, nicht publiziert), zwei npm-Pakete darüber (<code>@amigo-labs/bm25</code> für wink-kompatible Shape, <code>@amigo-labs/minisearch</code> für mini-kompatible Shape). Das verdoppelt Markt-Abdeckung bei marginalem Extra-Aufwand. BM25-Core + Fuzzy-Match via <code>rust-fst</code>-LevenshteinAutomaton + Prefix-Autosuggest via <code>fst</code> wäre elegant.</p>
+<p><code>minisearch</code> is the portfolio’s <strong>category leader</strong> in the lexical-search market (~100k/week vs. <code>wink-bm25-text-search</code>’s ~10k) — it has BM25 plus fuzzy matching plus autosuggest in a single package. The Green shape is identical to <code>wink-bm25-text-search</code> (stateful index as a NAPI class, build→serialize→many-queries), but the fuzzy-match path (Levenshtein-distance-tolerant term matching) has <strong>additional Rust compute leverage</strong> because fuzzy search in JS is a brute-force scan over strings. The strategy: <strong>one Rust core</strong> (<code>@amigo-labs/search-core</code> crate, unpublished), two npm packages on top (<code>@amigo-labs/bm25</code> for the wink-compatible shape, <code>@amigo-labs/minisearch</code> for the mini-compatible shape). That doubles market coverage at marginal extra effort. BM25 core + fuzzy matching via the <code>rust-fst</code> Levenshtein automaton + prefix autosuggest via <code>fst</code> would be elegant.</p>
 <h2 id="js-package">JS package</h2>
 <ul>
 <li><strong>npm:</strong> <a href="https://www.npmjs.com/package/minisearch"><code>minisearch</code></a></li>
-<li><strong>Downloads:</strong> ~100k/Woche (Q1 2026), der klare Kategorie-Marktführer für in-process JS-Search</li>
+<li><strong>Downloads:</strong> ~100k/week (Q1 2026), the clear category market leader for in-process JS search</li>
 <li><strong>Exports / API surface:</strong>
 <ul>
-<li><code>new MiniSearch({fields, storeFields?, searchOptions?, tokenize?, processTerm?})</code> — Constructor</li>
-<li><code>.add(doc)</code>, <code>.addAll(docs)</code>, <code>.addAllAsync(docs)</code> — Index-Build</li>
-<li><code>.discard(id)</code>, <code>.replace(doc)</code> — Mutation</li>
-<li><code>.search(query, opts?) → SearchResult[]</code> — mit <code>opts.fuzzy</code>, <code>opts.prefix</code>, <code>opts.combineWith</code>, <code>opts.filter</code>, <code>opts.boost</code></li>
+<li><code>new MiniSearch({fields, storeFields?, searchOptions?, tokenize?, processTerm?})</code> — constructor</li>
+<li><code>.add(doc)</code>, <code>.addAll(docs)</code>, <code>.addAllAsync(docs)</code> — index build</li>
+<li><code>.discard(id)</code>, <code>.replace(doc)</code> — mutation</li>
+<li><code>.search(query, opts?) → SearchResult[]</code> — with <code>opts.fuzzy</code>, <code>opts.prefix</code>, <code>opts.combineWith</code>, <code>opts.filter</code>, <code>opts.boost</code></li>
 <li><code>.autoSuggest(queryPrefix, opts?) → Suggestion[]</code></li>
-<li><code>.toJSON()</code> / <code>MiniSearch.loadJSON(json, opts)</code> — Persistence</li>
+<li><code>.toJSON()</code> / <code>MiniSearch.loadJSON(json, opts)</code> — persistence</li>
 <li><code>.has(id)</code>, <code>.getStoredFields(id)</code>, <code>.documentCount</code></li>
 </ul>
 </li>
 <li><strong>Typical input:</strong>
 <ul>
-<li><strong>Build:</strong> 1k – 100k Docs. Jedes Doc ist Object mit Fields (title, body, tags, etc.). Field-Content 20 B – 50 KB.</li>
-<li><strong>Query:</strong> String 1–10 Wörter. Fuzzy-Option = Levenshtein-distance-Toleranz (z.B. 0.2 → 20 % Toleranz).</li>
-<li><strong>Autosuggest:</strong> Prefix-String 1–10 Zeichen.</li>
+<li><strong>Build:</strong> 1k – 100k docs. Each doc is an object with fields (title, body, tags, etc.). Field content 20 B – 50 KB.</li>
+<li><strong>Query:</strong> string of 1–10 words. Fuzzy option = Levenshtein-distance tolerance (e.g. 0.2 → 20 % tolerance).</li>
+<li><strong>Autosuggest:</strong> prefix string of 1–10 characters.</li>
 </ul>
 </li>
 <li><strong>Typical output:</strong>
 <ul>
-<li>Search: Array von <code>{id, score, terms, match, ...storedFields}</code></li>
-<li>Autosuggest: Array von <code>{suggestion, score, terms}</code></li>
+<li>Search: array of <code>{id, score, terms, match, ...storedFields}</code></li>
+<li>Autosuggest: array of <code>{suggestion, score, terms}</code></li>
 </ul>
 </li>
-<li><strong>Realistic median use-case:</strong> <strong>Doc-Site-Suche</strong> (Algolia-Alternative für statische Sites — Docusaurus/Astro/VitePress bauen Build-Time-Index, deployen als JSON, laden im Browser; wir würden primär den Build-Time-Pfad gewinnen). <strong>Client-Side-Search in SPAs</strong> (Kleiner-Mittlerer Corpus, ~1–10k Docs, im Browser gehalten). <strong>RAG-Hybrid-Retrieval</strong> (gemeinsam mit Vector-Search). Zweiter Case: <strong>Server-Side-In-Memory-Search</strong> für kleine Datasets wo ElasticSearch-Overhead nicht lohnt.</li>
+<li><strong>Realistic median use-case:</strong> <strong>Doc-site search</strong> (Algolia alternative for static sites — Docusaurus/Astro/VitePress build an index at build time, deploy it as JSON, load it in the browser; we would primarily win the build-time path). <strong>Client-side search in SPAs</strong> (small-to-medium corpus, ~1–10k docs, held in the browser). <strong>RAG hybrid retrieval</strong> (together with vector search). Second case: <strong>server-side in-memory search</strong> for small datasets where the overhead of ElasticSearch is not worth it.</li>
 </ul>
 <h2 id="rust-replacement">Rust replacement</h2>
 <ul>
 <li><strong>Candidate crate(s):</strong>
 <ul>
-<li><strong>Custom BM25-Core</strong> (shared mit <code>@amigo-labs/bm25</code>-Port aus <code>docs/perf-review/wink-bm25-text-search.md</code>): ~500 Zeilen Rust. Tokenize via <code>unicode-segmentation</code>, Stem via <code>rust-stemmers</code>, Posting-Listen als <code>FxHashMap&lt;TermId, Vec&lt;(DocId, Freq, FieldId)&gt;&gt;</code>.</li>
-<li><a href="https://crates.io/crates/fst"><code>fst</code></a> — BurntSushi. Levenshtein-Automaton für Fuzzy-Match (effizienter als Brute-Force-Distance-per-Term) und Prefix-Autosuggest über Sorted-Keys.</li>
-<li><a href="https://crates.io/crates/tantivy"><code>tantivy</code></a> — wäre natürliche Alternative für Fuzzy + BM25 + Autosuggest in einem. Aber Overkill für unseren Scope (wir wollen kein Inverted-Index-Persistence-Framework, wir wollen in-memory). Dennoch: wenn der Custom-Core aufwendig wird, ist tantivy die Fast-Follow-Option für <code>@amigo-labs/tantivy</code> als separates Paket.</li>
+<li><strong>Custom BM25 core</strong> (shared with the <code>@amigo-labs/bm25</code> port from <code>docs/perf-review/wink-bm25-text-search.md</code>): ~500 lines of Rust. Tokenize via <code>unicode-segmentation</code>, stem via <code>rust-stemmers</code>, posting lists as <code>FxHashMap&lt;TermId, Vec&lt;(DocId, Freq, FieldId)&gt;&gt;</code>.</li>
+<li><a href="https://crates.io/crates/fst"><code>fst</code></a> — BurntSushi. Levenshtein automaton for fuzzy matching (more efficient than brute-force distance-per-term) and prefix autosuggest over sorted keys.</li>
+<li><a href="https://crates.io/crates/tantivy"><code>tantivy</code></a> — would be the natural alternative for fuzzy + BM25 + autosuggest in one. But overkill for our scope (we do not want an inverted-index persistence framework, we want in-memory). Still: if the custom core turns out expensive, tantivy is the fast-follow option for <code>@amigo-labs/tantivy</code> as a separate package.</li>
 </ul>
 </li>
-<li><strong>Maintenance / license:</strong> <code>fst</code> Apache-2.0, BurntSushi-Qualität. <code>rust-stemmers</code> MIT. Supply-Chain sauber.</li>
+<li><strong>Maintenance / license:</strong> <code>fst</code> Apache-2.0, BurntSushi quality. <code>rust-stemmers</code> MIT. Supply chain clean.</li>
 <li><strong>Known gotchas / divergences:</strong>
 <ul>
-<li><strong><code>processTerm</code> / <code>tokenize</code>-Custom-Funktions</strong> — minisearch erlaubt User-Funktionen für Tokenization und Term-Processing. Kann nicht über FFI reichen. Wir bieten vorgekaufte Enums (<code>tokenizer: 'whitespace' | 'unicode-word'</code>, <code>stemmer: 'none' | 'porter' | 'snowball-xx'</code>, <code>lowercase: true</code>). Custom-Funktionen = API-Bruch, Migration-Guide Pflicht.</li>
-<li><strong>Fuzzy-Match-Semantik</strong> — minisearch’s Fuzzy ist “terms within Levenshtein distance of k/ratio”. <code>fst</code> Levenshtein-Automaton matcht bit-exakt die Toleranz, aber Scoring-Details (wie wird Fuzzy-Match relativ zu Exact-Match gewichtet) sind implementation-spezifisch. Parity-Ranking-Reihenfolge = realistisches Ziel, nicht Score-Gleichheit.</li>
-<li><strong>Autosuggest-Algorithmus</strong> — minisearch macht Prefix-Match + BM25-Score-Rerank. <code>fst</code> liefert Prefix-Completion nativ, Re-Scoring müssen wir selbst implementieren.</li>
-<li><strong>JSON-Format-Parity</strong> — <code>toJSON()</code>/<code>loadJSON()</code> ist ein minisearch-spezifisches Schema. Parity = Aufwand, aber machbar (500 Zeilen Serde-Config). Alternative: eigenes Binärformat wie bei <code>bm25</code>, plus einen JSON-Importer für Migration.</li>
+<li><strong><code>processTerm</code> / <code>tokenize</code> custom functions</strong> — minisearch allows user functions for tokenization and term processing. These cannot cross the FFI boundary. We offer pre-baked enums (<code>tokenizer: 'whitespace' | 'unicode-word'</code>, <code>stemmer: 'none' | 'porter' | 'snowball-xx'</code>, <code>lowercase: true</code>). Custom functions = API break, migration guide mandatory.</li>
+<li><strong>Fuzzy-match semantics</strong> — minisearch’s fuzzy is “terms within Levenshtein distance of k/ratio”. The <code>fst</code> Levenshtein automaton matches the tolerance bit-exactly, but scoring details (how a fuzzy match is weighted relative to an exact match) are implementation-specific. Parity in ranking order = the realistic goal, not score equality.</li>
+<li><strong>Autosuggest algorithm</strong> — minisearch does prefix matching + BM25-score reranking. <code>fst</code> provides prefix completion natively; we have to implement the re-scoring ourselves.</li>
+<li><strong>JSON-format parity</strong> — <code>toJSON()</code>/<code>loadJSON()</code> is a minisearch-specific schema. Parity = effort, but doable (500 lines of serde config). Alternative: our own binary format as with <code>bm25</code>, plus a JSON importer for migration.</li>
 </ul>
 </li>
 </ul>
 <h2 id="backlog-check">BACKLOG check</h2>
-<p>Vorhandener Eintrag in <code>BACKLOG.md</code> (Section “Under investigation — General utilities → Predicted Green”): ergänzt 2026-04-21. Review bestätigt GO-Empfehlung.</p>
-<p>Abgrenzung:</p>
+<p>Existing entry in <code>BACKLOG.md</code> (section “Under investigation — General utilities → Predicted Green”): added 2026-04-21. Review confirms the GO recommendation.</p>
+<p>Scope boundaries:</p>
 <ul>
-<li>Gegen <code>docs/perf-review/wink-bm25-text-search.md</code>: <strong>komplementäres Paket</strong>, geteilter Rust-Core. minisearch hat größere Adoption und zusätzliche Features (Fuzzy, Autosuggest) — wahrscheinlich das primäre Portfolio-Paket in der Kategorie.</li>
-<li>Gegen <code>BACKLOG.md:35</code> <code>hnswlib-node</code> (ruled out — C++-Wrapper): komplementär — minisearch ist der <strong>lexikalische</strong> Pfad (keyword, token-based), ANN ist <strong>semantisch</strong> (vector, embedding-based). Hybrid-RAG nutzt beides.</li>
-<li>Gegen <strong>tantivy</strong> (potential Fast-Follow-Paket <code>@amigo-labs/tantivy</code>): tantivy ist der schwergewichtige Lucene-Style-Full-Text-Engine für große Corpora mit Disk-Persistence. minisearch ist der leichtgewichtige In-Memory-Index. Beide könnten koexistieren; tantivy braucht eigenes Review.</li>
+<li>Versus <code>docs/perf-review/wink-bm25-text-search.md</code>: <strong>complementary package</strong>, shared Rust core. minisearch has larger adoption and additional features (fuzzy, autosuggest) — likely the primary portfolio package in this category.</li>
+<li>Versus <code>BACKLOG.md:35</code> <code>hnswlib-node</code> (ruled out — C++ wrapper): complementary — minisearch is the <strong>lexical</strong> path (keyword, token-based), ANN is <strong>semantic</strong> (vector, embedding-based). Hybrid RAG uses both.</li>
+<li>Versus <strong>tantivy</strong> (potential fast-follow package <code>@amigo-labs/tantivy</code>): tantivy is the heavyweight Lucene-style full-text engine for large corpora with disk persistence. minisearch is the lightweight in-memory index. Both could coexist; tantivy needs its own review.</li>
 </ul>
-<p>Kein Eintrag in <code>docs/packages.json</code>.</p>
+<p>No entry in <code>docs/packages.json</code>.</p>
 <h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
 <table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
-<tr><td>Per-call algorithmic work</td><td><strong>Build: hoch</strong> (Tokenize + Stem + Posting-List-Inserts für 10k Docs × 5 KB ≈ 200 ms JS, ~30 ms Rust → <strong>6–8×</strong>). <strong>Exact-Query: mittel</strong> (Posting-List-Merge + BM25-Score, Top-10 auf 10k-Index ~100–500 µs). <strong>Fuzzy-Query: hoch</strong> (Brute-Force-Distance in JS auf tausende Terms = 2–10 ms, Levenshtein-Automaton in Rust ~50–300 µs → <strong>20–40× Speedup</strong>). <strong>Autosuggest: mittel</strong> (Prefix-Match + Re-Score ~50–200 µs Rust).</td></tr>
-<tr><td>Input size distribution</td><td>Build-batch: ~50 MB Gesamt-Corpus als Docs-Array. Query: 20–100 B String. OK via Buffer für Batch-Input (NDJSON oder Arrow-ähnlich).</td></tr>
-<tr><td>Output size distribution</td><td>Search-Results: Top-10 als <code>Vec&lt;{id, score, terms, match}&gt;</code>. Marshalling ~10 × 300 ns = 3 µs auf 200 µs Rust-Query = 1,5 %. OK. Wenn <code>storeFields</code> gesetzt ist, sind mehr Felder im Output — kann explodieren auf ~20 KB bei Full-Doc-Store. Dokumentieren: <code>storeFields</code> ist Caller-Overhead-Trade-off.</td></tr>
-<tr><td>Reusable setup (stateful potential)</td><td><strong>Zentral.</strong> Index IS der State. NAPI-Class Pflicht. <code>addAll</code>-Build → serialize to Buffer → later <code>loadFromBuffer</code> → many queries. Standard-Pattern.</td></tr>
-<tr><td>Batch-usage realism</td><td><strong>Build Pflicht-batch</strong> (wie bei bm25). <strong>Query</strong> selten batch-relevant aber <code>searchMany(queries: string[])</code> für Autocomplete-Benchmarks ein sinnvoller Hebel.</td></tr>
-<tr><td>FFI-share estimate vs. Rust work</td><td>Build: &lt;0,1 %. Query-exact: ~1–2 %. Query-fuzzy: &lt;0,1 % (wegen dominantem Rust-Work). Autosuggest: ~1 %.</td></tr>
+<tr><td>Per-call algorithmic work</td><td><strong>Build: high</strong> (tokenize + stem + posting-list inserts for 10k docs × 5 KB ≈ 200 ms JS, ~30 ms Rust → <strong>6–8×</strong>). <strong>Exact query: medium</strong> (posting-list merge + BM25 scoring, top-10 on a 10k index ~100–500 µs). <strong>Fuzzy query: high</strong> (brute-force distance in JS over thousands of terms = 2–10 ms, Levenshtein automaton in Rust ~50–300 µs → <strong>20–40× speedup</strong>). <strong>Autosuggest: medium</strong> (prefix match + re-score ~50–200 µs Rust).</td></tr>
+<tr><td>Input size distribution</td><td>Build batch: ~50 MB total corpus as a docs array. Query: 20–100 B string. OK via Buffer for batch input (NDJSON or Arrow-like).</td></tr>
+<tr><td>Output size distribution</td><td>Search results: top-10 as <code>Vec&lt;{id, score, terms, match}&gt;</code>. Marshalling ~10 × 300 ns = 3 µs on a 200 µs Rust query = 1.5 %. OK. When <code>storeFields</code> is set, more fields end up in the output — this can balloon to ~20 KB with a full-doc store. Document it: <code>storeFields</code> is a caller overhead trade-off.</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td><strong>Central.</strong> The index IS the state. NAPI class mandatory. <code>addAll</code> build → serialize to Buffer → later <code>loadFromBuffer</code> → many queries. Standard pattern.</td></tr>
+<tr><td>Batch-usage realism</td><td><strong>Build must be batch</strong> (as with bm25). <strong>Query</strong> is rarely batch-relevant, but <code>searchMany(queries: string[])</code> is a sensible lever for autocomplete benchmarks.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>Build: &lt;0.1 %. Query-exact: ~1–2 %. Query-fuzzy: &lt;0.1 % (because the Rust work dominates). Autosuggest: ~1 %.</td></tr>
 </tbody></table>
 <h2 id="classification-reasoning">Classification reasoning</h2>
-<p>minisearch ist der <strong>größere Geschwistern-Port</strong> zu <code>@amigo-labs/bm25</code>:</p>
+<p>minisearch is the <strong>bigger sibling port</strong> of <code>@amigo-labs/bm25</code>:</p>
 <ol>
 <li>
-<p><strong>Shared Rust-Core-Strategie ist der Hebel.</strong> Wenn wir einen internen <code>search-core</code> crate haben, der BM25 + Fuzzy + Autosuggest in Rust implementiert, sind <code>@amigo-labs/bm25</code> und <code>@amigo-labs/minisearch</code> zwei dünne npm-Wrapper mit unterschiedlichen API-Shapes (wink-style vs. mini-style). Inkrementeller Aufwand für das zweite Paket: ~30 % des ersten, weil nur API-Shape und Serialization differieren. Markt-Abdeckung: 10k + 100k = 110k vs. 10k alleine = <strong>11× mehr TAM für 1,3× Aufwand</strong>.</p>
+<p><strong>The shared-Rust-core strategy is the lever.</strong> If we have an internal <code>search-core</code> crate implementing BM25 + fuzzy + autosuggest in Rust, then <code>@amigo-labs/bm25</code> and <code>@amigo-labs/minisearch</code> are two thin npm wrappers with different API shapes (wink-style vs. mini-style). Incremental effort for the second package: ~30 % of the first, because only the API shape and serialization differ. Market coverage: 10k + 100k = 110k vs. 10k alone = <strong>11× more TAM for 1.3× the effort</strong>.</p>
 </li>
 <li>
-<p><strong>Fuzzy-Match ist der killer-Sub-Case.</strong> In minisearch ist Fuzzy-Match ein optionales Query-Flag (<code>searchOpts.fuzzy = 0.2</code>). In pure JS ist es slow weil jeder Query-Term gegen alle Index-Terms verglichen wird per Levenshtein (was millisekunden kostet). <code>fst</code> Levenshtein-Automaton reduziert das auf Sub-Millisekunden. Speedup 20–40× realistisch. Das ist ein <strong>unique selling point</strong> — ohne FFI-Floor-Sorgen weil die Rust-Work die FFI trivial amortisiert.</p>
+<p><strong>Fuzzy matching is the killer sub-case.</strong> In minisearch, fuzzy matching is an optional query flag (<code>searchOpts.fuzzy = 0.2</code>). In pure JS it is slow because every query term is compared against all index terms via Levenshtein (which costs milliseconds). The <code>fst</code> Levenshtein automaton reduces that to sub-millisecond. A 20–40× speedup is realistic. This is a <strong>unique selling point</strong> — with no FFI-floor worries because the Rust work trivially amortizes the FFI.</p>
 </li>
 <li>
-<p><strong>Autosuggest ist drittes Feature.</strong> minisearch’s <code>autoSuggest</code> (Prefix + BM25-Re-Score) ist im Web-Client-Frontend-Use-Case der hot-path. Rust macht das mit <code>fst</code> native. JS muss Prefix-Scan über Term-Liste ziehen. Speedup ~5–10×.</p>
+<p><strong>Autosuggest is the third feature.</strong> minisearch’s <code>autoSuggest</code> (prefix + BM25 re-score) is the hot path in the web-client frontend use-case. Rust does this natively with <code>fst</code>. JS has to run a prefix scan over the term list. Speedup ~5–10×.</p>
 </li>
 <li>
-<p><strong>Browser-Runtime-Frage.</strong> minisearch wird oft im <strong>Browser</strong> gebraucht (static-site-search). Wir sind Node-only. Für Build-Time-Index-Build (Docusaurus/Astro) ist das OK (läuft in Node). Für Query-at-Runtime (User-Browser) läuft unser Paket nicht. Das ist eine <strong>legitime-Scope-Einschränkung</strong>, muss im README klar stehen. Alternative: WASM-Build als Fast-Follow — aber das ist separates Projekt.</p>
+<p><strong>The browser-runtime question.</strong> minisearch is often needed in the <strong>browser</strong> (static-site search). We are Node-only. For build-time index construction (Docusaurus/Astro) that is fine (runs in Node). For query-at-runtime (in the user’s browser) our package does not run. This is a <strong>legitimate scope restriction</strong> and must be stated clearly in the README. Alternative: a WASM build as a fast-follow — but that is a separate project.</p>
 </li>
 <li>
-<p><strong>Adoption macht es Portfolio-rentabel.</strong> 100k/Woche ist im oberen Drittel der Kategorie-Kandidaten im Portfolio. Mehr als <code>@amigo-labs/jose</code>, etwa gleich wie <code>@amigo-labs/slugify</code> oder <code>@amigo-labs/csv</code>.</p>
+<p><strong>Adoption makes it portfolio-viable.</strong> 100k/week is in the top third of category candidates in the portfolio. More than <code>@amigo-labs/jose</code>, roughly on par with <code>@amigo-labs/slugify</code> or <code>@amigo-labs/csv</code>.</p>
 </li>
 </ol>
-<p><strong>Shape-Matching:</strong></p>
+<p><strong>Shape matching:</strong></p>
 <ul>
-<li>🔁 Wie <code>@amigo-labs/tiktoken</code> (Stateful NAPI-Class, einmal laden, viele Queries)</li>
-<li>🔁 Wie <code>wink-bm25-text-search</code> (Build-+-Query-Shape, Rust-Core-sharebar)</li>
-<li>🔁 Wie <code>@amigo-labs/inflate</code> (bytes-heavy work, Buffer-API)</li>
-<li>❌ Nicht wie <code>cheerio</code> / <code>xml</code> (keine Chain-API, keine Tree-Mutation)</li>
-<li>❌ Nicht wie <code>mime</code> / <code>deep-equal</code> (substantielle Rust-Work pro Query)</li>
+<li>🔁 Like <code>@amigo-labs/tiktoken</code> (stateful NAPI class, load once, many queries)</li>
+<li>🔁 Like <code>wink-bm25-text-search</code> (build-plus-query shape, Rust core shareable)</li>
+<li>🔁 Like <code>@amigo-labs/inflate</code> (bytes-heavy work, Buffer API)</li>
+<li>❌ Not like <code>cheerio</code> / <code>xml</code> (no chained API, no tree mutation)</li>
+<li>❌ Not like <code>mime</code> / <code>deep-equal</code> (substantial Rust work per query)</li>
 </ul>
-<p><strong>Benchmark-Gap-Flag:</strong> Wie bei <code>wink-bm25-text-search</code>: Build + Exact-Query + Fuzzy-Query + Autosuggest gegen <code>minisearch</code> laufen lassen. Fuzzy-Query ist der wahrscheinlichste “killer”-Bench.</p>
+<p><strong>Benchmark-gap flag:</strong> As with <code>wink-bm25-text-search</code>: run build + exact query + fuzzy query + autosuggest against <code>minisearch</code>. The fuzzy query is the most likely “killer” bench.</p>
 <h2 id="if-go-proposed-port">If GO — proposed port</h2>
 <ul>
-<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/minisearch</code> (matcht npm-Konvention; nicht <code>@amigo-labs/mini-search</code>)</li>
-<li><strong>Shared Rust-Core:</strong> interner crate <code>crates/_search-core/</code> (Leitstrich-Prefix wie <code>_ffi-bench</code>/<code>_template</code>, nicht publiziert)</li>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/minisearch</code> (matches the npm convention; not <code>@amigo-labs/mini-search</code>)</li>
+<li><strong>Shared Rust core:</strong> internal crate <code>crates/_search-core/</code> (underscore prefix like <code>_ffi-bench</code>/<code>_template</code>, unpublished)</li>
 <li><strong>Primary API sketch:</strong>
 <pre><code class="language-ts">export interface MiniSearchConfig&lt;ID = string&gt; {
   fields: string[];
@@ -138,11 +138,11 @@ export class MiniSearch&lt;ID = string&gt; {
   autoSuggest(prefix: string, opts?: SearchOptions): Suggestion[];
   searchMany(queries: string[], opts?: SearchOptions): SearchResult&lt;ID&gt;[][];
 
-  // Persistence (binary, plus JSON-importer für minisearch-Migration)
+  // Persistence (binary, plus a JSON importer for minisearch migration)
   toBuffer(): Buffer;
   static fromBuffer&lt;ID&gt;(buf: Buffer): MiniSearch&lt;ID&gt;;
   static fromMiniSearchJSON&lt;ID&gt;(json: any): MiniSearch&lt;ID&gt;;
-  toJSON(): any;  // legacy format für Drop-in
+  toJSON(): any;  // legacy format for drop-in use
 
   // Metadata
   readonly documentCount: number;
@@ -153,26 +153,26 @@ export class MiniSearch&lt;ID = string&gt; {
 </li>
 <li><strong>Must-have benchmark scenarios (Gate):</strong>
 <ul>
-<li><strong>Build-small:</strong> 1k Docs × 2 KB avg — Ziel ≥3× vs. <code>minisearch.addAll</code></li>
-<li><strong>Build-medium:</strong> 10k Docs × 5 KB avg — Ziel ≥5×</li>
-<li><strong>Build-large:</strong> 50k Docs × 10 KB avg — Ziel ≥5× (Green-Gate-Hauptfall)</li>
-<li><strong>Query-exact-short:</strong> 2-Wort-Query auf 10k-Index — Ziel ≥2×</li>
-<li><strong>Query-exact-long:</strong> 10-Wort-Query auf 50k-Index — Ziel ≥3×</li>
-<li><strong>Query-fuzzy (0.2 Toleranz):</strong> 3-Wort-Query auf 10k-Index — Ziel ≥10× (<strong>killer-Bench</strong>)</li>
-<li><strong>Autosuggest:</strong> 3-Zeichen-Prefix auf 10k-Index — Ziel ≥5×</li>
-<li><strong>Serialize/Load:</strong> 50k-Index toBuffer + fromBuffer — Ziel ≥5× vs. toJSON/loadJSON</li>
+<li><strong>Build-small:</strong> 1k docs × 2 KB avg — target ≥3× vs. <code>minisearch.addAll</code></li>
+<li><strong>Build-medium:</strong> 10k docs × 5 KB avg — target ≥5×</li>
+<li><strong>Build-large:</strong> 50k docs × 10 KB avg — target ≥5× (main Green-gate case)</li>
+<li><strong>Query-exact-short:</strong> 2-word query on a 10k index — target ≥2×</li>
+<li><strong>Query-exact-long:</strong> 10-word query on a 50k index — target ≥3×</li>
+<li><strong>Query-fuzzy (0.2 tolerance):</strong> 3-word query on a 10k index — target ≥10× (<strong>killer bench</strong>)</li>
+<li><strong>Autosuggest:</strong> 3-character prefix on a 10k index — target ≥5×</li>
+<li><strong>Serialize/Load:</strong> 50k index toBuffer + fromBuffer — target ≥5× vs. toJSON/loadJSON</li>
 </ul>
 </li>
-<li><strong>Acceptance thresholds (Green gate):</strong> ≥3× auf Build-large UND ≥2× auf Query-exact-short UND ≥10× auf Query-fuzzy. Autosuggest + Serialize sind Nice-to-Have. Bei Query-exact unter 1,5× auf Short würde ich auf Yellow klassifizieren.</li>
+<li><strong>Acceptance thresholds (Green gate):</strong> ≥3× on build-large AND ≥2× on query-exact-short AND ≥10× on query-fuzzy. Autosuggest + serialize are nice-to-have. If query-exact lands below 1.5× on the short case, I would classify it as Yellow.</li>
 <li><strong>Risks:</strong>
 <ul>
-<li><strong>Custom-Function-Migration</strong> (tokenize/processTerm) — User mit Custom-JS muss preprocessen oder bleibt bei pure-minisearch</li>
-<li><strong>Browser-Einschränkung</strong> — nur Node; WASM-Build als Fast-Follow denkbar aber separater Aufwand</li>
-<li><strong>Fuzzy-Score-Divergenz</strong> — ranking statt identity</li>
-<li><strong>Binary-Size</strong> — <code>rust-stemmers</code> + <code>fst</code> + Custom-Core ~2–3 MB pro Target, vergleichbar mit <code>@amigo-labs/zip</code></li>
-<li><strong>Rust-Core-Stability</strong> — <code>@amigo-labs/bm25</code> und <code>@amigo-labs/minisearch</code> müssen Version-synchronisiert released werden; interner Core-Crate-Breaking-Change hat Downstream-Implications</li>
+<li><strong>Custom-function migration</strong> (tokenize/processTerm) — users with custom JS have to preprocess, or stay on pure minisearch</li>
+<li><strong>Browser restriction</strong> — Node only; a WASM build is conceivable as a fast-follow but is a separate effort</li>
+<li><strong>Fuzzy-score divergence</strong> — ranking parity rather than identity</li>
+<li><strong>Binary size</strong> — <code>rust-stemmers</code> + <code>fst</code> + custom core ~2–3 MB per target, comparable to <code>@amigo-labs/zip</code></li>
+<li><strong>Rust-core stability</strong> — <code>@amigo-labs/bm25</code> and <code>@amigo-labs/minisearch</code> must be released with synchronized versions; a breaking change in the internal core crate has downstream implications</li>
 </ul>
 </li>
 </ul>
 <h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
-<p>Nicht zutreffend (GO-Empfehlung).</p>
+<p>Not applicable (GO recommendation).</p>

@@ -137,6 +137,19 @@
         {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
       ]
     },
+    "crates/fuse": {
+      "package-name": "@amigo-labs/fuse",
+      "component": "fuse",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
     "crates/graph-layout": {
       "package-name": "@amigo-labs/graph-layout",
       "component": "graph-layout",
@@ -163,9 +176,35 @@
         {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
       ]
     },
+    "crates/jimp": {
+      "package-name": "@amigo-labs/jimp",
+      "component": "jimp",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
     "crates/jose": {
       "package-name": "@amigo-labs/jose",
       "component": "jose",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/jpeg-js": {
+      "package-name": "@amigo-labs/jpeg-js",
+      "component": "jpeg-js",
       "extra-files": [
         {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
         {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
@@ -192,6 +231,19 @@
     "crates/language-detect": {
       "package-name": "@amigo-labs/language-detect",
       "component": "language-detect",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/linkify-it": {
+      "package-name": "@amigo-labs/linkify-it",
+      "component": "linkify-it",
       "extra-files": [
         {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
         {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
@@ -231,6 +283,32 @@
     "crates/pdf-parse": {
       "package-name": "@amigo-labs/pdf-parse",
       "component": "pdf-parse",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/pixelmatch": {
+      "package-name": "@amigo-labs/pixelmatch",
+      "component": "pixelmatch",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/pngjs": {
+      "package-name": "@amigo-labs/pngjs",
+      "component": "pngjs",
       "extra-files": [
         {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
         {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
@@ -319,6 +397,19 @@
         {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
       ]
     },
+    "crates/tldts": {
+      "package-name": "@amigo-labs/tldts",
+      "component": "tldts",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
     "crates/turndown": {
       "package-name": "@amigo-labs/turndown",
       "component": "turndown",
@@ -374,6 +465,19 @@
     "crates/zip": {
       "package-name": "@amigo-labs/zip",
       "component": "zip",
+      "extra-files": [
+        {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
+        {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/darwin-x64/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-arm64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-gnu/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/linux-x64-musl/package.json","jsonpath":"$.version"},
+        {"type":"json","path":"npm/win32-x64-msvc/package.json","jsonpath":"$.version"}
+      ]
+    },
+    "crates/zstd": {
+      "package-name": "@amigo-labs/zstd",
+      "component": "zstd",
       "extra-files": [
         {"type":"toml","path":"Cargo.toml","jsonpath":"$.package.version"},
         {"type":"json","path":"npm/darwin-arm64/package.json","jsonpath":"$.version"},

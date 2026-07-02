@@ -19,7 +19,7 @@
  */
 
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, readdirSync, renameSync, statSync, unlinkSync } from 'node:fs'
+import { existsSync, readdirSync, renameSync, rmSync, statSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = process.cwd()
@@ -73,6 +73,12 @@ function runWasmPack(crate) {
     let stderr = ''
     proc.stderr.on('data', (chunk) => { stderr += chunk })
     proc.on('exit', (code) => {
+      if (code === 0) {
+        // wasm-pack writes pkg/.gitignore ('*'), which npm's packlist
+        // honours — it silently drops every wasm/pkg file from the tarball
+        // despite the `files` allowlist. Mirrors the rm in build:wasm.
+        rmSync(join(wasmDir, 'pkg', '.gitignore'), { force: true })
+      }
       resolve({ crate, ok: code === 0, stderr })
     })
     proc.on('error', (err) => {

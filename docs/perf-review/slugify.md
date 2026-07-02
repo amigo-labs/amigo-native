@@ -4,14 +4,14 @@
 
 ## Verdict
 
-**2,27×–4,49× vs. `slugify` npm** über alle Input-Größen. Unicode-Normalization + Transliteration ist echtes Work, der FFI-Overhead ist relativ klein zur Rust-Compute-Größe. `deunicode` crate + `unicode-normalization` crate machen per-Character-Work in pre-computed Tables — JS-upstream nutzt eine große JS-Lookup-Table plus manuelle NFD-Normalization. Sauberster Green-Shape im Portfolio neben `jwt`: String-in, String-out, kein State, kein Callback, substantial compute.
+**2.27×–4.49× vs. `slugify` npm** across all input sizes. Unicode normalization + transliteration is real work, and the FFI overhead is relatively small compared to the Rust compute volume. The `deunicode` crate + `unicode-normalization` crate do per-character work in pre-computed tables — the JS upstream uses a large JS lookup table plus manual NFD normalization. Cleanest Green shape in the portfolio next to `jwt`: string-in, string-out, no state, no callbacks, substantial compute.
 
 ## Classification rationale
 
-1. **Unicode-Normalization ist der strukturelle Win.** NFD-Normalization braucht Lookup in compact Unicode-Tables (10k+ Einträge). Rust's `unicode-normalization` crate hat hand-optimized Decomposition-Tables (compile-time PHF); JS macht dasselbe mit einem großen JS-Object + V8-Hashmap-Lookup per Char.
-2. **Transliteration via `deunicode` ist Lookup-Table-Perf.** Per-char Rust-Match ist schneller als JS's Chain-of-`switch` oder Map-Lookup.
-3. **Skaliert linear mit Input-Size.** 20-char: 2,82×, 500-char: 4,49×, unicode-heavy: 2,27×. Keine Bimodalität.
-4. **Binary-Size ist der Trade-off.** slugify bringt ~966 KB Binary für 21 KB JS-Alternative (`docs/perf-review.md:115`). Das ist explizit dokumentiert als akzeptabler Trade-off (3 Größenordnungen Speedup bei 3 Größenordnungen Bundle).
+1. **Unicode normalization is the structural win.** NFD normalization requires lookups in compact Unicode tables (10k+ entries). Rust's `unicode-normalization` crate has hand-optimized decomposition tables (compile-time PHF); JS does the same with a large JS object + a V8 hashmap lookup per char.
+2. **Transliteration via `deunicode` is lookup-table performance.** A per-char Rust match is faster than JS's chain-of-`switch` or map lookup.
+3. **Scales linearly with input size.** 20-char: 2.82×, 500-char: 4.49×, unicode-heavy: 2.27×. No bimodality.
+4. **Binary size is the trade-off.** slugify brings a ~966 KB binary for a 21 KB JS alternative (`docs/perf-review.md:115`). This is explicitly documented as an acceptable trade-off (3 orders of magnitude speedup for 3 orders of magnitude bundle).
 
 ## Evidence
 
@@ -19,65 +19,65 @@
 
 | Scenario | @amigo-labs/slugify | slugify npm | Speedup |
 |---|---:|---:|---:|
-| short ASCII (20 chars) | 1 435 759 Hz | 508 504 Hz | **2,82×** |
-| long ASCII (500 chars) | 116 529 Hz | 25 966 Hz | **4,49×** |
-| unicode heavy | 278 351 Hz | 122 440 Hz | **2,27×** |
+| short ASCII (20 chars) | 1 435 759 Hz | 508 504 Hz | **2.82×** |
+| long ASCII (500 chars) | 116 529 Hz | 25 966 Hz | **4.49×** |
+| unicode heavy | 278 351 Hz | 122 440 Hz | **2.27×** |
 
 ### Realistic use-case
 
-**URL-Slug-Generation** — Post-Title → URL-Path. Typisch 10–80 chars Input, ein Call pro Post/Article/Item-Create. **Filename-Safe-Naming** für Uploads. **Database-Record-Identity-Generation**. Alle Single-Call-per-Operation, keine Hot-Loops.
+**URL slug generation** — post title → URL path. Typically 10–80 chars of input, one call per post/article/item create. **Filename-safe naming** for uploads. **Database record identity generation**. All single-call-per-operation, no hot loops.
 
 ### Benchmark gaps
 
-- **Sprach-Matrix nicht isoliert.** `deunicode` hat sprachspezifische Transliteration (deutsch-Ü → ue, chinesisch-汉字 → Han Zi). Ein Korpus pro Sprache wäre lehrreich, aber nicht kritisch.
-- **Separator-Option-Variation** nicht gemessen (`_` vs `-` vs custom).
-- **Strict-Mode-Option** (alphanumeric-only) nicht isoliert.
+- **Language matrix not isolated.** `deunicode` has language-specific transliteration (German Ü → ue, Chinese 汉字 → Han Zi). One corpus per language would be instructive, but not critical.
+- **Separator-option variation** not measured (`_` vs `-` vs custom).
+- **Strict-mode option** (alphanumeric-only) not isolated.
 
 ### API surface
 
-Aus `crates/slugify/package.json` amigo-block und typischer slugify-npm-Parity:
+From the `crates/slugify/package.json` amigo block and typical slugify-npm parity:
 
 - `slugify(string, options?) → string`
-- Options: `replacement` (separator), `remove` (regex/set von chars), `lower`, `strict`, `locale`
+- Options: `replacement` (separator), `remove` (regex/set of chars), `lower`, `strict`, `locale`
 
-Keine NAPI-Class, kein Stateful, kein Async (trivial-fast, keine Notwendigkeit).
+No NAPI class, nothing stateful, no async (trivially fast, no need).
 
 ### Bundle / binary size
 
-~966 KB per Target (explicit in `docs/perf-review.md:115`). Groß relativ zu JS-Alternative (21 KB) weil Unicode-Tables eingebettet. Das ist das gesamte Portfolio-Trade-off-Argument: 3× – 6× Speedup bei 46× Bundle-Size.
+~966 KB per target (explicit in `docs/perf-review.md:115`). Large relative to the JS alternative (21 KB) because the Unicode tables are embedded. This is the whole portfolio trade-off argument: 3× – 6× speedup for 46× bundle size.
 
-Für Serverless-Deployments ist das relevant — 966 KB × 6 Targets ist signifikant. Für Docker-Containers irrelevant.
+For serverless deployments this matters — 966 KB × 6 targets is significant. For Docker containers it is irrelevant.
 
 ### FFI-overhead baseline
 
-- 20-char ASCII: String-Input-UTF-Konv ~100 ns, Output ähnlich. Rust ~650 ns slugify (inkl. normalize+transliterate+join). Total ~1 µs. FFI ~20 % Share, aber JS-upstream ist selbst 2 µs per Call → wir gewinnen.
-- 500-char: FFI ~500 ns auf ~8 µs Rust = 6 %.
-- Unicode-heavy: FFI ~500 ns auf ~3,5 µs Rust = 14 %.
+- 20-char ASCII: string-input UTF conversion ~100 ns, output similar. Rust ~650 ns slugify (incl. normalize+transliterate+join). Total ~1 µs. FFI ~20 % share, but the JS upstream is itself 2 µs per call → we win.
+- 500-char: FFI ~500 ns on ~8 µs Rust = 6 %.
+- Unicode-heavy: FFI ~500 ns on ~3.5 µs Rust = 14 %.
 
-Überall Green.
+Green everywhere.
 
 ## Phase-C optimization checklist
 
 | # | Lever | Applicable | Notes |
 |---|---|---|---|
-| C.1 | Input-type minimization (`&str` statt `String`) | 🟡 marginal | `&str` wäre möglich, spart ~50 ns pro Call. Sub-prozent-Gewinn bei aktuellen Margins |
-| C.2 | Output-type minimization | ❌ not applicable | `String`-Output ist natürlich |
-| C.3 | Batch API (`slugifyMany`) | 🟡 potential | CSV-Import-mit-Slug-Generation könnte profitieren. Nicht gemessen |
-| C.4 | Stateful API | ❌ not applicable | Options sind per-call leichtgewichtig |
+| C.1 | Input-type minimization (`&str` instead of `String`) | 🟡 marginal | `&str` would be possible, saves ~50 ns per call. Sub-percent gain at current margins |
+| C.2 | Output-type minimization | ❌ not applicable | `String` output is natural |
+| C.3 | Batch API (`slugifyMany`) | 🟡 potential | CSV import with slug generation could benefit. Not measured |
+| C.4 | Stateful API | ❌ not applicable | Options are lightweight per call |
 | C.5 | Parallelization | ❌ not applicable | Single-string single-threaded |
-| C.6 | Algorithm swap | ❌ not applicable | `deunicode` + `unicode-normalization` sind best-in-class |
-| C.7 | Allocator tuning (pre-alloc Output-Capacity) | 🟡 marginal | `String::with_capacity` basierend auf Input-Length × 1,5 — mikro-Optimierung |
-| C.8 | Bundle-size | ⚠️ accepted trade-off | Unicode-Tables sind der Bulk; nicht reduzierbar ohne Scope-Cut (z.B. transliterate-optional) |
+| C.6 | Algorithm swap | ❌ not applicable | `deunicode` + `unicode-normalization` are best-in-class |
+| C.7 | Allocator tuning (pre-alloc output capacity) | 🟡 marginal | `String::with_capacity` based on input length × 1.5 — micro-optimization |
+| C.8 | Bundle-size | ⚠️ accepted trade-off | Unicode tables are the bulk; not reducible without a scope cut (e.g. making transliteration optional) |
 
 ## Action plan
 
-**Keep-as-is.** Green über alle Szenarien, keine offene Front.
+**Keep-as-is.** Green across all scenarios, no open front.
 
 Maintenance:
 
-1. **Bench-Matrix erweitern** (Sprachen, Separator-Options, Strict-Mode).
-2. **`slugifyMany`-Bench** falls Batch-Hebel portfolio-relevant wird.
-3. **Binary-Size-Reduktion als Fast-Follow** falls Serverless-User Complaints kommen: feature-gated `deunicode` (Ascii-only / Latin-only / Full) könnte 60–70 % sparen. Bisher keine Nachfrage.
+1. **Extend the bench matrix** (languages, separator options, strict mode).
+2. **`slugifyMany` bench** if the batch lever becomes portfolio-relevant.
+3. **Binary-size reduction as a fast-follow** if serverless users complain: a feature-gated `deunicode` (ASCII-only / Latin-only / full) could save 60–70 %. No demand so far.
 
 ## References
 
@@ -85,5 +85,5 @@ Maintenance:
 - Bench: `crates/slugify/__bench__/index.bench.ts`
 - Lib: `crates/slugify/src/lib.rs`
 - Cargo: `crates/slugify/Cargo.toml`
-- Bundle-trade-off Diskussion: `docs/perf-review.md:115`
+- Bundle trade-off discussion: `docs/perf-review.md:115`
 - `docs/packages.json` speedup: `"2.3–4.5× faster"`

@@ -5,13 +5,8 @@ export interface Document {
   pages: Array<Page>
 }
 
-/** Generate a PDF from a document spec. Single FFI crossing. */
 export declare function generate(doc: Document): Buffer
 
-/**
- * Batch-generate N documents. One FFI crossing for the whole
- * label-printing job.
- */
 export declare function generateMany(docs: Array<Document>): Array<Buffer>
 
 export interface LineElement {

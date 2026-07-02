@@ -1,0 +1,35 @@
+<h1 id="perf-review-amigo-labs-force-layout">Perf-Review: <code>@amigo-labs/force-layout</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green (measured) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>7.18× (20 nodes) and 3.58× (100 nodes)</strong> vs. <code>d3-force</code> (bench 2026-06-10). The candidate review predicted Yellow leaning Green and feared sub-2× on small graphs; the measurement beats that prediction on both buckets — the small-graph bucket clears the candidate’s ≥1× gate by a wide margin, and the median bucket sits above the ≥2× Green threshold. The structural lever is the batch shape: one <code>simulate()</code> call runs all iterations in Rust, so the per-tick FFI crossings that would dominate a d3-style tick loop never happen.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-benchmarks-force-layout-json-2026-06-10-commit-8c743bf">Measured speedup (docs/benchmarks/force-layout.json, 2026-06-10, commit <code>8c743bf</code>)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/force-layout</th><th style="text-align: right">d3-force</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>small graph (20 nodes)</td><td style="text-align: right">1 221.01 Hz</td><td style="text-align: right">170.16 Hz</td><td style="text-align: right"><strong>7.18×</strong></td></tr>
+<tr><td>medium graph (100 nodes)</td><td style="text-align: right">56.61 Hz</td><td style="text-align: right">15.83 Hz</td><td style="text-align: right"><strong>3.58×</strong></td></tr>
+</tbody></table>
+<ul>
+<li><code>docs/packages.json</code> speedup: <code>"3.6–7.2× faster"</code>.</li>
+<li>Install size: 404 KB vs <code>d3-force</code>’s 169 KB — we are <strong>larger</strong>; the win is compute, not footprint.</li>
+</ul>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>Large bucket (500/800 nodes) not benched.</strong> Relevant because of the O(V²) many-body caveat below — the crossover point vs. d3’s Barnes–Hut is unmeasured.</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<ul>
+<li><strong>Batch <code>simulate()</code> only</strong> — no per-tick callback API. Layouts that need animated ticks stay on d3-force by design.</li>
+<li><strong>O(V²) many-body force</strong> instead of Barnes–Hut. Honest caveat: above roughly 1000 nodes d3’s O(V log V) approximation should win; the shipped sweet spot is the ≤ a-few-hundred-nodes dashboard graph.</li>
+<li>Multiplicative alpha decay and a deterministic RNG — same layout for the same input, unlike d3’s <code>Math.random()</code> jitter.</li>
+</ul>
+<h2 id="divergences">Divergences</h2>
+<p>Not coordinate-identical to d3-force (deterministic seeding, decay-schedule differences); topology-level parity (cluster separation, link-length distribution) is what the conformance suite asserts. See <code>crates/force-layout/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./d3-force.md"><code>d3-force.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/force-layout</code></li>
+<li>Bench shard: <code>docs/benchmarks/force-layout.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"3.6–7.2× faster"</code></li>
+</ul>

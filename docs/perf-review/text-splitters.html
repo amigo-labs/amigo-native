@@ -1,0 +1,37 @@
+<h1 id="perf-review-amigo-labs-text-splitters">Perf-Review: <code>@amigo-labs/text-splitters</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟡 Yellow — long-document bucket 🔴 red-flagged (measured) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>The measurement inverts the candidate prediction.</strong> The candidate review predicted Green at RAG scale and Yellow on tweet-sized inputs; measured reality is the opposite — <strong>2.56×</strong> on ~240 B, <strong>1.21×</strong> on ~14 KB, and <strong>4.74× slower</strong> (0.21×) on the ~140 KB long-document bucket. That long bucket is precisely the RAG-ingest scenario the port exists for, and it fails the candidate’s Green gate (≥3× RAG-small, ≥5× RAG-large) outright. Prime suspect: the <code>text-splitter</code> crate’s semantic-hierarchy scanning cost on large inputs. This is the portfolio’s clearest <strong>Phase-C investigation item</strong>.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-benchmarks-text-splitters-json-2026-06-10-commit-8c743bf">Measured speedup (docs/benchmarks/text-splitters.json, 2026-06-10, commit <code>8c743bf</code>)</h3>
+<table><thead><tr><th>Bucket</th><th style="text-align: right">@amigo-labs <code>splitText</code></th><th style="text-align: right">@langchain/textsplitters</th><th style="text-align: right">Ratio</th></tr></thead><tbody>
+<tr><td>short (~240 B)</td><td style="text-align: right">230 315 Hz</td><td style="text-align: right">90 119 Hz</td><td style="text-align: right"><strong>2.56×</strong></td></tr>
+<tr><td>medium (~14 KB)</td><td style="text-align: right">1 364 Hz</td><td style="text-align: right">1 129 Hz</td><td style="text-align: right"><strong>1.21×</strong></td></tr>
+<tr><td>long (~140 KB)</td><td style="text-align: right">17.66 Hz</td><td style="text-align: right">83.72 Hz</td><td style="text-align: right"><strong>0.21× (4.74× slower)</strong></td></tr>
+</tbody></table>
+<ul>
+<li><code>docs/packages.json</code> speedup: <code>"up to 2.6× faster / 4.7× slower"</code> — deliberately not sugar-coated.</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<ul>
+<li><code>splitText</code> / <code>splitTextBatch</code> / <code>splitMarkdown</code> / <code>countTokens</code>.</li>
+<li><code>lengthMetric</code> enum replaced the <code>lengthFunction</code> callback, as the candidate review designed (a JS callback per chunk would have destroyed the FFI budget).</li>
+<li>No custom separators, no <code>createDocuments</code>.</li>
+<li>Tiktoken-based length metrics are <strong>Node-only</strong> — the WASM build excludes the ~1.5 MB BPE tables.</li>
+</ul>
+<h2 id="phase-c-action-plan">Phase-C action plan</h2>
+<ol>
+<li><strong>Profile the long bucket</strong> — isolate whether the regression is the <code>text-splitter</code> crate’s semantic scan or chunk-string marshalling (an offsets API would fix only the latter).</li>
+<li>Re-bench after the fix; the crate needs the long bucket at ≥1× minimum to hold Yellow, ≥5× for the originally predicted Green.</li>
+</ol>
+<h2 id="divergences">Divergences</h2>
+<p>Chunk boundaries are close to but not byte-identical with <code>@langchain/textsplitters</code> on mixed-separator documents. See <code>crates/text-splitters/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./langchain__textsplitters.md"><code>langchain__textsplitters.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/text-splitters</code></li>
+<li>Bench shard: <code>docs/benchmarks/text-splitters.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"up to 2.6× faster / 4.7× slower"</code></li>
+</ul>

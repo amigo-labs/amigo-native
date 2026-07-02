@@ -1,11 +1,16 @@
 # Perf review
 
-> Honest classification of the 16 published `@amigo-labs/*` packages
-> against their respective JS alternatives. Basis for the decision:
-> `npm run bench` numbers from `bench-results.json` (measured
+> Historical record: the honest classification of the original
+> 16-package cohort and its Phase-C/D optimization sprint. Basis for the
+> decisions: `npm run bench` numbers from `bench-results.json` (measured
 > 2026-04-18, Node v22.22.2 linux/x64) and the FFI overhead baseline in
 > `docs/BASELINE.md` (noop = 109 ns, echoString 100KB = 34.7 µs, Buffer
 > echo constant ~180 ns).
+>
+> The portfolio has since grown to 36 packages. Current per-package
+> verdicts live in `docs/perf-review/<name>.md` (rendered on the
+> dashboard), with live measurements in `docs/data.json`. The verdict
+> legend below remains the canonical definition every review uses.
 
 ## Verdict legend
 

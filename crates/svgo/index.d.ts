@@ -22,7 +22,6 @@ export interface SvgoConfig {
   collapseGroups?: boolean
   convertColors?: boolean
   collapseWhitespace?: boolean
-  /** Decimal places kept by `cleanupNumericValues`. Default: 3. */
   floatPrecision?: number
   multipass?: boolean
 }

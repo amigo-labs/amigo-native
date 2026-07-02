@@ -36,4 +36,23 @@ ignore = [
     # artifact. Re-evaluate when `allsorts` bumps to an `ouroboros`
     # release that has migrated to `proc-macro-error2`.
     "RUSTSEC-2024-0370",
+    # `lopdf < 0.42` can stack-overflow on deeply nested PDF objects per
+    # RUSTSEC-2026-0187. The parsing path (`_pdf-parse-core`, which DOES
+    # consume untrusted PDFs) was upgraded to lopdf 0.42, which has the
+    # fix. The remaining lock entry is lopdf 0.39 via `printpdf 0.9.1`
+    # (`_pdf-core`), and printpdf has no release on lopdf ≥0.42 yet. Our
+    # `pdf` crate only *generates* PDFs from a typed spec through
+    # printpdf — the vulnerable parse path is not reachable from its
+    # API. Re-evaluate on the next printpdf release.
+    "RUSTSEC-2026-0187",
+    # `proc-macro-error2 2.0.1` is unmaintained per RUSTSEC-2026-0173.
+    # Phantom lock entry: `jiff`'s optional `defmt` feature → `defmt` →
+    # `defmt-macros` → `proc-macro-error2`. The feature is never enabled
+    # (`cargo tree -i proc-macro-error2 --target all` finds no reverse
+    # path), so it is not compiled into any artifact.
+    "RUSTSEC-2026-0173",
+    # `ttf-parser 0.25` is unmaintained per RUSTSEC-2026-0192. Pulled by
+    # `lopdf` (both the 0.42 parse path and 0.39 via printpdf). Warning-
+    # level only; re-evaluate when lopdf moves to a maintained fork.
+    "RUSTSEC-2026-0192",
 ]

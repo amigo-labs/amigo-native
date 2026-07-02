@@ -1,0 +1,37 @@
+<h1 id="perf-review-amigo-labs-bm25">Perf-Review: <code>@amigo-labs/bm25</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green (measured) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>13.14× on query throughput</strong> vs. the JS baseline (bench 2026-05-28). BM25 retrieval has one of the best Green shapes in the RAG category: the index is built once (substantial compute — tokenize + IDF + posting lists), lives long-term as a NAPI class, and answers each query with 10–500 µs of real work. The candidate review predicted Green for index build and Yellow-leaning-Green for queries; the measured query multiplier lands clearly in Green territory. The stateful-class shape means the FFI boundary carries only the query string in and a compact hit list out — no per-call index marshalling.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-benchmarks-bm25-json-2026-05-28-commit-45d29b4">Measured speedup (docs/benchmarks/bm25.json, 2026-05-28, commit <code>45d29b4</code>)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/bm25</th><th style="text-align: right">JS baseline</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>query, 1000-doc index</td><td style="text-align: right">18 012.67 Hz</td><td style="text-align: right">1 370.76 Hz (<code>okapibm25</code>, rebuild per query)</td><td style="text-align: right"><strong>13.14×</strong></td></tr>
+<tr><td>index build, 1000 docs (<code>addAll</code>)</td><td style="text-align: right">287.54 Hz</td><td style="text-align: right">— (not benched)</td><td style="text-align: right">—</td></tr>
+</tbody></table>
+<ul>
+<li><code>docs/packages.json</code> speedup: <code>"13× faster"</code>.</li>
+<li>Install size: 25 KB vs <code>wink-bm25-text-search</code>’s 5.1 MB <code>node_modules</code> footprint.</li>
+</ul>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>Index build has no JS baseline in the shard</strong> — <code>wink-bm25-text-search</code>’s build path was not benched. The candidate review predicted Green here; unverified.</li>
+<li>Large-corpus buckets (50k+ chunks) from the candidate’s RAG scenario are not measured.</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<p>The candidate review sketched a stateful <code>Bm25Index</code> NAPI class with batch add and top-k query — that is what shipped. Scope cuts in v0.1:</p>
+<ul>
+<li><strong>RSJ+1 IDF variant</strong> (non-negative), not wink’s exact IDF formula.</li>
+<li><strong>Simpler tokenizer</strong>: lowercase + alphanumeric split, no stemming pipeline.</li>
+<li>No multi-field documents, no field boosts, no index persistence yet.</li>
+</ul>
+<h2 id="divergences">Divergences</h2>
+<p>Scores are <strong>not numerically comparable</strong> to <code>wink-bm25-text-search</code> (IDF variant + tokenizer differences); ranking order matches on the conformance corpus except where stemming would merge terms. See <code>crates/bm25/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./wink-bm25-text-search.md"><code>wink-bm25-text-search.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/bm25</code></li>
+<li>Bench shard: <code>docs/benchmarks/bm25.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"13× faster"</code></li>
+</ul>

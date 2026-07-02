@@ -1,0 +1,33 @@
+<h1 id="perf-review-amigo-labs-graph-layout">Perf-Review: <code>@amigo-labs/graph-layout</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green (measured) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>62.3× (20 nodes / 25 edges) and 74.97× (100 nodes / 140 edges)</strong> vs. <code>@dagrejs/dagre</code> (bench 2026-06-10). The candidate review predicted Green with a 2–5× expectation; the measurement lands far above it. Honest caveat on the multiplier: part of it is <strong>algorithm choice, not a pure Rust win</strong> — we ship a longest-path ranker with 4 barycentric crossing-reduction sweeps, while dagre runs network-simplex ranking plus 24 sweeps. Same visual class of layout, materially less work per layout. Crossing counts can be 5–15 % higher than dagre’s on dense graphs.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-benchmarks-graph-layout-json-2026-06-10-commit-8c743bf">Measured speedup (docs/benchmarks/graph-layout.json, 2026-06-10, commit <code>8c743bf</code>)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/graph-layout</th><th style="text-align: right">@dagrejs/dagre</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>small DAG (20 nodes, 25 edges)</td><td style="text-align: right">8 936.36 Hz</td><td style="text-align: right">143.54 Hz</td><td style="text-align: right"><strong>62.3×</strong></td></tr>
+<tr><td>medium DAG (100 nodes, 140 edges)</td><td style="text-align: right">1 708.74 Hz</td><td style="text-align: right">22.79 Hz</td><td style="text-align: right"><strong>74.97×</strong></td></tr>
+</tbody></table>
+<ul>
+<li><code>docs/packages.json</code> speedup: <code>"62–75× faster"</code>.</li>
+<li>Install size: 436 KB vs <code>dagre</code>’s 2.7 MB / <code>@dagrejs/dagre</code>’s 1.6 MB.</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<ul>
+<li><strong>Not a drop-in</strong> — a spec-object API (<code>layout(spec) → positions</code>) instead of dagre’s mutable graphlib graph.</li>
+<li><strong>Longest-path ranker only</strong> (no network-simplex option yet).</li>
+<li><strong>Straight-line 2-point edges</strong> — no dagre-style edge points/label nodes.</li>
+<li>Cycle reversal is skipped in v0.1 (inputs must be DAGs).</li>
+<li>Extras beyond dagre: <code>layoutMany</code> batch API and pinned ranks.</li>
+</ul>
+<h2 id="divergences">Divergences</h2>
+<p>Coordinates are not dagre-identical (different ranker + sweep count); rank ordering and layer assignment match on the conformance corpus. On dense graphs expect somewhat more edge crossings than dagre. See <code>crates/graph-layout/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./dagre.md"><code>dagre.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/graph-layout</code></li>
+<li>Bench shard: <code>docs/benchmarks/graph-layout.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"62–75× faster"</code></li>
+</ul>

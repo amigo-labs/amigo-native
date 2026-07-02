@@ -74,7 +74,7 @@ For each crate (excluding `_template`):
 | `npm/` with 6 platform subdirs (`darwin-arm64`, `darwin-x64`, `linux-arm64-gnu`, `linux-x64-gnu`, `linux-x64-musl`, `win32-x64-msvc`) | NAPI-RS platform-stub packages — without them, `npm install` fails on that platform |
 | `__bench__/index.bench.ts` | Vitest benchmark suite consumed by `bench:report` |
 | Registered in `docs/packages.json` with all metadata fields | Appears on the GitHub Pages dashboard |
-| **WASM dual-target scaffolding** (`wasm/Cargo.toml`, `wasm/src/lib.rs`, `build:wasm` script, `browser` export, `amigo.targets`) | Browser bundlers (Vite, webpack, Angular CLI) resolve the `browser` conditional export. Required for every crate **not** in `NODE_ONLY_CRATES`. |
+| **WASM dual-target scaffolding** (`wasm/Cargo.toml`, `wasm/src/lib.rs`, `wasm/tests/web.rs`, `build:wasm` script, `browser` export, the five underscored `wasm/pkg/*` entries in `files`, an "Install for the browser" README section, a declared `amigo.targets`) | Browser bundlers (Vite, webpack, Angular CLI) resolve the `browser` conditional export; the `files` entries make sure the tarball actually ships the WASM artifact. Required for every crate **not** in `NODE_ONLY_CRATES`. |
 
 ### Node.js server-only group
 
@@ -98,6 +98,7 @@ Globally:
 
 - `docs/packages.json` marquee `PACKAGES` value equals the crate count (`docs/data.json` is auto-generated benchmark output; `packages.json` holds the hand-edited brand/marquee/registry)
 - `docs/packages.json` marquee `TARGETS` reflects the dual-target / Node-only split
+- Every crate is registered in `release-please-config.json` **and** `.release-please-manifest.json` (both hand-maintained; a missing entry means no release PRs / npm publishes)
 - Legacy `__parity__/` dirs or `test:parity` scripts are flagged as **must modernize**
 
 ## Invocation flags
