@@ -3,20 +3,27 @@
 Working dashboard. Source of truth for "what is in flight, what was just shipped,
 what to pick up next." Updated as work moves.
 
-> **Last updated:** 2026-06-10
-> **Active branch:** `claude/deep-fixup-v7j8ey` (deep-fixup session)
+> **Last updated:** 2026-07-02
+> **Active branch:** `claude/code-review-optimization-xhk4ft` (deep-fixup session)
 
 ---
 
 ## In flight
 
-### Deep-fixup session (2026-06-10)
+### Deep-fixup session (2026-07-02)
 
-Repo-wide analyze → fix pass; session record in `PLAN.md` on the branch.
-Bug fixes (csv option truncation, xlsx column wraparound), the
-`new-package.sh` template brought up to the dual-target convention,
-the last 8 "Install for the browser" README sections, and doc-drift
-cleanup (this file, NODE_ONLY_CRATES place count).
+Repo-wide audit → fix pass on `claude/code-review-optimization-xhk4ft`.
+Release automation gap closed (8 crates — fuse, jimp, jpeg-js,
+linkify-it, pixelmatch, pngjs, tldts, zstd — added to the release-please
+config + manifest, plus a `sync-registry --check` guard so the gap can't
+recur), audit-crates checks widened (wasm/tests/web.rs, browser README
+section, `files` wasm entries, declared `amigo.targets`, release-please
+coverage), 20 German `docs/perf-review/*.md` translated to English,
+crate-named perf reviews added for the 8 shipped crates that had none
+(bm25, force-layout, graph-layout, language-detect, pdf, sentences,
+stemmer, text-splitters), the `pack-verify` CI step, regenerated napi
+loaders, and doc-drift cleanup (README architecture note,
+CONTRIBUTING sync-registry claim, perf-review.md historical header).
 
 ---
 
@@ -24,6 +31,7 @@ cleanup (this file, NODE_ONLY_CRATES place count).
 
 | Date       | What                                                                      |
 | :--------- | :------------------------------------------------------------------------ |
+| 2026-06-10 | **Deep-fixup session**: csv option truncation + xlsx column wraparound bug fixes, dual-target `new-package.sh` template, last 8 "Install for the browser" README sections, doc-drift cleanup (PR #158, merge `8c743bf`) |
 | 2026-05-28 | WASM benchmark coverage completed across crates; benchmarks regenerated (PR #151) |
 | 2026-05-17 | **Dual-target expansion complete**: WASM bindings shipped for all 33 eligible crates — Batches 1–3 and all edge cases (zstd decompress-only via ruzstd, text-splitters minus tiktoken, zip, jimp, pdf, pdf-parse, xlsx, typst) (PR #134) |
 | 2026-05-17 | Foundation: workspace deps, CI wasm-test + bundle-size jobs, release.yml WASM build step, audit-crates WASM checks (PR #134) |
@@ -34,15 +42,9 @@ cleanup (this file, NODE_ONLY_CRATES place count).
 
 ## Next up — pick from the top
 
-1. **`pack-verify` CI step**: run `pnpm pack --dry-run` per dual-target
-   crate and grep the file list for the expected `wasm/pkg/*` entries.
-   Catches the case where `prepublishOnly` doesn't run (e.g. local
-   `npm pack`) and the tarball ships without the WASM artifact.
-2. **Regenerate stale checked-in napi loaders**: a local `napi build` of
-   csv/xlsx shows the committed `native.cjs` / `.d.ts` files lag the
-   current source (version-check strings, removed doc comments). Needs a
-   full `pnpm build` across all 36 packages and one sweeping commit
-   (cf. `69116f5`, the earlier index.js version-drift fix).
+_(empty — both previous items landed in the 2026-07-02 deep-fixup
+session: the `pack-verify` CI step and the napi-loader regeneration.
+Pick new work from "Open decisions" below or `BACKLOG.md`.)_
 
 ---
 

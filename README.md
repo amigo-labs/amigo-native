@@ -75,7 +75,7 @@ Then edit `crates/<name>/src/lib.rs` and `crates/<name>/Cargo.toml`.
 ```
 amigo-native/
 ├── crates/
-│   ├── <package>/        # one directory per @amigo-labs/<package> (see Packages table above)
+│   ├── <package>/        # one directory per @amigo-labs/<package> (catalog: docs/packages.json)
 │   └── _template/        # scaffold for new packages
 ├── scripts/
 │   ├── new-package.sh         # package generator
