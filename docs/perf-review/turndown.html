@@ -1,107 +1,107 @@
 <h1 id="candidate-review-turndown">Candidate review: <code>turndown</code></h1>
 <blockquote>
-<p><strong>Status:</strong> GO (Drop-in-orientiert, Custom-Rule-API bewusst out-of-scope) · <strong>Predicted:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21
+<p><strong>Status:</strong> GO (drop-in-oriented, custom-rule API deliberately out-of-scope) · <strong>Predicted:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21
 <strong>Shipped:</strong> v0.1 on branch <code>claude/crate-performance-audit-6KLOJ</code> (2026-04-23). Benchmarks pending full bench suite.</p>
 </blockquote>
 <h2 id="verdict">Verdict</h2>
-<p>HTML → Markdown ist der <strong>saubere <code>commonmark</code>-Spiegel</strong>: Bytes-in / String-out, substantieller Compute (HTML-Parse + Tree-Walk + Rule-Dispatch + Markdown-Emit), keine Chain-API. Pure-JS-<code>turndown</code> nutzt DOMParser-Polyfill + handgeschriebene Rules — V8 ist auf HTML-Parsing suboptimal (keine spezialisierte Parse-Engine, everything geht durch den JSDOM-lite-Pfad). Rust <code>html5ever</code> (wie <code>@amigo-labs/sanitize-html</code>’s Parser) plus eigene Rule-Engine gewinnt hier 3–8× auf typischen Web-Extract-Inputs. Der <strong>eine</strong> strukturelle Kostenpunkt ist die <code>.addRule(name, { filter, replacement })</code>-API, mit der User Custom-Transformations hängen — exakt der Callback-Boundary-Antipattern. Lösung: in v1 <strong>nur</strong> die pre-baked Rules (CommonMark + GFM-Tables + GFM-Strikethrough) ausliefern; Custom-Rule-User kriegen einen Migration-Block im README. Adoption ~1M/Woche rechtfertigt das einfach.</p>
+<p>HTML → Markdown is the <strong>clean <code>commonmark</code> mirror</strong>: bytes-in / string-out, substantial compute (HTML parse + tree walk + rule dispatch + Markdown emit), no chain API. Pure-JS <code>turndown</code> uses a DOMParser polyfill + hand-written rules — V8 is suboptimal at HTML parsing (no specialized parse engine, everything goes through the JSDOM-lite path). Rust <code>html5ever</code> (like <code>@amigo-labs/sanitize-html</code>’s parser) plus our own rule engine wins 3–8× here on typical web-extract inputs. The <strong>one</strong> structural cost point is the <code>.addRule(name, { filter, replacement })</code> API, which users use to attach custom transformations — exactly the callback-boundary antipattern. Solution: in v1 ship <strong>only</strong> the pre-baked rules (CommonMark + GFM tables + GFM strikethrough); custom-rule users get a migration block in the README. Adoption of ~1M/week simply justifies it.</p>
 <h2 id="js-package">JS package</h2>
 <ul>
-<li><strong>npm:</strong> <a href="https://www.npmjs.com/package/turndown"><code>turndown</code></a> plus <a href="https://www.npmjs.com/package/turndown-plugin-gfm"><code>turndown-plugin-gfm</code></a> für GitHub-Flavored-Markdown</li>
-<li><strong>Downloads:</strong> <code>turndown</code> ~1M/Woche (BACKLOG-Zahl bestätigt). Plus <code>turndown-plugin-gfm</code> ~300k/Woche.</li>
+<li><strong>npm:</strong> <a href="https://www.npmjs.com/package/turndown"><code>turndown</code></a> plus <a href="https://www.npmjs.com/package/turndown-plugin-gfm"><code>turndown-plugin-gfm</code></a> for GitHub-Flavored Markdown</li>
+<li><strong>Downloads:</strong> <code>turndown</code> ~1M/week (BACKLOG figure confirmed). Plus <code>turndown-plugin-gfm</code> ~300k/week.</li>
 <li><strong>Exports / API surface:</strong>
 <ul>
-<li><code>new TurndownService(options?)</code> — Constructor</li>
-<li><code>.turndown(html) → string</code> — Main-Call</li>
-<li><code>.addRule(name, rule)</code> — Custom-Transformation (callback-based)</li>
-<li><code>.keep(filter)</code> / <code>.remove(filter)</code> — Tag-Lists ausschließen/bewahren</li>
-<li><code>.use(plugin)</code> — Plugin-Registration</li>
+<li><code>new TurndownService(options?)</code> — constructor</li>
+<li><code>.turndown(html) → string</code> — main call</li>
+<li><code>.addRule(name, rule)</code> — custom transformation (callback-based)</li>
+<li><code>.keep(filter)</code> / <code>.remove(filter)</code> — exclude/preserve tag lists</li>
+<li><code>.use(plugin)</code> — plugin registration</li>
 <li>Options: <code>headingStyle</code> (‘setext’|‘atx’), <code>hr</code>, <code>bulletListMarker</code>, <code>codeBlockStyle</code> (‘indented’|‘fenced’), <code>fence</code>, <code>emDelimiter</code>, <code>strongDelimiter</code>, <code>linkStyle</code> (‘inlined’|‘referenced’), <code>linkReferenceStyle</code>, <code>preformattedCode</code></li>
 </ul>
 </li>
-<li><strong>Typical input:</strong> HTML-String 1 KB – 500 KB. Median ~10–50 KB (Blog-Post, E-Mail-HTML, scraped Webpage-Content-Block)</li>
-<li><strong>Typical output:</strong> Markdown-String, typisch 60–90 % der Input-Größe (HTML-Tags fallen weg, Content bleibt)</li>
-<li><strong>Realistic median use-case:</strong> <strong>Web-Scraping → Clean-Markdown</strong> für RAG-Pipelines (HTML-Seite → reinen Content-Text für LLM-Ingestion). Zweiter Case: <strong>E-Mail-Thread-Prozessing</strong> (HTML-E-Mails in Plain-Markdown für Speichern/Analyze). Dritter: <strong>CMS-Migrations</strong> (HTML-Inhalt aus Legacy-System → Markdown für MDX-basierte Static-Sites). In allen Fällen: <strong>ein Call pro Dokument</strong>, Dokument-Anzahl 10–10 000 pro Batch. Keine Per-Element-Calls (anders als <code>cheerio</code>).</li>
+<li><strong>Typical input:</strong> HTML string 1 KB – 500 KB. Median ~10–50 KB (blog post, e-mail HTML, scraped webpage content block)</li>
+<li><strong>Typical output:</strong> Markdown string, typically 60–90 % of the input size (HTML tags drop out, content stays)</li>
+<li><strong>Realistic median use-case:</strong> <strong>Web scraping → clean Markdown</strong> for RAG pipelines (HTML page → pure content text for LLM ingestion). Second case: <strong>e-mail thread processing</strong> (HTML e-mails into plain Markdown for storage/analysis). Third: <strong>CMS migrations</strong> (HTML content from a legacy system → Markdown for MDX-based static sites). In all cases: <strong>one call per document</strong>, document count 10–10 000 per batch. No per-element calls (unlike <code>cheerio</code>).</li>
 </ul>
 <h2 id="rust-replacement">Rust replacement</h2>
 <ul>
 <li><strong>Candidate crate(s):</strong>
 <ul>
-<li><a href="https://crates.io/crates/html2md"><code>html2md</code></a> — <strong>primär</strong>. Direkt inspiriert von turndown, pure Rust. Nutzt <code>html5ever</code> im Backend. MIT, aber Maintenance-Status Q1 2026 prüfen (letzter Release älter). Bei Problemen: Fork oder Custom-Impl.</li>
-<li><a href="https://crates.io/crates/fast_html2md"><code>fast_html2md</code></a> — Fork/Alternative, schneller auf großen Dokumenten.</li>
-<li><a href="https://crates.io/crates/html5ever"><code>html5ever</code></a> + eigene Rule-Engine — falls <code>html2md</code>-crates unzureichend sind. ~800 Zeilen Rust für Full-turndown-Parity.</li>
-<li><a href="https://crates.io/crates/scraper"><code>scraper</code></a> als Tree-Walker-Alternative (benutzt html5ever intern).</li>
+<li><a href="https://crates.io/crates/html2md"><code>html2md</code></a> — <strong>primary</strong>. Directly inspired by turndown, pure Rust. Uses <code>html5ever</code> in the backend. MIT, but check maintenance status in Q1 2026 (latest release is older). If problems arise: fork or custom impl.</li>
+<li><a href="https://crates.io/crates/fast_html2md"><code>fast_html2md</code></a> — fork/alternative, faster on large documents.</li>
+<li><a href="https://crates.io/crates/html5ever"><code>html5ever</code></a> + our own rule engine — if the <code>html2md</code> crates are insufficient. ~800 lines of Rust for full turndown parity.</li>
+<li><a href="https://crates.io/crates/scraper"><code>scraper</code></a> as a tree-walker alternative (uses html5ever internally).</li>
 </ul>
 </li>
-<li><strong>Maintenance / license:</strong> <code>html2md</code> MIT, Maintenance prüfenswert. <code>html5ever</code> Mozilla-Servo-Qualität. Supply-Chain sauber.</li>
+<li><strong>Maintenance / license:</strong> <code>html2md</code> MIT, maintenance worth checking. <code>html5ever</code> is Mozilla-Servo quality. Supply chain clean.</li>
 <li><strong>Known gotchas / divergences:</strong>
 <ul>
-<li><strong>Custom-Rule-API</strong> — turndown’s <code>.addRule()</code> erlaubt User-JS-Funktionen als Filter/Replacement. Das ist Callback-Boundary. <strong>Lösung</strong>: In v1 nur vorgekaufte Rules (CommonMark + GFM-Plugin-Set). User mit Custom-Rules können nicht migrieren — klar im Migration-Guide.</li>
-<li><strong>Keep/Remove-Filter</strong> — akzeptiert auch Funktionen in turndown. Bei uns: nur Tag-Name-Strings oder vordefinierte Sets (<code>['script', 'style']</code>, etc.).</li>
-<li><strong>Plugin-System (<code>turndown-plugin-gfm</code>)</strong> — exposeiert Funktions-Set. Wir liefern GFM-Mode als Config-Flag (<code>gfm: true</code>), nicht als Plugin.</li>
-<li><strong>HTML-Parse-Error-Recovery</strong> — html5ever folgt WHATWG-Spec strikt, turndown nutzt DOMParser-Polyfill mit eigenen Eigenheiten. Malformed HTML kann divergieren.</li>
-<li><strong>Link-Style-Edge-Cases</strong> — Referenced-Links mit Collapsed-Reference-Form, nested Emphasis, Code-Block-Whitespace-Preservation — alle potenzielle Parity-Drift-Punkte. Wir dokumentieren via <code>__conformance__/divergences.md</code>.</li>
+<li><strong>Custom-rule API</strong> — turndown’s <code>.addRule()</code> allows user JS functions as filter/replacement. That is a callback boundary. <strong>Solution</strong>: in v1, only pre-baked rules (CommonMark + GFM plugin set). Users with custom rules cannot migrate — stated clearly in the migration guide.</li>
+<li><strong>Keep/remove filters</strong> — also accept functions in turndown. With us: only tag-name strings or predefined sets (<code>['script', 'style']</code>, etc.).</li>
+<li><strong>Plugin system (<code>turndown-plugin-gfm</code>)</strong> — exposes a function set. We ship GFM mode as a config flag (<code>gfm: true</code>), not as a plugin.</li>
+<li><strong>HTML parse-error recovery</strong> — html5ever follows the WHATWG spec strictly, turndown uses a DOMParser polyfill with its own quirks. Malformed HTML may diverge.</li>
+<li><strong>Link-style edge cases</strong> — referenced links with collapsed-reference form, nested emphasis, code-block whitespace preservation — all potential parity-drift points. We document them via <code>__conformance__/divergences.md</code>.</li>
 </ul>
 </li>
 </ul>
 <h2 id="backlog-check">BACKLOG check</h2>
-<p>Vorhandener Eintrag in <code>BACKLOG.md</code> (Section “Under investigation — General utilities → Predicted Green”): ergänzt 2026-04-21. Review bestätigt GO-Empfehlung mit Scope-Einschränkung auf Custom-Rule-API.</p>
-<p>Abgrenzung:</p>
+<p>Existing entry in <code>BACKLOG.md</code> (section “Under investigation — General utilities → Predicted Green”): added 2026-04-21. Review confirms the GO recommendation with the scope restriction on the custom-rule API.</p>
+<p>Differentiation:</p>
 <ul>
-<li>Gegen <code>@amigo-labs/commonmark</code> (shipped 🟢): <strong>komplementär, kein Overlap</strong>. commonmark ist Markdown → HTML. turndown ist HTML → Markdown. Beide Richtungen sind getrennte Libraries im Ökosystem, auch intern.</li>
-<li>Gegen <code>docs/perf-review/cheerio.md</code> (NO-GO): turndown macht <strong>eine</strong> Transformation pro Call (HTML → MD), keine Chain-API, keine User-Mutation am Tree. Deshalb Green-Shape während cheerio Red-Shape ist.</li>
-<li>Gegen <code>docs/perf-review/remark.md</code> (NO-GO): remark hat Plugin-System als Hauptvaluf. turndown hat Custom-Rules auch, <strong>aber</strong> Mainstream-Usage ist Default-Rules + GFM-Plugin. Wir können die 90-%-Usage abdecken; remark kann das nicht.</li>
-<li>Gegen <code>docs/perf-review/sanitize-html.md</code> (shipped 🟢): nutzt ähnliches Parser-Backend (html5ever-Familie). Rust-Code-Sharing möglich als Fast-Follow.</li>
+<li>Against <code>@amigo-labs/commonmark</code> (shipped 🟢): <strong>complementary, no overlap</strong>. commonmark is Markdown → HTML. turndown is HTML → Markdown. Both directions are separate libraries in the ecosystem, internally as well.</li>
+<li>Against <code>docs/perf-review/cheerio.md</code> (NO-GO): turndown does <strong>one</strong> transformation per call (HTML → MD), no chain API, no user mutation of the tree. Hence a Green shape while cheerio is a Red shape.</li>
+<li>Against <code>docs/perf-review/remark.md</code> (NO-GO): remark has its plugin system as the main value. turndown has custom rules too, <strong>but</strong> mainstream usage is default rules + the GFM plugin. We can cover the 90 % usage; remark cannot.</li>
+<li>Against <code>docs/perf-review/sanitize-html.md</code> (shipped 🟢): uses a similar parser backend (html5ever family). Rust code sharing possible as a fast-follow.</li>
 </ul>
-<p>Kein Eintrag in <code>docs/packages.json</code>.</p>
+<p>No entry in <code>docs/packages.json</code>.</p>
 <h2 id="ffi-overhead-prediction">FFI-overhead prediction</h2>
 <table><thead><tr><th>Factor</th><th>Assessment</th></tr></thead><tbody>
-<tr><td>Per-call algorithmic work</td><td><strong>Substantiell.</strong> 20 KB HTML → ~5 KB MD: turndown ~5–15 ms (DOMParser-Polyfill dominiert), Rust ~500 µs – 2 ms → <strong>5–10× Speedup</strong>. 100 KB HTML: JS ~50–100 ms, Rust ~3–10 ms → <strong>8–15×</strong>. FFI-Share &lt;1 %.</td></tr>
-<tr><td>Input size distribution</td><td>String 1 KB – 500 KB. UTF-Konv 0,35 ns/byte = 175 µs bei 500 KB — auf ~10 ms Rust = 1,8 %, vernachlässigbar.</td></tr>
-<tr><td>Output size distribution</td><td>String 0,5 KB – 300 KB. Konv analog, OK.</td></tr>
-<tr><td>Reusable setup (stateful potential)</td><td><strong>Mittel.</strong> Rule-Set + Options werden zur Constructor-Time kompiliert. <code>TurndownService</code>-Class NAPI-Class gibt das dem User zurück. Nicht heavy-setup, aber Class-Pattern passt zur Drop-in-Form.</td></tr>
-<tr><td>Batch-usage realism</td><td><strong>Hoch.</strong> Scraping-/Migration-Workloads haben 1000+ HTMLs. <code>turndownMany(htmls: string[]) → string[]</code> mit rayon-Pool ist Fast-Follow-Hebel.</td></tr>
-<tr><td>FFI-share estimate vs. Rust work</td><td>&lt;1 % auf allen realistischen Input-Größen.</td></tr>
+<tr><td>Per-call algorithmic work</td><td><strong>Substantial.</strong> 20 KB HTML → ~5 KB MD: turndown ~5–15 ms (DOMParser polyfill dominates), Rust ~500 µs – 2 ms → <strong>5–10× speedup</strong>. 100 KB HTML: JS ~50–100 ms, Rust ~3–10 ms → <strong>8–15×</strong>. FFI share &lt;1 %.</td></tr>
+<tr><td>Input size distribution</td><td>String 1 KB – 500 KB. UTF conversion 0.35 ns/byte = 175 µs at 500 KB — on ~10 ms Rust = 1.8 %, negligible.</td></tr>
+<tr><td>Output size distribution</td><td>String 0.5 KB – 300 KB. Conversion analogous, OK.</td></tr>
+<tr><td>Reusable setup (stateful potential)</td><td><strong>Medium.</strong> The rule set + options are compiled at constructor time. A <code>TurndownService</code> NAPI class gives that back to the user. Not heavy setup, but the class pattern fits the drop-in form.</td></tr>
+<tr><td>Batch-usage realism</td><td><strong>High.</strong> Scraping/migration workloads have 1000+ HTMLs. <code>turndownMany(htmls: string[]) → string[]</code> with a rayon pool is a fast-follow lever.</td></tr>
+<tr><td>FFI-share estimate vs. Rust work</td><td>&lt;1 % on all realistic input sizes.</td></tr>
 </tbody></table>
 <h2 id="classification-reasoning">Classification reasoning</h2>
-<p>turndown ist <strong>identisches Shape wie <code>@amigo-labs/commonmark</code></strong>, nur andere Richtung:</p>
+<p>turndown is <strong>the identical shape to <code>@amigo-labs/commonmark</code></strong>, just the other direction:</p>
 <ol>
 <li>
-<p><strong>Parser-Baseline in JS ist langsam.</strong> DOMParser-Polyfill in turndown ist pure-JS (anders als Browser-DOMParser der Native-C++ ist — im Node-Kontext kein DOMParser verfügbar). Jede Tag-Öffnung/Schließung ist V8-Object-Alloc. Rust’s <code>html5ever</code> ist SIMD-beschleunigt und zero-GC.</p>
+<p><strong>The parser baseline in JS is slow.</strong> The DOMParser polyfill in turndown is pure JS (unlike the browser’s DOMParser, which is native C++ — no DOMParser is available in the Node context). Every tag open/close is a V8 object allocation. Rust’s <code>html5ever</code> is SIMD-accelerated and zero-GC.</p>
 </li>
 <li>
-<p><strong>Rule-Dispatch ist Hot-Loop.</strong> Für jeden HTML-Node wird die Rule-Liste durchlaufen (<code>filter(node)</code>-Check), bis die erste matcht, dann <code>replacement(content, node, options)</code> gerufen. In JS ist das ein Funktions-Call pro Node + dispatch. Rust: Pattern-Match auf Node-Type (statisch), kein Dispatch-Overhead.</p>
+<p><strong>Rule dispatch is a hot loop.</strong> For every HTML node the rule list is walked (<code>filter(node)</code> check) until the first one matches, then <code>replacement(content, node, options)</code> is called. In JS that is a function call per node + dispatch. Rust: pattern match on the node type (static), no dispatch overhead.</p>
 </li>
 <li>
-<p><strong>Markdown-Emission ist String-Building.</strong> V8’s String-Concat ist OK-optimiert aber nicht optimal (Ropes vs. reallocating Buffer). Rust <code>String::push_str</code> auf pre-allocated Capacity ist messbar schneller.</p>
+<p><strong>Markdown emission is string building.</strong> V8’s string concat is OK-optimized but not optimal (ropes vs. a reallocating buffer). Rust <code>String::push_str</code> on pre-allocated capacity is measurably faster.</p>
 </li>
 <li>
-<p><strong>Kein Chain-API-Problem.</strong> Im Gegensatz zu cheerio ist die User-API <code>service.turndown(html) → string</code> — <strong>ein Call</strong>, ein Result. Internals sind black-box. Perfekt für NAPI.</p>
+<p><strong>No chain-API problem.</strong> Unlike cheerio, the user API is <code>service.turndown(html) → string</code> — <strong>one call</strong>, one result. Internals are a black box. Perfect for NAPI.</p>
 </li>
 <li>
-<p><strong>Custom-Rule-API als akzeptabler Scope-Cut.</strong> Mainstream-Nutzung (basierend auf GitHub-Code-Search) ist:</p>
+<p><strong>The custom-rule API is an acceptable scope cut.</strong> Mainstream usage (based on GitHub code search) is:</p>
 <ul>
 <li><code>new TurndownService()</code> + <code>.turndown(html)</code> — <strong>80 %</strong></li>
 <li><code>new TurndownService({ options })</code> + <code>.use(gfm)</code> + <code>.turndown(html)</code> — <strong>15 %</strong></li>
-<li>Custom <code>.addRule()</code> oder Custom-Filter — <strong>5 %</strong></li>
-<li>Die 5 % dokumentieren, migration-notieren; 95 % sind bedient.</li>
+<li>Custom <code>.addRule()</code> or custom filters — <strong>5 %</strong></li>
+<li>Document the 5 %, add a migration note; 95 % are served.</li>
 </ul>
 </li>
 <li>
-<p><strong>Green über alle Input-Größen.</strong> Selbst bei kleinem Input (1 KB HTML = ~3-5 Tags) ist Rust ~100 µs, JS ~1–3 ms. FFI-Floor 109 ns = 0,1 %. Überall Green, kein Bimodal-Problem wie <code>franc</code>/<code>sbd</code>.</p>
+<p><strong>Green across all input sizes.</strong> Even on small input (1 KB HTML = ~3-5 tags), Rust is ~100 µs, JS ~1–3 ms. FFI floor 109 ns = 0.1 %. Green everywhere, no bimodal problem like <code>franc</code>/<code>sbd</code>.</p>
 </li>
 </ol>
-<p><strong>Shape-Matching:</strong></p>
+<p><strong>Shape matching:</strong></p>
 <ul>
-<li>✅ Wie <code>@amigo-labs/commonmark</code> (bytes-in spec, bytes-out result, substantial compute, no chain-API) — exakt gespiegelt</li>
-<li>✅ Wie <code>@amigo-labs/sanitize-html</code> (html5ever-basiert, Rule-Dispatch, single-call)</li>
-<li>❌ Nicht wie <code>cheerio</code> (keine Chain-API)</li>
-<li>❌ Nicht wie <code>remark</code> (keine Plugin-Tree-Mutation; User-Rules sind optionales Feature, nicht Haupt-Value-Prop)</li>
+<li>✅ Like <code>@amigo-labs/commonmark</code> (bytes-in spec, bytes-out result, substantial compute, no chain-API) — exactly mirrored</li>
+<li>✅ Like <code>@amigo-labs/sanitize-html</code> (html5ever-based, rule dispatch, single-call)</li>
+<li>❌ Not like <code>cheerio</code> (no chain API)</li>
+<li>❌ Not like <code>remark</code> (no plugin tree mutation; user rules are an optional feature, not the main value prop)</li>
 </ul>
-<p><strong>Benchmark-Gap-Flag:</strong> Vor v1-Ship müssen drei Szenarien bench-gated werden (small/medium/large), zusätzlich GFM-Table-Heavy-Input als Parity-Check.</p>
+<p><strong>Benchmark gap flag:</strong> Before the v1 ship, three scenarios must be bench-gated (small/medium/large), plus a GFM-table-heavy input as a parity check.</p>
 <h2 id="if-go-proposed-port">If GO — proposed port</h2>
 <ul>
-<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/turndown</code> (Drop-in-Konvention; ready-to-drop-in für die 95 %-Nutzung)</li>
+<li><strong>Recommended crate-name:</strong> <code>@amigo-labs/turndown</code> (drop-in convention; ready-to-drop-in for the 95 % usage)</li>
 <li><strong>Primary API sketch:</strong>
 <pre><code class="language-ts">export interface TurndownOptions {
   headingStyle?: 'setext' | 'atx';
@@ -131,24 +131,24 @@ export function turndown(html: string, options?: TurndownOptions): string;
 </li>
 <li><strong>Must-have benchmark scenarios (Gate):</strong>
 <ul>
-<li><strong>Small (1 KB HTML, ~5 tags):</strong> Ziel ≥2× vs. <code>turndown</code></li>
-<li><strong>Medium (20 KB HTML, Blog-Post mit gemischten Tags):</strong> Ziel ≥5× (Green-Gate-Hauptfall)</li>
-<li><strong>Large (100 KB HTML, Scraped Content):</strong> Ziel ≥8×</li>
-<li><strong>GFM-heavy (Tables, Task-Lists):</strong> Ziel ≥4× with gfm:true (Parity-Priority)</li>
-<li><strong>Batch 100 × 20 KB:</strong> Ziel ≥6× (rayon-Hebel)</li>
-<li><strong>Parity-Conformance:</strong> Testset von 500 Real-World-HTML → MD Pairs aus turndown’s eigener Test-Suite (MIT). ≥95 % Byte-Identical.</li>
+<li><strong>Small (1 KB HTML, ~5 tags):</strong> target ≥2× vs. <code>turndown</code></li>
+<li><strong>Medium (20 KB HTML, blog post with mixed tags):</strong> target ≥5× (main Green-gate case)</li>
+<li><strong>Large (100 KB HTML, scraped content):</strong> target ≥8×</li>
+<li><strong>GFM-heavy (tables, task lists):</strong> target ≥4× with gfm:true (parity priority)</li>
+<li><strong>Batch 100 × 20 KB:</strong> target ≥6× (rayon lever)</li>
+<li><strong>Parity conformance:</strong> test set of 500 real-world HTML → MD pairs from turndown’s own test suite (MIT). ≥95 % byte-identical.</li>
 </ul>
 </li>
-<li><strong>Acceptance thresholds (Green gate):</strong> ≥2× auf Small UND ≥5× auf Medium UND ≥95 % Parity. Alle drei müssen treffen.</li>
+<li><strong>Acceptance thresholds (Green gate):</strong> ≥2× on small AND ≥5× on medium AND ≥95 % parity. All three must hit.</li>
 <li><strong>Risks:</strong>
 <ul>
-<li><strong>Custom-Rule-API-Migration</strong> — User die <code>.addRule()</code> nutzen müssen bleiben bei turndown oder pre-processen</li>
-<li><strong>html2md crate Maintenance</strong> — bei Inaktivität: Fork oder Custom-Impl (~1 Woche Aufwand)</li>
-<li><strong>DOMParser-Divergenz auf malformed HTML</strong> — Parity auf Worst-Case-Inputs nicht 100 %, via conformance-docs klären</li>
-<li><strong>Binary-Size</strong> — html5ever + Custom-Code ~2–3 MB pro Target, vergleichbar mit <code>@amigo-labs/sanitize-html</code></li>
-<li><strong>GFM-Plugin-Users</strong> — heute installieren sie <code>turndown-plugin-gfm</code> extra. Bei uns ist es <code>{gfm: true}</code>-Flag. Migration ist einfach aber nicht null</li>
+<li><strong>Custom-rule-API migration</strong> — users of <code>.addRule()</code> must stay with turndown or pre-process</li>
+<li><strong><code>html2md</code> crate maintenance</strong> — if inactive: fork or custom impl (~1 week of effort)</li>
+<li><strong>DOMParser divergence on malformed HTML</strong> — parity on worst-case inputs not 100 %, clarify via conformance docs</li>
+<li><strong>Binary size</strong> — html5ever + custom code ~2–3 MB per target, comparable to <code>@amigo-labs/sanitize-html</code></li>
+<li><strong>GFM plugin users</strong> — today they install <code>turndown-plugin-gfm</code> separately. With us it is the <code>{gfm: true}</code> flag. Migration is simple but not zero</li>
 </ul>
 </li>
 </ul>
 <h2 id="if-no-go-backlog-entry">If NO-GO — BACKLOG entry</h2>
-<p>Nicht zutreffend (GO-Empfehlung).</p>
+<p>Not applicable (GO recommendation).</p>

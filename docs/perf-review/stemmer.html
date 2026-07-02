@@ -1,0 +1,33 @@
+<h1 id="perf-review-amigo-labs-stemmer">Perf-Review: <code>@amigo-labs/stemmer</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟢 Green (measured) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>7.03–7.85× across all four scenarios</strong> vs. <code>natural</code> (bench 2026-05-28). The batch-first API shape does exactly what the candidate review demanded: one FFI crossing per corpus chunk instead of one per token, so the Snowball compute in <code>rust-stemmers</code> dominates and the multiplier stays flat from 1k-token batches up to 100 KB tokenize-and-stem runs. Exceeds every candidate gate (≥3× batch-1000, ≥5× batch-10k, ≥3× tokenizeAndStem-10KB).</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-benchmarks-stemmer-json-2026-05-28-commit-45d29b4">Measured speedup (docs/benchmarks/stemmer.json, 2026-05-28, commit <code>45d29b4</code>)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/stemmer</th><th style="text-align: right">natural</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td><code>stemMany</code> × 1 000</td><td style="text-align: right">1 832 Hz</td><td style="text-align: right">260.7 Hz</td><td style="text-align: right"><strong>7.03×</strong></td></tr>
+<tr><td><code>stemMany</code> × 10 000</td><td style="text-align: right">190.2 Hz</td><td style="text-align: right">26.67 Hz</td><td style="text-align: right"><strong>7.13×</strong></td></tr>
+<tr><td><code>tokenizeAndStem</code> 10 KB</td><td style="text-align: right">1 313 Hz</td><td style="text-align: right">172.2 Hz</td><td style="text-align: right"><strong>7.62×</strong></td></tr>
+<tr><td><code>tokenizeAndStem</code> 100 KB</td><td style="text-align: right">133.1 Hz</td><td style="text-align: right">16.95 Hz</td><td style="text-align: right"><strong>7.85×</strong></td></tr>
+</tbody></table>
+<ul>
+<li><code>docs/packages.json</code> speedup: <code>"7–7.9× faster"</code>.</li>
+<li>Install size: <strong>26 KB</strong> vs <code>natural</code>’s <strong>65 MB</strong> <code>node_modules</code> (natural bundles the whole NLP toolkit; we ship only stemming).</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<ul>
+<li>Batch-only <code>Stemmer</code> class: <code>stemMany</code>, <code>tokenizeAndStem</code>, <code>tokenizeAndStemToBuffer</code>; <code>stemOnce</code> exists as the documented slow path.</li>
+<li><strong>18 languages</strong> (candidate said 17 — <code>rust-stemmers</code> added Tamil in the interim).</li>
+<li>English-only stopword list in v0.1.</li>
+</ul>
+<h2 id="divergences">Divergences</h2>
+<p><code>rust-stemmers</code> implements a newer Snowball revision than <code>natural</code>’s hand-ported stemmers — a small set of words stems differently (documented with examples). Not a <code>natural</code> drop-in; it replaces only the stemming corner of it. See <code>crates/stemmer/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./natural.md"><code>natural.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/stemmer</code></li>
+<li>Bench shard: <code>docs/benchmarks/stemmer.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"7–7.9× faster"</code></li>
+</ul>

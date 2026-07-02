@@ -1,0 +1,36 @@
+<h1 id="perf-review-amigo-labs-pdf">Perf-Review: <code>@amigo-labs/pdf</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟡 Yellow leaning 🟢 Green (predicted — comparative bench pending) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>Predicted-only.</strong> The bench shard contains absolute throughput for <code>@amigo-labs/pdf</code> but <strong>no <code>pdfkit</code> baseline rows</strong>, so no measured multiplier exists yet — <code>docs/packages.json</code> honestly says <code>"TBD"</code>. The candidate review predicted Yellow leaning Green: PDF generation is real serialization work (content streams, xref tables, deflate) with a compact <code>Buffer</code> result, a shape that survives the FFI boundary well. The absolute numbers are strong (a simple label renders at ~41 kHz; the batch API sustains ≈45.7k labels/s), and the install-size story is dramatic on its own.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-absolute-throughput-docs-benchmarks-pdf-json-2026-06-10-commit-8c743bf">Measured absolute throughput (docs/benchmarks/pdf.json, 2026-06-10, commit <code>8c743bf</code>)</h3>
+<table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/pdf</th><th style="text-align: right">pdfkit</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
+<tr><td>simple label</td><td style="text-align: right">41 241 Hz</td><td style="text-align: right">— (not benched)</td><td style="text-align: right">—</td></tr>
+<tr><td>A4 multi-page report</td><td style="text-align: right">2 027 Hz</td><td style="text-align: right">—</td><td style="text-align: right">—</td></tr>
+<tr><td>batch: 100 labels (<code>generateMany</code>)</td><td style="text-align: right">457.5 Hz (≈45 750 labels/s)</td><td style="text-align: right">—</td><td style="text-align: right">—</td></tr>
+</tbody></table>
+<ul>
+<li>Install size: <strong>1.35 MB</strong> vs <code>pdfkit</code>’s <strong>20.4 MB</strong> <code>node_modules</code>.</li>
+<li><code>docs/packages.json</code> speedup: <code>"TBD"</code> — to be filled once the comparative bench lands.</li>
+</ul>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>The entire comparison.</strong> <code>pdfkit</code> baseline rows for the same three scenarios are the open item; until then the verdict stays the candidate’s prediction.</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<p>The candidate review scoped “a new package, not a pdfkit drop-in” — that is what shipped:</p>
+<ul>
+<li>Declarative <code>generate(spec) → Buffer</code> plus <code>generateMany</code> batch API; no fluent chain, no streams.</li>
+<li><strong>Helvetica only</strong>, no images, no automatic text layout in v0.1.</li>
+</ul>
+<h2 id="divergences">Divergences</h2>
+<p>Not a <code>pdfkit</code> drop-in by design; output PDFs are structurally valid (conformance suite parses them) but not byte-comparable to pdfkit’s. See <code>crates/pdf/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./pdfkit.md"><code>pdfkit.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/pdf</code></li>
+<li>Bench shard: <code>docs/benchmarks/pdf.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"TBD"</code></li>
+</ul>

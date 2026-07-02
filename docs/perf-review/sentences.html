@@ -1,0 +1,34 @@
+<h1 id="perf-review-amigo-labs-sentences">Perf-Review: <code>@amigo-labs/sentences</code></h1>
+<blockquote>
+<p><strong>Status:</strong> 🟡 Yellow (measured, partial bench coverage) · <strong>Reviewed:</strong> 2026-07-02 · <strong>Version:</strong> 0.1.1</p>
+</blockquote>
+<h2 id="verdict">Verdict</h2>
+<p><strong>Bimodal.</strong> On the medium bucket (~5 KB, 50 sentences) the port wins clearly — <strong>3.12×</strong> for <code>split()</code> and <strong>4.28×</strong> for the offset hot path — but on short inputs (~50 chars) it is <strong>slower than <code>sbd</code></strong> (0.32×): the Rust work is too small to amortize the FFI floor, exactly the risk the candidate review flagged. The candidate’s Green gate required ≥4× on medium <strong>and</strong> ≥5× on long inputs for the offsets path; medium is hit, but the long/100 KB and batch buckets are unmeasured, so the gate is incomplete and the verdict stays Yellow.</p>
+<h2 id="evidence">Evidence</h2>
+<h3 id="measured-speedup-docs-benchmarks-sentences-json-2026-05-22-commit-b67b03d">Measured speedup (docs/benchmarks/sentences.json, 2026-05-22, commit <code>b67b03d</code>)</h3>
+<table><thead><tr><th>Bucket</th><th style="text-align: right"><code>split()</code></th><th style="text-align: right"><code>splitToOffsets()</code></th><th style="text-align: right">sbd</th><th style="text-align: right">split vs sbd</th><th style="text-align: right">offsets vs sbd</th></tr></thead><tbody>
+<tr><td>short (~50 chars, 4 sentences)</td><td style="text-align: right">116 539 Hz</td><td style="text-align: right">102 808 Hz</td><td style="text-align: right">364 155 Hz</td><td style="text-align: right"><strong>0.32×</strong> (slower)</td><td style="text-align: right">0.28× (slower)</td></tr>
+<tr><td>medium (~5 KB, 50 sentences)</td><td style="text-align: right">29 299 Hz</td><td style="text-align: right">40 198 Hz</td><td style="text-align: right">9 392 Hz</td><td style="text-align: right"><strong>3.12×</strong></td><td style="text-align: right"><strong>4.28×</strong></td></tr>
+</tbody></table>
+<ul>
+<li><code>docs/packages.json</code> speedup: <code>"TBD"</code> (shard not synced into packages.json yet).</li>
+</ul>
+<h3 id="benchmark-gaps">Benchmark gaps</h3>
+<ul>
+<li><strong>Long (100 KB) and batch buckets unmeasured</strong> — both are required by the candidate’s Green gate and are where the offsets path should shine. Measuring them is the path out of Yellow.</li>
+</ul>
+<h2 id="what-shipped-vs-the-candidate-prediction">What shipped vs. the candidate prediction</h2>
+<ul>
+<li><code>split</code> / <code>splitToOffsets</code> / <code>splitBatch</code> / <code>splitBatchToOffsets</code> — the offset-based hot path the candidate review designed (the <code>xxhash</code> lesson applied to segment offsets).</li>
+<li>7 European languages, pragmatic-segmenter behaviour (quote balancing, URL-dot handling).</li>
+<li>The sketched <code>SentenceSplitter</code> class was <strong>not</strong> shipped; no HTML options, no ja/zh/ko.</li>
+</ul>
+<h2 id="divergences">Divergences</h2>
+<p>Not bit-exact vs <code>sbd</code> (rule-set differences); parity target is Pragmatic Segmenter behaviour, per the candidate review. See <code>crates/sentences/__conformance__/divergences.md</code>.</p>
+<p>Pre-port assessment: <a href="./sbd.md"><code>sbd.md</code></a></p>
+<h2 id="references">References</h2>
+<ul>
+<li>Crate: <code>crates/sentences</code></li>
+<li>Bench shard: <code>docs/benchmarks/sentences.json</code></li>
+<li><code>docs/packages.json</code> speedup: <code>"TBD"</code></li>
+</ul>

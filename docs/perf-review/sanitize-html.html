@@ -3,69 +3,69 @@
 <p><strong>Status:</strong> 🟢 Green · <strong>Reviewed:</strong> 2026-04-21 · <strong>Version:</strong> 0.2.0</p>
 </blockquote>
 <h2 id="verdict">Verdict</h2>
-<p><strong>1,63×–4,15× vs. <code>sanitize-html</code> npm</strong> auf der Sanitize-Surface; <strong>39,6×–122× vs. <code>isomorphic-dompurify</code></strong> auf großen Documents. HTML-Parsing + Rule-Dispatch + Serialize ist exakt der Green-Shape aus <code>commonmark</code>/<code>turndown</code>: Buffer-in/String-out, substantial compute, kein Chain-API. Mozilla <code>ammonia</code> ist der Backend (auch in servo und den Mozilla-Observatory-Scannern verwendet), bei 100 KB Input mit XSS-Inhalten sind wir <strong>4,15×</strong> schneller als upstream-<code>sanitize-html</code>. Transform-API (regex + tokenizer-based wrapper) bringt Medium-/Heavy-HTML-Mutation zusätzliche 1,5–2,6× über das npm-Äquivalent.</p>
+<p><strong>1.63×–4.15× vs. <code>sanitize-html</code> npm</strong> on the sanitize surface; <strong>39.6×–122× vs. <code>isomorphic-dompurify</code></strong> on large documents. HTML parsing + rule dispatch + serialization is exactly the Green shape from <code>commonmark</code>/<code>turndown</code>: Buffer in/String out, substantial compute, no chain API. Mozilla’s <code>ammonia</code> is the backend (also used in servo and the Mozilla Observatory scanners); on 100 KB input with XSS content we are <strong>4.15×</strong> faster than upstream <code>sanitize-html</code>. The transform API (regex + tokenizer-based wrappers) gives medium/heavy HTML mutation an additional 1.5–2.6× over the npm equivalent.</p>
 <h2 id="classification-rationale">Classification rationale</h2>
 <ol>
-<li><strong><code>ammonia</code> = <code>html5ever</code> + Whitelist-Rules.</strong> Der Parser (html5ever, Mozilla Servo) ist SIMD-beschleunigt und zero-GC. Rule-Dispatch in Rust ist Pattern-Match auf Node-Type (kein JS-Hashmap-Lookup per Tag).</li>
-<li><strong>V0.2-Upgrade mit Hybrid-Engine.</strong> Tokenizer-Wrapper + Regex-Wrapper koexistieren — Regex ist der schnellste Pfad für einfache Tag-Renames (ol→ul), Tokenizer für Attribute-Mutations. User wählt pro Transform-Operation das passende Tool.</li>
-<li><strong>Small-Case-Delta ist konservativ.</strong> 200-char safe-HTML: 1,63× vs. sanitize-html. Für sehr kleine Inputs sitzt der FFI-Floor sichtbarer — aber bleibt über 1×, daher Green-konform.</li>
-<li><strong>DOMPurify-Vergleich ist Extremfall.</strong> DOMPurify ist Browser-orientiert und im Node-Kontext (jsdom-basiert) massiv langsam. 122×-Win auf 100 KB bestätigt, dass DOMPurify keine echte Server-Alternative ist.</li>
+<li><strong><code>ammonia</code> = <code>html5ever</code> + whitelist rules.</strong> The parser (html5ever, Mozilla Servo) is SIMD-accelerated and zero-GC. Rule dispatch in Rust is a pattern match on node type (no JS hashmap lookup per tag).</li>
+<li><strong>V0.2 upgrade with the hybrid engine.</strong> Tokenizer wrapper + regex wrapper coexist — regex is the fastest path for simple tag renames (ol→ul), the tokenizer for attribute mutations. The user picks the right tool per transform operation.</li>
+<li><strong>The small-case delta is conservative.</strong> 200-char safe HTML: 1.63× vs. sanitize-html. For very small inputs the FFI floor is more visible — but it stays above 1×, hence Green-compliant.</li>
+<li><strong>The DOMPurify comparison is an extreme case.</strong> DOMPurify is browser-oriented and massively slow in a Node context (jsdom-based). The 122× win on 100 KB confirms that DOMPurify is not a real server alternative.</li>
 </ol>
 <h2 id="evidence">Evidence</h2>
 <h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
-<p><strong>Sanitize-Surface:</strong></p>
+<p><strong>Sanitize surface:</strong></p>
 <table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/sanitize-html</th><th style="text-align: right">sanitize-html npm</th><th style="text-align: right">isomorphic-dompurify</th><th style="text-align: right">vs. sanitize-html</th><th style="text-align: right">vs. dompurify</th></tr></thead><tbody>
-<tr><td>small safe HTML (~200 chars)</td><td style="text-align: right">45 747 Hz</td><td style="text-align: right">28 032 Hz</td><td style="text-align: right">1 157 Hz</td><td style="text-align: right"><strong>1,63×</strong></td><td style="text-align: right"><strong>39,5×</strong></td></tr>
-<tr><td>medium with XSS (~2 KB)</td><td style="text-align: right">10 320 Hz</td><td style="text-align: right">3 928 Hz</td><td style="text-align: right">227 Hz</td><td style="text-align: right"><strong>2,63×</strong></td><td style="text-align: right"><strong>45,5×</strong></td></tr>
-<tr><td>large document (~100 KB)</td><td style="text-align: right">375,5 Hz</td><td style="text-align: right">90,5 Hz</td><td style="text-align: right">9,5 Hz</td><td style="text-align: right"><strong>4,15×</strong></td><td style="text-align: right"><strong>39,6×</strong></td></tr>
+<tr><td>small safe HTML (~200 chars)</td><td style="text-align: right">45 747 Hz</td><td style="text-align: right">28 032 Hz</td><td style="text-align: right">1 157 Hz</td><td style="text-align: right"><strong>1.63×</strong></td><td style="text-align: right"><strong>39.5×</strong></td></tr>
+<tr><td>medium with XSS (~2 KB)</td><td style="text-align: right">10 320 Hz</td><td style="text-align: right">3 928 Hz</td><td style="text-align: right">227 Hz</td><td style="text-align: right"><strong>2.63×</strong></td><td style="text-align: right"><strong>45.5×</strong></td></tr>
+<tr><td>large document (~100 KB)</td><td style="text-align: right">375.5 Hz</td><td style="text-align: right">90.5 Hz</td><td style="text-align: right">9.5 Hz</td><td style="text-align: right"><strong>4.15×</strong></td><td style="text-align: right"><strong>39.6×</strong></td></tr>
 </tbody></table>
-<p><strong>Transform-Surface</strong> (ol→ul Simple-Rename):</p>
+<p><strong>Transform surface</strong> (ol→ul simple rename):</p>
 <table><thead><tr><th>Scenario</th><th style="text-align: right">regex-wrapper + amigo</th><th style="text-align: right">tokenizer-wrapper + amigo</th><th style="text-align: right">sanitize-html npm</th><th style="text-align: right">best-of-amigo vs. upstream</th></tr></thead><tbody>
-<tr><td>small (~80B)</td><td style="text-align: right">25 923 Hz</td><td style="text-align: right">25 409 Hz</td><td style="text-align: right">35 525 Hz</td><td style="text-align: right">0,73× (small: upstream still wins)</td></tr>
-<tr><td>medium (~6KB, 100 lists)</td><td style="text-align: right">4 737 Hz</td><td style="text-align: right">3 032 Hz</td><td style="text-align: right">1 821 Hz</td><td style="text-align: right"><strong>2,60×</strong> (regex-wrapper)</td></tr>
-<tr><td>heavy (~40KB, 1000 transforms)</td><td style="text-align: right">602,3 Hz</td><td style="text-align: right">178,7 Hz</td><td style="text-align: right">283,4 Hz</td><td style="text-align: right"><strong>2,13×</strong> (regex-wrapper)</td></tr>
+<tr><td>small (~80B)</td><td style="text-align: right">25 923 Hz</td><td style="text-align: right">25 409 Hz</td><td style="text-align: right">35 525 Hz</td><td style="text-align: right">0.73× (small: upstream still wins)</td></tr>
+<tr><td>medium (~6KB, 100 lists)</td><td style="text-align: right">4 737 Hz</td><td style="text-align: right">3 032 Hz</td><td style="text-align: right">1 821 Hz</td><td style="text-align: right"><strong>2.60×</strong> (regex-wrapper)</td></tr>
+<tr><td>heavy (~40KB, 1000 transforms)</td><td style="text-align: right">602.3 Hz</td><td style="text-align: right">178.7 Hz</td><td style="text-align: right">283.4 Hz</td><td style="text-align: right"><strong>2.13×</strong> (regex-wrapper)</td></tr>
 </tbody></table>
 <h3 id="realistic-use-case">Realistic use-case</h3>
-<p><strong>User-Generated-Content-Sanitization</strong> — Kommentare, Forum-Posts, Rich-Text-Editor-Output. Typisch 500 B – 10 KB. <strong>E-Mail-HTML-Rendering</strong> mit XSS-Prevention für Incoming-Mails. <strong>Markdown-zu-HTML-Pipeline</strong> nach <code>@amigo-labs/commonmark</code>. <strong>Content-Import</strong> aus Legacy-Systems mit unsicherem HTML. Median: 2 KB safe oder untrusted HTML.</p>
-<p>Transform-Use-Case ist seltener: <strong>CMS-Content-Migration</strong> (z.B. ol→ul für Style-Konsistenz), <strong>Rich-Text-Editor-Normalization</strong> (WYSIWYG-Output-Cleanup).</p>
+<p><strong>User-generated-content sanitization</strong> — comments, forum posts, rich-text-editor output. Typically 500 B – 10 KB. <strong>Email HTML rendering</strong> with XSS prevention for incoming mail. <strong>Markdown-to-HTML pipeline</strong> after <code>@amigo-labs/commonmark</code>. <strong>Content import</strong> from legacy systems with unsafe HTML. Median: 2 KB of safe or untrusted HTML.</p>
+<p>The transform use case is rarer: <strong>CMS content migration</strong> (e.g. ol→ul for style consistency), <strong>rich-text-editor normalization</strong> (WYSIWYG output cleanup).</p>
 <h3 id="benchmark-gaps">Benchmark gaps</h3>
 <ul>
-<li><strong>Very-large (1 MB+) nicht gebenched.</strong> Realistic für Article-Corpus-Processing.</li>
-<li><strong>Allow-list-heavy Config</strong> (viele custom-allowed-tags + -attributes) nicht isoliert gemessen. Rule-Set-Größe beeinflusst Dispatch-Overhead.</li>
-<li><strong>Multi-Transform-Chain</strong> (tokenizer + regex in einem Pass) nicht gebenched — User müssten heute zwei Calls machen.</li>
+<li><strong>Very large (1 MB+) not benchmarked.</strong> Realistic for article-corpus processing.</li>
+<li><strong>Allow-list-heavy configs</strong> (many custom allowed tags + attributes) not measured in isolation. Rule-set size affects dispatch overhead.</li>
+<li><strong>Multi-transform chain</strong> (tokenizer + regex in one pass) not benchmarked — users would have to make two calls today.</li>
 </ul>
 <h3 id="api-surface">API surface</h3>
-<p>Basierend auf sanitize-html-Parity plus hybrid-engine-Additions:</p>
+<p>Based on sanitize-html parity plus the hybrid-engine additions:</p>
 <ul>
-<li><code>sanitize(html, options?)</code> — main call, returns cleaned HTML-string</li>
-<li>Options: <code>allowedTags</code>, <code>allowedAttributes</code>, <code>allowedClasses</code>, <code>allowedSchemes</code>, <code>transformTags</code>, <code>textFilter</code>, <code>parser</code>, etc. (sanitize-html-parity)</li>
-<li>Hybrid-Engine-Flag oder Auto-Select: der User muss idealerweise nicht entscheiden zwischen regex/tokenizer.</li>
+<li><code>sanitize(html, options?)</code> — main call, returns the cleaned HTML string</li>
+<li>Options: <code>allowedTags</code>, <code>allowedAttributes</code>, <code>allowedClasses</code>, <code>allowedSchemes</code>, <code>transformTags</code>, <code>textFilter</code>, <code>parser</code>, etc. (sanitize-html parity)</li>
+<li>Hybrid-engine flag or auto-select: ideally the user should not have to decide between regex/tokenizer.</li>
 </ul>
 <h3 id="bundle-binary-size">Bundle / binary size</h3>
-<p><code>ammonia</code> + <code>html5ever</code> + deps: ~2–3 MB pro Target. Eines der größeren Portfolio-Binaries, aber gerechtfertigt durch 4× Speedup + Security.</p>
+<p><code>ammonia</code> + <code>html5ever</code> + deps: ~2–3 MB per target. One of the larger binaries in the portfolio, but justified by the 4× speedup + security.</p>
 <h3 id="ffi-overhead-baseline">FFI-overhead baseline</h3>
 <ul>
-<li>100 KB sanitize: Buffer-Input ~180 ns, String-Output 80 KB ~28 µs UTF-Konv. Auf ~2,7 ms Rust-Parse+Sanitize = <strong>1 % FFI-Share</strong>. Tolerabel.</li>
-<li>200-char sanitize: FFI ~1 µs auf ~22 µs Rust = ~5 %. Noch Green-Territorium.</li>
+<li>100 KB sanitize: buffer input ~180 ns, 80 KB string output ~28 µs UTF conversion. Against ~2.7 ms of Rust parse+sanitize = <strong>1% FFI share</strong>. Tolerable.</li>
+<li>200-char sanitize: FFI ~1 µs against ~22 µs Rust = ~5%. Still Green territory.</li>
 </ul>
 <h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
 <table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
-<tr><td>C.1</td><td>Input-type minimization</td><td>✅ already done</td><td>Buffer-zero-copy</td></tr>
+<tr><td>C.1</td><td>Input-type minimization</td><td>✅ already done</td><td>Buffer zero-copy</td></tr>
 <tr><td>C.2</td><td>Output-type minimization</td><td>✅ already done</td><td>—</td></tr>
-<tr><td>C.3</td><td>Batch API (<code>sanitizeMany</code>)</td><td>🟡 potential</td><td>Bulk-UGC-Import, Comments-Migration. Nicht gemessen</td></tr>
-<tr><td>C.4</td><td>Stateful API (pre-compiled rule-set)</td><td>✅ already done</td><td><code>ammonia::Builder</code>-Pattern: User konstruiert Config einmal, ruft <code>.clean()</code> viele Male</td></tr>
-<tr><td>C.5</td><td>Parallelization (rayon über Document-Batch)</td><td>🟡 potential</td><td>Nur für Batch-API</td></tr>
-<tr><td>C.6</td><td>Algorithm swap</td><td>❌ not applicable</td><td><code>ammonia</code> + <code>html5ever</code> ist best-in-class</td></tr>
+<tr><td>C.3</td><td>Batch API (<code>sanitizeMany</code>)</td><td>🟡 potential</td><td>Bulk UGC import, comments migration. Not measured</td></tr>
+<tr><td>C.4</td><td>Stateful API (pre-compiled rule set)</td><td>✅ already done</td><td><code>ammonia::Builder</code> pattern: the user constructs the config once and calls <code>.clean()</code> many times</td></tr>
+<tr><td>C.5</td><td>Parallelization (rayon over document batches)</td><td>🟡 potential</td><td>Only for a batch API</td></tr>
+<tr><td>C.6</td><td>Algorithm swap</td><td>❌ not applicable</td><td><code>ammonia</code> + <code>html5ever</code> is best-in-class</td></tr>
 <tr><td>C.7</td><td>Allocator tuning</td><td>✅ already done</td><td>—</td></tr>
-<tr><td>C.8</td><td>Bundle-size</td><td>⚠️ trade-off</td><td>~2-3 MB ist groß, aber unvermeidbar für HTML-Parser. LTO aktiv</td></tr>
+<tr><td>C.8</td><td>Bundle-size</td><td>⚠️ trade-off</td><td>~2-3 MB is large, but unavoidable for an HTML parser. LTO enabled</td></tr>
 </tbody></table>
 <h2 id="action-plan">Action plan</h2>
-<p><strong>Keep-as-is.</strong> Green über alle Produktions-Szenarien. V0.2-Hybrid-Engine ist der letzte größere Sprint gewesen.</p>
+<p><strong>Keep as-is.</strong> Green across all production scenarios. The v0.2 hybrid engine was the last major sprint.</p>
 <p>Maintenance:</p>
 <ol>
-<li><strong>Very-large-Bench hinzufügen</strong> (1 MB Document).</li>
-<li><strong>Allow-list-heavy Config benchen</strong> (z.B. 50+ custom-tags).</li>
-<li><strong>Transform-small-case</strong> (80 B) ist der einzige Non-Green-Punkt — upstream-sanitize-html gewinnt dort wegen JS-regex-fast-path. Nicht kritisch, aber dokumentieren.</li>
+<li><strong>Add a very-large bench</strong> (1 MB document).</li>
+<li><strong>Bench an allow-list-heavy config</strong> (e.g. 50+ custom tags).</li>
+<li><strong>The transform small case</strong> (80 B) is the only non-Green spot — upstream sanitize-html wins there thanks to the JS regex fast path. Not critical, but document it.</li>
 </ol>
 <h2 id="references">References</h2>
 <ul>

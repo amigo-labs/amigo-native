@@ -22,75 +22,75 @@ separate <code>@amigo-labs/jwt-verify</code> package that exposes only the
 decode/verify paths. Until then this package stays napi-only with
 <code>targets: ["node"]</code> in the registry.</p>
 <h2 id="verdict">Verdict</h2>
-<p><strong>1,46×–5,20× vs. <code>jsonwebtoken</code> npm</strong> über alle 6 Algorithmus-Szenarien (HS256/RS256/ES256 × sign/verify). Crypto-bound — JWT-Arbeit ist HMAC- / RSA- / ECDSA-Signaturberechnung plus JSON-Parse/Stringify, beides in Rust via <code>jsonwebtoken</code> crate (Keats/uuid-Maintainer) mit RustCrypto-Backend. JS-upstream nutzt <code>node:crypto</code> + JavaScript-JSON; <code>node:crypto</code> selbst ist native-C aber der JavaScript-Glue (Header-Parse, Base64URL, Validation) ist der Overhead den wir eliminieren. Sauberes Green-Shape: Strings rein, Strings raus, keine Chain-API, keine Callbacks.</p>
+<p><strong>1.46×–5.20× vs. <code>jsonwebtoken</code> npm</strong> across all 6 algorithm scenarios (HS256/RS256/ES256 × sign/verify). Crypto-bound — JWT work is HMAC / RSA / ECDSA signature computation plus JSON parse/stringify, both in Rust via the <code>jsonwebtoken</code> crate (by the Keats/uuid maintainer) with a RustCrypto backend. The JS upstream uses <code>node:crypto</code> + JavaScript JSON; <code>node:crypto</code> itself is native C, but the JavaScript glue (header parsing, Base64URL, validation) is the overhead we eliminate. Clean Green shape: strings in, strings out, no chain API, no callbacks.</p>
 <h2 id="classification-rationale">Classification rationale</h2>
 <ol>
-<li><strong>HS256 ist der größte Win</strong> (5,20× sign, 4,33× verify). HMAC-SHA-256 ist trivial (2× SHA-256-Runs), der ganze Rest der Latenz ist JSON-Parse/Stringify + Base64URL + Header-Validation. In Rust ist all das konstant-niedrig.</li>
-<li><strong>RS256 ist der kleinste Win</strong> (1,59× sign, 1,46× verify). Grund: RSA-Sign ist CPU-bound auf Modular-Exponentiation, dominiert die Call-Latenz (~1 ms). Unser Rust-Backend nutzt <code>rsa</code> crate mit <code>num-bigint</code> — konservativ, kein SIMD. JS-<code>node:crypto</code> nutzt OpenSSL-C mit mehr Optimierungen. Gewinn kommt aus allem-außer-RSA.</li>
-<li><strong>ES256 liegt in der Mitte</strong> (2,37× sign, 1,75× verify). Ähnlich RS256 CPU-bound auf Curve25519-Ops, aber kürzer als RSA-Modular-Exp.</li>
-<li><strong>Dual-Typ-Inputs</strong> (<code>expiresIn</code> string-Duration via <code>ms</code>-Package-Parity). Das ist der Drop-in-Claim-Fix aus <code>docs/follow-ups.md:15</code> — <code>expiresIn: "1h"</code> funktioniert jetzt 1:1 wie upstream.</li>
+<li><strong>HS256 is the biggest win</strong> (5.20× sign, 4.33× verify). HMAC-SHA-256 is trivial (2× SHA-256 runs); all the rest of the latency is JSON parse/stringify + Base64URL + header validation. In Rust all of that is constant-low.</li>
+<li><strong>RS256 is the smallest win</strong> (1.59× sign, 1.46× verify). Reason: RSA sign is CPU-bound on modular exponentiation and dominates the call latency (~1 ms). Our Rust backend uses the <code>rsa</code> crate with <code>num-bigint</code> — conservative, no SIMD. JS’s <code>node:crypto</code> uses OpenSSL C with more optimizations. The gain comes from everything-except-RSA.</li>
+<li><strong>ES256 sits in the middle</strong> (2.37× sign, 1.75× verify). Like RS256 CPU-bound on Curve25519 ops, but shorter than RSA modular exponentiation.</li>
+<li><strong>Dual-type inputs</strong> (<code>expiresIn</code> string durations via <code>ms</code>-package parity). This is the drop-in claim fix from <code>docs/follow-ups.md:15</code> — <code>expiresIn: "1h"</code> now works 1:1 like upstream.</li>
 </ol>
 <h2 id="evidence">Evidence</h2>
 <h3 id="measured-speedup-docs-data-json-2026-04-18">Measured speedup (docs/data.json, 2026-04-18)</h3>
 <table><thead><tr><th>Scenario</th><th style="text-align: right">@amigo-labs/jwt</th><th style="text-align: right">jsonwebtoken npm</th><th style="text-align: right">Speedup</th></tr></thead><tbody>
-<tr><td>sign HS256</td><td style="text-align: right">186 889 Hz</td><td style="text-align: right">35 919 Hz</td><td style="text-align: right"><strong>5,20×</strong></td></tr>
-<tr><td>verify HS256</td><td style="text-align: right">129 690 Hz</td><td style="text-align: right">29 929 Hz</td><td style="text-align: right"><strong>4,33×</strong></td></tr>
-<tr><td>sign RS256</td><td style="text-align: right">1 304 Hz</td><td style="text-align: right">818 Hz</td><td style="text-align: right"><strong>1,59×</strong></td></tr>
-<tr><td>verify RS256</td><td style="text-align: right">24 133 Hz</td><td style="text-align: right">16 556 Hz</td><td style="text-align: right"><strong>1,46×</strong></td></tr>
-<tr><td>sign ES256</td><td style="text-align: right">21 389 Hz</td><td style="text-align: right">9 033 Hz</td><td style="text-align: right"><strong>2,37×</strong></td></tr>
-<tr><td>verify ES256</td><td style="text-align: right">12 421 Hz</td><td style="text-align: right">7 089 Hz</td><td style="text-align: right"><strong>1,75×</strong></td></tr>
+<tr><td>sign HS256</td><td style="text-align: right">186 889 Hz</td><td style="text-align: right">35 919 Hz</td><td style="text-align: right"><strong>5.20×</strong></td></tr>
+<tr><td>verify HS256</td><td style="text-align: right">129 690 Hz</td><td style="text-align: right">29 929 Hz</td><td style="text-align: right"><strong>4.33×</strong></td></tr>
+<tr><td>sign RS256</td><td style="text-align: right">1 304 Hz</td><td style="text-align: right">818 Hz</td><td style="text-align: right"><strong>1.59×</strong></td></tr>
+<tr><td>verify RS256</td><td style="text-align: right">24 133 Hz</td><td style="text-align: right">16 556 Hz</td><td style="text-align: right"><strong>1.46×</strong></td></tr>
+<tr><td>sign ES256</td><td style="text-align: right">21 389 Hz</td><td style="text-align: right">9 033 Hz</td><td style="text-align: right"><strong>2.37×</strong></td></tr>
+<tr><td>verify ES256</td><td style="text-align: right">12 421 Hz</td><td style="text-align: right">7 089 Hz</td><td style="text-align: right"><strong>1.75×</strong></td></tr>
 </tbody></table>
 <h3 id="realistic-use-case">Realistic use-case</h3>
-<p><strong>Authentication-Middleware</strong> — API-Gateway verifies JWT pro Request. Verify-Latenz ist latency-kritisch (jeder User-Request-Overhead). <strong>Token-Issuance</strong> bei Login — sign-Call einmalig pro Session, Latenz weniger kritisch. <strong>Service-to-Service-Auth</strong> (mTLS-Alternative) — sign + verify per Hop, hohe Volumes. Median-Payload: ~500 B – 2 KB Token. HS256 dominiert Produktions-Nutzung in internen APIs; RS256/ES256 für Third-Party-Integrations (OIDC etc.).</p>
+<p><strong>Authentication middleware</strong> — an API gateway verifies a JWT per request. Verify latency is latency-critical (overhead on every user request). <strong>Token issuance</strong> at login — one sign call per session, latency less critical. <strong>Service-to-service auth</strong> (mTLS alternative) — sign + verify per hop, high volumes. Median payload: ~500 B – 2 KB token. HS256 dominates production usage in internal APIs; RS256/ES256 for third-party integrations (OIDC etc.).</p>
 <h3 id="benchmark-gaps">Benchmark gaps</h3>
 <ul>
-<li><strong>PS256 (RSA-PSS) nicht gebenched.</strong> Algorithmus ist supported, Parity-Tests decken es ab, Bench-Slot fehlt.</li>
-<li><strong>EdDSA / Ed25519 nicht gebenched</strong> — selber Status.</li>
-<li><strong>Large-claim-payload</strong> (10 KB Token) nicht gemessen. Sign-Side würde JSON-stringify-dominated werden.</li>
-<li><strong>Async-Pfad</strong> nicht separat gebenched (falls vorhanden — Source-Inspektion lohnt vor v0.2).</li>
+<li><strong>PS256 (RSA-PSS) not benched.</strong> The algorithm is supported and parity tests cover it, but the bench slot is missing.</li>
+<li><strong>EdDSA / Ed25519 not benched</strong> — same status.</li>
+<li><strong>Large claim payload</strong> (10 KB token) not measured. The sign side would become JSON-stringify-dominated.</li>
+<li><strong>Async path</strong> not benched separately (if it exists — source inspection is worthwhile before v0.2).</li>
 </ul>
 <h3 id="api-surface">API surface</h3>
-<p>Basierend auf <code>jsonwebtoken</code>-crate-Wrapping + Drop-in-Parity zu npm-<code>jsonwebtoken</code>:</p>
+<p>Based on wrapping the <code>jsonwebtoken</code> crate + drop-in parity with npm <code>jsonwebtoken</code>:</p>
 <ul>
-<li><code>sign(payload, secret, options?)</code> — sync, returns JWT-String</li>
-<li><code>verify(token, secret, options?)</code> — sync, returns claims-Object</li>
-<li><code>decode(token)</code> — header + payload ohne Verification</li>
-<li><code>expiresIn</code> / <code>notBefore</code> akzeptieren beide <code>number</code> (seconds) und <code>ms</code>-Package-Strings (<code>"1h"</code>, <code>"2 days"</code>, <code>"1.5 hours"</code>)</li>
+<li><code>sign(payload, secret, options?)</code> — sync, returns a JWT string</li>
+<li><code>verify(token, secret, options?)</code> — sync, returns a claims object</li>
+<li><code>decode(token)</code> — header + payload without verification</li>
+<li><code>expiresIn</code> / <code>notBefore</code> accept both <code>number</code> (seconds) and <code>ms</code>-package strings (<code>"1h"</code>, <code>"2 days"</code>, <code>"1.5 hours"</code>)</li>
 </ul>
-<p>Saubere Drop-in-Label, dokumentiert in README und <code>__conformance__/upstream.spec.ts</code>.</p>
+<p>Clean drop-in label, documented in the README and <code>__conformance__/upstream.spec.ts</code>.</p>
 <h3 id="bundle-binary-size">Bundle / binary size</h3>
-<p><code>jsonwebtoken = { ..., features with HMAC, RSA, ECDSA }</code> — plus RustCrypto-Deps. Vermutlich 1,5–2 MB pro Target (größer als Encoding-Crates, typisch für Crypto).</p>
+<p><code>jsonwebtoken = { ..., features with HMAC, RSA, ECDSA }</code> — plus RustCrypto deps. Presumably 1.5–2 MB per target (larger than the encoding crates, typical for crypto).</p>
 <h3 id="ffi-overhead-baseline">FFI-overhead baseline</h3>
 <ul>
-<li>HS256 sign, ~500 B payload: FFI ~300 ns (String-Input/Output), Rust ~5 µs → 6 % FFI-Share.</li>
-<li>RS256 sign: FFI ~300 ns, Rust ~1 ms → 0,03 % FFI-Share. Dominant Crypto.</li>
-<li>Alle Szenarien: FFI-Transport vernachlässigbar gegen Crypto-Compute.</li>
+<li>HS256 sign, ~500 B payload: FFI ~300 ns (string input/output), Rust ~5 µs → 6 % FFI share.</li>
+<li>RS256 sign: FFI ~300 ns, Rust ~1 ms → 0.03 % FFI share. Crypto-dominant.</li>
+<li>All scenarios: FFI transport is negligible compared to crypto compute.</li>
 </ul>
 <h2 id="phase-c-optimization-checklist">Phase-C optimization checklist</h2>
 <table><thead><tr><th>#</th><th>Lever</th><th>Applicable</th><th>Notes</th></tr></thead><tbody>
-<tr><td>C.1</td><td>Input-type minimization</td><td>✅ already done</td><td>Strings sind natürliche JWT-Form</td></tr>
+<tr><td>C.1</td><td>Input-type minimization</td><td>✅ already done</td><td>Strings are the natural JWT form</td></tr>
 <tr><td>C.2</td><td>Output-type minimization</td><td>✅ already done</td><td>—</td></tr>
-<tr><td>C.3</td><td>Batch API (sign/verify many)</td><td>🟡 potential</td><td>Bulk-Token-Issuance (User-Invitation-Sends, Service-Mesh-Rotation) könnte von <code>signMany(payloads, secret)</code> profitieren. Nicht gemessen</td></tr>
-<tr><td>C.4</td><td>Stateful API (pre-loaded key)</td><td>🟡 <strong>potential win</strong></td><td>RSA-Key-Parse ist non-trivial (~50 µs für PEM). NAPI-Class <code>Signer(key)</code> würde das amortisieren. 1 ms → 0,8 ms bei RS256 denkbar (RSA-Key-Setup ist ein Teil). Sprint-Kandidat für 2×-Gate-Upgrade auf RS256</td></tr>
-<tr><td>C.5</td><td>Parallelization</td><td>❌ not applicable</td><td>Single-Token ist sequentieller Crypto-Call</td></tr>
-<tr><td>C.6</td><td>Algorithm swap (OpenSSL-Binding statt RustCrypto)</td><td>🔴 risky</td><td><code>openssl</code> crate würde wahrscheinlich RS256 beschleunigen, aber bricht Rust-only-Shape und bringt dynamische libssl-Lib-Dependency. Nicht wert</td></tr>
+<tr><td>C.3</td><td>Batch API (sign/verify many)</td><td>🟡 potential</td><td>Bulk token issuance (user-invitation sends, service-mesh rotation) could benefit from <code>signMany(payloads, secret)</code>. Not measured</td></tr>
+<tr><td>C.4</td><td>Stateful API (pre-loaded key)</td><td>🟡 <strong>potential win</strong></td><td>RSA key parsing is non-trivial (~50 µs for PEM). A NAPI class <code>Signer(key)</code> would amortize it. 1 ms → 0.8 ms conceivable for RS256 (RSA key setup is one part). Sprint candidate for a 2×-gate upgrade on RS256</td></tr>
+<tr><td>C.5</td><td>Parallelization</td><td>❌ not applicable</td><td>A single token is a sequential crypto call</td></tr>
+<tr><td>C.6</td><td>Algorithm swap (OpenSSL binding instead of RustCrypto)</td><td>🔴 risky</td><td>The <code>openssl</code> crate would probably speed up RS256, but breaks the Rust-only shape and adds a dynamic libssl dependency. Not worth it</td></tr>
 <tr><td>C.7</td><td>Allocator tuning</td><td>❌ not applicable</td><td>—</td></tr>
-<tr><td>C.8</td><td>Bundle-size</td><td>✅ already done</td><td>Feature-gated Crypto-Suite</td></tr>
+<tr><td>C.8</td><td>Bundle-size</td><td>✅ already done</td><td>Feature-gated crypto suite</td></tr>
 </tbody></table>
 <h2 id="action-plan">Action plan</h2>
-<p><strong>Keep-as-is</strong> mit einem potentiellen Upgrade-Sprint:</p>
+<p><strong>Keep-as-is</strong> with one potential upgrade sprint:</p>
 <ol>
-<li><strong>PS256 + EdDSA-Bench hinzufügen</strong> — Algorithmus-Matrix komplettieren.</li>
-<li><strong>Large-Payload-Bench</strong> (10 KB) — JSON-dominated sign-Side messen.</li>
-<li><strong><code>Signer(key)</code>/<code>Verifier(key)</code>-Class-Spike als Phase-C.4</strong> — wenn RS256-User-Feedback hot-loop-Usage zeigt (Rotate-each-Request ist teuer), könnte NAPI-Class das Gate auf 2× heben. ~2 Tage Sprint.</li>
+<li><strong>Add PS256 + EdDSA benches</strong> — complete the algorithm matrix.</li>
+<li><strong>Large-payload bench</strong> (10 KB) — measure the JSON-dominated sign side.</li>
+<li><strong><code>Signer(key)</code>/<code>Verifier(key)</code> class spike as Phase C.4</strong> — if RS256 user feedback shows hot-loop usage (rotating on each request is expensive), a NAPI class could lift the gate to 2×. ~2-day sprint.</li>
 </ol>
-<p>Kein Phase-D-Risiko. Crypto-Algorithms sind stabil; einzig <code>node:crypto</code>-OpenSSL-Upgrade könnte uns gelegentlich auf 0,9× drücken — dann wird <code>C.4</code> wichtiger.</p>
+<p>No Phase-D risk. Crypto algorithms are stable; only a <code>node:crypto</code> OpenSSL upgrade could occasionally push us to 0.9× — then <code>C.4</code> becomes more important.</p>
 <h2 id="references">References</h2>
 <ul>
 <li>Crate: <code>crates/jwt</code></li>
 <li>Bench: <code>crates/jwt/__bench__/index.bench.ts</code></li>
 <li>Lib: <code>crates/jwt/src/lib.rs</code></li>
 <li>Cargo: <code>crates/jwt/Cargo.toml</code></li>
-<li>Drop-in-Fix: <code>docs/follow-ups.md:15</code> (<code>expiresIn</code>-String-Parsing)</li>
+<li>Drop-in fix: <code>docs/follow-ups.md:15</code> (<code>expiresIn</code> string parsing)</li>
 <li><code>docs/packages.json</code> speedup: <code>"1.46–5.2× faster"</code></li>
 </ul>
