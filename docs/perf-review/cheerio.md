@@ -1,76 +1,76 @@
 # Candidate review: `cheerio`
 
-> **Status:** NO-GO · **Predicted:** 🔴 Red (als Drop-in) / ⚫ Black (API-Shape mit Mutation-Chain) · **Reviewed:** 2026-04-21
+> **Status:** NO-GO · **Predicted:** 🔴 Red (as a drop-in) / ⚫ Black (API shape with mutation chain) · **Reviewed:** 2026-04-21
 
 ## Verdict
 
-`cheerio` ist der **server-side jQuery** — Parse-HTML + CSS-Selektoren + Mutation-Chain-API. Das Parse-Backend (`parse5` oder `htmlparser2`) ist bereits in `BACKLOG.md:46` als "Parity too expensive" gelistet. Das **eigentliche** Problem ist aber die Chain-API: jedes `$('.item').find('.price').first().text()` ist in JS eine Kette von 4 Function-Calls auf **demselben** DOM-Tree. In einem NAPI-RS-Port wäre jede Kette-Step ein FFI-Crossing **plus** Object-Marshalling der Zwischen-Ergebnisse (Cheerio-Elemente als JS-Wrapper-Objekte um Rust-Node-Handles). Das ist exakt der `xml`-Antipattern, der 2026-04-19 archiviert wurde, und der `graphlib`-Fall aus dem `dagre`-Review. Drop-in ohne Redesign = 5–20 FFI-Crossings pro User-Line-of-Code, kumulativ schneller-pure-JS. Redesign auf Bytes-in/Bytes-out (`parseAndQuery(html, selector) → Buffer`) wäre kein Drop-in — es bräuchte eine völlig andere API und würde Cheerio's Haupt-Use-Case (explorative Scraping-Pipelines mit ad-hoc-Queries) brechen.
+`cheerio` is the **server-side jQuery** — HTML parsing + CSS selectors + a mutation-chain API. The parse backend (`parse5` or `htmlparser2`) is already listed in `BACKLOG.md:46` as "Parity too expensive". The **real** problem, however, is the chain API: every `$('.item').find('.price').first().text()` is, in JS, a chain of 4 function calls on the **same** DOM tree. In a NAPI-RS port, every chain step would be an FFI crossing **plus** object marshalling of the intermediate results (Cheerio elements as JS wrapper objects around Rust node handles). That is exactly the `xml` antipattern that was archived on 2026-04-19, and the `graphlib` case from the `dagre` review. A drop-in without a redesign = 5–20 FFI crossings per user line of code, cumulatively slower than pure JS. A redesign to bytes-in/bytes-out (`parseAndQuery(html, selector) → Buffer`) would not be a drop-in — it would require a completely different API and would break cheerio's main use case (exploratory scraping pipelines with ad-hoc queries).
 
 ## JS package
 
 - **npm:** [`cheerio`](https://www.npmjs.com/package/cheerio)
-- **Downloads:** ~10M/Woche (Q1 2026)
-- **Exports / API surface (enorm):**
+- **Downloads:** ~10M/week (Q1 2026)
+- **Exports / API surface (enormous):**
   - Loader: `load(html, opts) → $`
   - Selection: `$(selector)`, `.find(sel)`, `.filter(sel)`, `.children(sel)`, `.parent(sel)`, `.parents(sel)`, `.siblings(sel)`, `.next()`, `.prev()`, `.first()`, `.last()`, `.eq(n)`, `.closest(sel)`, `.has(sel)`, `.not(sel)`
   - Attributes: `.attr(name, val?)`, `.removeAttr(name)`, `.prop(name, val?)`, `.data(key, val?)`, `.hasClass(cls)`, `.addClass(cls)`, `.removeClass(cls)`, `.toggleClass(cls)`, `.val(val?)`
   - Content: `.text(val?)`, `.html(val?)`, `.contents()`
   - Manipulation: `.append(content)`, `.prepend(content)`, `.appendTo(target)`, `.prependTo(target)`, `.before(content)`, `.after(content)`, `.wrap(wrapper)`, `.unwrap()`, `.replaceWith(content)`, `.remove()`, `.empty()`, `.clone(deep?)`
   - Traversal: `.each(fn)`, `.map(fn)`, `.get()`, `.toArray()`, `.length`
-  - Serialization: `.toString()`, `.serialize()`, `.serializeArray()`, `.html()` (auf root)
-  - Ca. **70+ Chain-Methoden total**.
-- **Typical input:** HTML-String 1 KB – 10 MB. Scraped Webpages typisch 50 KB – 500 KB.
-- **Typical output:** Hängt von Operation ab — einzelne Strings (`.text()`), Arrays (`.map()`), modifiziertes HTML (`.html()`), oder Cheerio-Collection (Wrapper für weitere Chain-Calls).
-- **Realistic median use-case:** **Web-Scraping-Pipeline.** Ein HTTP-Response-HTML wird geladen, dann ad-hoc-explorative Queries ausgeführt: `$('h2').map((_, el) => $(el).text())`, `$('.product').each((_, el) => { title: $(el).find('.title').text(), price: $(el).find('.price').text() })`. **Dutzende von Chain-Calls pro Dokument**, alle sequenziell auf dem geparsed Tree. Zweiter Case: **HTML-Transformation für E-Mail-Templating**, **Content-Sanitization-Pipelines**, **Static-Site-Generators**.
+  - Serialization: `.toString()`, `.serialize()`, `.serializeArray()`, `.html()` (on root)
+  - Roughly **70+ chain methods in total**.
+- **Typical input:** HTML string 1 KB – 10 MB. Scraped web pages typically 50 KB – 500 KB.
+- **Typical output:** Depends on the operation — individual strings (`.text()`), arrays (`.map()`), modified HTML (`.html()`), or a Cheerio collection (a wrapper for further chain calls).
+- **Realistic median use-case:** **Web-scraping pipeline.** An HTTP response's HTML is loaded, then ad-hoc exploratory queries are executed: `$('h2').map((_, el) => $(el).text())`, `$('.product').each((_, el) => { title: $(el).find('.title').text(), price: $(el).find('.price').text() })`. **Dozens of chain calls per document**, all sequential on the parsed tree. Second case: **HTML transformation for email templating**, **content-sanitization pipelines**, **static-site generators**.
 
 ## Rust replacement
 
 - **Candidate crate(s):**
-  - [`scraper`](https://crates.io/crates/scraper) — primär. Nutzt `html5ever` (von Mozilla-Servo-Team) + CSS-Selektoren via `selectors` crate. MIT/Apache, aktiv, solide.
-  - [`html5ever`](https://crates.io/crates/html5ever) + [`selectors`](https://crates.io/crates/selectors) — die Bausteine unter scraper, falls wir unter-scrapper gehen wollen.
-  - [`kuchiki`](https://crates.io/crates/kuchiki) — älterer Tree-Walker mit jQuery-ähnlicher API. Unmaintained seit 2022, nicht geeignet.
-  - [`tl`](https://crates.io/crates/tl) — leichter aber weniger feature-complete.
-- **Maintenance / license:** `scraper` MIT/Apache, aktiv. `html5ever` ist die Servo-Engine-Komponente, exzellente Qualität. Supply-Chain sauber.
+  - [`scraper`](https://crates.io/crates/scraper) — primary. Uses `html5ever` (from the Mozilla Servo team) + CSS selectors via the `selectors` crate. MIT/Apache, active, solid.
+  - [`html5ever`](https://crates.io/crates/html5ever) + [`selectors`](https://crates.io/crates/selectors) — the building blocks underneath scraper, in case we want to go below scraper.
+  - [`kuchiki`](https://crates.io/crates/kuchiki) — an older tree walker with a jQuery-like API. Unmaintained since 2022, not suitable.
+  - [`tl`](https://crates.io/crates/tl) — lighter but less feature-complete.
+- **Maintenance / license:** `scraper` MIT/Apache, active. `html5ever` is the Servo engine component, excellent quality. Supply chain clean.
 - **Known gotchas / divergences:**
-  - **Parity auf HTML-Error-Recovery** — `parse5` (cheerio default) folgt WHATWG-HTML-Parse-Algorithm sehr strikt. `html5ever` auch, aber jahrelange `parse5`-Spezifika in Error-Recovery auf malformed HTML sind nicht 1:1.
-  - **Mutation-Semantik** — cheerio's `.append()` mutiert den Parent-Tree. Das über FFI zu replizieren bedeutet: Rust hält den Tree, JS kriegt nur Handles auf Nodes, jeder Mutation-Call ist ein FFI-Crossing mit Content-String-Transport.
-  - **CSS-Selector-Parity** — cheerio unterstützt CSS3 Selektoren mit einigen CSS4-Features plus jQuery-Extensions (`:contains(text)`, `:has(sel)`, `:empty`, `:not(sel)`). `selectors` crate ist spec-strikt; jQuery-Extensions müssten manuell nachgebaut werden.
-  - **Plugin/Extension-API** — cheerio hat `static`-Methoden und User können `$.prototype`-Extensions hängen. Das ist dann wieder der JS-Callback-Antipattern.
+  - **Parity on HTML error recovery** — `parse5` (cheerio's default) follows the WHATWG HTML parse algorithm very strictly. So does `html5ever`, but years of `parse5`-specific behavior in error recovery on malformed HTML are not 1:1.
+  - **Mutation semantics** — cheerio's `.append()` mutates the parent tree. Replicating that across FFI means: Rust holds the tree, JS only gets handles to nodes, and every mutation call is an FFI crossing with content-string transport.
+  - **CSS selector parity** — cheerio supports CSS3 selectors with some CSS4 features plus jQuery extensions (`:contains(text)`, `:has(sel)`, `:empty`, `:not(sel)`). The `selectors` crate is spec-strict; the jQuery extensions would have to be rebuilt by hand.
+  - **Plugin/extension API** — cheerio has `static` methods and users can attach `$.prototype` extensions. That is the JS-callback antipattern all over again.
 
 ## BACKLOG check
 
-Vorhandener Eintrag in `BACKLOG.md` (Section "Parity too expensive"): ergänzt 2026-04-21. Review bestätigt mit stärkerer Begründung (nicht nur Parity — auch API-Shape).
+Existing entry in `BACKLOG.md` (section "Parity too expensive"): added 2026-04-21. The review confirms it with a stronger justification (not just parity — also API shape).
 
-Abgrenzung:
-- Gegen `docs/perf-review/parse5.md` (NO-GO): `parse5`/`htmlparser2` sind der Parse-Baustein. Cheerio ist Parse **plus** Query **plus** Mutation. Dreifaches Parity-Problem.
-- Gegen `docs/post-mortems/xml.md` (archived): strukturell-identisch — Tree-over-FFI, V8-Marshalling dominiert.
-- Gegen `docs/perf-review/dagre.md` (GO als `@amigo-labs/graph-layout`): Dagre löst das Chain-API-Problem durch Batch-Spec-API (`layout({nodes, edges})` in ein Crossing). Cheerio hätte einen analogen Weg nur als völlig neue API — was der Punkt ist.
+Differentiation:
+- Versus `docs/perf-review/parse5.md` (NO-GO): `parse5`/`htmlparser2` are the parse building block. Cheerio is parse **plus** query **plus** mutation. A threefold parity problem.
+- Versus `docs/post-mortems/xml.md` (archived): structurally identical — tree-over-FFI, V8 marshalling dominates.
+- Versus `docs/perf-review/dagre.md` (GO as `@amigo-labs/graph-layout`): Dagre solves the chain-API problem with a batch spec API (`layout({nodes, edges})` in one crossing). Cheerio could only take an analogous path as a completely new API — which is exactly the point.
 
 ## FFI-overhead prediction
 
 | Factor | Assessment |
 |---|---|
-| Per-call algorithmic work | **Parse: hoch** (100 KB HTML ≈ 2–5 ms `html5ever`, ~5–10 ms `parse5`). **Query: niedrig-mittel** (CSS-Selector auf 1000-Node-Tree: ~10–100 µs). **Mutation: trivial** (attr-set: ~1 µs). |
-| Input size distribution | Parse-Call: 1 KB – 10 MB Input. Query/Mutation: kleine Argument-Strings (Selector, Attribute-Name, Content). |
-| Output size distribution | Problematisch: **Cheerio-Collection** als Return-Wert. Jedes `$('.item')` gibt eine Wrapper-Object zurück, das die User an `.text()`, `.attr()`, etc. weiterreichen. Für den Rust-Port müsste das ein **Rust-Handle** sein, das in JS wrapped lebt — 1 FFI-Crossing zum Zugriff auf **irgendeine** Eigenschaft. |
-| Reusable setup (stateful potential) | **Tree als NAPI-Class** (`parseAndLoad(html) → CheerioDoc`) ist der einzige Weg, den geparsed Tree nicht pro-Call neu zu parsen. Das ist gegeben — aber es löst nicht das Chain-API-Problem. |
-| Batch-usage realism | **Mittel-hoch für Scraping.** `queryAll(html, selectors: string[]) → string[][]` ein Crossing könnte Webseiten-Extract-Scripts ersetzen ("extract title, price, image for 1000 product pages" — 1000 parses × 1 batched query). Aber das ist **nicht** cheerio's API. |
-| FFI-share estimate vs. Rust work | Bei 20+ Chain-Calls pro Doc: FFI-Share **dominant**. Ein typischer User-Script (`$('.product').each(el => { ... $(el).find(...).text() ... })` auf 100 Products) = 100 × 5+ FFI-Crossings = 500+ Crossings. Bei 180 ns/Crossing = 90 µs pure FFI auf einen Scrape-Pass. Rust-Query-Work gleich-Größenordnung. **Nie Green.** |
+| Per-call algorithmic work | **Parse: high** (100 KB HTML ≈ 2–5 ms `html5ever`, ~5–10 ms `parse5`). **Query: low-to-medium** (CSS selector on a 1000-node tree: ~10–100 µs). **Mutation: trivial** (attr set: ~1 µs). |
+| Input size distribution | Parse call: 1 KB – 10 MB input. Query/mutation: small argument strings (selector, attribute name, content). |
+| Output size distribution | Problematic: a **Cheerio collection** as the return value. Every `$('.item')` returns a wrapper object that users pass on to `.text()`, `.attr()`, etc. For the Rust port that would have to be a **Rust handle** living wrapped in JS — 1 FFI crossing to access **any** property. |
+| Reusable setup (stateful potential) | **The tree as a NAPI class** (`parseAndLoad(html) → CheerioDoc`) is the only way to avoid re-parsing the tree on every call. That much is a given — but it does not solve the chain-API problem. |
+| Batch-usage realism | **Medium-to-high for scraping.** `queryAll(html, selectors: string[]) → string[][]` in one crossing could replace web-page extraction scripts ("extract title, price, image for 1000 product pages" — 1000 parses × 1 batched query). But that is **not** cheerio's API. |
+| FFI-share estimate vs. Rust work | With 20+ chain calls per doc: FFI share **dominant**. A typical user script (`$('.product').each(el => { ... $(el).find(...).text() ... })` over 100 products) = 100 × 5+ FFI crossings = 500+ crossings. At 180 ns/crossing = 90 µs of pure FFI for one scrape pass. Rust query work is in the same order of magnitude. **Never Green.** |
 
 ## Classification reasoning
 
-Cheerio hat **drei** strukturelle Gründe gegen den Port:
+Cheerio has **three** structural reasons against the port:
 
-1. **Chain-API ist unlöslich über FFI.** Jedes User-Script ist eine Komposition vieler kleiner Ops. Jede Op = Crossing. Cumulative Overhead dominiert. Das ist der **exakte** Fall der im `xml`-Post-Mortem dokumentiert wurde und zur Archivierung führte. `parseXmlToJson` wurde schneller durch **eine** Bytes-in / JSON-String-out Op — aber das ist kein Drop-in für sax-streaming/DOM-traversal. Cheerio hat das Problem noch schärfer, weil Users die Collection als **mutable** behandeln.
+1. **The chain API is unsolvable across FFI.** Every user script is a composition of many small ops. Every op = a crossing. Cumulative overhead dominates. This is the **exact** case documented in the `xml` post-mortem, which led to its archiving. `parseXmlToJson` got faster through **one** bytes-in / JSON-string-out op — but that is not a drop-in for sax streaming / DOM traversal. Cheerio has the problem even more acutely, because users treat the collection as **mutable**.
 
-2. **Parse-Backend ist bereits flagged.** `parse5`/`htmlparser2` sind in "Parity too expensive". Cheerio's parse-Komponente wäre Re-do derselben Arbeit mit denselben Kompromissen. Kein inkrementeller Gewinn über einen hypothetischen parse5-Port.
+2. **The parse backend is already flagged.** `parse5`/`htmlparser2` are in "Parity too expensive". Cheerio's parse component would be a re-do of the same work with the same compromises. No incremental gain over a hypothetical parse5 port.
 
-3. **API-Surface ist enorm und nicht triviale Teilmenge wählbar.** Die 70+ Chain-Methoden sind inter-abhängig. Wenn wir nur einen Teil porten (z.B. nur Query, keine Mutation), ist das **kein** Drop-in — Code-Schnipsel die `.attr()` oder `.append()` nutzen brechen. Wenn wir alles porten, ist der Port-Aufwand Monate.
+3. **The API surface is enormous, and no non-trivial subset can be selected.** The 70+ chain methods are interdependent. If we only port a part (e.g. query only, no mutation), that is **not** a drop-in — code snippets using `.attr()` or `.append()` break. If we port everything, the porting effort is months.
 
-**Alternative Shape (hypothetisch):** Ein `@amigo-labs/html-extract` (kein Drop-in) mit zwei Methoden:
+**Alternative shape (hypothetical):** An `@amigo-labs/html-extract` (not a drop-in) with two methods:
 
 ```ts
-// Ein Crossing, alle Results
+// One crossing, all results
 function extractAll(html: string, queries: Record<string, Selector>): Record<string, string[]>;
 // Example:
 extractAll(html, {
@@ -80,25 +80,25 @@ extractAll(html, {
 });
 ```
 
-Das ist Green-Shape (Bytes-in / Object-out in einem Call), hat aber keine Cheerio-Kompatibilität und trifft einen anderen Markt (Web-Scraping-Pipelines, nicht server-side-DOM-Manipulation). Würde eigenes Review brauchen; nicht Teil dieses Cheerio-Reviews. Siehe "If GO" unten für eine kurze Notiz.
+That is a Green shape (bytes-in / object-out in a single call), but it has no cheerio compatibility and targets a different market (web-scraping pipelines, not server-side DOM manipulation). It would need its own review; not part of this cheerio review. See "If GO" below for a short note.
 
-4. **Ökosystem-Lock-in ist real.** cheerio ist tief in der Web-Scraping-Landschaft integriert. User-Code-Schnipsel finden sich auf Stack Overflow zu tausenden. Ein Drop-in der 50 % der Calls Red macht ist DX-mäßig katastrophal: "funktioniert, aber ist 2× langsamer als cheerio in deinem Code" — das ist negative-value.
+4. **Ecosystem lock-in is real.** cheerio is deeply integrated into the web-scraping landscape. User code snippets exist on Stack Overflow by the thousands. A drop-in that turns 50 % of the calls Red is catastrophic DX-wise: "works, but is 2× slower than cheerio in your code" — that is negative value.
 
 **Shape-Matching:**
-- 🔁 Wie `xml` archived 2026-04-19 (Tree-traversal über FFI, pro-Node-Crossings)
-- 🔁 Wie `langchain` / `remark` (Plugin/Chain-Orchestration, Unbounded-Surface)
-- 🔁 Wie `handlebars` (helper-callbacks across FFI)
-- 🔁 Wie `parse5`/`htmlparser2` (Parity-Tail, Error-Recovery-Details)
-- ❌ Nicht wie `dagre` (hat Bytes-in/Result-out Alternative — siehe dort für Chain-vs-Spec-Diskussion)
-- ❌ Nicht wie `@amigo-labs/commonmark` (single-pass parse + single-pass render, kein Chain-API)
+- 🔁 Like `xml`, archived 2026-04-19 (tree traversal over FFI, per-node crossings)
+- 🔁 Like `langchain` / `remark` (plugin/chain orchestration, unbounded surface)
+- 🔁 Like `handlebars` (helper callbacks across FFI)
+- 🔁 Like `parse5`/`htmlparser2` (parity tail, error-recovery details)
+- ❌ Not like `dagre` (has a bytes-in/result-out alternative — see there for the chain-vs-spec discussion)
+- ❌ Not like `@amigo-labs/commonmark` (single-pass parse + single-pass render, no chain API)
 
-**Benchmark-Gap-Flag:** Kein Spike nötig. Architektur-Analyse ist definitiv.
+**Benchmark-gap flag:** No spike needed. The architecture analysis is definitive.
 
 ## If GO — proposed port
 
-**Nicht** als `cheerio`-Drop-in. Alternative:
+**Not** as a `cheerio` drop-in. Alternative:
 
-Ein separates, bytes-in/bytes-out HTML-Extract-Paket (`@amigo-labs/html-extract`) kann als eigener Kandidat reviewed werden — das ist ein Green-Shape, aber mit viel kleinerer Adoption (Web-Scraping-specific, nicht cheerio-broad-use-case). Wenn das verfolgt wird, eigenes Review anlegen (`docs/perf-review/html-extract.md`). **Nicht Teil dieses Reviews.**
+A separate, bytes-in/bytes-out HTML-extraction package (`@amigo-labs/html-extract`) can be reviewed as its own candidate — that is a Green shape, but with much smaller adoption (web-scraping-specific, not cheerio's broad use case). If pursued, create a dedicated review (`docs/perf-review/html-extract.md`). **Not part of this review.**
 
 ## If NO-GO — BACKLOG entry
 
@@ -106,4 +106,4 @@ Ein separates, bytes-in/bytes-out HTML-Extract-Paket (`@amigo-labs/html-extract`
 - **cheerio** (~10M). Server-side jQuery: `parse5`/`htmlparser2` backend (both in "Parity too expensive" above) + 70+ chain-methods + mutation-chain API. Every `.find().attr().text()` chain-step is a separate FFI crossing with object-marshalling of intermediate Cheerio collections — same shape as archived `xml` (`docs/post-mortems/xml.md`, Vec<Object>-over-FFI). Typical scraping scripts do 20+ chains per doc = FFI-share dominant, cumulatively slower than pure JS. Drop-in without the chain API isn't a drop-in. A separate bytes-in/bytes-out `@amigo-labs/html-extract` could be a GO candidate (different market, different API) but out-of-scope here. Full review: `docs/perf-review/cheerio.md`.
 ```
 
-Section in `BACKLOG.md`: **Parity too expensive** — bestehender Eintrag wird durch die obige Zeile ersetzt.
+Section in `BACKLOG.md`: **Parity too expensive** — the existing entry is replaced by the line above.
