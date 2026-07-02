@@ -2,36 +2,21 @@
 /* eslint-disable */
 export declare class Stemmer {
   constructor(language: string)
-  /**
-   * Batch-stem a list of whole words. Runs per-word internally without
-   * FFI crossings; the whole array is one crossing each way.
-   */
+  /** Batch-stem a list of whole words. One FFI crossing each way. */
   stemMany(words: Array<string>): Array<string>
-  /**
-   * Stem a newline-delimited buffer and return a newline-delimited buffer.
-   * Zero-copy on the input side; output is packed to avoid per-word
-   * JS-string marshalling.
-   */
+  /** Stem a newline-delimited buffer; output is newline-delimited. */
   stemBuffer(buffer: Buffer): Buffer
   /**
    * Tokenize text (unicode-word-aware) and stem every token in one FFI
-   * crossing. This is the realistic hot-path — callers rarely have a
-   * pre-tokenised word list; they have documents.
+   * crossing. This is the realistic hot-path.
    */
   tokenizeAndStem(text: string, options?: TokenizeOptions | undefined | null): Array<string>
-  /**
-   * Tokenize-and-stem variant that returns a newline-delimited Buffer
-   * instead of a `string[]`. Use this when the next stage is another
-   * Rust component (bm25 index build, for example).
-   */
+  /** Tokenize-and-stem variant that returns a newline-delimited Buffer. */
   tokenizeAndStemToBuffer(text: string, options?: TokenizeOptions | undefined | null): Buffer
   get language(): string
 }
 
-/**
- * Convenience for one-off usage. Documented as slow-path — don't call in
- * hot loops; use a `Stemmer` instance plus `stemMany` / `tokenizeAndStem`.
- */
+/** Convenience for one-off usage. Documented as slow-path. */
 export declare function stemOnce(language: string, word: string): string
 
 export interface TokenizeOptions {

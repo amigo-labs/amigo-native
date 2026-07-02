@@ -12,11 +12,9 @@ export interface InflateOptions {
   /** Compression level 0–9 (default 6, analogous to pako). */
   level?: number
   /**
-   * Hard cap on decompressed output size in bytes. Defaults to
-   * `DEFAULT_MAX_OUTPUT_SIZE` (256 MiB). Decompression that would
-   * exceed this limit returns a napi error rather than allocating
-   * further. Pass `0` to disable the cap (not recommended for
-   * untrusted input — gzip bombs expand to terabytes).
+   * Hard cap on decompressed output size in bytes. Defaults to 256 MiB.
+   * Pass `0` to disable the cap (not recommended for untrusted input —
+   * gzip bombs expand to terabytes).
    */
   maxOutputSize?: number
 }

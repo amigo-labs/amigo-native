@@ -18,22 +18,6 @@ export interface ParseManyResult {
   flags: Buffer
 }
 
-/**
- * v0.1 ParseOptions surface. Several upstream `tldts` options have no
- * effect in this implementation:
- *
- * - `allow_private_domains`: the `psl` crate's bundled IANA list does
- *   not distinguish ICANN vs PRIVATE sections. Both are honoured. This
- *   means private-suffix domains (e.g. `*.appspot.com`) are always
- *   parsed as their full subdomain.something.appspot.com regardless of
- *   this flag. Fixing this requires switching to the `publicsuffix`
- *   crate which exposes section metadata; tracked for v0.2.
- * - `detect_ip`: IP-detection is always on. Setting this to `false`
- *   has no effect.
- *
- * `extract_hostname` is the one option that's meaningful: when `false`,
- * the input is treated as a bare hostname (no scheme/path stripping).
- */
 export interface ParseOptions {
   allowPrivateDomains?: boolean
   detectIp?: boolean

@@ -9,11 +9,7 @@ export declare function detect(text: string, options?: DetectOptions | undefined
 /** Return a ranked list of top-N matches. */
 export declare function detectAll(text: string, options?: DetectOptions | undefined | null): Array<LanguageMatch>
 
-/**
- * Like `detect`, but returns `null` below `min_length` instead of `'und'`.
- * This is the recommended entry point for pipelines that prefer "I don't
- * know" over a guessed-but-wrong label.
- */
+/** Like `detect`, but returns `null` below `min_length` instead of `'und'`. */
 export declare function detectIfLong(text: string, options?: DetectOptions | undefined | null): string | null
 
 /** Batch entry point — one FFI crossing amortises over N inputs. */

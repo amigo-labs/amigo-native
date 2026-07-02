@@ -16,26 +16,10 @@ export interface CommonMarkOptions {
 
 export declare function render(markdown: string, options?: CommonMarkOptions | undefined | null): string
 
-/**
- * Render from a UTF-8 byte buffer. Skips the V8 UTF-16 → UTF-8 copy on
- * the FFI boundary — measurably faster for inputs ≥ ~10 KB (see
- * `docs/BASELINE.md`: ~0.35 ns/byte on string input vs. flat 170 ns
- * on Buffer input).
- */
 export declare function renderBytes(markdown: Buffer, options?: CommonMarkOptions | undefined | null): string
 
-/**
- * Buffer-input twin of `renderFast`. Skips both the V8 UTF-16 → UTF-8
- * copy (via Buffer input) and the options-object unmarshalling.
- */
 export declare function renderBytesFast(markdown: Buffer): string
 
-/**
- * GFM + tables + strikethrough, raw HTML passthrough, no heading-ID
- * rewrite. Equivalent to `render(md, { headingIds: false, unsafeHtml:
- * true })` but without the options-object unmarshalling cost — measurable
- * on sub-KB inputs where the option cost eats 10–15 % of the budget.
- */
 export declare function renderFast(markdown: string): string
 
 export declare function renderMany(docs: Array<string>, options?: CommonMarkOptions | undefined | null): Array<string>

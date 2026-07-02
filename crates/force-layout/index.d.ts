@@ -25,31 +25,17 @@ export interface FnodeSpec {
   fixed?: boolean
 }
 
-/**
- * Batch simulation — runs all iterations in Rust, returns final
- * positions. Preferred over tick-by-tick for SSR / precompute
- * workloads.
- */
 export declare function simulate(nodes: Array<FnodeSpec>, edges: Array<FedgeSpec>, options?: SimulationOptions | undefined | null): SimulationResult
 
 export interface SimulationOptions {
-  /** Iterations to run. Default 300. */
   iterations?: number
-  /** Many-body strength (negative = repulsion). Default -30. */
   charge?: number
-  /** Radius for collision force. Default 0 (off). */
   collideRadius?: number
-  /** Centre x. Default 0. */
   centerX?: number
-  /** Centre y. Default 0. */
   centerY?: number
-  /** Centering force strength. Default 0.1. */
   centerStrength?: number
-  /** Initial alpha (cooling schedule). Default 1. */
   alpha?: number
-  /** Alpha decay per iteration. Default computed from iterations. */
   alphaDecay?: number
-  /** Velocity decay per iteration. Default 0.4. */
   velocityDecay?: number
 }
 

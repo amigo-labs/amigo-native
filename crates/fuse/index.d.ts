@@ -16,7 +16,7 @@ export interface FuseOptions {
   threshold?: number
   /**
    * Default `limit` applied when `Fuse.search` is called without one.
-   * Per-call `limit` always wins. `None` (default) means "no cap".
+   * Per-call `limit` always wins. `None` means "no cap".
    */
   defaultLimit?: number
 }
