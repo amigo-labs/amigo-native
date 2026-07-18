@@ -31,7 +31,7 @@
     "@types/sanitize-html": "^2.13.0",
     "@types/sax": "^1.2.7",
     "@types/yauzl": "^2.10.3",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "argon2": "^0.44.0",
     "csv-parse": "^5.6.0",
     "deepmerge": "^4.3.1",
