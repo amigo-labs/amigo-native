@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/pdf-parse",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "PDF text + metadata extraction via pdf-extract / lopdf. Drop-in shape for pdf-parse.",
   "main": "index.js",
   "types": "index.d.ts",
