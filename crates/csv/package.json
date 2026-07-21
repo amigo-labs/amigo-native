@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/csv",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Blazing fast CSV parsing and serialization powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
