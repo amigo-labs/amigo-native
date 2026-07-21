@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/minisearch",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Tiny native in-memory full-text search — drop-in shape for minisearch, powered by a shared Rust search-core.",
   "main": "index.js",
   "types": "index.d.ts",
