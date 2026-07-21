@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/argon2",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Fast Argon2id password hashing powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
@@ -64,7 +64,9 @@
     "vsJs": "1.36x",
     "parity": "—",
     "status": "Drop-in",
-    "targets": ["node"],
+    "targets": [
+      "node"
+    ],
     "competitors": [
       "argon2@0.41.1",
       "hash-wasm@4.12.0"

@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/tldts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hostname / URL → domain + public suffix parser. Bundled IANA PSL via the Rust `psl` crate.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -85,7 +85,10 @@
     "vsJs": "TBD",
     "parity": "default-list",
     "status": "Subset",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "tldts@7.0.0",
       "psl@1.9.0"

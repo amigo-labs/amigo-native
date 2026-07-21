@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/pngjs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "PNG decode/encode via image-rs `png` crate. RGBA output, no native deps in build.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -83,7 +83,10 @@
     "vsJs": "TBD",
     "parity": "rgba-only",
     "status": "Compatible",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "pngjs@7.0.0",
       "upng-js@2.1.0"

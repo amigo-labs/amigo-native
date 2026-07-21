@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/zip",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Rust-powered ZIP archive read/write via the zip crate",
   "main": "index.js",
   "types": "index.d.ts",
@@ -64,7 +64,7 @@
     "@napi-rs/cli": "^3.6.2",
     "@types/adm-zip": "^0.5.7",
     "@types/yauzl": "^2.10.3",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "fast-check": "^4.8.0",
     "vitest": "^4.1.7",
     "yauzl": "^3.3.1"
@@ -87,7 +87,10 @@
     "vsJs": "1.88-9.3x",
     "parity": "100%",
     "status": "Alternative",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "yauzl@3.2.0",
       "adm-zip@0.5.16"

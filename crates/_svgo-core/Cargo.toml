@@ -7,4 +7,4 @@ publish = false
 [lib]
 
 [dependencies]
-quick-xml = { version = "0.40", features = ["serialize"] }
+quick-xml = { version = "0.41", features = ["serialize"] }
