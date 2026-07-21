@@ -63,7 +63,7 @@
   "devDependencies": {
     "@napi-rs/cli": "^3.6.2",
     "fast-check": "^4.8.0",
-    "file-type": "^19.6.0",
+    "file-type": "^22.0.1",
     "vitest": "^4.1.7"
   },
   "license": "MIT",

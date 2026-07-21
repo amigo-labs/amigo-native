@@ -64,7 +64,7 @@
     "@napi-rs/cli": "^3.6.2",
     "@types/adm-zip": "^0.5.7",
     "@types/yauzl": "^2.10.3",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "fast-check": "^4.8.0",
     "vitest": "^4.1.7",
     "yauzl": "^3.3.1"
