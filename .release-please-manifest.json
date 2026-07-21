@@ -28,7 +28,7 @@
   "crates/stemmer": "0.2.0",
   "crates/svgo": "0.2.0",
   "crates/text-splitters": "0.2.0",
-  "crates/tldts": "0.2.0",
+  "crates/tldts": "0.3.0",
   "crates/turndown": "0.2.0",
   "crates/typst": "0.2.0",
   "crates/xlsx": "0.2.0",
