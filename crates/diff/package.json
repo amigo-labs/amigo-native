@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/diff",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Myers/Patience text diff via the similar crate — with offset-packed hot-path.",
   "main": "index.js",
   "types": "index.d.ts",
