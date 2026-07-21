@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/jose",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "JOSE primitives — JWK key generation and RFC 7638 thumbprints",
   "main": "wrapper.js",
   "types": "wrapper.d.ts",
@@ -69,7 +69,9 @@
     "vsJs": "1.57-4.4x",
     "parity": "100%",
     "status": "Alternative",
-    "targets": ["node"],
+    "targets": [
+      "node"
+    ],
     "competitors": [
       "jose@5.9.0"
     ]
