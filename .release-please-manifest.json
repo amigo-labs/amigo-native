@@ -26,7 +26,7 @@
   "crates/sentences": "0.1.1",
   "crates/slugify": "0.1.1",
   "crates/stemmer": "0.1.1",
-  "crates/svgo": "0.1.1",
+  "crates/svgo": "0.2.0",
   "crates/text-splitters": "0.1.1",
   "crates/tldts": "0.1.0",
   "crates/turndown": "0.1.1",
