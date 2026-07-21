@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/turndown",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "HTML → Markdown via html5ever. CommonMark + GFM tables/strikethrough out of the box.",
   "main": "index.js",
   "types": "index.d.ts",
