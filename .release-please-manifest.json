@@ -22,7 +22,7 @@
   "crates/pdf-parse": "0.1.1",
   "crates/pixelmatch": "0.1.0",
   "crates/pngjs": "0.1.0",
-  "crates/sanitize-html": "0.2.1",
+  "crates/sanitize-html": "0.3.0",
   "crates/sentences": "0.1.1",
   "crates/slugify": "0.1.1",
   "crates/stemmer": "0.1.1",
