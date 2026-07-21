@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/jpeg-js",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "JPEG decode/encode via jpeg-decoder + jpeg-encoder. RGBA output, pure-Rust (no libjpeg C dep).",
   "main": "index.js",
   "types": "index.d.ts",
