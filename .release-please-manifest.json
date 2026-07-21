@@ -23,7 +23,7 @@
   "crates/pixelmatch": "0.2.0",
   "crates/pngjs": "0.2.0",
   "crates/sanitize-html": "0.3.0",
-  "crates/sentences": "0.2.0",
+  "crates/sentences": "0.3.0",
   "crates/slugify": "0.2.0",
   "crates/stemmer": "0.3.0",
   "crates/svgo": "0.2.0",
