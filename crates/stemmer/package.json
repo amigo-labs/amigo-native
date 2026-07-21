@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/stemmer",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Porter/Snowball stemmer — batch-only, 18 languages, integrates with @amigo-labs/bm25.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -85,7 +85,10 @@
     "vsJs": "7.1-8.3x",
     "parity": "100%",
     "status": "Alternative",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "natural@8"
     ]
