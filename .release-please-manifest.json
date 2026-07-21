@@ -19,7 +19,7 @@
   "crates/linkify-it": "0.1.0",
   "crates/minisearch": "0.1.1",
   "crates/pdf": "0.1.1",
-  "crates/pdf-parse": "0.1.1",
+  "crates/pdf-parse": "0.2.0",
   "crates/pixelmatch": "0.1.0",
   "crates/pngjs": "0.1.0",
   "crates/sanitize-html": "0.2.1",
