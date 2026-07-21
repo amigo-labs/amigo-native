@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/inflate",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Rust-powered zlib / deflate / gzip via flate2 (zlib-rs backend)",
   "main": "index.js",
   "types": "index.d.ts",
@@ -86,7 +86,10 @@
     "vsJs": "0.96-12x",
     "parity": "100%",
     "status": "Compatible",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "pako@2.1.0"
     ]

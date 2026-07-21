@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/fuse",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fuzzy search index built on nucleo-matcher. Stateful build-once / query-many class API.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -84,7 +84,10 @@
     "vsJs": "TBD",
     "parity": "ranking-only",
     "status": "Subset",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "fuse.js@7.0.0",
       "fuzzysort@3.0.0"

@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/csv",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Blazing fast CSV parsing and serialization powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
@@ -86,7 +86,10 @@
     "vsJs": "1.55-1.94x",
     "parity": "—",
     "status": "Drop-in",
-    "targets": ["node", "browser"],
+    "targets": [
+      "node",
+      "browser"
+    ],
     "competitors": [
       "csv-parse@5.6.0",
       "papaparse@5.4.1"
