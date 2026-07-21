@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/argon2",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Fast Argon2id password hashing powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
