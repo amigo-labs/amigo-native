@@ -1,5 +1,5 @@
 {
-  "crates/argon2": "0.2.0",
+  "crates/argon2": "0.3.0",
   "crates/bm25": "0.2.0",
   "crates/commonmark": "0.2.0",
   "crates/csv": "0.2.0",
