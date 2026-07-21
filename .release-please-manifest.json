@@ -5,7 +5,7 @@
   "crates/csv": "0.2.0",
   "crates/deepmerge": "0.2.0",
   "crates/diff": "0.2.0",
-  "crates/encoding": "0.2.0",
+  "crates/encoding": "0.3.0",
   "crates/file-type": "0.3.0",
   "crates/force-layout": "0.2.0",
   "crates/fuse": "0.2.0",
