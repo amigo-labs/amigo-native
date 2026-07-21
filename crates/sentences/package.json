@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/sentences",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Multi-language sentence boundary detection with an offset-packed zero-copy hot-path.",
   "main": "index.js",
   "types": "index.d.ts",
