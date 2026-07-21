@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/xxhash",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Blazing fast non-cryptographic hashing (XXHash) powered by Rust",
   "main": "index.js",
   "types": "index.d.ts",
