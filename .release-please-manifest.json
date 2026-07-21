@@ -31,7 +31,7 @@
   "crates/tldts": "0.1.0",
   "crates/turndown": "0.1.1",
   "crates/typst": "0.1.1",
-  "crates/xlsx": "0.1.1",
+  "crates/xlsx": "0.2.0",
   "crates/xxhash": "0.2.1",
   "crates/zip": "0.1.1",
   "crates/zstd": "0.1.0"
