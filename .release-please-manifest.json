@@ -29,7 +29,7 @@
   "crates/svgo": "0.1.1",
   "crates/text-splitters": "0.1.1",
   "crates/tldts": "0.1.0",
-  "crates/turndown": "0.1.1",
+  "crates/turndown": "0.2.0",
   "crates/typst": "0.1.1",
   "crates/xlsx": "0.1.1",
   "crates/xxhash": "0.2.1",
