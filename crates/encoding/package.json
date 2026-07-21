@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/encoding",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Rust-powered character-encoding conversion via encoding_rs",
   "main": "index.js",
   "types": "index.d.ts",
