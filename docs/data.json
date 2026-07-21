@@ -1341,15 +1341,15 @@
         "entries": [
           {
             "name": "@amigo-labs/pdf-parse (napi) parseSync",
-            "hz": 6742.46,
-            "rme": 0.28,
-            "samples": 3372
+            "hz": 8543.48,
+            "rme": 0.31,
+            "samples": 4272
           },
           {
             "name": "pdf-parse",
-            "hz": 121292.79,
-            "rme": 0.26,
-            "samples": 60647
+            "hz": 129689.91,
+            "rme": 0.29,
+            "samples": 64845
           }
         ]
       },
@@ -1359,15 +1359,15 @@
         "entries": [
           {
             "name": "@amigo-labs/pdf-parse (napi) parseSync",
-            "hz": 2418.63,
-            "rme": 0.4,
-            "samples": 1210
+            "hz": 3085.42,
+            "rme": 0.33,
+            "samples": 1543
           },
           {
             "name": "pdf-parse",
-            "hz": 120263.63,
+            "hz": 127609.18,
             "rme": 0.27,
-            "samples": 60132
+            "samples": 63805
           }
         ]
       },
@@ -2574,9 +2574,9 @@
     },
     "pdf-parse": {
       "@amigo-labs/pdf-parse": {
-        "installSize": 24974,
+        "installSize": 1968638,
         "type": "binary+shim",
-        "napi": 24974
+        "napi": 1968638
       },
       "pdf-parse": {
         "installSize": 89171764,
@@ -2626,9 +2626,9 @@
     },
     "sentences": {
       "@amigo-labs/sentences": {
-        "installSize": 419764,
+        "installSize": 25756,
         "type": "binary+shim",
-        "napi": 419764
+        "napi": 25756
       },
       "sbd": {
         "installSize": 2126072,

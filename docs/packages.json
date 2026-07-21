@@ -415,7 +415,7 @@
       "title": "PDF Parse",
       "category": "document",
       "description": "PDF text + metadata extraction via pdf-extract/lopdf. No pdf.js, no browser pipeline.",
-      "speedup": "18–50× slower",
+      "speedup": "15–41× slower",
       "targets": [
         "node",
         "browser"
@@ -426,9 +426,9 @@
       "perfReviewUrl": "/perf-review/pdf-parse.md",
       "speedupDetails": {
         "napi": {
-          "label": "18–50× slower",
-          "hz": 4038,
-          "vsJs": 0.06
+          "label": "15–41× slower",
+          "hz": 5134,
+          "vsJs": 0.07
         }
       }
     },
