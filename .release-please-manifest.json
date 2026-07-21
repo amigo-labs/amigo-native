@@ -17,7 +17,7 @@
   "crates/jwt": "0.2.0",
   "crates/language-detect": "0.2.0",
   "crates/linkify-it": "0.2.0",
-  "crates/minisearch": "0.2.0",
+  "crates/minisearch": "0.3.0",
   "crates/pdf": "0.2.0",
   "crates/pdf-parse": "0.2.0",
   "crates/pixelmatch": "0.2.0",
