@@ -1,31 +1,31 @@
 {
   "crate": "sentences",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-07-21T20:18:29.127Z",
+  "commit": "f558865",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.18.0",
   "suites": [
     {
       "file": "crates/sentences/__bench__/index.bench.ts",
       "name": "short (~50 chars, 4 sentences)",
       "entries": [
         {
-          "name": "@amigo-labs/sentences split()",
-          "hz": 116538.88,
-          "rme": 0.17,
-          "samples": 58270
+          "name": "@amigo-labs/sentences (napi) split()",
+          "hz": 119995,
+          "rme": 0.15,
+          "samples": 59998
         },
         {
-          "name": "@amigo-labs/sentences splitToOffsets()",
-          "hz": 102808.26,
-          "rme": 0.33,
-          "samples": 51405
+          "name": "@amigo-labs/sentences (napi) splitToOffsets()",
+          "hz": 93564.6,
+          "rme": 0.27,
+          "samples": 46783
         },
         {
           "name": "sbd",
-          "hz": 364155.37,
-          "rme": 0.77,
-          "samples": 182078
+          "hz": 366318.52,
+          "rme": 0.37,
+          "samples": 183160
         }
       ]
     },
@@ -34,22 +34,22 @@
       "name": "medium (~5 KB, 50 sentences)",
       "entries": [
         {
-          "name": "@amigo-labs/sentences split()",
-          "hz": 29299.16,
-          "rme": 1.51,
-          "samples": 14650
+          "name": "@amigo-labs/sentences (napi) split()",
+          "hz": 29051.35,
+          "rme": 0.31,
+          "samples": 14526
         },
         {
-          "name": "@amigo-labs/sentences splitToOffsets()",
-          "hz": 40197.95,
-          "rme": 0.12,
-          "samples": 20099
+          "name": "@amigo-labs/sentences (napi) splitToOffsets()",
+          "hz": 31698.38,
+          "rme": 0.6,
+          "samples": 15850
         },
         {
           "name": "sbd",
-          "hz": 9392.42,
-          "rme": 0.32,
-          "samples": 4697
+          "hz": 9237.02,
+          "rme": 1.06,
+          "samples": 4619
         }
       ]
     }

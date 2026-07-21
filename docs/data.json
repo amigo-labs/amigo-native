@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-10",
-  "nodeVersion": "v24.16.0",
+  "generatedAt": "2026-07-21",
+  "nodeVersion": "v24.18.0",
   "platform": "linux x64",
   "benchmarks": {
     "suites": [
@@ -1556,22 +1556,22 @@
         "name": "short (~50 chars, 4 sentences)",
         "entries": [
           {
-            "name": "@amigo-labs/sentences split()",
-            "hz": 116538.88,
-            "rme": 0.17,
-            "samples": 58270
+            "name": "@amigo-labs/sentences (napi) split()",
+            "hz": 119995,
+            "rme": 0.15,
+            "samples": 59998
           },
           {
-            "name": "@amigo-labs/sentences splitToOffsets()",
-            "hz": 102808.26,
-            "rme": 0.33,
-            "samples": 51405
+            "name": "@amigo-labs/sentences (napi) splitToOffsets()",
+            "hz": 93564.6,
+            "rme": 0.27,
+            "samples": 46783
           },
           {
             "name": "sbd",
-            "hz": 364155.37,
-            "rme": 0.77,
-            "samples": 182078
+            "hz": 366318.52,
+            "rme": 0.37,
+            "samples": 183160
           }
         ]
       },
@@ -1580,22 +1580,22 @@
         "name": "medium (~5 KB, 50 sentences)",
         "entries": [
           {
-            "name": "@amigo-labs/sentences split()",
-            "hz": 29299.16,
-            "rme": 1.51,
-            "samples": 14650
+            "name": "@amigo-labs/sentences (napi) split()",
+            "hz": 29051.35,
+            "rme": 0.31,
+            "samples": 14526
           },
           {
-            "name": "@amigo-labs/sentences splitToOffsets()",
-            "hz": 40197.95,
-            "rme": 0.12,
-            "samples": 20099
+            "name": "@amigo-labs/sentences (napi) splitToOffsets()",
+            "hz": 31698.38,
+            "rme": 0.6,
+            "samples": 15850
           },
           {
             "name": "sbd",
-            "hz": 9392.42,
-            "rme": 0.32,
-            "samples": 4697
+            "hz": 9237.02,
+            "rme": 1.06,
+            "samples": 4619
           }
         ]
       },
@@ -2335,7 +2335,7 @@
         "napi": 24891
       },
       "argon2": {
-        "installSize": 1312438,
+        "installSize": 1315198,
         "type": "node_modules"
       },
       "hash-wasm": {
@@ -2360,16 +2360,16 @@
     },
     "commonmark": {
       "@amigo-labs/commonmark": {
-        "installSize": 26322,
+        "installSize": 25638,
         "type": "binary+shim",
-        "napi": 26322
+        "napi": 25638
       },
       "marked": {
         "installSize": 961240,
         "type": "node_modules"
       },
       "markdown-it": {
-        "installSize": 1495026,
+        "installSize": 1494823,
         "type": "node_modules"
       }
     },
@@ -2401,9 +2401,9 @@
     },
     "diff": {
       "@amigo-labs/diff": {
-        "installSize": 493857,
+        "installSize": 25209,
         "type": "binary+shim",
-        "napi": 493857
+        "napi": 25209
       },
       "diff": {
         "installSize": 430615,
@@ -2423,9 +2423,9 @@
     },
     "file-type": {
       "@amigo-labs/file-type": {
-        "installSize": 24840,
+        "installSize": 25017,
         "type": "binary+shim",
-        "napi": 24840
+        "napi": 25017
       },
       "file-type": {
         "installSize": 311034,
@@ -2434,9 +2434,9 @@
     },
     "force-layout": {
       "@amigo-labs/force-layout": {
-        "installSize": 403802,
+        "installSize": 25658,
         "type": "binary+shim",
-        "napi": 403802
+        "napi": 25658
       },
       "d3-force": {
         "installSize": 168528,
@@ -2445,9 +2445,9 @@
     },
     "fuse": {
       "@amigo-labs/fuse": {
-        "installSize": 24685,
+        "installSize": 24675,
         "type": "binary+shim",
-        "napi": 24685
+        "napi": 24675
       },
       "fuse.js": {
         "installSize": 423527,
@@ -2460,9 +2460,9 @@
     },
     "graph-layout": {
       "@amigo-labs/graph-layout": {
-        "installSize": 435933,
+        "installSize": 25741,
         "type": "binary+shim",
-        "napi": 435933
+        "napi": 25741
       },
       "dagre": {
         "installSize": 2715040,
@@ -2475,9 +2475,9 @@
     },
     "inflate": {
       "@amigo-labs/inflate": {
-        "installSize": 25652,
+        "installSize": 25518,
         "type": "binary+shim",
-        "napi": 25652
+        "napi": 25518
       },
       "pako": {
         "installSize": 1641188,
@@ -2524,15 +2524,15 @@
         "napi": 25740
       },
       "jsonwebtoken": {
-        "installSize": 308802,
+        "installSize": 309089,
         "type": "node_modules"
       }
     },
     "language-detect": {
       "@amigo-labs/language-detect": {
-        "installSize": 26787,
+        "installSize": 26668,
         "type": "binary+shim",
-        "napi": 26787
+        "napi": 26668
       },
       "franc": {
         "installSize": 303673,
@@ -2563,20 +2563,20 @@
     },
     "pdf": {
       "@amigo-labs/pdf": {
-        "installSize": 1345145,
+        "installSize": 24833,
         "type": "binary+shim",
-        "napi": 1345145
+        "napi": 24833
       },
       "pdfkit": {
-        "installSize": 20400618,
+        "installSize": 20441215,
         "type": "node_modules"
       }
     },
     "pdf-parse": {
       "@amigo-labs/pdf-parse": {
-        "installSize": 2234718,
+        "installSize": 24974,
         "type": "binary+shim",
-        "napi": 2234718
+        "napi": 24974
       },
       "pdf-parse": {
         "installSize": 89171764,
@@ -2596,9 +2596,9 @@
     },
     "pngjs": {
       "@amigo-labs/pngjs": {
-        "installSize": 25119,
+        "installSize": 24926,
         "type": "binary+shim",
-        "napi": 25119
+        "napi": 24926
       },
       "pngjs": {
         "installSize": 650529,
@@ -2611,35 +2611,35 @@
     },
     "sanitize-html": {
       "@amigo-labs/sanitize-html": {
-        "installSize": 26623,
+        "installSize": 25648,
         "type": "binary+shim",
-        "napi": 26623
+        "napi": 25648
       },
       "sanitize-html": {
-        "installSize": 1590562,
+        "installSize": 1592466,
         "type": "node_modules"
       },
       "isomorphic-dompurify": {
-        "installSize": 14705582,
+        "installSize": 15653393,
         "type": "node_modules"
       }
     },
     "sentences": {
       "@amigo-labs/sentences": {
-        "installSize": 25838,
+        "installSize": 419764,
         "type": "binary+shim",
-        "napi": 25838
+        "napi": 419764
       },
       "sbd": {
-        "installSize": 2841747,
+        "installSize": 2126072,
         "type": "node_modules"
       }
     },
     "slugify": {
       "@amigo-labs/slugify": {
-        "installSize": 979473,
+        "installSize": 24553,
         "type": "binary+shim",
-        "napi": 979473
+        "napi": 24553
       },
       "slugify": {
         "installSize": 21283,
@@ -2648,45 +2648,45 @@
     },
     "stemmer": {
       "@amigo-labs/stemmer": {
-        "installSize": 26111,
+        "installSize": 25618,
         "type": "binary+shim",
-        "napi": 26111
+        "napi": 25618
       },
       "natural": {
-        "installSize": 65106979,
+        "installSize": 65153756,
         "type": "node_modules"
       }
     },
     "svgo": {
       "@amigo-labs/svgo": {
-        "installSize": 25117,
+        "installSize": 25049,
         "type": "binary+shim",
-        "napi": 25117
+        "napi": 25049
       },
       "svgo": {
-        "installSize": 6880846,
+        "installSize": 7074591,
         "type": "node_modules"
       }
     },
     "text-splitters": {
       "@amigo-labs/text-splitters": {
-        "installSize": 11774835,
+        "installSize": 25947,
         "type": "binary+shim",
-        "napi": 11774835
+        "napi": 25947
       },
       "@langchain/textsplitters": {
-        "installSize": 37408572,
+        "installSize": 38229369,
         "type": "node_modules"
       }
     },
     "tldts": {
       "@amigo-labs/tldts": {
-        "installSize": 26272,
+        "installSize": 25507,
         "type": "binary+shim",
-        "napi": 26272
+        "napi": 25507
       },
       "tldts": {
-        "installSize": 3351290,
+        "installSize": 3351696,
         "type": "node_modules"
       },
       "psl": {
@@ -2696,9 +2696,9 @@
     },
     "turndown": {
       "@amigo-labs/turndown": {
-        "installSize": 25578,
+        "installSize": 24983,
         "type": "binary+shim",
-        "napi": 25578
+        "napi": 24983
       },
       "turndown": {
         "installSize": 7929217,
@@ -2716,26 +2716,26 @@
         "type": "node_modules"
       },
       "puppeteer": {
-        "installSize": 23987574,
+        "installSize": 23942079,
         "type": "node_modules"
       },
       "pdfmake": {
-        "installSize": 35883000,
+        "installSize": 35923686,
         "type": "node_modules"
       }
     },
     "xlsx": {
       "@amigo-labs/xlsx": {
-        "installSize": 1821898,
+        "installSize": 25210,
         "type": "binary+shim",
-        "napi": 1821898
+        "napi": 25210
       },
       "xlsx": {
         "installSize": 14043396,
         "type": "node_modules"
       },
       "exceljs": {
-        "installSize": 30034191,
+        "installSize": 30304048,
         "type": "node_modules"
       }
     },
@@ -2756,9 +2756,9 @@
     },
     "zip": {
       "@amigo-labs/zip": {
-        "installSize": 25724,
+        "installSize": 24716,
         "type": "binary+shim",
-        "napi": 25724
+        "napi": 24716
       },
       "yauzl": {
         "installSize": 111365,
@@ -2771,12 +2771,12 @@
     },
     "zstd": {
       "@amigo-labs/zstd": {
-        "installSize": 25344,
+        "installSize": 25026,
         "type": "binary+shim",
-        "napi": 25344
+        "napi": 25026
       },
       "@mongodb-js/zstd": {
-        "installSize": 1237973,
+        "installSize": 1245470,
         "type": "node_modules"
       },
       "fzstd": {

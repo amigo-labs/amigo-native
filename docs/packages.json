@@ -482,7 +482,7 @@
       "title": "Sentences",
       "category": "text",
       "description": "Multi-language sentence boundary detection. String or offset-packed output for hot paths.",
-      "speedup": "TBD",
+      "speedup": "up to 3.4× faster / 3.9× slower",
       "targets": [
         "node",
         "browser"
@@ -490,7 +490,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sentences",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sentences",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sentences/README.md",
-      "perfReviewUrl": "/perf-review/sentences.md"
+      "perfReviewUrl": "/perf-review/sentences.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "up to 3.4× faster / 3.9× slower",
+          "hz": 56705,
+          "vsJs": 3.15
+        }
+      }
     },
     {
       "name": "slugify",
