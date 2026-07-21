@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/bm25",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "BM25 full-text search for Node.js — stateful index over a shared Rust search-core.",
   "main": "index.js",
   "types": "index.d.ts",
