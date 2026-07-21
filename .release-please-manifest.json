@@ -14,7 +14,7 @@
   "crates/jimp": "0.2.0",
   "crates/jose": "0.2.0",
   "crates/jpeg-js": "0.2.0",
-  "crates/jwt": "0.2.0",
+  "crates/jwt": "0.3.0",
   "crates/language-detect": "0.2.0",
   "crates/linkify-it": "0.2.0",
   "crates/minisearch": "0.2.0",
