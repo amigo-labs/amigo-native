@@ -10,7 +10,7 @@
   "crates/force-layout": "0.2.0",
   "crates/fuse": "0.2.0",
   "crates/graph-layout": "0.2.0",
-  "crates/inflate": "0.2.0",
+  "crates/inflate": "0.3.0",
   "crates/jimp": "0.2.0",
   "crates/jose": "0.2.0",
   "crates/jpeg-js": "0.2.0",
