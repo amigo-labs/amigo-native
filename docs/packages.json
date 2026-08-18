@@ -467,7 +467,7 @@
       "title": "Sanitize HTML",
       "category": "text",
       "description": "HTML sanitization via Mozilla's ammonia engine.",
-      "speedup": "1.7–3.7× faster",
+      "speedup": "1.35–3.6× faster",
       "targets": [
         "node",
         "browser"
@@ -475,7 +475,14 @@
       "npmUrl": "https://www.npmjs.com/package/@amigo-labs/sanitize-html",
       "sourceUrl": "https://github.com/amigo-labs/amigo-native/tree/main/crates/sanitize-html",
       "readmeUrl": "https://github.com/amigo-labs/amigo-native/blob/main/crates/sanitize-html/README.md",
-      "perfReviewUrl": "/perf-review/sanitize-html.md"
+      "perfReviewUrl": "/perf-review/sanitize-html.md",
+      "speedupDetails": {
+        "napi": {
+          "label": "1.35–3.6× faster",
+          "hz": 6782,
+          "vsJs": 2.58
+        }
+      }
     },
     {
       "name": "sentences",
