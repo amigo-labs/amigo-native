@@ -126,10 +126,27 @@ run could not parse the merged PR title against the per-package
 This happens when grouped releases (`separate-pull-requests: false`) are
 combined with a literal `group-pull-request-title-pattern` — the single
 grouped title cannot simultaneously match every component's pattern.
-Recovery: run `node scripts/recover-release.mjs <merge-commit-sha>` with a
+The same gap applies to a **manual bundle PR** (one commit that bumps many
+crates without going through a release-please merge): no tags are created
+on merge, so `release.yml` never fires. Recovery: run
+`node scripts/recover-release.mjs <merge-commit-sha>` with a
 PAT-authenticated remote to tag and push the missing releases. The script
 reads the manifest, derives each tag, skips tags already on origin, and
 pushes the rest, which fires `release.yml` once per tag.
+
+**Publish job failed at "Build WASM artifact".** Ubuntu's `apt` binaryen
+rejects bulk-memory ops that current `rustc` emits
+(`unexpected false: Bulk memory operation (bulk memory is disabled)`).
+`release.yml` now installs binaryen 123 from the upstream GitHub release
+and enables those features explicitly; if `wasm-opt` still fails it ships
+the unoptimized module instead of aborting the publish.
+
+**Publish job failed with `npm error 404` on `PUT @amigo-labs/<pkg>`.**
+The `NPM_TOKEN` cannot create or update packages in the `@amigo-labs`
+org (missing permission, expired granular token, or 2FA/trusted-publishing
+gap). A 404 is **not** "already published" — check org access and rotate
+the token. Already-tagged crates that failed this way can be republished
+via `workflow_dispatch` on `release.yml` after the token is fixed.
 
 **A commit is missing from the Release PR.** Check the scope. Commits without
 a scope, or with a scope that doesn't match any directory under `crates/`, are
