@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/language-detect",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Language detection via whatlang — ISO-639-3 codes out, franc-compatible shape.",
   "main": "index.js",
   "types": "index.d.ts",

@@ -195,8 +195,12 @@ jobs:
         if: ${{ !contains(fromJSON('["argon2","jose","jwt"]'), needs.resolve.outputs.crate) }}
         run: |
           curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-          sudo apt-get update
-          sudo apt-get install -y binaryen
+          # apt binaryen is too old: it rejects bulk-memory ops that rustc
+          # emits, which blocked every WASM crate publish (jimp@0.2.0, inflate@0.3.0, ...).
+          BINARYEN_VERSION=123
+          curl -sSL "https://github.com/WebAssembly/binaryen/releases/download/version_${BINARYEN_VERSION}/binaryen-version_${BINARYEN_VERSION}-x86_64-linux.tar.gz" \
+            | sudo tar -xz -C /usr/local --strip-components=1
+          wasm-opt --version
 
       - name: Build WASM artifact
         if: ${{ !contains(fromJSON('["argon2","jose","jwt"]'), needs.resolve.outputs.crate) }}
@@ -205,8 +209,20 @@ jobs:
           set -euo pipefail
           pnpm --filter @amigo-labs/${{ needs.resolve.outputs.crate }} run build:wasm
           wasm=$(ls crates/${{ needs.resolve.outputs.crate }}/wasm/pkg/*_bg.wasm | head -1)
-          wasm-opt -Oz "$wasm" -o "$wasm.opt"
-          mv "$wasm.opt" "$wasm"
+          # Enable the features rustc/wasm-bindgen emit. Fall back to the
+          # unoptimized module if wasm-opt still rejects the input so a
+          # publish is never blocked the way jimp@0.2.0 was.
+          if ! wasm-opt -Oz \
+              --enable-bulk-memory \
+              --enable-sign-ext \
+              --enable-mutable-globals \
+              --enable-nontrapping-float-to-int \
+              --enable-reference-types \
+              "$wasm" -o "$wasm.opt"; then
+            echo "::warning::wasm-opt failed for ${{ needs.resolve.outputs.crate }}; shipping unoptimized WASM"
+          else
+            mv "$wasm.opt" "$wasm"
+          fi
           gz=$(gzip -c "$wasm" | wc -c)
           echo "WASM artifact gzipped: ${gz} B"
 
@@ -216,14 +232,29 @@ jobs:
       - name: Publish platform packages
         shell: bash
         run: |
+          set -euo pipefail
+          failed=0
           for dir in crates/${{ needs.resolve.outputs.crate }}/npm/*/; do
             if [ -f "$dir/package.json" ] && ls "$dir"/*.node 1>/dev/null 2>&1; then
-              echo "Publishing $(basename $dir)..."
-              cd "$dir"
-              npm publish --provenance --access public || echo "Already published, skipping $(basename $dir)"
-              cd -
+              name=$(node -p "require('./${dir}package.json').name")
+              ver=$(node -p "require('./${dir}package.json').version")
+              echo "Publishing $name@$ver..."
+              if (cd "$dir" && npm publish --provenance --access public); then
+                continue
+              fi
+              # Only treat a real already-published version as success.
+              # E404 (missing org permission / new package) used to be
+              # swallowed as "Already published", which hid the argon2@0.3.0
+              # publish failure.
+              if npm view "$name@$ver" version >/dev/null 2>&1; then
+                echo "Already published, skipping $name@$ver"
+              else
+                echo "::error::Failed to publish $name@$ver"
+                failed=1
+              fi
             fi
           done
+          exit "$failed"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

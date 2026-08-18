@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/linkify-it",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "URL / email detection via the `linkify` Rust crate. Offset-packed fast path for batch workloads.",
   "main": "index.js",
   "types": "index.d.ts",

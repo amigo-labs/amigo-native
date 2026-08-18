@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/graph-layout",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Hierarchical (Sugiyama) graph layout — positions and edge routing for directed graphs.",
   "main": "index.js",
   "types": "index.d.ts",

@@ -100,7 +100,21 @@ function optimizeBgWasm(crate) {
   const wasmPath = join(pkgDir, bg)
   const optPath = `${wasmPath}.opt`
   const before = statSync(wasmPath).size
-  const res = spawnSync('wasm-opt', ['-Oz', wasmPath, '-o', optPath], { stdio: 'pipe' })
+  const res = spawnSync(
+    'wasm-opt',
+    [
+      '-Oz',
+      '--enable-bulk-memory',
+      '--enable-sign-ext',
+      '--enable-mutable-globals',
+      '--enable-nontrapping-float-to-int',
+      '--enable-reference-types',
+      wasmPath,
+      '-o',
+      optPath,
+    ],
+    { stdio: 'pipe' },
+  )
   if (res.status !== 0) {
     if (existsSync(optPath)) unlinkSync(optPath)
     return { crate, ok: false, reason: 'wasm-opt failed' }

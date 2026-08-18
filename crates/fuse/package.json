@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/fuse",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Fuzzy search index built on nucleo-matcher. Stateful build-once / query-many class API.",
   "main": "index.js",
   "types": "index.d.ts",
