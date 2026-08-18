@@ -1,6 +1,6 @@
 {
   "name": "@amigo-labs/zstd",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Zstandard compression via the reference libzstd C library. Includes Compressor / Decompressor classes + dictionary training.",
   "main": "index.js",
   "types": "index.d.ts",
