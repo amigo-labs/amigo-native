@@ -126,7 +126,7 @@ jobs:
       # from the upstream release page (~3s) and caches it across runs;
       # `cargo install --locked cargo-audit` rebuilt it from source on
       # every push (~2 minutes plus crates.io flake risk).
-      - uses: taiki-e/install-action@v2.85.5
+      - uses: taiki-e/install-action@v2.87.0
         with:
           tool: cargo-audit
       - name: Run cargo audit
@@ -162,7 +162,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: wasm-test
-      - uses: taiki-e/install-action@v2.85.5
+      - uses: taiki-e/install-action@v2.87.0
         with:
           tool: wasm-pack
       - name: Pre-flight diagnostics
@@ -233,7 +233,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: wasm-bundle-size
-      - uses: taiki-e/install-action@v2.85.5
+      - uses: taiki-e/install-action@v2.87.0
         with:
           tool: wasm-pack,wasm-bindgen-cli
       - name: Install binaryen
