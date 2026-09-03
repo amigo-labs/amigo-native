@@ -33,6 +33,6 @@
   "crates/typst": "0.3.0",
   "crates/xlsx": "0.3.0",
   "crates/xxhash": "0.4.0",
-  "crates/zip": "0.3.0",
+  "crates/zip": "0.4.0",
   "crates/zstd": "0.3.0"
 }
