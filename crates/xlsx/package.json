@@ -52,10 +52,10 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.8.6",
     "exceljs": "^4.4.0",
-    "fast-check": "^4.8.0",
-    "vitest": "^4.1.7",
+    "fast-check": "^4.9.0",
+    "vitest": "^4.1.11",
     "xlsx": "^0.18.5"
   },
   "license": "MIT",
