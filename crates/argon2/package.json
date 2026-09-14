@@ -31,9 +31,9 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
-    "argon2": "^0.44.0",
-    "fast-check": "^4.8.0",
+    "@napi-rs/cli": "^3.9.1",
+    "argon2": "^0.45.1",
+    "fast-check": "^4.10.0",
     "hash-wasm": "^4.11.0",
     "vitest": "^4.1.7"
   },
