@@ -17,7 +17,7 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.10.4",
     "vitest": "^4.1.7"
   }
 }

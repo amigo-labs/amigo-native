@@ -52,9 +52,9 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
-    "fast-check": "^4.8.0",
-    "pdfkit": "^0.18.0",
+    "@napi-rs/cli": "^3.10.4",
+    "fast-check": "^4.10.1",
+    "pdfkit": "^0.20.2",
     "vitest": "^4.1.7"
   },
   "license": "MIT",
