@@ -52,9 +52,9 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
+    "@napi-rs/cli": "^3.10.5",
     "d3-force": "^3.0.0",
-    "fast-check": "^4.8.0",
+    "fast-check": "^4.10.2",
     "vitest": "^4.1.7"
   },
   "license": "MIT",
