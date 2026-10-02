@@ -104,6 +104,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.99.0
         with:
           components: rustfmt, clippy
+          # `pnpm run lint` also runs clippy for wasm32 (scripts/clippy-wasm.mjs)
+          # so `#[cfg(target_arch = "wasm32")]` code is linted too.
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: cargo-test

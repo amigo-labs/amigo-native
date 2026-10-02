@@ -8,9 +8,8 @@
 //! Callers requesting `tiktoken:*` length metrics will get an error
 //! at runtime in the browser.
 
-use std::sync::Arc;
 #[cfg(not(target_arch = "wasm32"))]
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock};
 use text_splitter::{ChunkConfig, MarkdownSplitter, TextSplitter};
 
 #[cfg(not(target_arch = "wasm32"))]

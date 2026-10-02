@@ -86,7 +86,6 @@ pub use native::{Compressor, compress, decompress, decompress_with_dictionary, t
 
 #[cfg(target_arch = "wasm32")]
 mod wasm_impl {
-    use super::*;
     use std::io::Read;
 
     pub fn compress(_input: &[u8], _level: Option<i32>) -> Result<Vec<u8>, String> {
@@ -95,11 +94,11 @@ mod wasm_impl {
 
     pub fn decompress(input: &[u8]) -> Result<Vec<u8>, String> {
         let mut decoder = ruzstd::decoding::StreamingDecoder::new(input)
-            .map_err(|e| format!("zstd decoder init: {:?}", e))?;
+            .map_err(|e| format!("zstd decoder init: {e:?}"))?;
         let mut out = Vec::new();
         decoder
             .read_to_end(&mut out)
-            .map_err(|e| format!("zstd decompress: {}", e))?;
+            .map_err(|e| format!("zstd decompress: {e}"))?;
         Ok(out)
     }
 
@@ -136,8 +135,7 @@ mod wasm_impl {
         let out = decompress(input)?;
         if (out.len() as u64) > max_output {
             return Err(format!(
-                "zstd decompress: output exceeds max_output_size of {} bytes (decompression bomb?)",
-                max_output
+                "zstd decompress: output exceeds max_output_size of {max_output} bytes (decompression bomb?)"
             ));
         }
         Ok(out)
