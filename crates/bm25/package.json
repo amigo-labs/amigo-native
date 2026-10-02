@@ -55,7 +55,7 @@
     "@napi-rs/cli": "^3.10.5",
     "fast-check": "^4.10.2",
     "okapibm25": "^1.2.2",
-    "vitest": "^4.1.7",
+    "vitest": "^5.0.3",
     "wink-bm25-text-search": "^3.1.0",
     "wink-nlp-utils": "^2.1.0"
   },
