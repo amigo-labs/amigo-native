@@ -41,8 +41,7 @@ pub fn validate_dims(
         .ok_or_else(|| "width * height * 4 overflows usize".to_string())?;
     if img1_len != expected || img2_len != expected {
         return Err(format!(
-            "image buffers must be width * height * 4 bytes ({} expected)",
-            expected
+            "image buffers must be width * height * 4 bytes ({expected} expected)"
         ));
     }
     Ok((w, h))
@@ -85,9 +84,7 @@ fn compute(
             if !opts.diff_mask {
                 draw_gray(img1, out, opts.alpha);
             } else {
-                for b in out.iter_mut() {
-                    *b = 0;
-                }
+                out.fill(0);
             }
         }
         return 0;
@@ -100,9 +97,7 @@ fn compute(
         if !opts.diff_mask {
             draw_gray(img1, out, opts.alpha);
         } else {
-            for b in out.iter_mut() {
-                *b = 0;
-            }
+            out.fill(0);
         }
         for y in 0..height {
             for x in 0..width {
@@ -147,27 +142,34 @@ fn compute(
     diff
 }
 
-fn draw_pixel(out: &mut [u8], pos: usize, color: [u8; 3]) {
-    out[pos] = color[0];
-    out[pos + 1] = color[1];
-    out[pos + 2] = color[2];
-    out[pos + 3] = 255;
+/// The RGBA pixel starting at byte offset `pos`.
+#[inline(always)]
+fn pixel(img: &[u8], pos: usize) -> [u8; 4] {
+    *img[pos..]
+        .first_chunk::<4>()
+        .expect("pixel offset within image")
+}
+
+fn draw_pixel(out: &mut [u8], pos: usize, [r, g, b]: [u8; 3]) {
+    *out[pos..]
+        .first_chunk_mut::<4>()
+        .expect("pixel offset within image") = [r, g, b, 255];
 }
 
 fn draw_gray(src: &[u8], out: &mut [u8], alpha: f64) {
-    let n = src.len() / 4;
-    for i in 0..n {
-        let pos = i * 4;
-        let r = src[pos] as f64;
-        let g = src[pos + 1] as f64;
-        let b = src[pos + 2] as f64;
-        let a = src[pos + 3] as f64;
-        let val = blend(rgb2y(r, g, b), alpha * a / 255.0);
+    let (src_px, _) = src.as_chunks::<4>();
+    let (out_px, _) = out.as_chunks_mut::<4>();
+    assert!(
+        out_px.len() >= src_px.len(),
+        "output buffer smaller than image"
+    );
+    for (&[r, g, b, a], dst) in src_px.iter().zip(out_px) {
+        let val = blend(
+            rgb2y(f64::from(r), f64::from(g), f64::from(b)),
+            alpha * f64::from(a) / 255.0,
+        );
         let v = val as u8;
-        out[pos] = v;
-        out[pos + 1] = v;
-        out[pos + 2] = v;
-        out[pos + 3] = 255;
+        *dst = [v, v, v, 255];
     }
 }
 
@@ -186,15 +188,8 @@ fn rgb2q(r: f64, g: f64, b: f64) -> f64 {
 }
 
 fn color_delta(a: &[u8], b: &[u8], i: usize, j: usize, y_only: bool) -> f64 {
-    let mut r1 = a[i] as f64;
-    let mut g1 = a[i + 1] as f64;
-    let mut b1 = a[i + 2] as f64;
-    let a1 = a[i + 3] as f64;
-
-    let mut r2 = b[j] as f64;
-    let mut g2 = b[j + 1] as f64;
-    let mut b2 = b[j + 2] as f64;
-    let a2 = b[j + 3] as f64;
+    let [mut r1, mut g1, mut b1, a1] = pixel(a, i).map(f64::from);
+    let [mut r2, mut g2, mut b2, a2] = pixel(b, j).map(f64::from);
 
     if (a1 - a2).abs() < f64::EPSILON
         && (r1 - r2).abs() < f64::EPSILON
@@ -287,7 +282,7 @@ fn has_many_siblings(img: &[u8], x1: usize, y1: usize, width: usize, height: usi
     let x2 = (x1 + 1).min(width - 1);
     let y2 = (y1 + 1).min(height - 1);
 
-    let pos = (y1 * width + x1) * 4;
+    let center = pixel(img, (y1 * width + x1) * 4);
     let mut zeroes = u32::from(x1 == x0 || x1 == x2 || y1 == y0 || y1 == y2);
 
     for x in x0..=x2 {
@@ -295,12 +290,7 @@ fn has_many_siblings(img: &[u8], x1: usize, y1: usize, width: usize, height: usi
             if x == x1 && y == y1 {
                 continue;
             }
-            let neighbor_pos = (y * width + x) * 4;
-            if img[pos] == img[neighbor_pos]
-                && img[pos + 1] == img[neighbor_pos + 1]
-                && img[pos + 2] == img[neighbor_pos + 2]
-                && img[pos + 3] == img[neighbor_pos + 3]
-            {
+            if pixel(img, (y * width + x) * 4) == center {
                 zeroes += 1;
                 if zeroes > 2 {
                     return true;
@@ -317,8 +307,8 @@ fn has_many_siblings(img: &[u8], x1: usize, y1: usize, width: usize, height: usi
 pub fn to_color(v: Option<Vec<u8>>, default: [u8; 3]) -> Result<[u8; 3], String> {
     match v {
         None => Ok(default),
-        Some(arr) if arr.len() == 3 => Ok([arr[0], arr[1], arr[2]]),
-        Some(_) => Err("color tuples must have exactly 3 elements (R, G, B)".to_string()),
+        Some(arr) => <[u8; 3]>::try_from(arr)
+            .map_err(|_| "color tuples must have exactly 3 elements (R, G, B)".to_string()),
     }
 }
 
@@ -329,7 +319,8 @@ pub fn to_color_alt(v: Option<Vec<u8>>) -> Result<Option<[u8; 3]>, String> {
     match v {
         None => Ok(None),
         Some(arr) if arr.is_empty() => Ok(None),
-        Some(arr) if arr.len() == 3 => Ok(Some([arr[0], arr[1], arr[2]])),
-        Some(_) => Err("diffColorAlt must have 3 elements or be omitted".to_string()),
+        Some(arr) => <[u8; 3]>::try_from(arr)
+            .map(Some)
+            .map_err(|_| "diffColorAlt must have 3 elements or be omitted".to_string()),
     }
 }
