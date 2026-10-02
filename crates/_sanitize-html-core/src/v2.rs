@@ -144,21 +144,19 @@ impl<'a> TokenSink for SanitizingSink<'a> {
                         // the `class` attribute passes through unchanged (its
                         // pass-through is already gated by `allowed_attributes`).
                         let filtered_value;
-                        let value_ref: &str = if attr_name == "class" {
-                            if let Some(allowed) = self.rules.allowed_classes.get(&name) {
-                                filtered_value = attr
-                                    .value
-                                    .split_ascii_whitespace()
-                                    .filter(|c| allowed.contains(*c))
-                                    .collect::<Vec<_>>()
-                                    .join(" ");
-                                if filtered_value.is_empty() {
-                                    continue;
-                                }
-                                &filtered_value
-                            } else {
-                                &attr.value
+                        let value_ref: &str = if attr_name == "class"
+                            && let Some(allowed) = self.rules.allowed_classes.get(&name)
+                        {
+                            filtered_value = attr
+                                .value
+                                .split_ascii_whitespace()
+                                .filter(|c| allowed.contains(*c))
+                                .collect::<Vec<_>>()
+                                .join(" ");
+                            if filtered_value.is_empty() {
+                                continue;
                             }
+                            &filtered_value
                         } else {
                             &attr.value
                         };

@@ -168,9 +168,8 @@ pub fn sign_sync(payload: Value, secret: Buffer, options: Option<SignOptions>) -
     let alg = parse_alg(&alg_str)?;
 
     // Merge in the timed claims
-    let mut claims = match payload {
-        Value::Object(m) => m,
-        _ => return Err(Error::from_reason("payload must be an object")),
+    let Value::Object(mut claims) = payload else {
+        return Err(Error::from_reason("payload must be an object"));
     };
 
     let now = current_timestamp();

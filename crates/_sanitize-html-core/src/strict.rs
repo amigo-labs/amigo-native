@@ -131,21 +131,19 @@ fn emit_element(
             continue;
         }
         let filtered_value;
-        let value_ref: &str = if full == "class" {
-            if let Some(allowed) = rules.allowed_classes.get(tag) {
-                filtered_value = attr
-                    .value
-                    .split_ascii_whitespace()
-                    .filter(|c| allowed.contains(*c))
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                if filtered_value.is_empty() {
-                    continue;
-                }
-                &filtered_value
-            } else {
-                &attr.value
+        let value_ref: &str = if full == "class"
+            && let Some(allowed) = rules.allowed_classes.get(tag)
+        {
+            filtered_value = attr
+                .value
+                .split_ascii_whitespace()
+                .filter(|c| allowed.contains(*c))
+                .collect::<Vec<_>>()
+                .join(" ");
+            if filtered_value.is_empty() {
+                continue;
             }
+            &filtered_value
         } else {
             &attr.value
         };

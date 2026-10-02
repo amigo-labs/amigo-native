@@ -248,8 +248,7 @@ fn convert_color(v: &str) -> String {
             return hex.to_string();
         }
     }
-    if lower.starts_with("rgb(") && lower.ends_with(')') {
-        let inner = &lower[4..lower.len() - 1];
+    if let Some(inner) = lower.strip_prefix("rgb(").and_then(|s| s.strip_suffix(')')) {
         let parts: Vec<_> = inner.split(',').map(|s| s.trim()).collect();
         if parts.len() == 3
             && let (Ok(r), Ok(g), Ok(b)) = (
@@ -327,13 +326,12 @@ fn transform_attrs(attrs: Vec<(Vec<u8>, Vec<u8>)>, cfg: &Resolved) -> Vec<(Vec<u
             {
                 val = cleanup_number_str(s, cfg.float_precision).into_bytes();
             }
-            if cfg.convert_colors {
-                let kn = std::str::from_utf8(&k).unwrap_or("");
-                if COLOR_ATTRS.contains(&kn)
-                    && let Ok(s) = std::str::from_utf8(&val)
-                {
-                    val = convert_color(s).into_bytes();
-                }
+            if cfg.convert_colors
+                && let Ok(kn) = std::str::from_utf8(&k)
+                && COLOR_ATTRS.contains(&kn)
+                && let Ok(s) = std::str::from_utf8(&val)
+            {
+                val = convert_color(s).into_bytes();
             }
             Some((k, val))
         })
@@ -471,21 +469,10 @@ fn transform(nodes: Vec<Node>, cfg: &Resolved) -> Vec<Node> {
         match n {
             Node::Comment(_) if cfg.remove_comments => {}
             Node::DocType(_) if cfg.remove_doctype => {}
-            Node::PI(p) => {
-                if cfg.remove_xml_proc_inst {
-                    let s = std::str::from_utf8(&p).unwrap_or("");
-                    if s.starts_with("xml") {
-                        continue;
-                    }
-                }
-                out.push(Node::PI(p));
-            }
-            Node::Text(s) => {
-                if cfg.remove_empty_text && s.trim().is_empty() {
-                    continue;
-                }
-                out.push(Node::Text(s));
-            }
+            Node::PI(p)
+                if cfg.remove_xml_proc_inst
+                    && std::str::from_utf8(&p).is_ok_and(|s| s.starts_with("xml")) => {}
+            Node::Text(s) if cfg.remove_empty_text && s.trim().is_empty() => {}
             Node::Element {
                 name,
                 attrs,

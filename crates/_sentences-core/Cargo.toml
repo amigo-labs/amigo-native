@@ -1,7 +1,10 @@
 [package]
 name = "amigo-sentences-core"
 version = "0.1.1"
-edition = "2024"
+edition.workspace = true
 publish = false
+
+[lints]
+workspace = true
 
 [lib]

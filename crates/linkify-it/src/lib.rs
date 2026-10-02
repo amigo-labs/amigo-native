@@ -54,7 +54,7 @@ pub fn test(text: String, options: Option<LinkifyOptions>) -> bool {
 #[napi(js_name = "matchOffsets")]
 pub fn match_offsets(text: Buffer, options: Option<LinkifyOptions>) -> Result<Buffer> {
     let s = std::str::from_utf8(text.as_ref())
-        .map_err(|e| Error::from_reason(format!("input is not valid UTF-8: {}", e)))?;
+        .map_err(|e| Error::from_reason(format!("input is not valid UTF-8: {e}")))?;
     let opts = into_core(options);
     Ok(core::match_offsets(s, &opts).into())
 }

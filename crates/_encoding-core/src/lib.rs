@@ -87,15 +87,18 @@ fn encode_utf16_be(input: &str) -> Vec<u8> {
 }
 
 #[inline]
-fn decode_utf16_inner<F>(input: &[u8], unit_at: F) -> String
+fn decode_utf16_inner<F>(input: &[u8], to_unit: F) -> String
 where
-    F: Fn(&[u8], usize) -> u16,
+    F: Fn([u8; 2]) -> u16,
 {
-    let n = input.len() / 2;
+    // A trailing odd byte is ignored (no U+FFFD), which is why this does not
+    // use `String::from_utf16le_lossy`.
+    let (units, _) = input.as_chunks::<2>();
+    let n = units.len();
     let mut out: Vec<u8> = Vec::with_capacity(n * 3);
     let mut i = 0;
     while i < n {
-        let unit = unit_at(input, i);
+        let unit = to_unit(units[i]);
         match unit {
             0x0000..=0x007F => out.push(unit as u8),
             0x0080..=0x07FF => {
@@ -104,7 +107,7 @@ where
             }
             0xD800..=0xDBFF => {
                 if i + 1 < n {
-                    let next = unit_at(input, i + 1);
+                    let next = to_unit(units[i + 1]);
                     if (0xDC00..=0xDFFF).contains(&next) {
                         let cp =
                             0x10000 + (((unit - 0xD800) as u32) << 10) + (next - 0xDC00) as u32;
@@ -135,16 +138,12 @@ where
 
 #[inline]
 fn decode_utf16_le(input: &[u8]) -> String {
-    decode_utf16_inner(input, |buf, i| {
-        u16::from_le_bytes([buf[i * 2], buf[i * 2 + 1]])
-    })
+    decode_utf16_inner(input, u16::from_le_bytes)
 }
 
 #[inline]
 fn decode_utf16_be(input: &[u8]) -> String {
-    decode_utf16_inner(input, |buf, i| {
-        u16::from_be_bytes([buf[i * 2], buf[i * 2 + 1]])
-    })
+    decode_utf16_inner(input, u16::from_be_bytes)
 }
 
 fn encode_latin1_strict(input: &str) -> Vec<u8> {
