@@ -51,8 +51,8 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.6.2",
-    "fast-check": "^4.8.0",
+    "@napi-rs/cli": "^3.10.5",
+    "fast-check": "^4.10.2",
     "linkify-it": "^6.1.0",
     "vitest": "^4.1.7"
   },
