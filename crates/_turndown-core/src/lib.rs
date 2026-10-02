@@ -187,9 +187,8 @@ fn emit_node(w: &mut Writer, node: &Handle) {
 }
 
 fn emit_element(w: &mut Writer, node: &Handle) {
-    let name = match element_name(node) {
-        Some(n) => n,
-        None => return,
+    let Some(name) = element_name(node) else {
+        return;
     };
     let name_l = name.to_ascii_lowercase();
 
@@ -327,13 +326,11 @@ fn emit_element(w: &mut Writer, node: &Handle) {
             w.push("\n");
         }
         "li" => {
-            let marker = if let Some(cur) = w.list_stack.last_mut() {
-                if cur.ordered {
-                    cur.index += 1;
-                    format!("{}. ", cur.index)
-                } else {
-                    format!("{} ", w.cfg.bullet_list_marker)
-                }
+            let marker = if let Some(cur) = w.list_stack.last_mut()
+                && cur.ordered
+            {
+                cur.index += 1;
+                format!("{}. ", cur.index)
             } else {
                 format!("{} ", w.cfg.bullet_list_marker)
             };
@@ -383,9 +380,9 @@ fn emit_element(w: &mut Writer, node: &Handle) {
             let alt = get_attr(node, "alt").unwrap_or_default();
             let title = get_attr(node, "title").unwrap_or_default();
             if title.is_empty() {
-                w.push(&format!("![{}]({})", alt, src));
+                w.push(&format!("![{alt}]({src})"));
             } else {
-                w.push(&format!("![{}]({} \"{}\")", alt, src, title));
+                w.push(&format!("![{alt}]({src} \"{title}\")"));
             }
         }
         "table" if w.cfg.gfm => emit_gfm_table(w, node),
@@ -517,7 +514,7 @@ fn emit_gfm_table(w: &mut Writer, table: &Handle) {
 
 fn collect_table_rows(node: &Handle, cfg: &Resolved, rows: &mut Vec<Vec<String>>) {
     match element_name(node).as_deref() {
-        Some("thead") | Some("tbody") | Some("tfoot") => {
+        Some("thead" | "tbody" | "tfoot") => {
             for c in node.children.borrow().iter() {
                 collect_table_rows(c, cfg, rows);
             }
@@ -525,7 +522,7 @@ fn collect_table_rows(node: &Handle, cfg: &Resolved, rows: &mut Vec<Vec<String>>
         Some("tr") => {
             let mut row = Vec::new();
             for c in node.children.borrow().iter() {
-                if matches!(element_name(c).as_deref(), Some("th") | Some("td")) {
+                if matches!(element_name(c).as_deref(), Some("th" | "td")) {
                     let mut inner = Writer::new(cfg);
                     walk(&mut inner, c);
                     row.push(inner.out.trim().replace('\n', " "));
@@ -558,10 +555,10 @@ fn escape_md_text(s: &str) -> String {
 fn postprocess(s: String) -> String {
     // Trim, collapse 3+ blank lines to 2.
     let mut lines: Vec<&str> = s.lines().collect();
-    while lines.first().map(|l| l.trim().is_empty()).unwrap_or(false) {
+    while lines.first().is_some_and(|l| l.trim().is_empty()) {
         lines.remove(0);
     }
-    while lines.last().map(|l| l.trim().is_empty()).unwrap_or(false) {
+    while lines.last().is_some_and(|l| l.trim().is_empty()) {
         lines.pop();
     }
     let mut out = String::with_capacity(s.len());

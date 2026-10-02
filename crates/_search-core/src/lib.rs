@@ -138,9 +138,8 @@ pub fn bm25_scores<Id: Clone>(
 
     let mut scores: HashMap<usize, f64> = HashMap::new();
     for q in query_tokens {
-        let postings = match index.postings.get(q) {
-            Some(p) => p,
-            None => continue,
+        let Some(postings) = index.postings.get(q) else {
+            continue;
         };
         let df = postings.len() as f64;
         let idf = ((n - df + 0.5) / (df + 0.5) + 1.0).ln();

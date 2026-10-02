@@ -79,56 +79,50 @@ pub fn render_document(doc: Document) -> Result<Vec<u8>, String> {
         let mut ops: Vec<Op> = Vec::with_capacity(page.elements.len() * 4);
         for el in &page.elements {
             match el.kind.as_str() {
-                "text" => {
-                    if let Some(t) = &el.text {
-                        let size = Pt(t.font_size.unwrap_or(12.0) as f32);
-                        ops.push(Op::StartTextSection);
-                        ops.push(Op::SetFont {
-                            font: helvetica.clone(),
-                            size,
-                        });
-                        ops.push(Op::SetTextCursor {
-                            pos: Point::new(mm(t.x), mm(t.y)),
-                        });
-                        ops.push(Op::ShowText {
-                            items: vec![TextItem::Text(t.text.clone())],
-                        });
-                        ops.push(Op::EndTextSection);
-                    }
+                "text" if let Some(t) = &el.text => {
+                    let size = Pt(t.font_size.unwrap_or(12.0) as f32);
+                    ops.push(Op::StartTextSection);
+                    ops.push(Op::SetFont {
+                        font: helvetica.clone(),
+                        size,
+                    });
+                    ops.push(Op::SetTextCursor {
+                        pos: Point::new(mm(t.x), mm(t.y)),
+                    });
+                    ops.push(Op::ShowText {
+                        items: vec![TextItem::Text(t.text.clone())],
+                    });
+                    ops.push(Op::EndTextSection);
                 }
-                "line" => {
-                    if let Some(l) = &el.line {
-                        let thickness = Pt(l.thickness.unwrap_or(0.5) as f32);
-                        ops.push(Op::SetOutlineThickness { pt: thickness });
-                        ops.push(Op::DrawLine {
-                            line: Line {
-                                points: vec![lp(l.x1, l.y1), lp(l.x2, l.y2)],
-                                is_closed: false,
-                            },
-                        });
-                    }
+                "line" if let Some(l) = &el.line => {
+                    let thickness = Pt(l.thickness.unwrap_or(0.5) as f32);
+                    ops.push(Op::SetOutlineThickness { pt: thickness });
+                    ops.push(Op::DrawLine {
+                        line: Line {
+                            points: vec![lp(l.x1, l.y1), lp(l.x2, l.y2)],
+                            is_closed: false,
+                        },
+                    });
                 }
-                "rect" => {
-                    if let Some(r) = &el.rect {
-                        let points = vec![
-                            lp(r.x, r.y),
-                            lp(r.x + r.width, r.y),
-                            lp(r.x + r.width, r.y + r.height),
-                            lp(r.x, r.y + r.height),
-                        ];
-                        let mode = if r.filled.unwrap_or(false) {
-                            PaintMode::Fill
-                        } else {
-                            PaintMode::Stroke
-                        };
-                        ops.push(Op::DrawPolygon {
-                            polygon: Polygon {
-                                rings: vec![PolygonRing { points }],
-                                mode,
-                                winding_order: WindingOrder::NonZero,
-                            },
-                        });
-                    }
+                "rect" if let Some(r) = &el.rect => {
+                    let points = vec![
+                        lp(r.x, r.y),
+                        lp(r.x + r.width, r.y),
+                        lp(r.x + r.width, r.y + r.height),
+                        lp(r.x, r.y + r.height),
+                    ];
+                    let mode = if r.filled.unwrap_or(false) {
+                        PaintMode::Fill
+                    } else {
+                        PaintMode::Stroke
+                    };
+                    ops.push(Op::DrawPolygon {
+                        polygon: Polygon {
+                            rings: vec![PolygonRing { points }],
+                            mode,
+                            winding_order: WindingOrder::NonZero,
+                        },
+                    });
                 }
                 _ => {}
             }

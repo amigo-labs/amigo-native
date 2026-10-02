@@ -18,16 +18,16 @@ mod native {
 
     pub fn compress(input: &[u8], level: Option<i32>) -> Result<Vec<u8>, String> {
         let lvl = level.unwrap_or(DEFAULT_LEVEL);
-        zstd::encode_all(input, lvl).map_err(|e| format!("zstd compress: {}", e))
+        zstd::encode_all(input, lvl).map_err(|e| format!("zstd compress: {e}"))
     }
 
     pub fn decompress(input: &[u8]) -> Result<Vec<u8>, String> {
-        zstd::decode_all(input).map_err(|e| format!("zstd decompress: {}", e))
+        zstd::decode_all(input).map_err(|e| format!("zstd decompress: {e}"))
     }
 
     pub fn train_dictionary(samples: &[&[u8]], dict_size: Option<u32>) -> Result<Vec<u8>, String> {
         let size = dict_size.map(|s| s as usize).unwrap_or(112_640);
-        zstd::dict::from_samples(samples, size).map_err(|e| format!("zstd train dictionary: {}", e))
+        zstd::dict::from_samples(samples, size).map_err(|e| format!("zstd train dictionary: {e}"))
     }
 
     pub struct Compressor {
@@ -41,14 +41,14 @@ mod native {
                 Some(dict) => zstd::bulk::Compressor::with_dictionary(lvl, dict),
                 None => zstd::bulk::Compressor::new(lvl),
             }
-            .map_err(|e| format!("zstd compressor init: {}", e))?;
+            .map_err(|e| format!("zstd compressor init: {e}"))?;
             Ok(Self { inner })
         }
 
         pub fn compress(&mut self, input: &[u8]) -> Result<Vec<u8>, String> {
             self.inner
                 .compress(input)
-                .map_err(|e| format!("zstd compress: {}", e))
+                .map_err(|e| format!("zstd compress: {e}"))
         }
     }
 
@@ -62,16 +62,15 @@ mod native {
             Some(dict) => zstd::stream::read::Decoder::with_dictionary(input, dict),
             None => zstd::stream::read::Decoder::with_buffer(input),
         }
-        .map_err(|e| format!("zstd decoder init: {}", e))?;
+        .map_err(|e| format!("zstd decoder init: {e}"))?;
         let mut limited = decoder.take(max_output.saturating_add(1));
         let mut out = Vec::new();
         limited
             .read_to_end(&mut out)
-            .map_err(|e| format!("zstd decompress: {}", e))?;
+            .map_err(|e| format!("zstd decompress: {e}"))?;
         if (out.len() as u64) > max_output {
             return Err(format!(
-                "zstd decompress: output exceeds max_output_size of {} bytes (decompression bomb?)",
-                max_output
+                "zstd decompress: output exceeds max_output_size of {max_output} bytes (decompression bomb?)"
             ));
         }
         Ok(out)

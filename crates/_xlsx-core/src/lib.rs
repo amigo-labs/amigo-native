@@ -55,7 +55,7 @@ impl CellValue {
             },
             Data::Error(e) => Self {
                 kind: "error".into(),
-                text: Some(format!("{:?}", e)),
+                text: Some(format!("{e:?}")),
                 number: None,
                 bool_value: None,
             },

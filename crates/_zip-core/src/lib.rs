@@ -104,7 +104,7 @@ impl Writer {
             .as_mut()
             .ok_or_else(|| "writer already finalized".to_string())?;
         let compression = match opts.compression.as_deref() {
-            Some("stored") | Some("Stored") => CompressionMethod::Stored,
+            Some("stored" | "Stored") => CompressionMethod::Stored,
             _ => CompressionMethod::Deflated,
         };
         let mut fo = SimpleFileOptions::default().compression_method(compression);

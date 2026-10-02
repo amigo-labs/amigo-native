@@ -83,8 +83,7 @@ impl MiniSearch {
         let default_and = o
             .default_operator
             .as_deref()
-            .map(|s| s.eq_ignore_ascii_case("AND"))
-            .unwrap_or(false);
+            .is_some_and(|s| s.eq_ignore_ascii_case("AND"));
         Ok(MiniSearch {
             inner: RefCell::new(Inner {
                 index: Index::new(),

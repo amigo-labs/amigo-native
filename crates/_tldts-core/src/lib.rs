@@ -55,10 +55,8 @@ fn extract_hostname(input: &str) -> Option<String> {
 }
 
 fn is_ip(host: &str) -> bool {
-    if host.starts_with('[') && host.ends_with(']') {
-        return host[1..host.len() - 1]
-            .parse::<std::net::Ipv6Addr>()
-            .is_ok();
+    if let Some(inner) = host.strip_prefix('[').and_then(|h| h.strip_suffix(']')) {
+        return inner.parse::<std::net::Ipv6Addr>().is_ok();
     }
     host.parse::<std::net::Ipv4Addr>().is_ok() || host.parse::<std::net::Ipv6Addr>().is_ok()
 }
@@ -78,9 +76,8 @@ pub fn parse_one(input: &str, opts: &ParseOptions) -> ParseResult {
     } else {
         extract_hostname(input)
     };
-    let host = match hostname.as_deref() {
-        Some(h) => h.to_string(),
-        None => return ParseResult::default(),
+    let Some(host) = hostname else {
+        return ParseResult::default();
     };
 
     if is_ip(&host) {
@@ -98,10 +95,10 @@ pub fn parse_one(input: &str, opts: &ParseOptions) -> ParseResult {
 
     let public_suffix = suffix
         .as_ref()
-        .map(|s| String::from_utf8_lossy(s.as_bytes()).to_string());
+        .map(|s| String::from_utf8_lossy(s.as_bytes()).into_owned());
     let domain = domain_info
         .as_ref()
-        .map(|d| String::from_utf8_lossy(d.as_bytes()).to_string());
+        .map(|d| String::from_utf8_lossy(d.as_bytes()).into_owned());
 
     let subdomain = match (&ascii, &domain) {
         (full, Some(d)) if full.len() > d.len() && full.ends_with(d.as_str()) => {
@@ -115,7 +112,7 @@ pub fn parse_one(input: &str, opts: &ParseOptions) -> ParseResult {
         _ => None,
     };
 
-    let is_icann = suffix.as_ref().map(|s| s.is_known()).unwrap_or(false);
+    let is_icann = suffix.as_ref().is_some_and(|s| s.is_known());
     let is_private = false;
 
     ParseResult {

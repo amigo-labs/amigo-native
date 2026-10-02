@@ -15,7 +15,7 @@ pub fn decode_rgba(input: &[u8]) -> Result<DecodedRgba, String> {
     let decoder = png::Decoder::new(Cursor::new(input));
     let mut reader = decoder
         .read_info()
-        .map_err(|e| format!("png decode: {}", e))?;
+        .map_err(|e| format!("png decode: {e}"))?;
     let info = reader.info();
     let width = info.width;
     let height = info.height;
@@ -24,7 +24,7 @@ pub fn decode_rgba(input: &[u8]) -> Result<DecodedRgba, String> {
     let mut buf = vec![0u8; buf_size];
     let frame = reader
         .next_frame(&mut buf)
-        .map_err(|e| format!("png next_frame: {}", e))?;
+        .map_err(|e| format!("png next_frame: {e}"))?;
 
     let bytes = &buf[..frame.buffer_size()];
 
@@ -53,8 +53,7 @@ pub fn decode_rgba(input: &[u8]) -> Result<DecodedRgba, String> {
         }
         (color, depth) => {
             return Err(format!(
-                "unsupported color/depth combo in v0.1: {:?} / {:?}",
-                color, depth
+                "unsupported color/depth combo in v0.1: {color:?} / {depth:?}"
             ));
         }
     };
@@ -86,10 +85,10 @@ pub fn encode_rgba(pixels: &[u8], width: u32, height: u32) -> Result<Vec<u8>, St
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder
             .write_header()
-            .map_err(|e| format!("png encode header: {}", e))?;
+            .map_err(|e| format!("png encode header: {e}"))?;
         writer
             .write_image_data(pixels)
-            .map_err(|e| format!("png encode body: {}", e))?;
+            .map_err(|e| format!("png encode body: {e}"))?;
     }
     Ok(out)
 }

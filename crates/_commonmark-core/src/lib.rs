@@ -103,7 +103,7 @@ fn assign_heading_ids(events: &mut [Event<'_>]) {
             let s = if *counter == 0 {
                 base.clone()
             } else {
-                format!("{}-{}", base, counter)
+                format!("{base}-{counter}")
             };
             *counter += 1;
             s
