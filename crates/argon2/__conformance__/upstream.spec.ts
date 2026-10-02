@@ -53,7 +53,12 @@ describe('argon2 — fixed-salt PHC strings from upstream verify under @amigo-la
         timeCost: FIXED.timeCost,
         parallelism: FIXED.parallelism,
       })
-      expect(phc).toMatch(/^\$argon2id\$v=19\$m=65536,t=3,p=4\$/)
+      // PHC parameter order is not significant: argon2 npm ≥ 0.45 emits
+      // `m,p,t`, earlier versions emitted `m,t,p`. Compare as a set.
+      const [, variant, version, params] = phc.split('$')
+      expect(variant).toBe('argon2id')
+      expect(version).toBe('v=19')
+      expect(params.split(',').sort()).toEqual(['m=65536', 'p=4', 't=3'])
       expect(await verify(phc, pw)).toBe(true)
       expect(await verify(phc, pw + 'x')).toBe(false)
     })
