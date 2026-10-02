@@ -29,6 +29,7 @@ size-results.json
 parity-results.json
 conformance-results.json
 conformance-summary.md
+.vitest/
 sanitize-skip-categorization.json
 sanitize-skip-categorization.md
 
