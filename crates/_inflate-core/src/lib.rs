@@ -27,20 +27,21 @@ fn estimated_inflate_size(compressed_len: usize) -> usize {
     compressed_len.saturating_mul(6)
 }
 
-#[allow(clippy::uninit_vec)]
 fn decompress_bulk(input: &[u8], zlib_header: bool, max_output: u64) -> Result<Vec<u8>, String> {
     let mut dec = Decompress::new(zlib_header);
     let cap = (max_output.min(usize::MAX as u64)) as usize;
     let initial = estimated_inflate_size(input.len()).max(64).min(cap);
-    let mut out: Vec<u8> = Vec::with_capacity(initial);
-    // SAFETY: `decompress` only writes into `&mut out[out_pos..]`; we
-    // truncate to `total_out` before any reader observes `out`.
-    unsafe { out.set_len(initial) };
+    // The output buffer is always fully initialized: `vec![0; n]` is a
+    // zeroed allocation (calloc, free for large sizes) and `grow` zero-fills
+    // only the newly added tail, once. `Decompress::decompress_vec` would
+    // avoid even that, but with the zlib-rs backend it zero-fills the whole
+    // spare capacity on every call, which is slower for large outputs.
+    let mut out: Vec<u8> = vec![0; initial];
     loop {
         let in_pos = dec.total_in() as usize;
         let out_pos = dec.total_out() as usize;
         if out_pos == out.len() {
-            grow_uninit(&mut out, cap)?;
+            grow(&mut out, cap)?;
         }
         match dec
             .decompress(
@@ -56,26 +57,28 @@ fn decompress_bulk(input: &[u8], zlib_header: bool, max_output: u64) -> Result<V
             }
             Status::BufError | Status::Ok => {
                 if (dec.total_out() as usize) == out_pos {
-                    grow_uninit(&mut out, cap)?;
+                    grow(&mut out, cap)?;
                 }
             }
         }
     }
 }
 
+/// Double the output buffer (capped at `cap`), or fail once the cap is
+/// reached.
 #[inline]
-#[allow(clippy::uninit_vec)]
-fn grow_uninit(out: &mut Vec<u8>, cap: usize) -> Result<(), String> {
+fn grow(out: &mut Vec<u8>, cap: usize) -> Result<(), String> {
     if out.len() >= cap {
-        return Err(format!(
-            "decompressed size exceeds max_output_size ({cap} bytes)"
-        ));
+        return Err(exceeds_max(cap));
     }
     let new_len = out.len().saturating_mul(2).max(out.len() + 1).min(cap);
-    out.reserve(new_len - out.len());
-    // SAFETY: see `decompress_bulk`.
-    unsafe { out.set_len(new_len) };
+    out.resize(new_len, 0);
     Ok(())
+}
+
+#[cold]
+fn exceeds_max(cap: usize) -> String {
+    format!("decompressed size exceeds max_output_size ({cap} bytes)")
 }
 
 pub fn deflate(data: &[u8], level: Option<u32>) -> Result<Vec<u8>, String> {
@@ -142,6 +145,38 @@ mod tests {
         let enc = gzip(b"some text", None).unwrap();
         let dec = ungzip(&enc, None).unwrap();
         assert_eq!(dec, b"some text");
+    }
+
+    #[test]
+    fn roundtrip_output_that_needs_many_grow_steps() {
+        // Highly compressible input: the 6x initial estimate is far too small,
+        // so the output buffer has to grow repeatedly.
+        let big: Vec<u8> = (0..1 << 20).map(|i| (i % 7) as u8).collect();
+        for (enc, raw) in [
+            (deflate(&big, None), false),
+            (deflate_raw(&big, None), true),
+        ] {
+            let enc = enc.unwrap();
+            let dec = if raw {
+                inflate_raw(&enc, None)
+            } else {
+                inflate(&enc, None)
+            }
+            .unwrap();
+            assert_eq!(dec, big);
+        }
+    }
+
+    #[test]
+    fn max_output_size_allows_exact_fit() {
+        let data: Vec<u8> = vec![b'z'; 4096];
+        let enc = deflate(&data, None).unwrap();
+        assert_eq!(inflate(&enc, Some(4096)).unwrap(), data);
+        assert!(
+            inflate(&enc, Some(4095))
+                .unwrap_err()
+                .contains("max_output_size")
+        );
     }
 
     #[test]
