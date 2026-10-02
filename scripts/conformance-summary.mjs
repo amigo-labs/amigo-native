@@ -14,7 +14,16 @@
  */
 
 import { spawnSync } from 'node:child_process'
-import { writeFileSync, readdirSync, existsSync, statSync } from 'node:fs'
+import {
+  writeFileSync,
+  readFileSync,
+  readdirSync,
+  existsSync,
+  statSync,
+  mkdtempSync,
+  rmSync,
+} from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, basename } from 'node:path'
 
 const root = process.cwd()
@@ -58,13 +67,26 @@ console.log(`Running conformance for: ${packages.join(', ')}\n`)
 
 const results = []
 
+// Vitest ≥ 5 writes the JSON reporter output to a file instead of stdout,
+// so point it at a temp file and read the report from there.
+const reportDir = mkdtempSync(join(tmpdir(), 'amigo-conformance-'))
+
 for (const pkg of packages) {
   const pkgDir = join(cratesDir, pkg)
   console.log(`--- ${pkg} ---`)
 
+  const reportFile = join(reportDir, `${pkg}.json`)
   const run = spawnSync(
     'pnpm',
-    ['exec', 'vitest', 'run', '__conformance__', '--reporter=json', '--no-color'],
+    [
+      'exec',
+      'vitest',
+      'run',
+      '__conformance__',
+      '--reporter=json',
+      `--outputFile=${reportFile}`,
+      '--no-color',
+    ],
     {
       cwd: pkgDir,
       encoding: 'utf-8',
@@ -78,8 +100,15 @@ for (const pkg of packages) {
   const stderr = run.stderr || ''
 
   let parsed = null
+  if (existsSync(reportFile)) {
+    try {
+      parsed = JSON.parse(readFileSync(reportFile, 'utf-8'))
+    } catch {
+      // fall through to stdout parsing
+    }
+  }
   const firstBrace = stdout.indexOf('{')
-  if (firstBrace >= 0) {
+  if (!parsed && firstBrace >= 0) {
     try {
       parsed = JSON.parse(stdout.slice(firstBrace))
     } catch {
@@ -206,6 +235,8 @@ const aggExtra = [
 console.log(
   `\nAggregate: ${agg.passed}/${agg.total} (${pct}%)${aggExtra ? `, ${aggExtra}` : ''}`,
 )
+rmSync(reportDir, { recursive: true, force: true })
+
 console.log(`Written conformance-summary.md and conformance-results.json`)
 
 // Skipped tests are documented divergences, not failures; only exit

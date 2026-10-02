@@ -12,7 +12,8 @@
 
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync, copyFileSync, unlinkSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -43,9 +44,19 @@ try {
   // --- 2) Run vitest with JSON reporter ---
 
   console.log('Running full upstream suite (this may take ~10s)...\n')
+  // Vitest ≥ 5 writes the JSON reporter output to a file instead of stdout.
+  const reportFile = join(tmpdir(), `amigo-sanitize-skips-${process.pid}.json`)
   const run = spawnSync(
     'pnpm',
-    ['exec', 'vitest', 'run', '__conformance__/upstream.spec.ts', '--reporter=json', '--no-color'],
+    [
+      'exec',
+      'vitest',
+      'run',
+      '__conformance__/upstream.spec.ts',
+      '--reporter=json',
+      `--outputFile=${reportFile}`,
+      '--no-color',
+    ],
     {
       cwd: pkgDir,
       encoding: 'utf-8',
@@ -55,13 +66,19 @@ try {
     },
   )
 
-  const stdout = run.stdout || ''
-  const firstBrace = stdout.indexOf('{')
-  if (firstBrace < 0) {
-    console.error('no json output; stderr:\n' + (run.stderr || '').slice(0, 2000))
-    process.exit(1)
+  let parsed
+  if (existsSync(reportFile)) {
+    parsed = JSON.parse(readFileSync(reportFile, 'utf-8'))
+    unlinkSync(reportFile)
+  } else {
+    const stdout = run.stdout || ''
+    const firstBrace = stdout.indexOf('{')
+    if (firstBrace < 0) {
+      console.error('no json output; stderr:\n' + (run.stderr || '').slice(0, 2000))
+      process.exit(1)
+    }
+    parsed = JSON.parse(stdout.slice(firstBrace))
   }
-  const parsed = JSON.parse(stdout.slice(firstBrace))
 
   // --- 3) Extract failing assertions ---
 

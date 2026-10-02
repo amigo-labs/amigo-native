@@ -15,7 +15,16 @@
  */
 
 import { spawnSync } from 'node:child_process'
-import { writeFileSync, readdirSync, existsSync, statSync } from 'node:fs'
+import {
+  writeFileSync,
+  readFileSync,
+  readdirSync,
+  existsSync,
+  statSync,
+  mkdtempSync,
+  rmSync,
+} from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const root = process.cwd()
@@ -47,14 +56,27 @@ console.log(`Running parity tests for: ${packages.join(', ')}\n`)
 
 const results = []
 
+// Vitest ≥ 5 writes the JSON reporter output to a file instead of stdout,
+// so point it at a temp file and read the report from there.
+const reportDir = mkdtempSync(join(tmpdir(), 'amigo-parity-'))
+
 for (const pkg of packages) {
   const pkgDir = join(cratesDir, pkg)
   console.log(`--- ${pkg} ---`)
 
   // Run vitest with JSON reporter targeting only this package's __parity__/
+  const reportFile = join(reportDir, `${pkg}.json`)
   const run = spawnSync(
     'pnpm',
-    ['exec', 'vitest', 'run', '__parity__', '--reporter=json', '--no-color'],
+    [
+      'exec',
+      'vitest',
+      'run',
+      '__parity__',
+      '--reporter=json',
+      `--outputFile=${reportFile}`,
+      '--no-color',
+    ],
     {
       cwd: pkgDir,
       encoding: 'utf-8',
@@ -70,8 +92,15 @@ for (const pkg of packages) {
   // vitest JSON reporter prints a JSON blob to stdout. Find the last top-level
   // JSON object (vitest may print progress lines before the final JSON).
   let parsed = null
+  if (existsSync(reportFile)) {
+    try {
+      parsed = JSON.parse(readFileSync(reportFile, 'utf-8'))
+    } catch {
+      // fall through to stdout parsing
+    }
+  }
   const firstBrace = stdout.indexOf('{')
-  if (firstBrace >= 0) {
+  if (!parsed && firstBrace >= 0) {
     try {
       parsed = JSON.parse(stdout.slice(firstBrace))
     } catch {
@@ -105,6 +134,7 @@ for (const pkg of packages) {
   results.push({ name: pkg, passed, total, parity })
   console.log(`  ${passed}/${total} passed (${(parity * 100).toFixed(1)}%)`)
 }
+rmSync(reportDir, { recursive: true, force: true })
 
 const agg = results.reduce(
   (acc, r) => ({ passed: acc.passed + r.passed, total: acc.total + r.total }),
