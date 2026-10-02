@@ -1,0 +1,8 @@
+# Pinned Rust toolchain. rustup reads this file automatically and installs
+# the toolchain (plus the components/targets below) on first use. CI pins the
+# same version via `dtolnay/rust-toolchain@1.99.0` — bump both together.
+[toolchain]
+channel = "1.99.0"
+profile = "minimal"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]

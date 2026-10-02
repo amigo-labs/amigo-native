@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.0
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
@@ -121,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.0
       # taiki-e/install-action downloads a prebuilt cargo-audit binary
       # from the upstream release page (~3s) and caches it across runs;
       # `cargo install --locked cargo-audit` rebuilt it from source on
@@ -136,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.0
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: cargo-test
@@ -156,7 +156,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.0
         with:
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
@@ -227,7 +227,7 @@ jobs:
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.0
         with:
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
@@ -377,7 +377,7 @@ jobs:
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.0
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: napi-build
@@ -553,7 +553,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: main
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.0
       # Distinct cache key from the `build` job: this job builds with
       # the full-LTO release profile so benchmark numbers reflect the
       # binaries published to npm. Sharing the `napi-build` key would
