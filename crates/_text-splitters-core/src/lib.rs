@@ -9,6 +9,8 @@
 //! at runtime in the browser.
 
 use std::sync::Arc;
+#[cfg(not(target_arch = "wasm32"))]
+use std::sync::LazyLock;
 use text_splitter::{ChunkConfig, MarkdownSplitter, TextSplitter};
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -26,6 +28,24 @@ pub struct SplitterOptions {
 #[cfg(not(target_arch = "wasm32"))]
 #[derive(Clone)]
 pub struct TiktokenSizer(Arc<CoreBPE>);
+
+/// Building a `CoreBPE` parses the full vocabulary (~1.5 MB of tables), so
+/// each encoding is built once per process and shared via `Arc` instead of
+/// being rebuilt on every `countTokens` / split call. The tables stay
+/// resident after first use.
+#[cfg(not(target_arch = "wasm32"))]
+static CL100K_BASE: LazyLock<Result<Arc<CoreBPE>, String>> = LazyLock::new(|| {
+    cl100k_base()
+        .map(Arc::new)
+        .map_err(|e| format!("tiktoken init: {e}"))
+});
+
+#[cfg(not(target_arch = "wasm32"))]
+static O200K_BASE: LazyLock<Result<Arc<CoreBPE>, String>> = LazyLock::new(|| {
+    o200k_base()
+        .map(Arc::new)
+        .map_err(|e| format!("tiktoken init: {e}"))
+});
 
 #[cfg(not(target_arch = "wasm32"))]
 impl ChunkSizer for TiktokenSizer {
@@ -45,13 +65,13 @@ impl Sizer {
         match s.unwrap_or("chars") {
             "chars" => Ok(Sizer::Chars),
             #[cfg(not(target_arch = "wasm32"))]
-            "tiktoken:cl100k_base" | "tiktoken" => cl100k_base()
-                .map(|b| Sizer::Tiktoken(TiktokenSizer(Arc::new(b))))
-                .map_err(|e| format!("tiktoken init: {e}")),
+            "tiktoken:cl100k_base" | "tiktoken" => CL100K_BASE
+                .clone()
+                .map(|b| Sizer::Tiktoken(TiktokenSizer(b))),
             #[cfg(not(target_arch = "wasm32"))]
-            "tiktoken:o200k_base" => o200k_base()
-                .map(|b| Sizer::Tiktoken(TiktokenSizer(Arc::new(b))))
-                .map_err(|e| format!("tiktoken init: {e}")),
+            "tiktoken:o200k_base" => O200K_BASE
+                .clone()
+                .map(|b| Sizer::Tiktoken(TiktokenSizer(b))),
             #[cfg(target_arch = "wasm32")]
             "tiktoken:cl100k_base" | "tiktoken" | "tiktoken:o200k_base" => {
                 Err("tiktoken-based length metrics are not available in the WASM build; pass length_metric: \"chars\"".to_string())
@@ -164,4 +184,34 @@ pub fn count_chars(text: &str) -> usize {
 pub fn count_tokens(text: &str, encoding: Option<&str>) -> Result<usize, String> {
     let sizer = Sizer::from_metric(encoding.or(Some("tiktoken:cl100k_base")))?;
     Ok(sizer.count(text))
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod tests {
+    use super::*;
+
+    fn bpe(metric: &str) -> Arc<CoreBPE> {
+        match Sizer::from_metric(Some(metric)).unwrap() {
+            Sizer::Tiktoken(TiktokenSizer(b)) => b,
+            Sizer::Chars => panic!("{metric} should resolve to a tiktoken sizer"),
+        }
+    }
+
+    #[test]
+    fn tiktoken_encodings_are_built_once_and_shared() {
+        assert!(Arc::ptr_eq(&bpe("tiktoken"), &bpe("tiktoken:cl100k_base")));
+        assert!(Arc::ptr_eq(
+            &bpe("tiktoken:o200k_base"),
+            &bpe("tiktoken:o200k_base")
+        ));
+        assert!(!Arc::ptr_eq(&bpe("tiktoken"), &bpe("tiktoken:o200k_base")));
+    }
+
+    #[test]
+    fn count_tokens_is_stable_across_calls() {
+        let first = count_tokens("hello world, hello tokens", None).unwrap();
+        let second = count_tokens("hello world, hello tokens", None).unwrap();
+        assert_eq!(first, second);
+        assert!(first > 0);
+    }
 }
