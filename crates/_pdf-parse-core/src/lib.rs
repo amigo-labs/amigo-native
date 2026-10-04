@@ -21,8 +21,8 @@ pub struct PdfParseResult {
 
 fn object_to_string(o: &Object) -> Option<String> {
     match o {
-        Object::String(bytes, _) => Some(String::from_utf8_lossy(bytes).to_string()),
-        Object::Name(bytes) => Some(String::from_utf8_lossy(bytes).to_string()),
+        Object::String(bytes, _) => Some(String::from_utf8_lossy(bytes).into_owned()),
+        Object::Name(bytes) => Some(String::from_utf8_lossy(bytes).into_owned()),
         Object::Integer(n) => Some(n.to_string()),
         Object::Real(n) => Some(n.to_string()),
         Object::Boolean(b) => Some(b.to_string()),
@@ -38,7 +38,7 @@ fn extract_info(doc: &Document) -> HashMap<String, String> {
         && let Ok(dict) = info_obj.as_dict()
     {
         for (key, value) in dict.iter() {
-            let k = String::from_utf8_lossy(key).to_string();
+            let k = String::from_utf8_lossy(key).into_owned();
             if let Some(v) = object_to_string(value) {
                 out.insert(k, v);
             }
@@ -55,7 +55,7 @@ fn extract_metadata(doc: &Document) -> Option<String> {
     let meta = doc.get_object(meta_ref).ok()?;
     let stream = meta.as_stream().ok()?;
     let bytes = stream.get_plain_content().ok()?;
-    Some(String::from_utf8_lossy(&bytes).to_string())
+    Some(String::from_utf8_lossy_owned(bytes))
 }
 
 pub fn parse(buf: &[u8], options: &PdfParseOptions) -> Result<PdfParseResult, String> {
@@ -81,8 +81,10 @@ pub fn parse(buf: &[u8], options: &PdfParseOptions) -> Result<PdfParseResult, St
 
     let (numpages, info, metadata, version) = match Document::load_mem(buf) {
         Ok(mut doc) => {
-            if !options.password.as_deref().unwrap_or("").is_empty() {
-                let _ = doc.decrypt(options.password.as_deref().unwrap_or(""));
+            if let Some(password) = options.password.as_deref()
+                && !password.is_empty()
+            {
+                let _ = doc.decrypt(password);
             }
             let numpages = doc.get_pages().len() as u32;
             let info = extract_info(&doc);

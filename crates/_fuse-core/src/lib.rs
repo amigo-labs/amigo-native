@@ -32,9 +32,8 @@ pub struct Fuse {
 }
 
 fn extract_fields(json_record: &str, keys: &[(String, f64)]) -> Vec<String> {
-    let v: serde_json::Value = match serde_json::from_str(json_record) {
-        Ok(v) => v,
-        Err(_) => return vec![String::new(); keys.len()],
+    let Ok(v) = serde_json::from_str::<serde_json::Value>(json_record) else {
+        return vec![String::new(); keys.len()];
     };
     keys.iter()
         .map(|(k, _)| {
@@ -56,7 +55,7 @@ impl Fuse {
         let records: Vec<Record> = records_json
             .iter()
             .map(|json| {
-                if keys.first().map(|(k, _)| k.is_empty()).unwrap_or(false) {
+                if keys.first().is_some_and(|(k, _)| k.is_empty()) {
                     let s = serde_json::from_str::<String>(json).unwrap_or_else(|_| json.clone());
                     Record { fields: vec![s] }
                 } else {

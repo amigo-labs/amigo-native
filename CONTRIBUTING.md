@@ -32,7 +32,7 @@ pnpm bench          # full benchmark suite
 
 Prerequisites:
 
-- Rust (edition 2024)
+- Rust 1.99.0, edition 2024 (pinned in `rust-toolchain.toml`; rustup installs it automatically)
 - Node.js ≥ 22
 - pnpm
 

@@ -1,7 +1,10 @@
 //! Force-directed graph layout — pure-Rust core. Internal-only.
 //! See `crates/force-layout/` for the napi/WASM surfaces.
 
-#![allow(clippy::needless_range_loop)]
+#![expect(
+    clippy::needless_range_loop,
+    reason = "force/edge loops index two nodes (i, j) at once; iterators would obscure the pairwise math"
+)]
 
 use std::collections::HashMap;
 

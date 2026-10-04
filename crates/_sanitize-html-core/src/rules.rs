@@ -348,8 +348,7 @@ impl Rules {
     pub fn is_url_attr(&self, tag: &str, attr: &str) -> bool {
         self.url_attrs
             .get(tag)
-            .map(|set| set.contains(attr))
-            .unwrap_or(false)
+            .is_some_and(|set| set.contains(attr))
     }
 
     pub fn scheme_allowed(&self, url: &str) -> bool {

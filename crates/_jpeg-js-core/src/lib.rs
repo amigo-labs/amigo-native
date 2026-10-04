@@ -12,9 +12,7 @@ pub struct DecodedRgba {
 
 pub fn decode_rgba(input: &[u8]) -> Result<DecodedRgba, String> {
     let mut decoder = jpeg_decoder::Decoder::new(Cursor::new(input));
-    let pixels = decoder
-        .decode()
-        .map_err(|e| format!("jpeg decode: {}", e))?;
+    let pixels = decoder.decode().map_err(|e| format!("jpeg decode: {e}"))?;
     let info = decoder
         .info()
         .ok_or_else(|| "jpeg metadata missing after decode".to_string())?;
@@ -40,7 +38,7 @@ pub fn decode_rgba(input: &[u8]) -> Result<DecodedRgba, String> {
             return Err("CMYK JPEGs are out of scope for v0.1".to_string());
         }
         other => {
-            return Err(format!("unsupported JPEG pixel format: {:?}", other));
+            return Err(format!("unsupported JPEG pixel format: {other:?}"));
         }
     };
 
@@ -81,6 +79,6 @@ pub fn encode_rgba(pixels: &[u8], width: u32, height: u32, quality: u8) -> Resul
             height as u16,
             jpeg_encoder::ColorType::Rgba,
         )
-        .map_err(|e| format!("jpeg encode: {}", e))?;
+        .map_err(|e| format!("jpeg encode: {e}"))?;
     Ok(out)
 }

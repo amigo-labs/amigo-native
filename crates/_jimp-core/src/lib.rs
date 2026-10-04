@@ -7,7 +7,7 @@ use std::io::Cursor;
 pub use image::RgbaImage;
 
 pub fn from_buffer(input: &[u8]) -> Result<RgbaImage, String> {
-    let img = image::load_from_memory(input).map_err(|e| format!("jimp decode: {}", e))?;
+    let img = image::load_from_memory(input).map_err(|e| format!("jimp decode: {e}"))?;
     Ok(img.to_rgba8())
 }
 
@@ -123,12 +123,11 @@ pub fn encode(img: &RgbaImage, mime: &str) -> Result<Vec<u8>, String> {
         "image/jpeg" | "image/jpg" => image::ImageFormat::Jpeg,
         other => {
             return Err(format!(
-                "v0.1 supports image/png and image/jpeg only (got: {})",
-                other
+                "v0.1 supports image/png and image/jpeg only (got: {other})"
             ));
         }
     };
     img.write_to(&mut cursor, fmt)
-        .map_err(|e| format!("jimp encode: {}", e))?;
+        .map_err(|e| format!("jimp encode: {e}"))?;
     Ok(out)
 }
