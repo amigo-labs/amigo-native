@@ -493,6 +493,13 @@ jobs:
               fi
               filters="$filters --filter @amigo-labs/$c"
             done
+            # Every changed crate is in BROKEN_CRATES: without a filter,
+            # `pnpm run test` would run the root script and test every
+            # crate, none of which were built in this run.
+            if [ -z "$filters" ]; then
+              echo "::notice::No testable crates changed; skipping."
+              exit 0
+            fi
             pnpm $filters run test
           fi
       - name: Parity tests
@@ -574,13 +581,29 @@ jobs:
         # Mirrors the gating in `Run benchmarks and generate report`:
         # if neither a full-bench commit nor any changed crates, skip
         # the build (the next step exits 0 on the same condition).
+        # BROKEN_CRATES are dropped the same way as in the build job.
+        id: bench-build
         run: |
           set -euo pipefail
+          crates=""
+          for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+            if echo " $BROKEN_CRATES " | grep -q " $c "; then
+              echo "::notice::Skipping benchmark for $c (in BROKEN_CRATES)"
+              continue
+            fi
+            crates="${crates:+$crates,}$c"
+          done
+          echo "crates=$crates" >> "$GITHUB_OUTPUT"
           if [ "${{ needs.detect-changes.outputs.fullbench }}" = "1" ]; then
-            pnpm -r --workspace-concurrency=4 run build
-          elif [ -n "${{ needs.detect-changes.outputs.crates }}" ]; then
+            # See the build job for why `!.` is required.
+            broken_filters="--filter !."
+            for b in $BROKEN_CRATES; do
+              broken_filters="$broken_filters --filter !@amigo-labs/$b"
+            done
+            pnpm -r $broken_filters --workspace-concurrency=4 run build
+          elif [ -n "$crates" ]; then
             filters=""
-            for c in $(echo "${{ needs.detect-changes.outputs.crates }}" | tr ',' ' '); do
+            for c in $(echo "$crates" | tr ',' ' '); do
               filters="$filters --filter @amigo-labs/$c"
             done
             pnpm $filters --workspace-concurrency=4 run build
@@ -590,9 +613,9 @@ jobs:
       - name: Run benchmarks and generate report
         run: |
           if [ "${{ needs.detect-changes.outputs.fullbench }}" = "1" ]; then
-            node scripts/run-benchmarks.mjs
-          elif [ -n "${{ needs.detect-changes.outputs.crates }}" ]; then
-            node scripts/run-benchmarks.mjs --crates "${{ needs.detect-changes.outputs.crates }}"
+            node scripts/run-benchmarks.mjs --exclude "$(echo "$BROKEN_CRATES" | tr ' ' ',')"
+          elif [ -n "${{ steps.bench-build.outputs.crates }}" ]; then
+            node scripts/run-benchmarks.mjs --crates "${{ steps.bench-build.outputs.crates }}"
           else
             echo "No crates changed; skipping benchmarks, size, parity, and report."
             exit 0

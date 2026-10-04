@@ -8,6 +8,9 @@
  *   node scripts/run-benchmarks.mjs --crates a,b   # just a and b
  *   node scripts/run-benchmarks.mjs --only-changed # crates whose source is
  *                                                    changed vs origin/main
+ *   node scripts/run-benchmarks.mjs --exclude a,b  # drop a and b from any of
+ *                                                    the above (CI passes
+ *                                                    BROKEN_CRATES here)
  *
  * Downstream (scripts/generate-report.mjs) treats each file as an independent
  * shard and only overwrites the crates that were re-benched this run, leaving
@@ -21,13 +24,17 @@ import { join } from 'node:path'
 const root = process.cwd()
 
 function parseArgs(argv) {
-  const args = { crates: null, onlyChanged: false, skipWasmBuild: false }
+  const args = { crates: null, exclude: [], onlyChanged: false, skipWasmBuild: false }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--crates') {
       args.crates = (argv[++i] ?? '').split(',').map((s) => s.trim()).filter(Boolean)
     } else if (a.startsWith('--crates=')) {
       args.crates = a.slice('--crates='.length).split(',').map((s) => s.trim()).filter(Boolean)
+    } else if (a === '--exclude') {
+      args.exclude = (argv[++i] ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+    } else if (a.startsWith('--exclude=')) {
+      args.exclude = a.slice('--exclude='.length).split(',').map((s) => s.trim()).filter(Boolean)
     } else if (a === '--only-changed') {
       args.onlyChanged = true
     } else if (a === '--skip-wasm-build') {
@@ -94,6 +101,16 @@ if (args.onlyChanged) {
   targetCrates = [...new Set(args.crates)].sort()
 } else {
   targetCrates = available
+}
+
+if (args.exclude.length) {
+  const skipped = targetCrates.filter((c) => args.exclude.includes(c))
+  if (skipped.length) console.log(`Excluding: ${skipped.join(', ')}`)
+  targetCrates = targetCrates.filter((c) => !args.exclude.includes(c))
+  if (!targetCrates.length) {
+    console.log('Every selected crate is excluded — nothing to bench.')
+    process.exit(0)
+  }
 }
 
 console.log(`Running vitest bench for ${targetCrates.length} crate(s): ${targetCrates.join(', ')}\n`)
