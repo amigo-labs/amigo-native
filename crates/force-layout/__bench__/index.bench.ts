@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { simulate } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -41,22 +41,22 @@ function runD3(g: ReturnType<typeof randomGraph>) {
   for (let i = 0; i < 300; i++) sim.tick()
 }
 
-describe('small (20 nodes)', () => {
-  bench('@amigo-labs/force-layout (napi)', () => {
+test('small (20 nodes)', async ({ bench }) => {
+  await bench('@amigo-labs/force-layout (napi)', () => {
     simulate(SMALL.nodes, SMALL.edges)
-  })
-  if (wasmSimulate) bench('@amigo-labs/force-layout (wasm)', () => { wasmSimulate!(SMALL.nodes, SMALL.edges) })
-  bench('d3-force', () => {
+  }).run()
+  if (wasmSimulate) await bench('@amigo-labs/force-layout (wasm)', () => { wasmSimulate!(SMALL.nodes, SMALL.edges) }).run()
+  await bench('d3-force', () => {
     runD3(SMALL)
-  })
+  }).run()
 })
 
-describe('medium (100 nodes)', () => {
-  bench('@amigo-labs/force-layout (napi)', () => {
+test('medium (100 nodes)', async ({ bench }) => {
+  await bench('@amigo-labs/force-layout (napi)', () => {
     simulate(MEDIUM.nodes, MEDIUM.edges)
-  })
-  if (wasmSimulate) bench('@amigo-labs/force-layout (wasm)', () => { wasmSimulate!(MEDIUM.nodes, MEDIUM.edges) })
-  bench('d3-force', () => {
+  }).run()
+  if (wasmSimulate) await bench('@amigo-labs/force-layout (wasm)', () => { wasmSimulate!(MEDIUM.nodes, MEDIUM.edges) }).run()
+  await bench('d3-force', () => {
     runD3(MEDIUM)
-  })
+  }).run()
 })

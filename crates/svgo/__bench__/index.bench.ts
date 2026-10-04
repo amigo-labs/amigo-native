@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { optimize as ours } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -31,22 +31,22 @@ const MEDIUM = (() => {
   return `<svg viewBox="0 0 100 100"><!-- big --><metadata>m</metadata><g>${paths}</g></svg>`
 })()
 
-describe('icon (~200 bytes)', () => {
-  bench('@amigo-labs/svgo (napi)', () => {
+test('icon (~200 bytes)', async ({ bench }) => {
+  await bench('@amigo-labs/svgo (napi)', () => {
     ours(ICON)
-  })
-  if (wasmOurs) bench('@amigo-labs/svgo (wasm)', () => { wasmOurs!(ICON) })
-  bench('svgo', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/svgo (wasm)', () => { wasmOurs!(ICON) }).run()
+  await bench('svgo', () => {
     upstream(ICON, { multipass: false })
-  })
+  }).run()
 })
 
-describe('medium (~5 KB, 50 paths)', () => {
-  bench('@amigo-labs/svgo (napi)', () => {
+test('medium (~5 KB, 50 paths)', async ({ bench }) => {
+  await bench('@amigo-labs/svgo (napi)', () => {
     ours(MEDIUM)
-  })
-  if (wasmOurs) bench('@amigo-labs/svgo (wasm)', () => { wasmOurs!(MEDIUM) })
-  bench('svgo', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/svgo (wasm)', () => { wasmOurs!(MEDIUM) }).run()
+  await bench('svgo', () => {
     upstream(MEDIUM, { multipass: false })
-  })
+  }).run()
 })

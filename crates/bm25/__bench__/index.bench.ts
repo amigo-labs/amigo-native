@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { Bm25Index } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -18,15 +18,15 @@ const CORPUS = Array.from({ length: 1000 }, (_, i) =>
   `document ${i} contains some common words like alpha beta gamma and a unique term ${i}`,
 )
 
-describe('index build (1000 docs)', () => {
-  bench('@amigo-labs/bm25 (napi) addAll', () => {
+test('index build (1000 docs)', async ({ bench }) => {
+  await bench('@amigo-labs/bm25 (napi) addAll', () => {
     const idx = new Bm25Index()
     idx.addAll(CORPUS.map((text, i) => ({ id: `${i}`, text })))
-  })
-  if (wasmBm25Index) bench('@amigo-labs/bm25 (wasm) addAll', () => {
+  }).run()
+  if (wasmBm25Index) await bench('@amigo-labs/bm25 (wasm) addAll', () => {
     const idx = new wasmBm25Index!()
     idx.addAll(CORPUS.map((text, i) => ({ id: `${i}`, text })))
-  })
+  }).run()
 })
 
 const builtIdx = (() => {
@@ -43,14 +43,14 @@ const wasmBuiltIdx = wasmBm25Index
     })()
   : null
 
-describe('query (1000 docs indexed)', () => {
-  bench('@amigo-labs/bm25 (napi) search', () => {
+test('query (1000 docs indexed)', async ({ bench }) => {
+  await bench('@amigo-labs/bm25 (napi) search', () => {
     builtIdx.search('alpha')
-  })
-  if (wasmBuiltIdx) bench('@amigo-labs/bm25 (wasm) search', () => {
+  }).run()
+  if (wasmBuiltIdx) await bench('@amigo-labs/bm25 (wasm) search', () => {
     wasmBuiltIdx.search('alpha')
-  })
-  bench('okapibm25 (rebuild every query)', () => {
+  }).run()
+  await bench('okapibm25 (rebuild every query)', () => {
     BM25(CORPUS, ['alpha'])
-  })
+  }).run()
 })

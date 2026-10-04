@@ -12,14 +12,15 @@
  *   2. Rename every `'@amigo-labs/<name>'` bench label to
  *      `'@amigo-labs/<name> (napi)'`, so the suffix matcher in
  *      `scripts/generate-report.mjs#entryVariant()` can separate variants.
- *   3. For every single-call `bench('@amigo-labs/<name> (napi)', () => { sym(...) })`
+ *   3. For every single-call
+ *      `await bench('@amigo-labs/<name> (napi)', () => { sym(...) }).run()`
  *      whose body invokes one of the imported symbols, append a guarded
- *      mirror `if (wasm<Symbol>) bench('@amigo-labs/<name> (wasm)', ...)`.
+ *      mirror `if (wasm<Symbol>) await bench('@amigo-labs/<name> (wasm)', ...).run()`.
  *
  * Bench files that don't fit the pattern are left untouched and a TODO is
  * surfaced for manual follow-up:
  *   - Already wired (`wasm/pkg` reference present)
- *   - Placeholder (`bench.todo` is the only bench call)
+ *   - Placeholder (`test.todo` only, no bench call)
  *   - Class- or instance-based benches
  *   - Multi-statement bench bodies
  *   - Default imports / non-`../index.js` import paths
@@ -86,10 +87,10 @@ function transform(crate, source) {
     return { status: 'skip', reason: 'already wired' }
   }
 
-  // Detect placeholder benches: only bench.todo calls, no real bench()
-  const realBenchCount = (source.match(/^\s*bench\(/gm) ?? []).length
+  // Detect placeholder benches: only test.todo, no real bench()
+  const realBenchCount = (source.match(/^\s*(?:await\s+)?bench\(/gm) ?? []).length
   if (realBenchCount === 0) {
-    return { status: 'skip', reason: 'placeholder bench.todo only' }
+    return { status: 'skip', reason: 'placeholder test.todo only' }
   }
 
   // Find the named import from '../index.js' (may span multiple lines).
@@ -165,12 +166,12 @@ ${wasmAssigns}
   })
 
   // 3) Mirror simple single-call napi benches with guarded wasm benches.
-  //    Matches:  bench('@amigo-labs/<crate> (napi)<…>', () => { fn(args) })
+  //    Matches:  await bench('@amigo-labs/<crate> (napi)<…>', () => { fn(args) }).run()
   //    where `fn` is one of the imported symbols.
   const symbolSet = new Set(symbols.map((s) => s.local))
   const symbolToWasm = new Map(symbols.map((s) => [s.local, `wasm${capitalize(s.local)}`]))
   const mirrorRe = new RegExp(
-    String.raw`(^( *)bench\(\s*'@amigo-labs/${crate.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\s*\(napi\)([^']*)'\s*,\s*(?:async\s*)?\(\)\s*=>\s*\{\s*([A-Za-z_$][\w$]*)\(([^()]*)\)\s*\}\s*\)\s*$)`,
+    String.raw`(^( *)await bench\(\s*'@amigo-labs/${crate.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\s*\(napi\)([^']*)'\s*,\s*(?:async\s*)?\(\)\s*=>\s*\{\s*([A-Za-z_$][\w$]*)\(([^()]*)\)\s*\}\s*\)\.run\(\)\s*$)`,
     'gm',
   )
   let mirrored = 0
@@ -184,7 +185,7 @@ ${wasmAssigns}
     const wasmFn = symbolToWasm.get(fn)
     const label = `'@amigo-labs/${crate} (wasm)${suffix}'`
     const cleanArgs = args.trim()
-    const mirror = `\n${indent}if (${wasmFn}) bench(${label}, () => { ${wasmFn}!(${cleanArgs}) })`
+    const mirror = `\n${indent}if (${wasmFn}) await bench(${label}, () => { ${wasmFn}!(${cleanArgs}) }).run()`
     return `${full}${mirror}`
   })
 

@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import * as jose from 'jose'
 import {
   generateEd25519KeyPair as amigoGenEd25519,
@@ -15,52 +15,52 @@ const rsaJwk = {
   e: 'AQAB',
 }
 
-describe('jwkThumbprint - Ed25519', () => {
-  bench(
+test('jwkThumbprint - Ed25519', async ({ bench }) => {
+  await bench(
     '@amigo-labs/jose',
     () => {
       amigoThumbprint(edJwk)
     },
     { time: 3000, warmupIterations: 10 },
-  )
+  ).run()
 
-  bench(
+  await bench(
     'jose (panva, pure JS)',
     async () => {
       await jose.calculateJwkThumbprint(edJwk, 'sha256')
     },
     { time: 3000, warmupIterations: 10 },
-  )
+  ).run()
 })
 
-describe('jwkThumbprint - RSA-2048', () => {
-  bench(
+test('jwkThumbprint - RSA-2048', async ({ bench }) => {
+  await bench(
     '@amigo-labs/jose',
     () => {
       amigoThumbprint(rsaJwk)
     },
     { time: 3000, warmupIterations: 10 },
-  )
+  ).run()
 
-  bench(
+  await bench(
     'jose (panva, pure JS)',
     async () => {
       await jose.calculateJwkThumbprint(rsaJwk, 'sha256')
     },
     { time: 3000, warmupIterations: 10 },
-  )
+  ).run()
 })
 
-describe('generateEd25519KeyPair', () => {
-  bench(
+test('generateEd25519KeyPair', async ({ bench }) => {
+  await bench(
     '@amigo-labs/jose',
     () => {
       amigoGenEd25519()
     },
     { time: 3000, warmupIterations: 5 },
-  )
+  ).run()
 
-  bench(
+  await bench(
     'jose (panva, pure JS) — generateKeyPair Ed25519 + exportJWK',
     async () => {
       const { publicKey, privateKey } = await jose.generateKeyPair('EdDSA', {
@@ -70,5 +70,5 @@ describe('generateEd25519KeyPair', () => {
       await jose.exportJWK(privateKey)
     },
     { time: 3000, warmupIterations: 2 },
-  )
+  ).run()
 })

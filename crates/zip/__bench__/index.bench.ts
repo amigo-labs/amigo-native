@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { ZipReader, ZipWriter } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -51,80 +51,80 @@ function wasmWriteMany(n: number, size: number): void {
   w.finalize()
 }
 
-describe('zip — write 100 x 1KB files', () => {
-  bench('@amigo-labs/zip (napi)', () => {
+test('zip — write 100 x 1KB files', async ({ bench }) => {
+  await bench('@amigo-labs/zip (napi)', () => {
     amigoWriteMany(100, 1024)
-  })
-  if (wasmZipWriter) bench('@amigo-labs/zip (wasm)', () => {
+  }).run()
+  if (wasmZipWriter) await bench('@amigo-labs/zip (wasm)', () => {
     wasmWriteMany(100, 1024)
-  })
-  bench('adm-zip', () => {
+  }).run()
+  await bench('adm-zip', () => {
     admWriteMany(100, 1024)
-  })
+  }).run()
 })
 
-describe('zip — write 1 x 10MB file', () => {
-  bench('@amigo-labs/zip (napi)', () => {
+test('zip — write 1 x 10MB file', async ({ bench }) => {
+  await bench('@amigo-labs/zip (napi)', () => {
     const w = new ZipWriter()
     w.add('big.bin', Buffer.alloc(10 * 1024 * 1024, 0x41))
     w.finalize()
-  })
-  if (wasmZipWriter) bench('@amigo-labs/zip (wasm)', () => {
+  }).run()
+  if (wasmZipWriter) await bench('@amigo-labs/zip (wasm)', () => {
     const w = new wasmZipWriter!()
     w.add('big.bin', Buffer.alloc(10 * 1024 * 1024, 0x41))
     w.finalize()
-  })
-  bench('adm-zip', () => {
+  }).run()
+  await bench('adm-zip', () => {
     const a = new AdmZip()
     a.addFile('big.bin', Buffer.alloc(10 * 1024 * 1024, 0x41))
     a.toBuffer()
-  })
+  }).run()
 })
 
-describe('zip — read entries (100 files)', () => {
-  bench('@amigo-labs/zip (napi)', () => {
+test('zip — read entries (100 files)', async ({ bench }) => {
+  await bench('@amigo-labs/zip (napi)', () => {
     ZipReader.fromBuffer(smallArchive).entries()
-  })
-  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm)', () => {
+  }).run()
+  if (wasmReaderFrom) await bench('@amigo-labs/zip (wasm)', () => {
     wasmReaderFrom(smallArchive).entries()
-  })
-  bench('adm-zip', () => {
+  }).run()
+  await bench('adm-zip', () => {
     new AdmZip(smallArchive).getEntries()
-  })
+  }).run()
 })
 
-describe('zip — extract all (100 files)', () => {
-  bench('@amigo-labs/zip (napi) (extractAll)', () => {
+test('zip — extract all (100 files)', async ({ bench }) => {
+  await bench('@amigo-labs/zip (napi) (extractAll)', () => {
     ZipReader.fromBuffer(smallArchive).extractAll()
-  })
-  bench('@amigo-labs/zip (napi) (entries + read loop)', () => {
+  }).run()
+  await bench('@amigo-labs/zip (napi) (entries + read loop)', () => {
     const r = ZipReader.fromBuffer(smallArchive)
     for (const e of r.entries()) r.read(e.name)
-  })
-  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm) (extractAll)', () => {
+  }).run()
+  if (wasmReaderFrom) await bench('@amigo-labs/zip (wasm) (extractAll)', () => {
     wasmReaderFrom(smallArchive).extractAll()
-  })
-  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm) (entries + read loop)', () => {
+  }).run()
+  if (wasmReaderFrom) await bench('@amigo-labs/zip (wasm) (entries + read loop)', () => {
     const r = wasmReaderFrom(smallArchive)
     for (const e of r.entries()) r.read(e.name)
-  })
-  bench('adm-zip', () => {
+  }).run()
+  await bench('adm-zip', () => {
     const a = new AdmZip(smallArchive)
     for (const e of a.getEntries()) e.getData()
-  })
+  }).run()
 })
 
-describe('zip — extract large (10MB)', () => {
-  bench('@amigo-labs/zip (napi)', () => {
+test('zip — extract large (10MB)', async ({ bench }) => {
+  await bench('@amigo-labs/zip (napi)', () => {
     const r = ZipReader.fromBuffer(largeArchive)
     r.read('big.bin')
-  })
-  if (wasmReaderFrom) bench('@amigo-labs/zip (wasm)', () => {
+  }).run()
+  if (wasmReaderFrom) await bench('@amigo-labs/zip (wasm)', () => {
     const r = wasmReaderFrom(largeArchive)
     r.read('big.bin')
-  })
-  bench('adm-zip', () => {
+  }).run()
+  await bench('adm-zip', () => {
     const a = new AdmZip(largeArchive)
     a.getEntries()[0].getData()
-  })
+  }).run()
 })

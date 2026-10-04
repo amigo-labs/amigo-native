@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { parse as amigoParse, parseToJson as amigoParseJson } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -37,31 +37,31 @@ const buf100k = Buffer.from(csv100k)
 
 // --- parse (100 rows) ---
 
-describe('csv parse - 100 rows, 5 cols', () => {
-  bench('@amigo-labs/csv (napi)', () => { amigoParse(buf100) })
-  if (wasmAmigoParse) bench('@amigo-labs/csv (wasm)', () => { wasmAmigoParse!(buf100) })
-  bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf100)) })
-  if (wasmAmigoParseJson) bench('@amigo-labs/csv (wasm) (parseToJson)', () => { JSON.parse(wasmAmigoParseJson!(buf100)) })
-  bench('csv-parse (sync)', () => { csvParseSyncFn(csv100, { columns: true }) })
-  bench('papaparse', () => { Papa.parse(csv100, { header: true }) })
+test('csv parse - 100 rows, 5 cols', async ({ bench }) => {
+  await bench('@amigo-labs/csv (napi)', () => { amigoParse(buf100) }).run()
+  if (wasmAmigoParse) await bench('@amigo-labs/csv (wasm)', () => { wasmAmigoParse!(buf100) }).run()
+  await bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf100)) }).run()
+  if (wasmAmigoParseJson) await bench('@amigo-labs/csv (wasm) (parseToJson)', () => { JSON.parse(wasmAmigoParseJson!(buf100)) }).run()
+  await bench('csv-parse (sync)', () => { csvParseSyncFn(csv100, { columns: true }) }).run()
+  await bench('papaparse', () => { Papa.parse(csv100, { header: true }) }).run()
 })
 
 // --- parse (10k rows) ---
 
-describe('csv parse - 10,000 rows, 5 cols', () => {
-  bench('@amigo-labs/csv (napi)', () => { amigoParse(buf10k) })
-  if (wasmAmigoParse) bench('@amigo-labs/csv (wasm)', () => { wasmAmigoParse!(buf10k) })
-  bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf10k)) })
-  if (wasmAmigoParseJson) bench('@amigo-labs/csv (wasm) (parseToJson)', () => { JSON.parse(wasmAmigoParseJson!(buf10k)) })
-  bench('csv-parse (sync)', () => { csvParseSyncFn(csv10k, { columns: true }) })
-  bench('papaparse', () => { Papa.parse(csv10k, { header: true }) })
+test('csv parse - 10,000 rows, 5 cols', async ({ bench }) => {
+  await bench('@amigo-labs/csv (napi)', () => { amigoParse(buf10k) }).run()
+  if (wasmAmigoParse) await bench('@amigo-labs/csv (wasm)', () => { wasmAmigoParse!(buf10k) }).run()
+  await bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf10k)) }).run()
+  if (wasmAmigoParseJson) await bench('@amigo-labs/csv (wasm) (parseToJson)', () => { JSON.parse(wasmAmigoParseJson!(buf10k)) }).run()
+  await bench('csv-parse (sync)', () => { csvParseSyncFn(csv10k, { columns: true }) }).run()
+  await bench('papaparse', () => { Papa.parse(csv10k, { header: true }) }).run()
 })
 
 // --- parse (100k rows) ---
 
-describe('csv parse - 100,000 rows, 10 cols', () => {
-  bench('@amigo-labs/csv (napi)', () => { amigoParse(buf100k) }, { time: 10000, iterations: 3, warmupIterations: 1 })
-  bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf100k)) }, { time: 10000, iterations: 3, warmupIterations: 1 })
-  bench('csv-parse (sync)', () => { csvParseSyncFn(csv100k, { columns: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 })
-  bench('papaparse', () => { Papa.parse(csv100k, { header: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 })
+test('csv parse - 100,000 rows, 10 cols', async ({ bench }) => {
+  await bench('@amigo-labs/csv (napi)', () => { amigoParse(buf100k) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
+  await bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf100k)) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
+  await bench('csv-parse (sync)', () => { csvParseSyncFn(csv100k, { columns: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
+  await bench('papaparse', () => { Papa.parse(csv100k, { header: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
 })

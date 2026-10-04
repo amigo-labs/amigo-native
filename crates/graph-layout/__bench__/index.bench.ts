@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { layout as ours } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -40,22 +40,22 @@ function runDagre(spec: ReturnType<typeof buildSpec>) {
 const SMALL = buildSpec(20, 25)
 const MEDIUM = buildSpec(100, 140)
 
-describe('small (20 nodes, 25 edges)', () => {
-  bench('@amigo-labs/graph-layout (napi)', () => {
+test('small (20 nodes, 25 edges)', async ({ bench }) => {
+  await bench('@amigo-labs/graph-layout (napi)', () => {
     ours(SMALL)
-  })
-  if (wasmOurs) bench('@amigo-labs/graph-layout (wasm)', () => { wasmOurs!(SMALL) })
-  bench('@dagrejs/dagre', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/graph-layout (wasm)', () => { wasmOurs!(SMALL) }).run()
+  await bench('@dagrejs/dagre', () => {
     runDagre(SMALL)
-  })
+  }).run()
 })
 
-describe('medium (100 nodes, 140 edges)', () => {
-  bench('@amigo-labs/graph-layout (napi)', () => {
+test('medium (100 nodes, 140 edges)', async ({ bench }) => {
+  await bench('@amigo-labs/graph-layout (napi)', () => {
     ours(MEDIUM)
-  })
-  if (wasmOurs) bench('@amigo-labs/graph-layout (wasm)', () => { wasmOurs!(MEDIUM) })
-  bench('@dagrejs/dagre', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/graph-layout (wasm)', () => { wasmOurs!(MEDIUM) }).run()
+  await bench('@dagrejs/dagre', () => {
     runDagre(MEDIUM)
-  })
+  }).run()
 })

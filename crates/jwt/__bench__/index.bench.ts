@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import * as amigo from '../wrapper.js'
 import jsonwebtoken from 'jsonwebtoken'
 import { generateKeyPairSync } from 'node:crypto'
@@ -26,56 +26,56 @@ const upstreamRs = jsonwebtoken.sign(payload, rsa.privateKey, { algorithm: 'RS25
 const amigoEs = amigo.signSync(payload, ec.privateKey, { algorithm: 'ES256' })
 const upstreamEs = jsonwebtoken.sign(payload, ec.privateKey, { algorithm: 'ES256' })
 
-describe('jwt — sign HS256', () => {
-  bench('@amigo-labs/jwt', () => {
+test('jwt — sign HS256', async ({ bench }) => {
+  await bench('@amigo-labs/jwt', () => {
     amigo.signSync(payload, HS_SECRET, { algorithm: 'HS256' })
-  })
-  bench('jsonwebtoken', () => {
+  }).run()
+  await bench('jsonwebtoken', () => {
     jsonwebtoken.sign(payload, HS_SECRET, { algorithm: 'HS256' })
-  })
+  }).run()
 })
 
-describe('jwt — verify HS256', () => {
-  bench('@amigo-labs/jwt', () => {
+test('jwt — verify HS256', async ({ bench }) => {
+  await bench('@amigo-labs/jwt', () => {
     amigo.verifySync(amigoHs, HS_SECRET, { algorithms: ['HS256'] })
-  })
-  bench('jsonwebtoken', () => {
+  }).run()
+  await bench('jsonwebtoken', () => {
     jsonwebtoken.verify(upstreamHs, HS_SECRET, { algorithms: ['HS256'] })
-  })
+  }).run()
 })
 
-describe('jwt — sign RS256', () => {
-  bench('@amigo-labs/jwt', () => {
+test('jwt — sign RS256', async ({ bench }) => {
+  await bench('@amigo-labs/jwt', () => {
     amigo.signSync(payload, rsa.privateKey, { algorithm: 'RS256' })
-  })
-  bench('jsonwebtoken', () => {
+  }).run()
+  await bench('jsonwebtoken', () => {
     jsonwebtoken.sign(payload, rsa.privateKey, { algorithm: 'RS256' })
-  })
+  }).run()
 })
 
-describe('jwt — verify RS256', () => {
-  bench('@amigo-labs/jwt', () => {
+test('jwt — verify RS256', async ({ bench }) => {
+  await bench('@amigo-labs/jwt', () => {
     amigo.verifySync(amigoRs, rsa.publicKey, { algorithms: ['RS256'] })
-  })
-  bench('jsonwebtoken', () => {
+  }).run()
+  await bench('jsonwebtoken', () => {
     jsonwebtoken.verify(upstreamRs, rsa.publicKey, { algorithms: ['RS256'] })
-  })
+  }).run()
 })
 
-describe('jwt — sign ES256', () => {
-  bench('@amigo-labs/jwt', () => {
+test('jwt — sign ES256', async ({ bench }) => {
+  await bench('@amigo-labs/jwt', () => {
     amigo.signSync(payload, ec.privateKey, { algorithm: 'ES256' })
-  })
-  bench('jsonwebtoken', () => {
+  }).run()
+  await bench('jsonwebtoken', () => {
     jsonwebtoken.sign(payload, ec.privateKey, { algorithm: 'ES256' })
-  })
+  }).run()
 })
 
-describe('jwt — verify ES256', () => {
-  bench('@amigo-labs/jwt', () => {
+test('jwt — verify ES256', async ({ bench }) => {
+  await bench('@amigo-labs/jwt', () => {
     amigo.verifySync(amigoEs, ec.publicKey, { algorithms: ['ES256'] })
-  })
-  bench('jsonwebtoken', () => {
+  }).run()
+  await bench('jsonwebtoken', () => {
     jsonwebtoken.verify(upstreamEs, ec.publicKey, { algorithms: ['ES256'] })
-  })
+  }).run()
 })

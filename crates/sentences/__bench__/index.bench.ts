@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { split, splitToOffsets } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -21,30 +21,30 @@ const MEDIUM = Array.from({ length: 50 }, (_, i) =>
   `This is sentence number ${i}, and it contains some filler text to reach a meaningful length.`,
 ).join(' ')
 
-describe('short (~50 chars, 4 sentences)', () => {
-  bench('@amigo-labs/sentences (napi) split()', () => {
+test('short (~50 chars, 4 sentences)', async ({ bench }) => {
+  await bench('@amigo-labs/sentences (napi) split()', () => {
     split(SHORT)
-  })
-  if (wasmSplit) bench('@amigo-labs/sentences (wasm) split()', () => { wasmSplit!(SHORT) })
-  bench('@amigo-labs/sentences (napi) splitToOffsets()', () => {
+  }).run()
+  if (wasmSplit) await bench('@amigo-labs/sentences (wasm) split()', () => { wasmSplit!(SHORT) }).run()
+  await bench('@amigo-labs/sentences (napi) splitToOffsets()', () => {
     splitToOffsets(SHORT)
-  })
-  if (wasmSplitToOffsets) bench('@amigo-labs/sentences (wasm) splitToOffsets()', () => { wasmSplitToOffsets!(SHORT) })
-  bench('sbd', () => {
+  }).run()
+  if (wasmSplitToOffsets) await bench('@amigo-labs/sentences (wasm) splitToOffsets()', () => { wasmSplitToOffsets!(SHORT) }).run()
+  await bench('sbd', () => {
     sbd.sentences(SHORT)
-  })
+  }).run()
 })
 
-describe('medium (~5 KB, 50 sentences)', () => {
-  bench('@amigo-labs/sentences (napi) split()', () => {
+test('medium (~5 KB, 50 sentences)', async ({ bench }) => {
+  await bench('@amigo-labs/sentences (napi) split()', () => {
     split(MEDIUM)
-  })
-  if (wasmSplit) bench('@amigo-labs/sentences (wasm) split()', () => { wasmSplit!(MEDIUM) })
-  bench('@amigo-labs/sentences (napi) splitToOffsets()', () => {
+  }).run()
+  if (wasmSplit) await bench('@amigo-labs/sentences (wasm) split()', () => { wasmSplit!(MEDIUM) }).run()
+  await bench('@amigo-labs/sentences (napi) splitToOffsets()', () => {
     splitToOffsets(MEDIUM)
-  })
-  if (wasmSplitToOffsets) bench('@amigo-labs/sentences (wasm) splitToOffsets()', () => { wasmSplitToOffsets!(MEDIUM) })
-  bench('sbd', () => {
+  }).run()
+  if (wasmSplitToOffsets) await bench('@amigo-labs/sentences (wasm) splitToOffsets()', () => { wasmSplitToOffsets!(MEDIUM) }).run()
+  await bench('sbd', () => {
     sbd.sentences(MEDIUM)
-  })
+  }).run()
 })

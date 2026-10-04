@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { parseSync } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -20,30 +20,30 @@ const CORPUS = join(__dirname, '..', '__conformance__', 'corpus')
 const EXAMPLE = readFileSync(join(CORPUS, 'example.pdf'))
 const UNICODE = readFileSync(join(CORPUS, 'unicode.pdf'))
 
-describe('example.pdf (~580 bytes)', () => {
-  bench('@amigo-labs/pdf-parse (napi) parseSync', () => {
+test('example.pdf (~580 bytes)', async ({ bench }) => {
+  await bench('@amigo-labs/pdf-parse (napi) parseSync', () => {
     parseSync(EXAMPLE)
-  })
-  if (wasmParseSync) bench('@amigo-labs/pdf-parse (wasm) parseSync', () => { wasmParseSync!(EXAMPLE) })
-  bench('pdf-parse', async () => {
+  }).run()
+  if (wasmParseSync) await bench('@amigo-labs/pdf-parse (wasm) parseSync', () => { wasmParseSync!(EXAMPLE) }).run()
+  await bench('pdf-parse', async () => {
     try {
       await pdfParse(EXAMPLE)
     } catch {
       // upstream may reject this lopdf-crafted fixture
     }
-  })
+  }).run()
 })
 
-describe('unicode.pdf (~3.9 KB)', () => {
-  bench('@amigo-labs/pdf-parse (napi) parseSync', () => {
+test('unicode.pdf (~3.9 KB)', async ({ bench }) => {
+  await bench('@amigo-labs/pdf-parse (napi) parseSync', () => {
     parseSync(UNICODE)
-  })
-  if (wasmParseSync) bench('@amigo-labs/pdf-parse (wasm) parseSync', () => { wasmParseSync!(UNICODE) })
-  bench('pdf-parse', async () => {
+  }).run()
+  if (wasmParseSync) await bench('@amigo-labs/pdf-parse (wasm) parseSync', () => { wasmParseSync!(UNICODE) }).run()
+  await bench('pdf-parse', async () => {
     try {
       await pdfParse(UNICODE)
     } catch {
       // upstream may reject
     }
-  })
+  }).run()
 })

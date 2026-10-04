@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const native = require('../index.js')
 
@@ -14,44 +14,44 @@ const arrSmall = Array.from({ length: 10 }, (_, i) => i)
 const arrMedium = Array.from({ length: 1000 }, (_, i) => i)
 const arrLarge = Array.from({ length: 100_000 }, (_, i) => i)
 
-describe('ffi — noop (pure call overhead)', () => {
-  bench('noop', () => {
+test('ffi — noop (pure call overhead)', async ({ bench }) => {
+  await bench('noop', () => {
     native.noop()
-  })
+  }).run()
 })
 
-describe('ffi — echoString (UTF-16 ↔ UTF-8 conversion)', () => {
-  bench('echoString 10B', () => {
+test('ffi — echoString (UTF-16 ↔ UTF-8 conversion)', async ({ bench }) => {
+  await bench('echoString 10B', () => {
     native.echoString(small)
-  })
-  bench('echoString 1KB', () => {
+  }).run()
+  await bench('echoString 1KB', () => {
     native.echoString(medium)
-  })
-  bench('echoString 100KB', () => {
+  }).run()
+  await bench('echoString 100KB', () => {
     native.echoString(large)
-  })
+  }).run()
 })
 
-describe('ffi — echoBuffer (zero-copy)', () => {
-  bench('echoBuffer 1KB', () => {
+test('ffi — echoBuffer (zero-copy)', async ({ bench }) => {
+  await bench('echoBuffer 1KB', () => {
     native.echoBuffer(bufSmall)
-  })
-  bench('echoBuffer 100KB', () => {
+  }).run()
+  await bench('echoBuffer 100KB', () => {
     native.echoBuffer(bufMedium)
-  })
-  bench('echoBuffer 10MB', () => {
+  }).run()
+  await bench('echoBuffer 10MB', () => {
     native.echoBuffer(bufLarge)
-  })
+  }).run()
 })
 
-describe('ffi — sumArray (array marshalling)', () => {
-  bench('sumArray 10', () => {
+test('ffi — sumArray (array marshalling)', async ({ bench }) => {
+  await bench('sumArray 10', () => {
     native.sumArray(arrSmall)
-  })
-  bench('sumArray 1000', () => {
+  }).run()
+  await bench('sumArray 1000', () => {
     native.sumArray(arrMedium)
-  })
-  bench('sumArray 100000', () => {
+  }).run()
+  await bench('sumArray 100000', () => {
     native.sumArray(arrLarge)
-  })
+  }).run()
 })

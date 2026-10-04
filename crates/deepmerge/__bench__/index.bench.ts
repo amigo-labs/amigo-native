@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import amigoMerge from '../wrapper.js'
 import upstream from 'deepmerge'
 
@@ -27,29 +27,29 @@ function makeArray(n: number): Record<string, unknown> {
 const arrA = makeArray(1000)
 const arrB = makeArray(1000)
 
-describe('deepmerge — flat 4-key objects', () => {
-  bench('@amigo-labs/deepmerge', () => {
+test('deepmerge — flat 4-key objects', async ({ bench }) => {
+  await bench('@amigo-labs/deepmerge', () => {
     amigoMerge(flatA, flatB)
-  })
-  bench('deepmerge', () => {
+  }).run()
+  await bench('deepmerge', () => {
     upstream(flatA, flatB)
-  })
+  }).run()
 })
 
-describe('deepmerge — deep (10 levels)', () => {
-  bench('@amigo-labs/deepmerge', () => {
+test('deepmerge — deep (10 levels)', async ({ bench }) => {
+  await bench('@amigo-labs/deepmerge', () => {
     amigoMerge(deepA, deepB)
-  })
-  bench('deepmerge', () => {
+  }).run()
+  await bench('deepmerge', () => {
     upstream(deepA, deepB)
-  })
+  }).run()
 })
 
-describe('deepmerge — 1000 items arrays', () => {
-  bench('@amigo-labs/deepmerge', () => {
+test('deepmerge — 1000 items arrays', async ({ bench }) => {
+  await bench('@amigo-labs/deepmerge', () => {
     amigoMerge(arrA, arrB)
-  })
-  bench('deepmerge', () => {
+  }).run()
+  await bench('deepmerge', () => {
     upstream(arrA, arrB)
-  })
+  }).run()
 })

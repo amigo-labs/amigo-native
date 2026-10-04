@@ -1,4 +1,4 @@
-import { bench, describe, beforeAll } from 'vitest'
+import { test, beforeAll } from 'vitest'
 import { hashSync as amigoHashSync, verifySync as amigoVerifySync } from '../index.js'
 
 // Competitor imports — argon2 npm needs node-gyp, may not be available
@@ -35,18 +35,18 @@ beforeAll(async () => {
   }
 })
 
-describe('argon2 - hash (low-cost)', () => {
-  bench(
+test('argon2 - hash (low-cost)', async ({ bench }) => {
+  await bench(
     '@amigo-labs/argon2',
     () => {
       amigoHashSync(password, lowCostOpts)
     },
     { time: 10000, iterations: 5, warmupIterations: 1 },
-  )
+  ).run()
 
   if (nodeArgon2) {
     const argon2 = nodeArgon2
-    bench(
+    await bench(
       'argon2 (npm, C-bindings)',
       async () => {
         await argon2.hash(password, {
@@ -56,12 +56,12 @@ describe('argon2 - hash (low-cost)', () => {
         })
       },
       { time: 10000, iterations: 5, warmupIterations: 1 },
-    )
+    ).run()
   }
 
   if (hashWasm) {
     const hw = hashWasm
-    bench(
+    await bench(
       'hash-wasm (WASM)',
       async () => {
         await hw.argon2id({
@@ -75,28 +75,28 @@ describe('argon2 - hash (low-cost)', () => {
         })
       },
       { time: 10000, iterations: 5, warmupIterations: 1 },
-    )
+    ).run()
   }
 })
 
-describe('argon2 - verify', () => {
-  bench(
+test('argon2 - verify', async ({ bench }) => {
+  await bench(
     '@amigo-labs/argon2',
     () => {
       amigoVerifySync(amigoHash, password)
     },
     { time: 10000, iterations: 5, warmupIterations: 1 },
-  )
+  ).run()
 
   if (nodeArgon2 && nodeArgon2Hash) {
     const argon2 = nodeArgon2
     const hash = nodeArgon2Hash
-    bench(
+    await bench(
       'argon2 (npm, C-bindings)',
       async () => {
         await argon2.verify(hash, password)
       },
       { time: 10000, iterations: 5, warmupIterations: 1 },
-    )
+    ).run()
   }
 })
