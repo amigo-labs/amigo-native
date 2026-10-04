@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { encode as amigoEncode, decode as amigoDecode } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -21,69 +21,69 @@ const large = 'café résumé naïve '.repeat(600_000) // ~10MB
 
 const largeBytes = Buffer.from(large, 'utf-8')
 
-describe('encoding — encode utf-8 (small/medium/large)', () => {
-  bench('@amigo-labs/encoding (napi) small', () => {
+test('encoding — encode utf-8 (small/medium/large)', async ({ bench }) => {
+  await bench('@amigo-labs/encoding (napi) small', () => {
     amigoEncode(small, 'utf-8')
-  })
-  if (wasmAmigoEncode) bench('@amigo-labs/encoding (wasm) small', () => { wasmAmigoEncode!(small, 'utf-8') })
-  bench('iconv-lite small', () => {
+  }).run()
+  if (wasmAmigoEncode) await bench('@amigo-labs/encoding (wasm) small', () => { wasmAmigoEncode!(small, 'utf-8') }).run()
+  await bench('iconv-lite small', () => {
     iconv.encode(small, 'utf-8')
-  })
-  bench('Buffer.from small', () => {
+  }).run()
+  await bench('Buffer.from small', () => {
     Buffer.from(small, 'utf-8')
-  })
+  }).run()
 
-  bench('@amigo-labs/encoding (napi) 100KB', () => {
+  await bench('@amigo-labs/encoding (napi) 100KB', () => {
     amigoEncode(medium, 'utf-8')
-  })
-  if (wasmAmigoEncode) bench('@amigo-labs/encoding (wasm) 100KB', () => { wasmAmigoEncode!(medium, 'utf-8') })
-  bench('iconv-lite 100KB', () => {
+  }).run()
+  if (wasmAmigoEncode) await bench('@amigo-labs/encoding (wasm) 100KB', () => { wasmAmigoEncode!(medium, 'utf-8') }).run()
+  await bench('iconv-lite 100KB', () => {
     iconv.encode(medium, 'utf-8')
-  })
-  bench('Buffer.from 100KB', () => {
+  }).run()
+  await bench('Buffer.from 100KB', () => {
     Buffer.from(medium, 'utf-8')
-  })
+  }).run()
 
-  bench('@amigo-labs/encoding (napi) 10MB', () => {
+  await bench('@amigo-labs/encoding (napi) 10MB', () => {
     amigoEncode(large, 'utf-8')
-  })
-  if (wasmAmigoEncode) bench('@amigo-labs/encoding (wasm) 10MB', () => { wasmAmigoEncode!(large, 'utf-8') })
-  bench('iconv-lite 10MB', () => {
+  }).run()
+  if (wasmAmigoEncode) await bench('@amigo-labs/encoding (wasm) 10MB', () => { wasmAmigoEncode!(large, 'utf-8') }).run()
+  await bench('iconv-lite 10MB', () => {
     iconv.encode(large, 'utf-8')
-  })
-  bench('Buffer.from 10MB', () => {
+  }).run()
+  await bench('Buffer.from 10MB', () => {
     Buffer.from(large, 'utf-8')
-  })
+  }).run()
 })
 
-describe('encoding — decode utf-16le 100KB', () => {
+test('encoding — decode utf-16le 100KB', async ({ bench }) => {
   const utf16 = iconv.encode(medium, 'utf-16le')
-  bench('@amigo-labs/encoding (napi)', () => {
+  await bench('@amigo-labs/encoding (napi)', () => {
     amigoDecode(utf16, 'utf-16le')
-  })
-  if (wasmAmigoDecode) bench('@amigo-labs/encoding (wasm)', () => { wasmAmigoDecode!(utf16, 'utf-16le') })
-  bench('iconv-lite', () => {
+  }).run()
+  if (wasmAmigoDecode) await bench('@amigo-labs/encoding (wasm)', () => { wasmAmigoDecode!(utf16, 'utf-16le') }).run()
+  await bench('iconv-lite', () => {
     iconv.decode(utf16, 'utf-16le')
-  })
+  }).run()
 })
 
-describe('encoding — decode shift_jis 100KB', () => {
+test('encoding — decode shift_jis 100KB', async ({ bench }) => {
   const sjis = iconv.encode('こんにちは '.repeat(10_000), 'shift_jis')
-  bench('@amigo-labs/encoding (napi)', () => {
+  await bench('@amigo-labs/encoding (napi)', () => {
     amigoDecode(sjis, 'shift_jis')
-  })
-  if (wasmAmigoDecode) bench('@amigo-labs/encoding (wasm)', () => { wasmAmigoDecode!(sjis, 'shift_jis') })
-  bench('iconv-lite', () => {
+  }).run()
+  if (wasmAmigoDecode) await bench('@amigo-labs/encoding (wasm)', () => { wasmAmigoDecode!(sjis, 'shift_jis') }).run()
+  await bench('iconv-lite', () => {
     iconv.decode(sjis, 'shift_jis')
-  })
+  }).run()
 })
 
-describe('encoding — decode latin1 10MB', () => {
-  bench('@amigo-labs/encoding (napi)', () => {
+test('encoding — decode latin1 10MB', async ({ bench }) => {
+  await bench('@amigo-labs/encoding (napi)', () => {
     amigoDecode(largeBytes, 'latin1')
-  })
-  if (wasmAmigoDecode) bench('@amigo-labs/encoding (wasm)', () => { wasmAmigoDecode!(largeBytes, 'latin1') })
-  bench('iconv-lite', () => {
+  }).run()
+  if (wasmAmigoDecode) await bench('@amigo-labs/encoding (wasm)', () => { wasmAmigoDecode!(largeBytes, 'latin1') }).run()
+  await bench('iconv-lite', () => {
     iconv.decode(largeBytes, 'latin1')
-  })
+  }).run()
 })

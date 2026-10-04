@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { sanitize as amigoSanitize } from '../index.js'
 import sanitizeHtml from 'sanitize-html'
 
@@ -157,79 +157,79 @@ const heavyDoc = Array.from(
 
 // --- Benchmarks ---
 
-describe('transform ol→ul (simple rename) - small (~80B)', () => {
-  bench('sanitize-html (npm)', () => {
+test('transform ol→ul (simple rename) - small (~80B)', async ({ bench }) => {
+  await bench('sanitize-html (npm)', () => {
     sanitizeHtml(smallDoc, {
       allowedTags: ALLOWED_TAGS,
       transformTags: { ol: 'ul' },
     })
-  })
-  bench('regex-wrapper + amigo', () => {
+  }).run()
+  await bench('regex-wrapper + amigo', () => {
     regexWrapperSanitize(smallDoc, { ol: 'ul' }, { allowedTags: ALLOWED_TAGS })
-  })
-  bench('tokenizer-wrapper + amigo', () => {
+  }).run()
+  await bench('tokenizer-wrapper + amigo', () => {
     tokenizerWrapperSanitize(
       smallDoc,
       { ol: (_, attribs) => ({ tagName: 'ul', attribs }) },
       { allowedTags: ALLOWED_TAGS },
     )
-  })
-  bench('amigo (baseline, no transform)', () => {
+  }).run()
+  await bench('amigo (baseline, no transform)', () => {
     amigoSanitize(smallDoc, { allowedTags: ALLOWED_TAGS } as never)
-  })
+  }).run()
 })
 
-describe('transform ol→ul - medium (~6KB, 100 lists)', () => {
-  bench('sanitize-html (npm)', () => {
+test('transform ol→ul - medium (~6KB, 100 lists)', async ({ bench }) => {
+  await bench('sanitize-html (npm)', () => {
     sanitizeHtml(mediumDoc, {
       allowedTags: ALLOWED_TAGS,
       transformTags: { ol: 'ul' },
     })
-  })
-  bench('regex-wrapper + amigo', () => {
+  }).run()
+  await bench('regex-wrapper + amigo', () => {
     regexWrapperSanitize(mediumDoc, { ol: 'ul' }, { allowedTags: ALLOWED_TAGS })
-  })
-  bench('tokenizer-wrapper + amigo', () => {
+  }).run()
+  await bench('tokenizer-wrapper + amigo', () => {
     tokenizerWrapperSanitize(
       mediumDoc,
       { ol: (_, attribs) => ({ tagName: 'ul', attribs }) },
       { allowedTags: ALLOWED_TAGS },
     )
-  })
-  bench('amigo (baseline, no transform)', () => {
+  }).run()
+  await bench('amigo (baseline, no transform)', () => {
     amigoSanitize(mediumDoc, { allowedTags: ALLOWED_TAGS } as never)
-  })
+  }).run()
 })
 
-describe('transform ol→ul - heavy (~40KB, 1000 transforms)', () => {
-  bench('sanitize-html (npm)', () => {
+test('transform ol→ul - heavy (~40KB, 1000 transforms)', async ({ bench }) => {
+  await bench('sanitize-html (npm)', () => {
     sanitizeHtml(heavyDoc, {
       allowedTags: ALLOWED_TAGS,
       transformTags: { ol: 'ul' },
     })
-  })
-  bench('regex-wrapper + amigo', () => {
+  }).run()
+  await bench('regex-wrapper + amigo', () => {
     regexWrapperSanitize(heavyDoc, { ol: 'ul' }, { allowedTags: ALLOWED_TAGS })
-  })
-  bench('tokenizer-wrapper + amigo', () => {
+  }).run()
+  await bench('tokenizer-wrapper + amigo', () => {
     tokenizerWrapperSanitize(
       heavyDoc,
       { ol: (_, attribs) => ({ tagName: 'ul', attribs }) },
       { allowedTags: ALLOWED_TAGS },
     )
-  })
-  bench('amigo (baseline, no transform)', () => {
+  }).run()
+  await bench('amigo (baseline, no transform)', () => {
     amigoSanitize(heavyDoc, { allowedTags: ALLOWED_TAGS } as never)
-  })
+  }).run()
 })
 
 // Attribute-mutation transform — can't be done with regex alone
-describe('transform rewrite ol→ul + add class (attribute mutation) - 1000 tags', () => {
+test('transform rewrite ol→ul + add class (attribute mutation) - 1000 tags', async ({ bench }) => {
   const xform = (_: string, attribs: Record<string, string>) => ({
     tagName: 'ul',
     attribs: { ...attribs, class: `${attribs.class ?? ''} transformed`.trim() },
   })
-  bench('sanitize-html (npm)', () => {
+  await bench('sanitize-html (npm)', () => {
     sanitizeHtml(heavyDoc, {
       allowedTags: [...ALLOWED_TAGS],
       allowedAttributes: { ul: ['class'], ol: ['class'] },
@@ -240,12 +240,12 @@ describe('transform rewrite ol→ul + add class (attribute mutation) - 1000 tags
         }),
       },
     })
-  })
-  bench('tokenizer-wrapper + amigo', () => {
+  }).run()
+  await bench('tokenizer-wrapper + amigo', () => {
     tokenizerWrapperSanitize(
       heavyDoc,
       { ol: xform },
       { allowedTags: [...ALLOWED_TAGS] },
     )
-  })
+  }).run()
 })

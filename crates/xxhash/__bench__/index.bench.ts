@@ -1,4 +1,4 @@
-import { bench, describe, beforeAll } from 'vitest'
+import { test, beforeAll } from 'vitest'
 import {
   xxh32 as amigoXxh32,
   xxh64 as amigoXxh64,
@@ -57,81 +57,81 @@ beforeAll(async () => {
 
 // --- Single: xxh32 ---
 
-describe('xxh32 - 64 bytes', () => {
-  bench('@amigo-labs/xxhash (napi)', () => { amigoXxh32(buf64) })
-  if (wasmAmigoXxh32) bench('@amigo-labs/xxhash (wasm)', () => { wasmAmigoXxh32!(buf64) })
-  bench('xxhash-wasm', () => { wasmHasher.h32Raw(buf64) })
-  bench('xxhashjs', () => { XXHashJS.h32(buf64, 0).toNumber() })
+test('xxh32 - 64 bytes', async ({ bench }) => {
+  await bench('@amigo-labs/xxhash (napi)', () => { amigoXxh32(buf64) }).run()
+  if (wasmAmigoXxh32) await bench('@amigo-labs/xxhash (wasm)', () => { wasmAmigoXxh32!(buf64) }).run()
+  await bench('xxhash-wasm', () => { wasmHasher.h32Raw(buf64) }).run()
+  await bench('xxhashjs', () => { XXHashJS.h32(buf64, 0).toNumber() }).run()
 })
 
-describe('xxh32 - 1 MB', () => {
-  bench('@amigo-labs/xxhash (napi)', () => { amigoXxh32(buf1m) })
-  if (wasmAmigoXxh32) bench('@amigo-labs/xxhash (wasm)', () => { wasmAmigoXxh32!(buf1m) })
-  bench('xxhash-wasm', () => { wasmHasher.h32Raw(buf1m) })
-  bench('xxhashjs', () => { XXHashJS.h32(buf1m, 0).toNumber() })
+test('xxh32 - 1 MB', async ({ bench }) => {
+  await bench('@amigo-labs/xxhash (napi)', () => { amigoXxh32(buf1m) }).run()
+  if (wasmAmigoXxh32) await bench('@amigo-labs/xxhash (wasm)', () => { wasmAmigoXxh32!(buf1m) }).run()
+  await bench('xxhash-wasm', () => { wasmHasher.h32Raw(buf1m) }).run()
+  await bench('xxhashjs', () => { XXHashJS.h32(buf1m, 0).toNumber() }).run()
 })
 
 // --- Single: xxh64 ---
 
-describe('xxh64 - 1 MB', () => {
-  bench('@amigo-labs/xxhash (napi)', () => { amigoXxh64(buf1m) })
-  if (wasmAmigoXxh64) bench('@amigo-labs/xxhash (wasm)', () => { wasmAmigoXxh64!(buf1m) })
-  bench('xxhash-wasm', () => { wasmHasher.h64Raw(buf1m) })
-  bench('xxhashjs', () => { XXHashJS.h64(buf1m, 0).toString(16) })
+test('xxh64 - 1 MB', async ({ bench }) => {
+  await bench('@amigo-labs/xxhash (napi)', () => { amigoXxh64(buf1m) }).run()
+  if (wasmAmigoXxh64) await bench('@amigo-labs/xxhash (wasm)', () => { wasmAmigoXxh64!(buf1m) }).run()
+  await bench('xxhash-wasm', () => { wasmHasher.h64Raw(buf1m) }).run()
+  await bench('xxhashjs', () => { XXHashJS.h64(buf1m, 0).toString(16) }).run()
 })
 
 // --- xxh3 ---
 
-describe('xxh3_64 - 1 MB', () => {
-  bench('@amigo-labs/xxhash (napi) (xxh3)', () => { amigoXxh3(buf1m) })
-  if (wasmAmigoXxh3) bench('@amigo-labs/xxhash (wasm) (xxh3)', () => { wasmAmigoXxh3!(buf1m) })
-  bench('xxhash-wasm (h64)', () => { wasmHasher.h64Raw(buf1m) })
+test('xxh3_64 - 1 MB', async ({ bench }) => {
+  await bench('@amigo-labs/xxhash (napi) (xxh3)', () => { amigoXxh3(buf1m) }).run()
+  if (wasmAmigoXxh3) await bench('@amigo-labs/xxhash (wasm) (xxh3)', () => { wasmAmigoXxh3!(buf1m) }).run()
+  await bench('xxhash-wasm (h64)', () => { wasmHasher.h64Raw(buf1m) }).run()
 })
 
 // --- Batch: 1000 × 64 bytes (amortized FFI overhead) ---
 
-describe('xxh32 batch - 1000 × 64 bytes', () => {
-  bench('@amigo-labs/xxhash (napi) (many, Buffer in/out)', () => {
+test('xxh32 batch - 1000 × 64 bytes', async ({ bench }) => {
+  await bench('@amigo-labs/xxhash (napi) (many, Buffer in/out)', () => {
     amigoXxh32Many(batchPacked, 64)
-  })
-  if (wasmAmigoXxh32Many) bench('@amigo-labs/xxhash (wasm) (many, Buffer in/out)', () => { wasmAmigoXxh32Many!(batchPacked, 64) })
-  bench('@amigo-labs/xxhash (napi) (loop)', () => {
+  }).run()
+  if (wasmAmigoXxh32Many) await bench('@amigo-labs/xxhash (wasm) (many, Buffer in/out)', () => { wasmAmigoXxh32Many!(batchPacked, 64) }).run()
+  await bench('@amigo-labs/xxhash (napi) (loop)', () => {
     for (const buf of batchInputs) amigoXxh32(buf)
-  })
-  bench('@amigo-labs/xxhash (napi) (streaming)', () => {
+  }).run()
+  await bench('@amigo-labs/xxhash (napi) (streaming)', () => {
     const h = new Xxh32Hasher()
     for (const buf of batchInputs) h.update(buf)
     h.digest()
-  })
-  if (wasmXxh32Hasher) bench('@amigo-labs/xxhash (wasm) (streaming)', () => {
+  }).run()
+  if (wasmXxh32Hasher) await bench('@amigo-labs/xxhash (wasm) (streaming)', () => {
     const h = new wasmXxh32Hasher!()
     for (const buf of batchInputs) h.update(buf)
     h.digest()
-  })
-  bench('xxhash-wasm (loop)', () => {
+  }).run()
+  await bench('xxhash-wasm (loop)', () => {
     for (const buf of batchInputs) wasmHasher.h32Raw(buf)
-  })
-  bench('xxhashjs (loop)', () => {
+  }).run()
+  await bench('xxhashjs (loop)', () => {
     for (const buf of batchInputs) XXHashJS.h32(buf, 0).toNumber()
-  })
+  }).run()
 })
 
-describe('xxh3_64 batch - 1000 × 64 bytes', () => {
-  bench('@amigo-labs/xxhash (napi) (many, Buffer in/out)', () => {
+test('xxh3_64 batch - 1000 × 64 bytes', async ({ bench }) => {
+  await bench('@amigo-labs/xxhash (napi) (many, Buffer in/out)', () => {
     amigoXxh3Many(batchPacked, 64)
-  })
-  if (wasmAmigoXxh3Many) bench('@amigo-labs/xxhash (wasm) (many, Buffer in/out)', () => { wasmAmigoXxh3Many!(batchPacked, 64) })
-  bench('@amigo-labs/xxhash (napi) (streaming)', () => {
+  }).run()
+  if (wasmAmigoXxh3Many) await bench('@amigo-labs/xxhash (wasm) (many, Buffer in/out)', () => { wasmAmigoXxh3Many!(batchPacked, 64) }).run()
+  await bench('@amigo-labs/xxhash (napi) (streaming)', () => {
     const h = new Xxh3Hasher()
     for (const buf of batchInputs) h.update(buf)
     h.digest()
-  })
-  if (wasmXxh3Hasher) bench('@amigo-labs/xxhash (wasm) (streaming)', () => {
+  }).run()
+  if (wasmXxh3Hasher) await bench('@amigo-labs/xxhash (wasm) (streaming)', () => {
     const h = new wasmXxh3Hasher!()
     for (const buf of batchInputs) h.update(buf)
     h.digest()
-  })
-  bench('xxhash-wasm (loop)', () => {
+  }).run()
+  await bench('xxhash-wasm (loop)', () => {
     for (const buf of batchInputs) wasmHasher.h64Raw(buf)
-  })
+  }).run()
 })

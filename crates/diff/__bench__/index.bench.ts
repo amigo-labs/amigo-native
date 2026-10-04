@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { diffLines, diffChars, diffLinesToOffsets, createPatch } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -36,65 +36,65 @@ const B_MED = makeDoc(1000, 2)
 const A_LARGE = makeDoc(10000, 1)
 const B_LARGE = makeDoc(10000, 2)
 
-describe('diff — diffLines 1 KB', () => {
-  bench('@amigo-labs/diff (napi)', () => {
+test('diff — diffLines 1 KB', async ({ bench }) => {
+  await bench('@amigo-labs/diff (napi)', () => {
     diffLines(A_SMALL, B_SMALL)
-  })
-  if (wasmDiffLines) bench('@amigo-labs/diff (wasm)', () => { wasmDiffLines!(A_SMALL, B_SMALL) })
-  bench('diff', () => {
+  }).run()
+  if (wasmDiffLines) await bench('@amigo-labs/diff (wasm)', () => { wasmDiffLines!(A_SMALL, B_SMALL) }).run()
+  await bench('diff', () => {
     jsdiff.diffLines(A_SMALL, B_SMALL)
-  })
+  }).run()
 })
 
-describe('diff — diffLines 20 KB', () => {
-  bench('@amigo-labs/diff (napi)', () => {
+test('diff — diffLines 20 KB', async ({ bench }) => {
+  await bench('@amigo-labs/diff (napi)', () => {
     diffLines(A_MED, B_MED)
-  })
-  if (wasmDiffLines) bench('@amigo-labs/diff (wasm)', () => { wasmDiffLines!(A_MED, B_MED) })
-  bench('diff', () => {
+  }).run()
+  if (wasmDiffLines) await bench('@amigo-labs/diff (wasm)', () => { wasmDiffLines!(A_MED, B_MED) }).run()
+  await bench('diff', () => {
     jsdiff.diffLines(A_MED, B_MED)
-  })
+  }).run()
 })
 
-describe('diff — diffLines 200 KB', () => {
-  bench('@amigo-labs/diff (napi)', () => {
+test('diff — diffLines 200 KB', async ({ bench }) => {
+  await bench('@amigo-labs/diff (napi)', () => {
     diffLines(A_LARGE, B_LARGE)
-  })
-  if (wasmDiffLines) bench('@amigo-labs/diff (wasm)', () => { wasmDiffLines!(A_LARGE, B_LARGE) })
-  bench('diff', () => {
+  }).run()
+  if (wasmDiffLines) await bench('@amigo-labs/diff (wasm)', () => { wasmDiffLines!(A_LARGE, B_LARGE) }).run()
+  await bench('diff', () => {
     jsdiff.diffLines(A_LARGE, B_LARGE)
-  })
+  }).run()
 })
 
-describe('diff — diffLinesToOffsets 20 KB (packed hot-path)', () => {
-  bench('@amigo-labs/diff (napi) (offsets)', () => {
+test('diff — diffLinesToOffsets 20 KB (packed hot-path)', async ({ bench }) => {
+  await bench('@amigo-labs/diff (napi) (offsets)', () => {
     diffLinesToOffsets(A_MED, B_MED)
-  })
-  if (wasmDiffLinesToOffsets) bench('@amigo-labs/diff (wasm) (offsets)', () => { wasmDiffLinesToOffsets!(A_MED, B_MED) })
-  bench('@amigo-labs/diff (napi) (hunks)', () => {
+  }).run()
+  if (wasmDiffLinesToOffsets) await bench('@amigo-labs/diff (wasm) (offsets)', () => { wasmDiffLinesToOffsets!(A_MED, B_MED) }).run()
+  await bench('@amigo-labs/diff (napi) (hunks)', () => {
     diffLines(A_MED, B_MED)
-  })
-  if (wasmDiffLines) bench('@amigo-labs/diff (wasm) (hunks)', () => { wasmDiffLines!(A_MED, B_MED) })
+  }).run()
+  if (wasmDiffLines) await bench('@amigo-labs/diff (wasm) (hunks)', () => { wasmDiffLines!(A_MED, B_MED) }).run()
 })
 
-describe('diff — createPatch 20 KB', () => {
-  bench('@amigo-labs/diff (napi)', () => {
+test('diff — createPatch 20 KB', async ({ bench }) => {
+  await bench('@amigo-labs/diff (napi)', () => {
     createPatch('f.txt', A_MED, B_MED)
-  })
-  if (wasmCreatePatch) bench('@amigo-labs/diff (wasm)', () => { wasmCreatePatch!('f.txt', A_MED, B_MED) })
-  bench('diff.createPatch', () => {
+  }).run()
+  if (wasmCreatePatch) await bench('@amigo-labs/diff (wasm)', () => { wasmCreatePatch!('f.txt', A_MED, B_MED) }).run()
+  await bench('diff.createPatch', () => {
     jsdiff.createPatch('f.txt', A_MED, B_MED)
-  })
+  }).run()
 })
 
-describe('diff — diffChars 5 KB', () => {
+test('diff — diffChars 5 KB', async ({ bench }) => {
   const a = 'x'.repeat(5000)
   const b = a.slice(0, 2500) + 'Y' + a.slice(2500)
-  bench('@amigo-labs/diff (napi)', () => {
+  await bench('@amigo-labs/diff (napi)', () => {
     diffChars(a, b)
-  })
-  if (wasmDiffChars) bench('@amigo-labs/diff (wasm)', () => { wasmDiffChars!(a, b) })
-  bench('diff', () => {
+  }).run()
+  if (wasmDiffChars) await bench('@amigo-labs/diff (wasm)', () => { wasmDiffChars!(a, b) }).run()
+  await bench('diff', () => {
     jsdiff.diffChars(a, b)
-  })
+  }).run()
 })

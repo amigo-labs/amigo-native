@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { detect } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -19,32 +19,32 @@ const PARAGRAPH =
   'The quick brown fox jumps over the lazy dog and the lazy dog was not amused by this sudden interruption of his peaceful slumber. He had been dreaming of fresh bones and open fields, and the fox appeared entirely unaware that such an interruption would be unwelcome.'
 const ARTICLE = PARAGRAPH.repeat(20) // ~11 KB
 
-describe('language-detect — tweet (50 B)', () => {
-  bench('@amigo-labs/language-detect (napi)', () => {
+test('language-detect — tweet (50 B)', async ({ bench }) => {
+  await bench('@amigo-labs/language-detect (napi)', () => {
     detect(TWEET)
-  })
-  if (wasmDetect) bench('@amigo-labs/language-detect (wasm)', () => { wasmDetect!(TWEET) })
-  bench('franc', () => {
+  }).run()
+  if (wasmDetect) await bench('@amigo-labs/language-detect (wasm)', () => { wasmDetect!(TWEET) }).run()
+  await bench('franc', () => {
     franc(TWEET)
-  })
+  }).run()
 })
 
-describe('language-detect — paragraph (~300 B)', () => {
-  bench('@amigo-labs/language-detect (napi)', () => {
+test('language-detect — paragraph (~300 B)', async ({ bench }) => {
+  await bench('@amigo-labs/language-detect (napi)', () => {
     detect(PARAGRAPH)
-  })
-  if (wasmDetect) bench('@amigo-labs/language-detect (wasm)', () => { wasmDetect!(PARAGRAPH) })
-  bench('franc', () => {
+  }).run()
+  if (wasmDetect) await bench('@amigo-labs/language-detect (wasm)', () => { wasmDetect!(PARAGRAPH) }).run()
+  await bench('franc', () => {
     franc(PARAGRAPH)
-  })
+  }).run()
 })
 
-describe('language-detect — article (~11 KB)', () => {
-  bench('@amigo-labs/language-detect (napi)', () => {
+test('language-detect — article (~11 KB)', async ({ bench }) => {
+  await bench('@amigo-labs/language-detect (napi)', () => {
     detect(ARTICLE)
-  })
-  if (wasmDetect) bench('@amigo-labs/language-detect (wasm)', () => { wasmDetect!(ARTICLE) })
-  bench('franc', () => {
+  }).run()
+  if (wasmDetect) await bench('@amigo-labs/language-detect (wasm)', () => { wasmDetect!(ARTICLE) }).run()
+  await bench('franc', () => {
     franc(ARTICLE)
-  })
+  }).run()
 })

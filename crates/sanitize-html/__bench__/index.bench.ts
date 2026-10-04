@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { sanitize as amigoSanitize } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -48,50 +48,50 @@ const largeParagraphs = Array.from(
     `<p>Paragraph ${i}: This is <b>bold</b>, <i>italic</i>, and <a href="https://example.com/${i}">a link</a>.</p>`,
 ).join('\n')
 
-describe('sanitize - small safe HTML (~200 chars)', () => {
-  bench('@amigo-labs/sanitize-html (napi)', () => {
+test('sanitize - small safe HTML (~200 chars)', async ({ bench }) => {
+  await bench('@amigo-labs/sanitize-html (napi)', () => {
     amigoSanitize(smallSafe)
-  })
-  if (wasmAmigoSanitize) bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(smallSafe) })
-  bench('sanitize-html (npm)', () => {
+  }).run()
+  if (wasmAmigoSanitize) await bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(smallSafe) }).run()
+  await bench('sanitize-html (npm)', () => {
     sanitizeHtml(smallSafe)
-  })
+  }).run()
   if (DOMPurify) {
     const dp = DOMPurify
-    bench('isomorphic-dompurify', () => {
+    await bench('isomorphic-dompurify', () => {
       dp.sanitize(smallSafe)
-    })
+    }).run()
   }
 })
 
-describe('sanitize - medium with XSS (~2 KB)', () => {
-  bench('@amigo-labs/sanitize-html (napi)', () => {
+test('sanitize - medium with XSS (~2 KB)', async ({ bench }) => {
+  await bench('@amigo-labs/sanitize-html (napi)', () => {
     amigoSanitize(mediumXss)
-  })
-  if (wasmAmigoSanitize) bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(mediumXss) })
-  bench('sanitize-html (npm)', () => {
+  }).run()
+  if (wasmAmigoSanitize) await bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(mediumXss) }).run()
+  await bench('sanitize-html (npm)', () => {
     sanitizeHtml(mediumXss)
-  })
+  }).run()
   if (DOMPurify) {
     const dp = DOMPurify
-    bench('isomorphic-dompurify', () => {
+    await bench('isomorphic-dompurify', () => {
       dp.sanitize(mediumXss)
-    })
+    }).run()
   }
 })
 
-describe('sanitize - large document (~100 KB)', () => {
-  bench('@amigo-labs/sanitize-html (napi)', () => {
+test('sanitize - large document (~100 KB)', async ({ bench }) => {
+  await bench('@amigo-labs/sanitize-html (napi)', () => {
     amigoSanitize(largeParagraphs)
-  })
-  if (wasmAmigoSanitize) bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(largeParagraphs) })
-  bench('sanitize-html (npm)', () => {
+  }).run()
+  if (wasmAmigoSanitize) await bench('@amigo-labs/sanitize-html (wasm)', () => { wasmAmigoSanitize!(largeParagraphs) }).run()
+  await bench('sanitize-html (npm)', () => {
     sanitizeHtml(largeParagraphs)
-  })
+  }).run()
   if (DOMPurify) {
     const dp = DOMPurify
-    bench('isomorphic-dompurify', () => {
+    await bench('isomorphic-dompurify', () => {
       dp.sanitize(largeParagraphs)
-    })
+    }).run()
   }
 })

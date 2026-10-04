@@ -8,6 +8,9 @@
  *   node scripts/run-benchmarks.mjs --crates a,b   # just a and b
  *   node scripts/run-benchmarks.mjs --only-changed # crates whose source is
  *                                                    changed vs origin/main
+ *   node scripts/run-benchmarks.mjs --exclude a,b  # drop a and b from any of
+ *                                                    the above (CI passes
+ *                                                    BROKEN_CRATES here)
  *
  * Downstream (scripts/generate-report.mjs) treats each file as an independent
  * shard and only overwrites the crates that were re-benched this run, leaving
@@ -15,19 +18,24 @@
  */
 
 import { spawn, spawnSync } from 'node:child_process'
-import { readdirSync, readFileSync, writeFileSync, statSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { readdirSync, readFileSync, writeFileSync, statSync, existsSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, relative, sep } from 'node:path'
 
 const root = process.cwd()
 
 function parseArgs(argv) {
-  const args = { crates: null, onlyChanged: false, skipWasmBuild: false }
+  const args = { crates: null, exclude: [], onlyChanged: false, skipWasmBuild: false }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--crates') {
       args.crates = (argv[++i] ?? '').split(',').map((s) => s.trim()).filter(Boolean)
     } else if (a.startsWith('--crates=')) {
       args.crates = a.slice('--crates='.length).split(',').map((s) => s.trim()).filter(Boolean)
+    } else if (a === '--exclude') {
+      args.exclude = (argv[++i] ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+    } else if (a.startsWith('--exclude=')) {
+      args.exclude = a.slice('--exclude='.length).split(',').map((s) => s.trim()).filter(Boolean)
     } else if (a === '--only-changed') {
       args.onlyChanged = true
     } else if (a === '--skip-wasm-build') {
@@ -96,6 +104,16 @@ if (args.onlyChanged) {
   targetCrates = available
 }
 
+if (args.exclude.length) {
+  const skipped = targetCrates.filter((c) => args.exclude.includes(c))
+  if (skipped.length) console.log(`Excluding: ${skipped.join(', ')}`)
+  targetCrates = targetCrates.filter((c) => !args.exclude.includes(c))
+  if (!targetCrates.length) {
+    console.log('Every selected crate is excluded — nothing to bench.')
+    process.exit(0)
+  }
+}
+
 console.log(`Running vitest bench for ${targetCrates.length} crate(s): ${targetCrates.join(', ')}\n`)
 
 // Build WASM artefacts in parallel before vitest spawns so the conditional
@@ -154,7 +172,15 @@ if (args.skipWasmBuild) {
   }
 }
 
-const vitestArgs = ['exec', 'vitest', 'bench', '--no-color', '--run']
+// Results are read from vitest's JSON reporter rather than scraped from the
+// console table. Each `await bench(...).run()` inside a `test()` adds one
+// entry to that test's `benchmarks` array; the test is the suite.
+const reportPath = join(tmpdir(), `amigo-vitest-bench-${process.pid}.json`)
+rmSync(reportPath, { force: true })
+const vitestArgs = [
+  'exec', 'vitest', 'bench', '--no-color', '--run',
+  '--reporter=default', '--reporter=json', `--outputFile.json=${reportPath}`,
+]
 // Always scope explicitly so bench-only scaffolding like _ffi-bench/_template
 // doesn't run as a side effect of "bench all".
 for (const c of targetCrates) vitestArgs.push(`crates/${c}/__bench__`)
@@ -162,65 +188,82 @@ for (const c of targetCrates) vitestArgs.push(`crates/${c}/__bench__`)
 const result = spawnSync('pnpm', vitestArgs, {
   cwd: root,
   encoding: 'utf-8',
-  timeout: 600_000,
+  // vitest 5 samples each benchmark for ~1 s (tinybench's default), so a
+  // full run over every crate takes well over the old 10-minute budget.
+  timeout: 3_600_000,
   env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' },
   stdio: ['ignore', 'pipe', 'pipe'],
 })
 
 const output = `${result.stdout || ''}${result.stderr || ''}`
+console.log(output)
 
-if (result.error) {
-  if (!output.includes('·')) {
-    console.error('vitest bench produced no results')
-    console.error(result.error.message)
-    process.exit(1)
-  }
-} else if (result.status !== 0 && !output.includes('·')) {
+if (!existsSync(reportPath)) {
   console.error('vitest bench produced no results')
-  console.error(output || `vitest bench exited with status ${result.status}`)
+  console.error(result.error?.message ?? `vitest bench exited with status ${result.status}`)
   process.exit(1)
 }
 
-console.log(output)
+const report = JSON.parse(readFileSync(reportPath, 'utf-8'))
+rmSync(reportPath, { force: true })
 
+// Shard shape is unchanged from the vitest 4 era:
+//   { file, name, entries: [{ name, hz, rme, samples }] }
+// hz is tinybench's classic ops/sec (1000 / mean latency in ms); rme and
+// samples come from the latency statistics, as the old console table did.
+const round2 = (n) => Math.round(n * 100) / 100
+const crateOf = (relFile) => relFile.match(/^crates\/([^/]+)\//)?.[1]
 const suites = []
-let currentSuite = null
-
-for (const line of output.split('\n')) {
-  const suiteMatch = line.match(/[✓✗]\s+(\S+)\s+>\s+(.+?)\s+\d+ms/)
-  if (suiteMatch) {
-    currentSuite = { file: suiteMatch[1], name: suiteMatch[2], entries: [] }
-    suites.push(currentSuite)
-    continue
+// A crate with any failed benchmark (or a bench file that failed to load)
+// gets no shard this run, so its previous docs/benchmarks data stays intact
+// instead of being overwritten by the subset of suites that completed.
+const failedCrates = new Set()
+for (const file of report.testResults ?? []) {
+  const relFile = relative(root, file.name).split(sep).join('/')
+  if (file.status === 'failed' && file.message) {
+    failedCrates.add(crateOf(relFile))
+    console.error(`Benchmark file failed: ${relFile}\n${file.message.split('\n').slice(0, 5).join('\n')}`)
   }
-
-  const entryMatch = line.match(
-    /·\s+(.+?)\s{2,}([\d,]+(?:\.\d+)?)\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+[\d.]+\s+±([\d.]+)%\s+(\d+)/,
-  )
-  if (entryMatch && currentSuite) {
-    currentSuite.entries.push({
-      name: entryMatch[1].trim(),
-      hz: parseFloat(entryMatch[2].replace(/,/g, '')),
-      rme: parseFloat(entryMatch[3]),
-      samples: parseInt(entryMatch[4], 10),
+  for (const test of file.assertionResults ?? []) {
+    if (test.status === 'failed') {
+      failedCrates.add(crateOf(relFile))
+      console.error(`Benchmark failed: ${relFile} > ${test.fullName}`)
+      for (const msg of test.failureMessages ?? []) console.error(msg.split('\n').slice(0, 5).join('\n'))
+      continue
+    }
+    const tasks = (test.benchmarks ?? []).flatMap((b) => b.tasks)
+    if (!tasks.length) continue
+    suites.push({
+      file: relFile,
+      name: [...test.ancestorTitles, test.title].join(' > '),
+      entries: tasks.map((t) => ({
+        name: t.name,
+        hz: round2(1000 / t.period),
+        rme: round2(t.latency.rme),
+        samples: t.latency.samplesCount,
+      })),
     })
   }
 }
 
 const byCrate = new Map()
 for (const suite of suites) {
-  const m = suite.file?.match(/^crates\/([^/]+)\//)
-  if (!m) continue
-  if (!byCrate.has(m[1])) byCrate.set(m[1], [])
-  byCrate.get(m[1]).push(suite)
+  const crate = crateOf(suite.file)
+  if (!crate) continue
+  if (!byCrate.has(crate)) byCrate.set(crate, [])
+  byCrate.get(crate).push(suite)
 }
 
-if (byCrate.size === 0) {
-  console.error('Parsed output contained no crate-scoped suites')
+if (byCrate.size === 0 && !failedCrates.size) {
+  console.error('vitest bench report contained no crate-scoped suites')
   process.exit(1)
 }
 
 for (const crate of targetCrates) {
+  if (failedCrates.has(crate)) {
+    console.error(`Benchmarks failed for crate ${crate}; shard will not be written.`)
+    continue
+  }
   const crateSuites = byCrate.get(crate) ?? []
   if (!crateSuites.length) {
     console.warn(`No suites produced for crate ${crate}; shard will not be written.`)
@@ -229,4 +272,9 @@ for (const crate of targetCrates) {
   const outPath = join(root, `bench-results-${crate}.json`)
   writeFileSync(outPath, JSON.stringify({ crate, suites: crateSuites }, null, 2))
   console.log(`Written ${outPath} (${crateSuites.length} suites)`)
+}
+
+if (failedCrates.size) {
+  console.error(`\nBenchmark failures in: ${[...failedCrates].sort().join(', ')}`)
+  process.exit(1)
 }

@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { MiniSearch } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -18,22 +18,22 @@ const DOCS = Array.from({ length: 1000 }, (_, i) => ({
   text: `doc ${i} contains alpha beta gamma delta and token${i}`,
 }))
 
-describe('index build (1000 docs)', () => {
-  bench('@amigo-labs/minisearch (napi)', () => {
+test('index build (1000 docs)', async ({ bench }) => {
+  await bench('@amigo-labs/minisearch (napi)', () => {
     const m = new MiniSearch()
     m.addAll(DOCS)
-  })
-  if (wasmMiniSearch) bench('@amigo-labs/minisearch (wasm)', () => {
+  }).run()
+  if (wasmMiniSearch) await bench('@amigo-labs/minisearch (wasm)', () => {
     const m = new wasmMiniSearch!()
     m.addAll(DOCS)
-  })
-  bench('minisearch', () => {
+  }).run()
+  await bench('minisearch', () => {
     const m = new UpstreamMiniSearch({
       fields: ['text'],
       storeFields: ['id'],
     })
     m.addAll(DOCS)
-  })
+  }).run()
 })
 
 const ours = (() => {
@@ -59,26 +59,26 @@ const wasmOurs = wasmMiniSearch
     })()
   : null
 
-describe('query (1000 docs indexed)', () => {
-  bench('@amigo-labs/minisearch (napi) search', () => {
+test('query (1000 docs indexed)', async ({ bench }) => {
+  await bench('@amigo-labs/minisearch (napi) search', () => {
     ours.search('alpha')
-  })
-  if (wasmOurs) bench('@amigo-labs/minisearch (wasm) search', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/minisearch (wasm) search', () => {
     wasmOurs.search('alpha')
-  })
-  bench('minisearch search', () => {
+  }).run()
+  await bench('minisearch search', () => {
     upstream.search('alpha')
-  })
+  }).run()
 })
 
-describe('autosuggest', () => {
-  bench('@amigo-labs/minisearch (napi) autoSuggest', () => {
+test('autosuggest', async ({ bench }) => {
+  await bench('@amigo-labs/minisearch (napi) autoSuggest', () => {
     ours.autoSuggest('alph')
-  })
-  if (wasmOurs) bench('@amigo-labs/minisearch (wasm) autoSuggest', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/minisearch (wasm) autoSuggest', () => {
     wasmOurs.autoSuggest('alph')
-  })
-  bench('minisearch autoSuggest', () => {
+  }).run()
+  await bench('minisearch autoSuggest', () => {
     upstream.autoSuggest('alph')
-  })
+  }).run()
 })

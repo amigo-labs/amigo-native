@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { turndown as ours } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -26,22 +26,22 @@ const MEDIUM = (() => {
   return parts.join('')
 })()
 
-describe('small (~100 bytes)', () => {
-  bench('@amigo-labs/turndown (napi)', () => {
+test('small (~100 bytes)', async ({ bench }) => {
+  await bench('@amigo-labs/turndown (napi)', () => {
     ours(SMALL)
-  })
-  if (wasmOurs) bench('@amigo-labs/turndown (wasm)', () => { wasmOurs!(SMALL) })
-  bench('turndown', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/turndown (wasm)', () => { wasmOurs!(SMALL) }).run()
+  await bench('turndown', () => {
     svc.turndown(SMALL)
-  })
+  }).run()
 })
 
-describe('medium (~5 KB)', () => {
-  bench('@amigo-labs/turndown (napi)', () => {
+test('medium (~5 KB)', async ({ bench }) => {
+  await bench('@amigo-labs/turndown (napi)', () => {
     ours(MEDIUM)
-  })
-  if (wasmOurs) bench('@amigo-labs/turndown (wasm)', () => { wasmOurs!(MEDIUM) })
-  bench('turndown', () => {
+  }).run()
+  if (wasmOurs) await bench('@amigo-labs/turndown (wasm)', () => { wasmOurs!(MEDIUM) }).run()
+  await bench('turndown', () => {
     svc.turndown(MEDIUM)
-  })
+  }).run()
 })

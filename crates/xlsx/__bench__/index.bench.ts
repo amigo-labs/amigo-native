@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { readWorkbook, writeWorkbook } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -26,39 +26,39 @@ function buildRows(n: number) {
 const SMALL = writeWorkbook([{ name: 'S', rows: buildRows(100) }])
 const MEDIUM = writeWorkbook([{ name: 'S', rows: buildRows(5000) }])
 
-describe('read 100-row workbook', () => {
-  bench('@amigo-labs/xlsx (napi) readWorkbook', () => {
+test('read 100-row workbook', async ({ bench }) => {
+  await bench('@amigo-labs/xlsx (napi) readWorkbook', () => {
     readWorkbook(SMALL)
-  })
-  if (wasmReadWorkbook) bench('@amigo-labs/xlsx (wasm) readWorkbook', () => { wasmReadWorkbook!(SMALL) })
-  bench('xlsx (SheetJS)', () => {
+  }).run()
+  if (wasmReadWorkbook) await bench('@amigo-labs/xlsx (wasm) readWorkbook', () => { wasmReadWorkbook!(SMALL) }).run()
+  await bench('xlsx (SheetJS)', () => {
     XLSX.read(SMALL, { type: 'buffer' })
-  })
+  }).run()
 })
 
-describe('read 5000-row workbook', () => {
-  bench('@amigo-labs/xlsx (napi) readWorkbook', () => {
+test('read 5000-row workbook', async ({ bench }) => {
+  await bench('@amigo-labs/xlsx (napi) readWorkbook', () => {
     readWorkbook(MEDIUM)
-  })
-  if (wasmReadWorkbook) bench('@amigo-labs/xlsx (wasm) readWorkbook', () => { wasmReadWorkbook!(MEDIUM) })
-  bench('xlsx (SheetJS)', () => {
+  }).run()
+  if (wasmReadWorkbook) await bench('@amigo-labs/xlsx (wasm) readWorkbook', () => { wasmReadWorkbook!(MEDIUM) }).run()
+  await bench('xlsx (SheetJS)', () => {
     XLSX.read(MEDIUM, { type: 'buffer' })
-  })
+  }).run()
 })
 
 const rows100 = buildRows(100)
 const rows5000 = buildRows(5000)
 
-describe('write 100-row workbook', () => {
-  bench('@amigo-labs/xlsx (napi) writeWorkbook', () => {
+test('write 100-row workbook', async ({ bench }) => {
+  await bench('@amigo-labs/xlsx (napi) writeWorkbook', () => {
     writeWorkbook([{ name: 'S', rows: rows100 }])
-  })
-  if (wasmWriteWorkbook) bench('@amigo-labs/xlsx (wasm) writeWorkbook', () => { wasmWriteWorkbook!([{ name: 'S', rows: rows100 }]) })
+  }).run()
+  if (wasmWriteWorkbook) await bench('@amigo-labs/xlsx (wasm) writeWorkbook', () => { wasmWriteWorkbook!([{ name: 'S', rows: rows100 }]) }).run()
 })
 
-describe('write 5000-row workbook', () => {
-  bench('@amigo-labs/xlsx (napi) writeWorkbook', () => {
+test('write 5000-row workbook', async ({ bench }) => {
+  await bench('@amigo-labs/xlsx (napi) writeWorkbook', () => {
     writeWorkbook([{ name: 'S', rows: rows5000 }])
-  })
-  if (wasmWriteWorkbook) bench('@amigo-labs/xlsx (wasm) writeWorkbook', () => { wasmWriteWorkbook!([{ name: 'S', rows: rows5000 }]) })
+  }).run()
+  if (wasmWriteWorkbook) await bench('@amigo-labs/xlsx (wasm) writeWorkbook', () => { wasmWriteWorkbook!([{ name: 'S', rows: rows5000 }]) }).run()
 })

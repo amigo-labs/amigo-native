@@ -1,8 +1,11 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 // import { something as amigoSomething } from '../index.js'
 // import jsSomething from '<upstream-package>'
 
-describe('jimp — small input', () => {
-  bench.todo('@amigo-labs/jimp')
-  bench.todo('<upstream-package>')
-})
+// Placeholder suite. Replace the `test.todo` with a real benchmark:
+//
+//   test('jimp — small input', async ({ bench }) => {
+//     await bench('@amigo-labs/jimp', () => { amigoSomething(input) }).run()
+//     await bench('<upstream-package>', () => { jsSomething(input) }).run()
+//   })
+test.todo('jimp — small input')

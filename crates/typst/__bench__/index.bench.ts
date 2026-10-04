@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { compile } from '../index.js'
 
 // WASM is built as build output, not committed. On a fresh checkout
@@ -33,23 +33,23 @@ const INVOICE = `
 )
 `
 
-describe('trivial source', () => {
-  bench('@amigo-labs/typst (napi) compile', () => {
+test('trivial source', async ({ bench }) => {
+  await bench('@amigo-labs/typst (napi) compile', () => {
     compile(SMALL)
-  })
-  if (wasmCompile) bench('@amigo-labs/typst (wasm) compile', () => { wasmCompile!(SMALL) })
+  }).run()
+  if (wasmCompile) await bench('@amigo-labs/typst (wasm) compile', () => { wasmCompile!(SMALL) }).run()
 })
 
-describe('multi-section report (10 sections)', () => {
-  bench('@amigo-labs/typst (napi) compile', () => {
+test('multi-section report (10 sections)', async ({ bench }) => {
+  await bench('@amigo-labs/typst (napi) compile', () => {
     compile(MEDIUM)
-  })
-  if (wasmCompile) bench('@amigo-labs/typst (wasm) compile', () => { wasmCompile!(MEDIUM) })
+  }).run()
+  if (wasmCompile) await bench('@amigo-labs/typst (wasm) compile', () => { wasmCompile!(MEDIUM) }).run()
 })
 
-describe('invoice with 20-row table', () => {
-  bench('@amigo-labs/typst (napi) compile', () => {
+test('invoice with 20-row table', async ({ bench }) => {
+  await bench('@amigo-labs/typst (napi) compile', () => {
     compile(INVOICE)
-  })
-  if (wasmCompile) bench('@amigo-labs/typst (wasm) compile', () => { wasmCompile!(INVOICE) })
+  }).run()
+  if (wasmCompile) await bench('@amigo-labs/typst (wasm) compile', () => { wasmCompile!(INVOICE) }).run()
 })

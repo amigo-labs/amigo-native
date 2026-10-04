@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { slugify as amigoSlugify } from '../index.js'
 import jsSlugify from 'slugify'
 
@@ -24,50 +24,50 @@ const longAscii =
 const unicodeHeavy =
   'Ärger über Übel — café résumé naïve 日本語テスト العربية Ñoño crème brûlée Cześć Łódź Москва κόσμε'
 
-describe('slugify - short ASCII (20 chars)', () => {
-  bench('@amigo-labs/slugify (napi)', () => {
+test('slugify - short ASCII (20 chars)', async ({ bench }) => {
+  await bench('@amigo-labs/slugify (napi)', () => {
     amigoSlugify(shortAscii)
-  })
+  }).run()
 
   if (wasmSlugify) {
-    bench('@amigo-labs/slugify (wasm)', () => {
+    await bench('@amigo-labs/slugify (wasm)', () => {
       wasmSlugify!(shortAscii)
-    })
+    }).run()
   }
 
-  bench('slugify (npm)', () => {
+  await bench('slugify (npm)', () => {
     jsSlugify(shortAscii, { lower: true, strict: true })
-  })
+  }).run()
 })
 
-describe('slugify - long ASCII (500 chars)', () => {
-  bench('@amigo-labs/slugify (napi)', () => {
+test('slugify - long ASCII (500 chars)', async ({ bench }) => {
+  await bench('@amigo-labs/slugify (napi)', () => {
     amigoSlugify(longAscii)
-  })
+  }).run()
 
   if (wasmSlugify) {
-    bench('@amigo-labs/slugify (wasm)', () => {
+    await bench('@amigo-labs/slugify (wasm)', () => {
       wasmSlugify!(longAscii)
-    })
+    }).run()
   }
 
-  bench('slugify (npm)', () => {
+  await bench('slugify (npm)', () => {
     jsSlugify(longAscii, { lower: true, strict: true })
-  })
+  }).run()
 })
 
-describe('slugify - unicode heavy', () => {
-  bench('@amigo-labs/slugify (napi)', () => {
+test('slugify - unicode heavy', async ({ bench }) => {
+  await bench('@amigo-labs/slugify (napi)', () => {
     amigoSlugify(unicodeHeavy)
-  })
+  }).run()
 
   if (wasmSlugify) {
-    bench('@amigo-labs/slugify (wasm)', () => {
+    await bench('@amigo-labs/slugify (wasm)', () => {
       wasmSlugify!(unicodeHeavy)
-    })
+    }).run()
   }
 
-  bench('slugify (npm)', () => {
+  await bench('slugify (npm)', () => {
     jsSlugify(unicodeHeavy, { lower: true, strict: true })
-  })
+  }).run()
 })

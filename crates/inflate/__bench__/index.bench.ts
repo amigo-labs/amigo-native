@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { deflate as amigoDeflate, inflate as amigoInflate } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -36,93 +36,93 @@ const smallDeflated = amigoDeflate(small)
 const mediumTextDeflated = amigoDeflate(mediumText)
 const largeTextDeflated = amigoDeflate(largeText)
 
-describe('inflate — deflate 1KB text', () => {
-  bench('@amigo-labs/inflate (napi)', () => {
+test('inflate — deflate 1KB text', async ({ bench }) => {
+  await bench('@amigo-labs/inflate (napi)', () => {
     amigoDeflate(small)
-  })
-  if (wasmAmigoDeflate) bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(small) })
-  bench('pako', () => {
+  }).run()
+  if (wasmAmigoDeflate) await bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(small) }).run()
+  await bench('pako', () => {
     pako.deflate(small)
-  })
-  bench('node:zlib', () => {
+  }).run()
+  await bench('node:zlib', () => {
     zlib.deflateSync(small)
-  })
+  }).run()
 })
 
-describe('inflate — deflate 100KB text', () => {
-  bench('@amigo-labs/inflate (napi)', () => {
+test('inflate — deflate 100KB text', async ({ bench }) => {
+  await bench('@amigo-labs/inflate (napi)', () => {
     amigoDeflate(mediumText)
-  })
-  if (wasmAmigoDeflate) bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(mediumText) })
-  bench('pako', () => {
+  }).run()
+  if (wasmAmigoDeflate) await bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(mediumText) }).run()
+  await bench('pako', () => {
     pako.deflate(mediumText)
-  })
-  bench('node:zlib', () => {
+  }).run()
+  await bench('node:zlib', () => {
     zlib.deflateSync(mediumText)
-  })
+  }).run()
 })
 
-describe('inflate — deflate 100KB random', () => {
-  bench('@amigo-labs/inflate (napi)', () => {
+test('inflate — deflate 100KB random', async ({ bench }) => {
+  await bench('@amigo-labs/inflate (napi)', () => {
     amigoDeflate(mediumRandom)
-  })
-  if (wasmAmigoDeflate) bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(mediumRandom) })
-  bench('pako', () => {
+  }).run()
+  if (wasmAmigoDeflate) await bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(mediumRandom) }).run()
+  await bench('pako', () => {
     pako.deflate(mediumRandom)
-  })
-  bench('node:zlib', () => {
+  }).run()
+  await bench('node:zlib', () => {
     zlib.deflateSync(mediumRandom)
-  })
+  }).run()
 })
 
-describe('inflate — deflate 10MB text', () => {
-  bench('@amigo-labs/inflate (napi)', () => {
+test('inflate — deflate 10MB text', async ({ bench }) => {
+  await bench('@amigo-labs/inflate (napi)', () => {
     amigoDeflate(largeText)
-  })
-  if (wasmAmigoDeflate) bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(largeText) })
-  bench('pako', () => {
+  }).run()
+  if (wasmAmigoDeflate) await bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoDeflate!(largeText) }).run()
+  await bench('pako', () => {
     pako.deflate(largeText)
-  })
-  bench('node:zlib', () => {
+  }).run()
+  await bench('node:zlib', () => {
     zlib.deflateSync(largeText)
-  })
+  }).run()
 })
 
-describe('inflate — inflate 1KB', () => {
-  bench('@amigo-labs/inflate (napi)', () => {
+test('inflate — inflate 1KB', async ({ bench }) => {
+  await bench('@amigo-labs/inflate (napi)', () => {
     amigoInflate(smallDeflated)
-  })
-  if (wasmAmigoInflate) bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoInflate!(smallDeflated) })
-  bench('pako', () => {
+  }).run()
+  if (wasmAmigoInflate) await bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoInflate!(smallDeflated) }).run()
+  await bench('pako', () => {
     pako.inflate(smallDeflated)
-  })
-  bench('node:zlib', () => {
+  }).run()
+  await bench('node:zlib', () => {
     zlib.inflateSync(smallDeflated)
-  })
+  }).run()
 })
 
-describe('inflate — inflate 100KB', () => {
-  bench('@amigo-labs/inflate (napi)', () => {
+test('inflate — inflate 100KB', async ({ bench }) => {
+  await bench('@amigo-labs/inflate (napi)', () => {
     amigoInflate(mediumTextDeflated)
-  })
-  if (wasmAmigoInflate) bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoInflate!(mediumTextDeflated) })
-  bench('pako', () => {
+  }).run()
+  if (wasmAmigoInflate) await bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoInflate!(mediumTextDeflated) }).run()
+  await bench('pako', () => {
     pako.inflate(mediumTextDeflated)
-  })
-  bench('node:zlib', () => {
+  }).run()
+  await bench('node:zlib', () => {
     zlib.inflateSync(mediumTextDeflated)
-  })
+  }).run()
 })
 
-describe('inflate — inflate 10MB', () => {
-  bench('@amigo-labs/inflate (napi)', () => {
+test('inflate — inflate 10MB', async ({ bench }) => {
+  await bench('@amigo-labs/inflate (napi)', () => {
     amigoInflate(largeTextDeflated)
-  })
-  if (wasmAmigoInflate) bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoInflate!(largeTextDeflated) })
-  bench('pako', () => {
+  }).run()
+  if (wasmAmigoInflate) await bench('@amigo-labs/inflate (wasm)', () => { wasmAmigoInflate!(largeTextDeflated) }).run()
+  await bench('pako', () => {
     pako.inflate(largeTextDeflated)
-  })
-  bench('node:zlib', () => {
+  }).run()
+  await bench('node:zlib', () => {
     zlib.inflateSync(largeTextDeflated)
-  })
+  }).run()
 })

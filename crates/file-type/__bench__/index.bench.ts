@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { fileTypeFromBufferSync as amigoSync, fileTypeFromBuffer as amigoAsync } from '../index.js'
 // WASM is built as build output, not committed. On a fresh checkout
 // run `pnpm build:wasm` before `pnpm bench` to include the WASM
@@ -30,39 +30,39 @@ const mp4Large = Buffer.concat([
   Buffer.alloc(10 * 1024 * 1024 - 12, 0x00),
 ])
 
-describe('file-type — small header (12 bytes PNG)', () => {
-  bench('@amigo-labs/file-type (napi) (sync)', () => {
+test('file-type — small header (12 bytes PNG)', async ({ bench }) => {
+  await bench('@amigo-labs/file-type (napi) (sync)', () => {
     amigoSync(pngHeader)
-  })
+  }).run()
 
-  if (wasmAmigoSync) bench('@amigo-labs/file-type (wasm) (sync)', () => { wasmAmigoSync!(pngHeader) })
-  bench('file-type (upstream async)', async () => {
+  if (wasmAmigoSync) await bench('@amigo-labs/file-type (wasm) (sync)', () => { wasmAmigoSync!(pngHeader) }).run()
+  await bench('file-type (upstream async)', async () => {
     await upstream(new Uint8Array(pngHeader))
-  })
+  }).run()
 })
 
-describe('file-type — medium JPEG buffer (100KB)', () => {
-  bench('@amigo-labs/file-type (napi) (sync)', () => {
+test('file-type — medium JPEG buffer (100KB)', async ({ bench }) => {
+  await bench('@amigo-labs/file-type (napi) (sync)', () => {
     amigoSync(jpegMedium)
-  })
+  }).run()
 
-  if (wasmAmigoSync) bench('@amigo-labs/file-type (wasm) (sync)', () => { wasmAmigoSync!(jpegMedium) })
-  bench('file-type (upstream async)', async () => {
+  if (wasmAmigoSync) await bench('@amigo-labs/file-type (wasm) (sync)', () => { wasmAmigoSync!(jpegMedium) }).run()
+  await bench('file-type (upstream async)', async () => {
     await upstream(new Uint8Array(jpegMedium))
-  })
+  }).run()
 })
 
-describe('file-type — large MP4 buffer (10MB)', () => {
-  bench('@amigo-labs/file-type (napi) (sync)', () => {
+test('file-type — large MP4 buffer (10MB)', async ({ bench }) => {
+  await bench('@amigo-labs/file-type (napi) (sync)', () => {
     amigoSync(mp4Large)
-  })
+  }).run()
 
-  if (wasmAmigoSync) bench('@amigo-labs/file-type (wasm) (sync)', () => { wasmAmigoSync!(mp4Large) })
-  bench('@amigo-labs/file-type (napi) (async)', async () => {
+  if (wasmAmigoSync) await bench('@amigo-labs/file-type (wasm) (sync)', () => { wasmAmigoSync!(mp4Large) }).run()
+  await bench('@amigo-labs/file-type (napi) (async)', async () => {
     await amigoAsync(mp4Large)
-  })
+  }).run()
 
-  bench('file-type (upstream async)', async () => {
+  await bench('file-type (upstream async)', async () => {
     await upstream(new Uint8Array(mp4Large))
-  })
+  }).run()
 })

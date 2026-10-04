@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { generate, generateMany } from '../index.js'
 
 // WASM is built as build output, not committed. On a fresh checkout
@@ -46,23 +46,23 @@ const A4_REPORT = {
   })),
 }
 
-describe('simple label', () => {
-  bench('@amigo-labs/pdf (napi) generate', () => {
+test('simple label', async ({ bench }) => {
+  await bench('@amigo-labs/pdf (napi) generate', () => {
     generate(SIMPLE_LABEL)
-  })
-  if (wasmGenerate) bench('@amigo-labs/pdf (wasm) generate', () => { wasmGenerate!(SIMPLE_LABEL) })
+  }).run()
+  if (wasmGenerate) await bench('@amigo-labs/pdf (wasm) generate', () => { wasmGenerate!(SIMPLE_LABEL) }).run()
 })
 
-describe('A4 multi-page report', () => {
-  bench('@amigo-labs/pdf (napi) generate', () => {
+test('A4 multi-page report', async ({ bench }) => {
+  await bench('@amigo-labs/pdf (napi) generate', () => {
     generate(A4_REPORT)
-  })
-  if (wasmGenerate) bench('@amigo-labs/pdf (wasm) generate', () => { wasmGenerate!(A4_REPORT) })
+  }).run()
+  if (wasmGenerate) await bench('@amigo-labs/pdf (wasm) generate', () => { wasmGenerate!(A4_REPORT) }).run()
 })
 
-describe('batch 100 labels', () => {
-  bench('@amigo-labs/pdf (napi) generateMany', () => {
+test('batch 100 labels', async ({ bench }) => {
+  await bench('@amigo-labs/pdf (napi) generateMany', () => {
     generateMany(Array.from({ length: 100 }, () => SIMPLE_LABEL))
-  })
-  if (wasmGenerateMany) bench('@amigo-labs/pdf (wasm) generateMany', () => { wasmGenerateMany!(Array.from({ length: 100 }, () => SIMPLE_LABEL)) })
+  }).run()
+  if (wasmGenerateMany) await bench('@amigo-labs/pdf (wasm) generateMany', () => { wasmGenerateMany!(Array.from({ length: 100 }, () => SIMPLE_LABEL)) }).run()
 })

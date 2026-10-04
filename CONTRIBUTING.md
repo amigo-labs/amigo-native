@@ -76,7 +76,17 @@ WASM sub-crate at `crates/<name>/wasm/` — with the dual-target
 3. Add the test suite at `crates/<name>/__test__/` and the upstream
    conformance corpus at `crates/<name>/__conformance__/`.
 4. Add benchmarks at `crates/<name>/__bench__/` that compare against the
-   JS alternative you're replacing.
+   JS alternative you're replacing. Each scenario is one `test()` that
+   runs its contenders in order (vitest 5 benchmark API); the test name
+   becomes the suite name in `docs/benchmarks/<name>.json`:
+
+   ```ts
+   test('<name> — small input', async ({ bench }) => {
+     await bench('@amigo-labs/<name> (napi)', () => { amigoFn(input) }).run()
+     if (wasmFn) await bench('@amigo-labs/<name> (wasm)', () => { wasmFn(input) }).run()
+     await bench('<upstream-package>', () => { jsFn(input) }).run()
+   })
+   ```
 5. Fill in the WASM sub-crate at `crates/<name>/wasm/`, mirroring the
    slugify pilot:
    - `wasm/src/lib.rs`: `#[wasm_bindgen]` wrappers with
