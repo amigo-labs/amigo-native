@@ -60,8 +60,8 @@ test('csv parse - 10,000 rows, 5 cols', async ({ bench }) => {
 // --- parse (100k rows) ---
 
 test('csv parse - 100,000 rows, 10 cols', async ({ bench }) => {
-  await bench('@amigo-labs/csv (napi)', () => { amigoParse(buf100k) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
-  await bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf100k)) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
-  await bench('csv-parse (sync)', () => { csvParseSyncFn(csv100k, { columns: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
-  await bench('papaparse', () => { Papa.parse(csv100k, { header: true }) }, { time: 10000, iterations: 3, warmupIterations: 1 }).run()
+  await bench('@amigo-labs/csv (napi)', () => { amigoParse(buf100k) }).run({ time: 10000, iterations: 3, warmupIterations: 1 })
+  await bench('@amigo-labs/csv (napi) (parseToJson)', () => { JSON.parse(amigoParseJson(buf100k)) }).run({ time: 10000, iterations: 3, warmupIterations: 1 })
+  await bench('csv-parse (sync)', () => { csvParseSyncFn(csv100k, { columns: true }) }).run({ time: 10000, iterations: 3, warmupIterations: 1 })
+  await bench('papaparse', () => { Papa.parse(csv100k, { header: true }) }).run({ time: 10000, iterations: 3, warmupIterations: 1 })
 })

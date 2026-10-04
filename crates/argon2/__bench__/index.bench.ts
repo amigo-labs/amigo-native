@@ -41,8 +41,7 @@ test('argon2 - hash (low-cost)', async ({ bench }) => {
     () => {
       amigoHashSync(password, lowCostOpts)
     },
-    { time: 10000, iterations: 5, warmupIterations: 1 },
-  ).run()
+  ).run({ time: 10000, iterations: 5, warmupIterations: 1 })
 
   if (nodeArgon2) {
     const argon2 = nodeArgon2
@@ -55,8 +54,7 @@ test('argon2 - hash (low-cost)', async ({ bench }) => {
           parallelism: 1,
         })
       },
-      { time: 10000, iterations: 5, warmupIterations: 1 },
-    ).run()
+    ).run({ time: 10000, iterations: 5, warmupIterations: 1 })
   }
 
   if (hashWasm) {
@@ -74,8 +72,7 @@ test('argon2 - hash (low-cost)', async ({ bench }) => {
           outputType: 'encoded',
         })
       },
-      { time: 10000, iterations: 5, warmupIterations: 1 },
-    ).run()
+    ).run({ time: 10000, iterations: 5, warmupIterations: 1 })
   }
 })
 
@@ -85,8 +82,7 @@ test('argon2 - verify', async ({ bench }) => {
     () => {
       amigoVerifySync(amigoHash, password)
     },
-    { time: 10000, iterations: 5, warmupIterations: 1 },
-  ).run()
+  ).run({ time: 10000, iterations: 5, warmupIterations: 1 })
 
   if (nodeArgon2 && nodeArgon2Hash) {
     const argon2 = nodeArgon2
@@ -96,7 +92,6 @@ test('argon2 - verify', async ({ bench }) => {
       async () => {
         await argon2.verify(hash, password)
       },
-      { time: 10000, iterations: 5, warmupIterations: 1 },
-    ).run()
+    ).run({ time: 10000, iterations: 5, warmupIterations: 1 })
   }
 })

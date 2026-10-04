@@ -21,16 +21,14 @@ test('jwkThumbprint - Ed25519', async ({ bench }) => {
     () => {
       amigoThumbprint(edJwk)
     },
-    { time: 3000, warmupIterations: 10 },
-  ).run()
+  ).run({ time: 3000, warmupIterations: 10 })
 
   await bench(
     'jose (panva, pure JS)',
     async () => {
       await jose.calculateJwkThumbprint(edJwk, 'sha256')
     },
-    { time: 3000, warmupIterations: 10 },
-  ).run()
+  ).run({ time: 3000, warmupIterations: 10 })
 })
 
 test('jwkThumbprint - RSA-2048', async ({ bench }) => {
@@ -39,16 +37,14 @@ test('jwkThumbprint - RSA-2048', async ({ bench }) => {
     () => {
       amigoThumbprint(rsaJwk)
     },
-    { time: 3000, warmupIterations: 10 },
-  ).run()
+  ).run({ time: 3000, warmupIterations: 10 })
 
   await bench(
     'jose (panva, pure JS)',
     async () => {
       await jose.calculateJwkThumbprint(rsaJwk, 'sha256')
     },
-    { time: 3000, warmupIterations: 10 },
-  ).run()
+  ).run({ time: 3000, warmupIterations: 10 })
 })
 
 test('generateEd25519KeyPair', async ({ bench }) => {
@@ -57,8 +53,7 @@ test('generateEd25519KeyPair', async ({ bench }) => {
     () => {
       amigoGenEd25519()
     },
-    { time: 3000, warmupIterations: 5 },
-  ).run()
+  ).run({ time: 3000, warmupIterations: 5 })
 
   await bench(
     'jose (panva, pure JS) — generateKeyPair Ed25519 + exportJWK',
@@ -69,6 +64,5 @@ test('generateEd25519KeyPair', async ({ bench }) => {
       await jose.exportJWK(publicKey)
       await jose.exportJWK(privateKey)
     },
-    { time: 3000, warmupIterations: 2 },
-  ).run()
+  ).run({ time: 3000, warmupIterations: 2 })
 })

@@ -212,13 +212,24 @@ rmSync(reportPath, { force: true })
 // hz is tinybench's classic ops/sec (1000 / mean latency in ms); rme and
 // samples come from the latency statistics, as the old console table did.
 const round2 = (n) => Math.round(n * 100) / 100
+const crateOf = (relFile) => relFile.match(/^crates\/([^/]+)\//)?.[1]
 const suites = []
+// A crate with any failed benchmark (or a bench file that failed to load)
+// gets no shard this run, so its previous docs/benchmarks data stays intact
+// instead of being overwritten by the subset of suites that completed.
+const failedCrates = new Set()
 for (const file of report.testResults ?? []) {
   const relFile = relative(root, file.name).split(sep).join('/')
+  if (file.status === 'failed' && file.message) {
+    failedCrates.add(crateOf(relFile))
+    console.error(`Benchmark file failed: ${relFile}\n${file.message.split('\n').slice(0, 5).join('\n')}`)
+  }
   for (const test of file.assertionResults ?? []) {
     if (test.status === 'failed') {
-      console.warn(`Benchmark failed: ${relFile} > ${test.fullName}`)
-      for (const msg of test.failureMessages ?? []) console.warn(msg.split('\n').slice(0, 5).join('\n'))
+      failedCrates.add(crateOf(relFile))
+      console.error(`Benchmark failed: ${relFile} > ${test.fullName}`)
+      for (const msg of test.failureMessages ?? []) console.error(msg.split('\n').slice(0, 5).join('\n'))
+      continue
     }
     const tasks = (test.benchmarks ?? []).flatMap((b) => b.tasks)
     if (!tasks.length) continue
@@ -237,18 +248,22 @@ for (const file of report.testResults ?? []) {
 
 const byCrate = new Map()
 for (const suite of suites) {
-  const m = suite.file?.match(/^crates\/([^/]+)\//)
-  if (!m) continue
-  if (!byCrate.has(m[1])) byCrate.set(m[1], [])
-  byCrate.get(m[1]).push(suite)
+  const crate = crateOf(suite.file)
+  if (!crate) continue
+  if (!byCrate.has(crate)) byCrate.set(crate, [])
+  byCrate.get(crate).push(suite)
 }
 
-if (byCrate.size === 0) {
+if (byCrate.size === 0 && !failedCrates.size) {
   console.error('vitest bench report contained no crate-scoped suites')
   process.exit(1)
 }
 
 for (const crate of targetCrates) {
+  if (failedCrates.has(crate)) {
+    console.error(`Benchmarks failed for crate ${crate}; shard will not be written.`)
+    continue
+  }
   const crateSuites = byCrate.get(crate) ?? []
   if (!crateSuites.length) {
     console.warn(`No suites produced for crate ${crate}; shard will not be written.`)
@@ -257,4 +272,9 @@ for (const crate of targetCrates) {
   const outPath = join(root, `bench-results-${crate}.json`)
   writeFileSync(outPath, JSON.stringify({ crate, suites: crateSuites }, null, 2))
   console.log(`Written ${outPath} (${crateSuites.length} suites)`)
+}
+
+if (failedCrates.size) {
+  console.error(`\nBenchmark failures in: ${[...failedCrates].sort().join(', ')}`)
+  process.exit(1)
 }
