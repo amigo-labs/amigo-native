@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-18",
-  "nodeVersion": "v24.19.0",
+  "generatedAt": "2026-10-07",
+  "nodeVersion": "v24.21.0",
   "platform": "linux x64",
   "benchmarks": {
     "suites": [
@@ -10,21 +10,21 @@
         "entries": [
           {
             "name": "@amigo-labs/argon2",
-            "hz": 325.22,
-            "rme": 0.03,
-            "samples": 3253
+            "hz": 300.89,
+            "rme": 0.14,
+            "samples": 3009
           },
           {
             "name": "argon2 (npm, C-bindings)",
-            "hz": 241.73,
-            "rme": 0.11,
-            "samples": 2418
+            "hz": 235.93,
+            "rme": 0.18,
+            "samples": 2360
           },
           {
             "name": "hash-wasm (WASM)",
-            "hz": 140.15,
+            "hz": 129.86,
             "rme": 0.73,
-            "samples": 1402
+            "samples": 1299
           }
         ]
       },
@@ -34,9 +34,15 @@
         "entries": [
           {
             "name": "@amigo-labs/argon2",
-            "hz": 324.94,
-            "rme": 0.05,
-            "samples": 3250
+            "hz": 302.52,
+            "rme": 0.04,
+            "samples": 3026
+          },
+          {
+            "name": "argon2 (npm, C-bindings)",
+            "hz": 236.88,
+            "rme": 0.11,
+            "samples": 2369
           }
         ]
       },
@@ -2330,9 +2336,9 @@
   "sizes": {
     "argon2": {
       "@amigo-labs/argon2": {
-        "installSize": 24891,
+        "installSize": 491839,
         "type": "binary+shim",
-        "napi": 24891
+        "napi": 491839
       },
       "argon2": {
         "installSize": 1318230,
@@ -2428,7 +2434,7 @@
         "napi": 25017
       },
       "file-type": {
-        "installSize": 311034,
+        "installSize": 311979,
         "type": "node_modules"
       }
     },
@@ -2568,7 +2574,7 @@
         "napi": 24833
       },
       "pdfkit": {
-        "installSize": 20441215,
+        "installSize": 22303137,
         "type": "node_modules"
       }
     },
@@ -2611,16 +2617,16 @@
     },
     "sanitize-html": {
       "@amigo-labs/sanitize-html": {
-        "installSize": 1374968,
+        "installSize": 25648,
         "type": "binary+shim",
-        "napi": 1374968
+        "napi": 25648
       },
       "sanitize-html": {
-        "installSize": 1594752,
+        "installSize": 1599361,
         "type": "node_modules"
       },
       "isomorphic-dompurify": {
-        "installSize": 15674312,
+        "installSize": 15511702,
         "type": "node_modules"
       }
     },
@@ -2631,7 +2637,7 @@
         "napi": 25756
       },
       "sbd": {
-        "installSize": 2133504,
+        "installSize": 2241187,
         "type": "node_modules"
       }
     },
@@ -2653,7 +2659,7 @@
         "napi": 25618
       },
       "natural": {
-        "installSize": 65247286,
+        "installSize": 65346619,
         "type": "node_modules"
       }
     },
@@ -2664,7 +2670,7 @@
         "napi": 25049
       },
       "svgo": {
-        "installSize": 7075263,
+        "installSize": 6891869,
         "type": "node_modules"
       }
     },
@@ -2675,7 +2681,7 @@
         "napi": 25947
       },
       "@langchain/textsplitters": {
-        "installSize": 38393865,
+        "installSize": 40178791,
         "type": "node_modules"
       }
     },
@@ -2686,7 +2692,7 @@
         "napi": 25507
       },
       "tldts": {
-        "installSize": 3351699,
+        "installSize": 3350518,
         "type": "node_modules"
       },
       "psl": {
@@ -2716,7 +2722,7 @@
         "type": "node_modules"
       },
       "puppeteer": {
-        "installSize": 24279947,
+        "installSize": 24386495,
         "type": "node_modules"
       },
       "pdfmake": {
@@ -2735,7 +2741,7 @@
         "type": "node_modules"
       },
       "exceljs": {
-        "installSize": 30048334,
+        "installSize": 34861211,
         "type": "node_modules"
       }
     },
@@ -2776,7 +2782,7 @@
         "napi": 25026
       },
       "@mongodb-js/zstd": {
-        "installSize": 1248502,
+        "installSize": 1248737,
         "type": "node_modules"
       },
       "fzstd": {

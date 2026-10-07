@@ -62,7 +62,7 @@
       "title": "Argon2",
       "category": "crypto",
       "description": "Argon2id password hashing with sync + async API.",
-      "speedup": "1.35× faster",
+      "speedup": "1.28× faster",
       "targets": [
         "node"
       ],

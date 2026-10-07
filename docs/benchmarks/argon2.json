@@ -1,9 +1,9 @@
 {
   "crate": "argon2",
-  "generatedAt": "2026-05-22T13:00:24.045Z",
-  "commit": "b67b03d",
+  "generatedAt": "2026-10-07T21:18:50.615Z",
+  "commit": "80b2e3a",
   "runner": "linux-x64",
-  "nodeVersion": "v24.15.0",
+  "nodeVersion": "v24.21.0",
   "suites": [
     {
       "file": "crates/argon2/__bench__/index.bench.ts",
@@ -11,21 +11,21 @@
       "entries": [
         {
           "name": "@amigo-labs/argon2",
-          "hz": 325.22,
-          "rme": 0.03,
-          "samples": 3253
+          "hz": 300.89,
+          "rme": 0.14,
+          "samples": 3009
         },
         {
           "name": "argon2 (npm, C-bindings)",
-          "hz": 241.73,
-          "rme": 0.11,
-          "samples": 2418
+          "hz": 235.93,
+          "rme": 0.18,
+          "samples": 2360
         },
         {
           "name": "hash-wasm (WASM)",
-          "hz": 140.15,
+          "hz": 129.86,
           "rme": 0.73,
-          "samples": 1402
+          "samples": 1299
         }
       ]
     },
@@ -35,9 +35,15 @@
       "entries": [
         {
           "name": "@amigo-labs/argon2",
-          "hz": 324.94,
-          "rme": 0.05,
-          "samples": 3250
+          "hz": 302.52,
+          "rme": 0.04,
+          "samples": 3026
+        },
+        {
+          "name": "argon2 (npm, C-bindings)",
+          "hz": 236.88,
+          "rme": 0.11,
+          "samples": 2369
         }
       ]
     }
