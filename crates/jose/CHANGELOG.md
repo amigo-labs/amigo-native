@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/amigo-labs/amigo-native/compare/jose@0.3.0...jose@0.3.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* **bench:** pass sampling options to run(), fail on partial results ([86f6c89](https://github.com/amigo-labs/amigo-native/commit/86f6c89373fb4d5f6c574acc69e84c422a6a16fa))
+
 ## [0.3.0](https://github.com/amigo-labs/amigo-native/compare/jose@0.2.0...jose@0.3.0) (2026-07-21)
 
 
