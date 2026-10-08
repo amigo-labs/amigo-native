@@ -45,7 +45,7 @@
     "js-tiktoken": "^1.0.21",
     "jsonwebtoken": "^9.0.2",
     "leven": "^4.0.0",
-    "nanoid": "^5.1.11",
+    "nanoid": "^6.0.1",
     "oxlint": "^1.85.0",
     "pako": "^2.1.0",
     "papaparse": "^5.7.0",
