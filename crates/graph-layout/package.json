@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@dagrejs/dagre": "^3.1.1",
-    "@napi-rs/cli": "^3.10.5",
+    "@napi-rs/cli": "^3.10.8",
     "fast-check": "^4.10.2",
     "vitest": "^5.0.3"
   },

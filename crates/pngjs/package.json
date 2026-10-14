@@ -51,7 +51,7 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.10.5",
+    "@napi-rs/cli": "^3.10.8",
     "fast-check": "^4.10.2",
     "pngjs": "^7.0.0",
     "upng-js": "^2.1.0",

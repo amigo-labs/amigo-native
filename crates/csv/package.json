@@ -54,7 +54,7 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.10.5",
+    "@napi-rs/cli": "^3.10.8",
     "csv-parse": "^7.0.3",
     "fast-check": "^4.10.2",
     "papaparse": "^5.7.0",
