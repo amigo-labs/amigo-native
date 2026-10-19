@@ -55,7 +55,7 @@
     "@napi-rs/cli": "^3.10.5",
     "fast-check": "^4.10.2",
     "fuse.js": "^7.5.0",
-    "fuzzysort": "^3.0.0",
+    "fuzzysort": "^4.0.2",
     "vitest": "^5.0.3"
   },
   "license": "MIT",
