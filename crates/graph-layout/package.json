@@ -52,10 +52,10 @@
     "bench": "vitest bench"
   },
   "devDependencies": {
-    "@dagrejs/dagre": "^3.1.1",
-    "@napi-rs/cli": "^3.10.5",
+    "@dagrejs/dagre": "^3.1.2",
+    "@napi-rs/cli": "^3.10.9",
     "fast-check": "^4.10.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.5"
   },
   "license": "MIT",
   "repository": {
