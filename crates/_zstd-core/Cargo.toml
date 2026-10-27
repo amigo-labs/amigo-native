@@ -13,7 +13,7 @@ workspace = true
 # Use `ruzstd` (pure-Rust, decompress-only) for the WASM build and the
 # C-backed `zstd` for everything else.
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-zstd = "0.13"
+zstd = "0.14.3"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-ruzstd = "0.8"
+ruzstd = "0.9.1"

@@ -10,4 +10,4 @@ workspace = true
 [lib]
 
 [dependencies]
-zip = { version = "8", default-features = false, features = ["deflate", "deflate-flate2"] }
+zip = { version = "9", default-features = false, features = ["deflate", "deflate-flate2"] }
