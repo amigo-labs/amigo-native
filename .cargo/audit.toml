@@ -64,6 +64,7 @@ ignore = [
     # local timing/microarchitectural observation of the signing process;
     # the `aws_lc_rs` backend would avoid it at the toolchain cost noted
     # for RUSTSEC-2023-0071. Re-evaluate when jsonwebtoken moves to
-    # p256/p384 0.14 (elliptic-curve 0.14, crypto-bigint 0.7).
+    # p256/p384 0.14 (elliptic-curve 0.14, crypto-bigint 0.7). Tracked in
+    # https://github.com/amigo-labs/amigo-native/issues/266.
     "RUSTSEC-2026-0387",
 ]
