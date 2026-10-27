@@ -38,3 +38,10 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    # The ref after `@` on dtolnay/rust-toolchain pins the Rust *toolchain*
+    # version, not the action release. Dependabot reads it as an action tag
+    # and bumps to a tag that is not a real Rust release (e.g. 1.120.0),
+    # which 404s at `rustup toolchain install` and breaks every Rust job.
+    # Toolchain upgrades are made by hand against a real Rust version.
+    ignore:
+      - dependency-name: "dtolnay/rust-toolchain"
