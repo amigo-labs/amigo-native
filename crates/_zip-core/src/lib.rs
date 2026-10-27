@@ -37,7 +37,7 @@ pub fn entries_from_buffer(buf: &[u8]) -> Result<Vec<ZipEntryInfo>, String> {
     for i in 0..ar.len() {
         let f = ar.by_index(i).map_err(|e| e.to_string())?;
         out.push(ZipEntryInfo {
-            name: f.name().to_string(),
+            name: f.name().map_err(|e| e.to_string())?.into_owned(),
             size: f.size(),
             compressed_size: f.compressed_size(),
             is_dir: f.is_dir(),
@@ -66,7 +66,7 @@ pub fn extract_all_from_buffer(buf: &[u8]) -> Result<Vec<ZipEntryData>, String> 
         let mut bytes = Vec::with_capacity(prealloc_size(f.size()));
         f.read_to_end(&mut bytes).map_err(|e| e.to_string())?;
         out.push(ZipEntryData {
-            name: f.name().to_string(),
+            name: f.name().map_err(|e| e.to_string())?.into_owned(),
             data: bytes,
         });
     }

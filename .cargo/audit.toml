@@ -55,4 +55,16 @@ ignore = [
     # `lopdf` (both the 0.42 parse path and 0.39 via printpdf). Warning-
     # level only; re-evaluate when lopdf moves to a maintained fork.
     "RUSTSEC-2026-0192",
+    # `crypto-bigint 0.5.5` has timing variability in operations meant to
+    # be constant-time per RUSTSEC-2026-0387 (fixed in 0.7.6). Pulled by
+    # `jsonwebtoken` → `p256`/`p384 0.13` → `elliptic-curve 0.13`; even
+    # jsonwebtoken 11.1 still pins the 0.13 curve crates, so there is no
+    # upstream fix. The path IS reachable: our `jwt` crate signs ES256/
+    # ES384 with private keys. Accepted risk: exploitation needs precise
+    # local timing/microarchitectural observation of the signing process;
+    # the `aws_lc_rs` backend would avoid it at the toolchain cost noted
+    # for RUSTSEC-2023-0071. Re-evaluate when jsonwebtoken moves to
+    # p256/p384 0.14 (elliptic-curve 0.14, crypto-bigint 0.7). Tracked in
+    # https://github.com/amigo-labs/amigo-native/issues/266.
+    "RUSTSEC-2026-0387",
 ]
