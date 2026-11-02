@@ -41,7 +41,7 @@
     "gpt-tokenizer": "^3.0.0",
     "hash-wasm": "^4.11.0",
     "iconv-lite": "^0.7.3",
-    "isomorphic-dompurify": "^3.14.0",
+    "isomorphic-dompurify": "^4.6.0",
     "js-tiktoken": "^1.0.21",
     "jsonwebtoken": "^9.0.2",
     "leven": "^4.0.0",
