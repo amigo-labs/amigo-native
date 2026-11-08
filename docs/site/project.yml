@@ -2,7 +2,7 @@
 # The package list comes from docs/packages.json (catalog); versions come from the per-package releases.
 schema: 1
 slug: native
-name: amigo-native
+name: Native
 status: released
 accent: "#ff9a1f"
 icon: icon.png
