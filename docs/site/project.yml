@@ -1,0 +1,88 @@
+# Content for amigo-labs.dev/native/ — format: https://github.com/amigo-labs/website/blob/main/docs/project-data.md
+# The package list comes from docs/packages.json (catalog); versions come from the per-package releases.
+schema: 1
+slug: native
+name: amigo-native
+status: released
+accent: "#ff6b2b"
+icon: icon.png
+tagline:
+  en: Rust-powered drop-in replacements for popular Node.js packages
+  de: Drop-in-Ersatz in Rust für beliebte Node.js-Pakete
+summary:
+  en: >-
+    A monorepo of npm packages under @amigo-labs, written in Rust and compiled to native addons via
+    NAPI-RS, with prebuilt binaries for every major platform. Most packages also ship a WASM build
+    for browsers and bundlers.
+  de: >-
+    Ein Monorepo von npm-Paketen unter @amigo-labs, geschrieben in Rust und mit NAPI-RS zu nativen
+    Addons kompiliert, mit vorgefertigten Binaries für alle gängigen Plattformen. Die meisten Pakete
+    enthalten zusätzlich einen WASM-Build für Browser und Bundler.
+about:
+  en: |
+    Every call from Node.js into a native module pays a fixed cost for crossing the boundary, roughly
+    109 ns on modern Linux x64. The packages here are picked because their workload dwarfs that cost,
+    and each one is benchmarked against its JavaScript alternative: the measured speedup decides
+    whether a package stays, gets optimized, or is retired.
+  de: |
+    Jeder Aufruf von Node.js in ein natives Modul kostet einen festen Betrag für den Grenzübertritt,
+    auf aktuellem Linux x64 etwa 109 ns. Die Pakete hier sind so gewählt, dass ihre Arbeit diese Kosten
+    weit übersteigt, und jedes wird gegen seine JavaScript-Alternative gemessen: Der gemessene
+    Geschwindigkeitsgewinn entscheidet, ob ein Paket bleibt, optimiert oder eingestellt wird.
+platforms: [node, browser]
+license: MIT
+
+highlights:
+  - value: "6"
+    label: { en: platforms with prebuilt binaries, de: Plattformen mit vorgefertigten Binaries }
+  - value: "0"
+    label: { en: transitive dependencies, de: transitive Abhängigkeiten }
+  - value: "≥ 22"
+    label: { en: Node.js, de: Node.js }
+  - value: NAPI-RS v3
+    label: { en: native runtime, de: native Laufzeit }
+
+features:
+  - title: { en: Drop-in API, de: Drop-in-API }
+    text:
+      en: Each package is a drop-in replacement for a popular Node.js package. Where it is not a 100% drop-in, a MIGRATION.md says what differs.
+      de: Jedes Paket ist ein Drop-in-Ersatz für ein beliebtes Node.js-Paket. Wo es kein hundertprozentiger Ersatz ist, beschreibt eine MIGRATION.md, was abweicht.
+  - title: { en: Prebuilt native binaries, de: Vorgefertigte native Binaries }
+    text:
+      en: "Compiled with NAPI-RS for six targets: Linux x64 (glibc and musl), Linux ARM64, macOS x64 and ARM64, Windows x64. No build step on install, no compiler required."
+      de: "Mit NAPI-RS für sechs Ziele kompiliert: Linux x64 (glibc und musl), Linux ARM64, macOS x64 und ARM64, Windows x64. Kein Build-Schritt bei der Installation, kein Compiler nötig."
+  - title: { en: WASM build for browsers, de: WASM-Build für Browser }
+    text:
+      en: Most packages ship a napi binary for Node.js and a WASM build for browsers and bundlers (Vite, esbuild, webpack ≥ 5, Rollup) in the same tarball. Conditional exports pick the right one; the import never changes.
+      de: Die meisten Pakete enthalten im selben Tarball ein napi-Binary für Node.js und einen WASM-Build für Browser und Bundler (Vite, esbuild, webpack ≥ 5, Rollup). Bedingte Exports wählen den passenden aus; der Import bleibt gleich.
+  - title: { en: Server-only where it matters, de: "Nur auf dem Server, wo es darauf ankommt" }
+    text:
+      en: argon2, jose and jwt stay Node-only on purpose — browser password hashing is an anti-pattern, and private signing keys must not ship to the browser.
+      de: argon2, jose und jwt bleiben bewusst Node-only – Passwort-Hashing im Browser ist ein Anti-Pattern, und private Signaturschlüssel gehören nicht in den Browser.
+  - title: { en: Zero dependencies, de: Keine Abhängigkeiten }
+    text:
+      en: No transitive dependencies — installing a package pulls in the package and its platform binary, nothing else.
+      de: Keine transitiven Abhängigkeiten – eine Installation holt das Paket und sein Plattform-Binary, sonst nichts.
+  - title: { en: "Measured, not claimed", de: "Gemessen, nicht behauptet" }
+    text:
+      en: Every package is benchmarked against the best JavaScript alternative and checked against the upstream package's behavior with conformance tests. A perf review classifies each one Green, Yellow, Red or Black.
+      de: Jedes Paket wird gegen die beste JavaScript-Alternative gemessen und mit Konformitätstests gegen das Verhalten des Originalpakets geprüft. Ein Perf-Review stuft jedes als Grün, Gelb, Rot oder Schwarz ein.
+  - title: { en: Published with provenance, de: Mit Provenance veröffentlicht }
+    text:
+      en: Releases are built in CI and published to npm with provenance, so every tarball can be traced back to the commit and workflow that built it.
+      de: Releases werden in der CI gebaut und mit Provenance auf npm veröffentlicht, sodass sich jeder Tarball auf den Commit und den Workflow zurückführen lässt, die ihn gebaut haben.
+
+downloads:
+  install:
+    - label: pnpm
+      command: pnpm add @amigo-labs/<name>
+      note:
+        en: Replace <name> with a package from the list below.
+        de: <name> durch ein Paket aus der Liste unten ersetzen.
+    - label: npm
+      command: npm install @amigo-labs/<name>
+
+releases:
+  versioned: false
+
+catalog: docs/packages.json
