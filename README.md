@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo.png" alt="amigo-native" width="128">
+  <img src="assets/brand/icon-128.png" alt="amigo-native" width="128">
 </p>
 
 <h1 align="center">amigo-native</h1>

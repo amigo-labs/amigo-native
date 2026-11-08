@@ -1,21 +1,22 @@
 ---
 interface Props {
-  /** Visual size in px, applied to both width and height. */
+  /** Visual size in px, applied to both width and height. A multiple of 16 (below 48) or 24 keeps the pixels square. */
   size?: number;
   class?: string;
 }
 
-const { size = 28, class: className = "" } = Astro.props;
+const { size = 32, class: className = "" } = Astro.props;
 ---
 
+<!-- The pixel monogram: the frameless 16×16 mark below 48 px, the framed one from 48 px. -->
 <img
-  src="/logo.png"
+  src={size < 48 ? "/favicon.svg" : "/logo.svg"}
   alt=""
   aria-hidden="true"
   width={size}
   height={size}
   class:list={["shrink-0 select-none", className]}
-  style={`width: ${size}px; height: ${size}px;`}
+  style={`width: ${size}px; height: ${size}px; image-rendering: pixelated;`}
   decoding="async"
   loading="eager"
 />

@@ -5,7 +5,6 @@ slug: native
 name: Native
 status: released
 accent: "#ff9a1f"
-icon: icon.png
 tagline:
   en: Rust-powered drop-in replacements for popular Node.js packages
   de: Drop-in-Ersatz in Rust für beliebte Node.js-Pakete
