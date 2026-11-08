@@ -4,7 +4,7 @@ schema: 1
 slug: native
 name: amigo-native
 status: released
-accent: "#ff6b2b"
+accent: "#ff9a1f"
 icon: icon.png
 tagline:
   en: Rust-powered drop-in replacements for popular Node.js packages
