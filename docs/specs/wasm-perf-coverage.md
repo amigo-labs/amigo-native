@@ -166,7 +166,7 @@ End-to-end once all phases are in:
 - `pnpm bench:report` runs cleanly
 - `pnpm web:check` green (Astro typecheck)
 - Smoke: `pnpm web:dev` → WASM speedup column visible, values plausible (no 0x / NaN)
-- `node .claude/skills/audit-crates/scripts/audit.mjs` stays green
+- `node .agents/skills/audit-crates/scripts/audit.mjs` stays green
 
 ## Out of scope
 

@@ -425,7 +425,7 @@ Each carries `amigo.targets: ["node"]` in its `package.json` and a
 
 **Single source of truth:** the constant
 `NODE_ONLY_CRATES = {argon2, jose, jwt}` is duplicated in six spots
-(`.claude/skills/audit-crates/scripts/audit.mjs`,
+(`.agents/skills/audit-crates/scripts/audit.mjs`,
 `scripts/sync-registry.mjs`, `scripts/build-all-wasm.mjs`,
 `scripts/scaffold-wasm-bench.mjs`, `.github/workflows/ci.yml`,
 `.github/workflows/release.yml`). To add or remove a crate, edit all

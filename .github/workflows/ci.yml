@@ -19,7 +19,7 @@ env:
   NODE_VERSION: '24'
   # Crates that intentionally stay Node.js-only and never get a WASM build.
   # Source of truth: docs/specs/expansion-2026.md § Node.js server-only tier.
-  # Mirrored by .claude/skills/audit-crates/scripts/audit.mjs (NODE_ONLY_CRATES)
+  # Mirrored by .agents/skills/audit-crates/scripts/audit.mjs (NODE_ONLY_CRATES)
   # and by .github/workflows/release.yml (the publish-job WASM build gate).
   NODE_ONLY_CRATES: 'argon2 jose jwt'
   # Crates temporarily skipped in CI because of an unresolved upstream
@@ -118,6 +118,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check crate registry is in sync
         run: node scripts/sync-registry.mjs --check
+      - name: Check agent skills mirrors are in sync
+        run: node .agents/sync.mjs --check
       - run: pnpm run lint
 
   audit-rust:

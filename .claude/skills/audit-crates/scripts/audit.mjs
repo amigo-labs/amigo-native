@@ -5,8 +5,8 @@
  * report with a per-crate status table and a prioritized gap-fix checklist.
  *
  * Run from the monorepo root:
- *   node .claude/skills/audit-crates/scripts/audit.mjs
- *   node .claude/skills/audit-crates/scripts/audit.mjs --json
+ *   node .agents/skills/audit-crates/scripts/audit.mjs
+ *   node .agents/skills/audit-crates/scripts/audit.mjs --json
  */
 
 import { readdirSync, existsSync, readFileSync, statSync } from 'node:fs'
@@ -428,7 +428,7 @@ if (asPlan) {
   plan.push('## Verify')
   plan.push('')
   plan.push('```bash')
-  plan.push('node .claude/skills/audit-crates/scripts/audit.mjs')
+  plan.push('node .agents/skills/audit-crates/scripts/audit.mjs')
   plan.push('```')
 
   console.log(plan.join('\n'))
