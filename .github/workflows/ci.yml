@@ -110,7 +110,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: cargo-test
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@v6.1.1
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -387,7 +387,7 @@ jobs:
         with:
           shared-key: napi-build
       - uses: rui314/setup-mold@v1
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@v6.1.1
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -459,7 +459,7 @@ jobs:
     if: needs.detect-changes.outputs.rebuildall == '1' || needs.detect-changes.outputs.crates != ''
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@v6.1.1
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -516,7 +516,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@v6.1.1
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -573,7 +573,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: napi-build-fulllto
-      - uses: pnpm/action-setup@v6.1.0
+      - uses: pnpm/action-setup@v6.1.1
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
