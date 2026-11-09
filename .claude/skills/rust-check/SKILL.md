@@ -39,7 +39,7 @@ If the user passed a name, use it. Otherwise `AskUserQuestion`: "Which package s
 ### Step 2 — Detect the mode
 
 ```bash
-node .claude/skills/rust-check/scripts/detect-mode.mjs <name>
+node .agents/skills/rust-check/scripts/detect-mode.mjs <name>
 ```
 
 Outputs a JSON object on stdout. Key fields:

@@ -4,7 +4,7 @@
  * evidence Claude needs to fill out docs/perf-review/<pkg>.md.
  *
  * Usage (from monorepo root):
- *   node .claude/skills/rust-check/scripts/detect-mode.mjs <name>
+ *   node .agents/skills/rust-check/scripts/detect-mode.mjs <name>
  *
  * Output: single JSON object on stdout. Non-zero exit only on missing arg
  * or when cwd is not the monorepo root.
